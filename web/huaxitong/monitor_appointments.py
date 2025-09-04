@@ -175,7 +175,7 @@ class AppointmentMonitor:
         if self.is_peak_hour():
             return 5.0  # 5 seconds during peak hours
         else:
-            return random.uniform(10, 20)  # 10-20 seconds normally
+            return random.uniform(15, 25)  # 15-25 seconds normally
     
     def send_request(self, doctor_payload: Dict[str, Any], doctor_name: str) -> Dict[str, Any]:
         """Send the API request and return the response for specific doctor"""

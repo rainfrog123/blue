@@ -25,7 +25,7 @@ df_day['tr3'] = abs(df_day['low'] - df_day['prev_close'])
 df_day['true_range'] = df_day[['tr1', 'tr2', 'tr3']].max(axis=1)
 
 # Step 2: Calculate ATR using rolling average
-window = 14  # Standard ATR period
+window = 23  # Standard ATR period
 df_day['atr'] = df_day['true_range'].rolling(window=window).mean()
 
 # Step 3: Convert to percentage
@@ -57,6 +57,8 @@ plt.show()
 print(f"\nHighest ATR volatility periods:")
 high_vol = df_clean.nlargest(5, 'volatility_pct')[['close', 'atr', 'volatility_pct']]
 print(high_vol)
+
+# %%
 
 # %%
 

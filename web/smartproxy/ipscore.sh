@@ -6,7 +6,7 @@
 # Examples:
 # IPv4: TARGET_IP="8.8.8.8"
 # IPv6: TARGET_IP="2a00:23c7:ffbd:9c00:2e99:75ff:fedb:7c2a"
-TARGET_IP="92.19.11.112"
+TARGET_IP="94.177.14.241"
 
 # IPQS Configuration
 IPQS_API_KEY="740F92cS9nqqV41L0u7jfbSepB3dff08"
