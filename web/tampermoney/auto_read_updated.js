@@ -61,7 +61,7 @@
   const clickReadAloud = async () => {
     // Find all visible "More actions" buttons
     const allBtns = Array.from(document.querySelectorAll(
-      'button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]'
+      'button[id^="radix-"][aria-haspopup="menu"]'
     )).filter(el => {
       const r = el.getBoundingClientRect();
       return r.width > 0 && r.height > 0;
@@ -142,7 +142,7 @@
   // Check for new assistant messages and trigger read aloud
   const checkForNewMessage = async () => {
     const allBtns = Array.from(document.querySelectorAll(
-      'button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]'
+      'button[id^="radix-"][aria-haspopup="menu"]'
     )).filter(el => {
       const r = el.getBoundingClientRect();
       return r.width > 0 && r.height > 0;
@@ -162,7 +162,7 @@
     for (const m of mutations) {
       for (const n of m.addedNodes) {
         if (n.nodeType !== 1) continue;
-        if (n.querySelector?.('button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]')) {
+        if (n.querySelector?.('button[id^="radix-"][aria-haspopup="menu"]')) {
           shouldCheck = true;
           break;
         }
