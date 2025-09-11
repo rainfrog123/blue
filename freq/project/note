@@ -4,9 +4,13 @@ freqtrade download-data --userdir /allah/blue/freq/project/user_data --config /a
 # --timerange 1752105600-1752109200
 freqtrade backtesting --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --timerange 20250801- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
 
+freqtrade backtesting --strategy gamble_vola --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_vola.json --timerange 20250901- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+
 freqtrade trade --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json  
 
 freqtrade webserver --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --datadir /allah/freqtrade/user_data/data/binance
 
 import pandas as pd
 pd.set_option("display.max_columns", None)
+
+
