@@ -10,127 +10,170 @@
 (function () {
   'use strict';
 
-  let enabled = true;
-  let lastProcessedId = null;
-  let processing = false;
-
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-  // Toggle with Ctrl+Alt+V
-  window.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'v') {
-      enabled = !enabled;
-      console.log(`[auto-read] ${enabled ? 'ENABLED' : 'DISABLED'}`);
-      e.preventDefault();
-    }
-  });
+  function simulatePointerSequence(el) {
+    const r = el.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
 
-  // Disable when scrolling up (user browsing history)
-  let lastScrollY = window.scrollY;
-  window.addEventListener('scroll', () => {
-    if (window.scrollY < lastScrollY - 100) {
-      enabled = false;
-    }
-    lastScrollY = window.scrollY;
-  }, { passive: true });
+    el.scrollIntoView({ block: 'center', inline: 'center' });
+    try { el.focus({ preventScroll: true }); } catch {}
 
-  // Find the latest assistant message container
-  function getLatestAssistantMessage() {
-    const messages = Array.from(document.querySelectorAll('[data-message-author-role="assistant"]'));
-    return messages.at(-1);
+    const baseMouse = { bubbles: true, cancelable: true, view: window, clientX: cx, clientY: cy, button: 0, buttons: 1 };
+    const basePtr = { ...baseMouse, pointerId: 1, pointerType: 'mouse', isPrimary: true };
+
+    el.dispatchEvent(new PointerEvent('pointerover', basePtr));
+    el.dispatchEvent(new MouseEvent('mouseover', baseMouse));
+    el.dispatchEvent(new PointerEvent('pointerenter', basePtr));
+    el.dispatchEvent(new MouseEvent('mouseenter', baseMouse));
+    el.dispatchEvent(new PointerEvent('pointerdown', basePtr));
+    el.dispatchEvent(new MouseEvent('mousedown', baseMouse));
+    el.dispatchEvent(new PointerEvent('pointerup', basePtr));
+    el.dispatchEvent(new MouseEvent('mouseup', baseMouse));
+    el.dispatchEvent(new MouseEvent('click', baseMouse));
+
+    return { cx, cy, topAtPoint: document.elementFromPoint(cx, cy) };
   }
 
-  // Click read aloud for a specific message
-  async function clickReadAloudForMessage(messageEl) {
-    if (!messageEl || processing) return false;
-    
-    // Get or create message ID
-    const msgId = messageEl.dataset.messageId || 
-                 (messageEl.dataset._autoId = String(Date.now() + Math.random()));
-    
-    if (msgId === lastProcessedId) return false;
+  async function waitFor(sel, root = document, timeout = 2000) {
+    const start = performance.now();
+    let el;
+    while (!(el = root.querySelector(sel))) {
+      if (performance.now() - start > timeout) return null;
+      await sleep(16);
+    }
+    return el;
+  }
 
-    processing = true;
-    try {
-      // Find More actions button within this message
-      const moreBtn = messageEl.querySelector('button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]');
-      if (!moreBtn) return false;
-
-      // Simple click - no complex pointer simulation
-      moreBtn.click();
-      lastProcessedId = msgId;
-
-      // Wait for menu
-      let menu = null;
-      for (let i = 0; i < 40; i++) { // 2 second timeout
-        menu = document.querySelector('[role="menu"][data-state="open"]');
-        if (menu) break;
-        await sleep(50);
-      }
-      
-      if (!menu) return false;
-
-      // Find read aloud item
-      let readItem = menu.querySelector('[role="menuitem"][aria-label="Read aloud"]') ||
-                     menu.querySelector('[data-testid="voice-play-turn-action-button"]');
-
-      if (!readItem) {
-        const items = menu.querySelectorAll('[role="menuitem"]');
-        readItem = Array.from(items).find(el => /read\s*aloud/i.test(el.textContent));
-      }
-
-      if (readItem) {
-        readItem.click();
-        return true;
-      }
-    } catch (e) {
-      console.warn('[auto-read] Error:', e);
-    } finally {
-      processing = false;
+  function tryReactHandler(el) {
+    const key = Object.keys(el).find(k => k.startsWith('__reactProps$'));
+    if (!key) return false;
+    const props = el[key] || {};
+    const ev = { isTrusted: true, target: el, currentTarget: el, preventDefault() {}, stopPropagation() {}, nativeEvent: { isTrusted: true } };
+    for (const n of ['onPointerDown', 'onClick', 'onMouseDown', 'onMouseUp', 'onKeyDown', 'onKeyUp']) {
+      if (typeof props[n] === 'function') { try { props[n](ev); return true; } catch {} }
     }
     return false;
   }
 
-  // Check once for new message
-  async function checkOnce() {
-    if (!enabled || processing) return;
-    
-    const latest = getLatestAssistantMessage();
-    if (latest) {
-      await clickReadAloudForMessage(latest);
-    }
-  }
+  // Click read aloud using the new method (via More actions menu)
+  const clickReadAloud = async () => {
+    // Find all visible "More actions" buttons
+    const allBtns = Array.from(document.querySelectorAll(
+      'button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]'
+    )).filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
 
-  // Targeted observer - only for assistant messages
-  const observer = new MutationObserver((mutations) => {
-    if (!enabled) return;
+    // Use the second-to-last one (usually the newest assistant message)
+    const btn = allBtns.at(-2);
+    if (!btn) return false;
+
+    // Check if already processed
+    if (btn.dataset._autoVoiceClicked) return false;
+    btn.dataset._autoVoiceClicked = '1';
+
+    // Click More actions button
+    let res = simulatePointerSequence(btn);
     
-    let hasNewAssistantContent = false;
-    for (const mut of mutations) {
-      for (const node of mut.addedNodes) {
-        if (node.nodeType === 1) {
-          // Check if this is or contains an assistant message
-          if (node.matches?.('[data-message-author-role="assistant"]') ||
-              node.querySelector?.('[data-message-author-role="assistant"]')) {
-            hasNewAssistantContent = true;
-            break;
-          }
+    // Handle overlays
+    if (res.topAtPoint && res.topAtPoint !== btn) {
+      const prev = res.topAtPoint.style.pointerEvents;
+      res.topAtPoint.style.pointerEvents = 'none';
+      res = simulatePointerSequence(btn);
+      res.topAtPoint.style.pointerEvents = prev;
+    }
+
+    // Keyboard fallback
+    ['keydown', 'keypress', 'keyup'].forEach(type =>
+      btn.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
+    );
+
+    // React handler fallback
+    tryReactHandler(btn);
+
+    // Wait for menu to open
+    const menu = await waitFor('[role="menu"][data-state="open"]', document, 2500);
+    if (!menu) return false;
+
+    // Find "Read aloud" item
+    let item = menu.querySelector('[role="menuitem"][aria-label="Read aloud"]') ||
+               menu.querySelector('[data-testid="voice-play-turn-action-button"]');
+
+    if (!item) {
+      const candidates = menu.querySelectorAll('[role="menuitem"], .__menu-item, [data-radix-collection-item]');
+      item = Array.from(candidates).find(el => /read\s*aloud/i.test(el.textContent || ''));
+    }
+
+    if (!item) return false;
+
+    // Click read aloud item
+    let r2 = simulatePointerSequence(item);
+    if (r2.topAtPoint && r2.topAtPoint !== item) {
+      const prev = r2.topAtPoint.style.pointerEvents;
+      r2.topAtPoint.style.pointerEvents = 'none';
+      r2 = simulatePointerSequence(item);
+      r2.topAtPoint.style.pointerEvents = prev;
+    }
+
+    // Keyboard fallback for menu items
+    if (document.activeElement !== item) { try { item.focus({ preventScroll: true }); } catch {} }
+    ['keydown', 'keypress', 'keyup'].forEach(type =>
+      item.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
+    );
+
+    // Final fallback
+    tryReactHandler(item);
+
+    // After read aloud is triggered, scroll to the last edit button
+    await sleep(500); // Give time for menu to close
+    
+    const editBtns = Array.from(document.querySelectorAll('button[aria-label="Edit message"]'));
+    const lastEditBtn = editBtns.at(-1);
+    if (lastEditBtn) {
+      lastEditBtn.scrollIntoView({ block: 'center', inline: 'center' });
+    }
+
+    return true;
+  };
+
+  // Check for new assistant messages and trigger read aloud
+  const checkForNewMessage = async () => {
+    const allBtns = Array.from(document.querySelectorAll(
+      'button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]'
+    )).filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+
+    const newest = allBtns.at(-2); // Second-to-last is usually newest assistant
+    if (newest && !newest.dataset._autoVoiceClicked) {
+      await sleep(300); // Give UI time to settle
+      await clickReadAloud();
+    }
+  };
+
+  // MutationObserver for detecting new content
+  const obs = new MutationObserver((mutations) => {
+    let shouldCheck = false;
+
+    for (const m of mutations) {
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.querySelector?.('button[aria-label="More actions"], button[id^="radix-"][aria-haspopup="menu"]')) {
+          shouldCheck = true;
+          break;
         }
       }
-      if (hasNewAssistantContent) break;
+      if (shouldCheck) break;
     }
 
-    if (hasNewAssistantContent) {
-      setTimeout(checkOnce, 500); // Debounce
+    if (shouldCheck) {
+      setTimeout(checkForNewMessage, 120);
     }
   });
 
-  // Start observing
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Initial check
-  setTimeout(checkOnce, 1000);
-
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => observer.disconnect());
+  obs.observe(document.body, { childList: true, subtree: true });
 })();
