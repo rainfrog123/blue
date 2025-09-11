@@ -10,6 +10,8 @@
 (function () {
   'use strict';
 
+  console.log('🤖 Auto-read script loaded (copy button approach)');
+  
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   function simulatePointerSequence(el) {
@@ -58,28 +60,48 @@
   }
 
   // Click read aloud using the new method (via More actions menu)
-  const clickReadAloud = async () => {
-    // Find all visible "More actions" buttons
-    const allBtns = Array.from(document.querySelectorAll(
-      'button[id^="radix-"][aria-haspopup="menu"]'
-    )).filter(el => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0;
-    });
-
-    // Use the second-to-last one (usually the newest assistant message)
-    const btn = allBtns.at(-2);
-    if (!btn) return false;
+  const clickReadAloud = async (copyBtn) => {
+    console.log('🎯 clickReadAloud called with copy button');
+    console.log('🔍 Copy button element:', copyBtn);
+    
+    // Find the parent actions container (contains both Copy and More actions buttons)
+    const actionsContainer = copyBtn.parentElement;
+    console.log('🔍 Actions container found:', !!actionsContainer);
+    console.log('🔍 Actions container class:', actionsContainer?.className);
+    
+    if (!actionsContainer) {
+      console.log('❌ No actions container found');
+      return false;
+    }
+    
+    // Find the More actions button inside the same actions container
+    const btn = actionsContainer.querySelector('button[aria-label="More actions"][aria-haspopup="menu"][id^="radix-"]');
+    console.log('🔍 More actions button found:', !!btn, btn?.id);
+    
+    if (!btn) {
+      console.log('🔍 More actions button not found, listing all buttons in container:');
+      const allButtons = actionsContainer.querySelectorAll('button');
+      allButtons.forEach((b, i) => {
+        console.log(`  Button ${i}: "${b.getAttribute('aria-label')}" | ${b.tagName} | ${b.id}`);
+      });
+      return false;
+    }
 
     // Check if already processed
-    if (btn.dataset._autoVoiceClicked) return false;
+    if (btn.dataset._autoVoiceClicked) {
+      console.log('⏭️ Button already processed, skipping');
+      return false;
+    }
+    console.log('✅ Marking button as processed');
     btn.dataset._autoVoiceClicked = '1';
 
     // Click More actions button
+    console.log('🖱️ Clicking More actions button');
     let res = simulatePointerSequence(btn);
     
     // Handle overlays
     if (res.topAtPoint && res.topAtPoint !== btn) {
+      console.log('🚧 Overlay detected, bypassing');
       const prev = res.topAtPoint.style.pointerEvents;
       res.topAtPoint.style.pointerEvents = 'none';
       res = simulatePointerSequence(btn);
@@ -87,31 +109,42 @@
     }
 
     // Keyboard fallback
+    console.log('⌨️ Trying keyboard fallback');
     ['keydown', 'keypress', 'keyup'].forEach(type =>
       btn.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
     );
 
     // React handler fallback
+    console.log('⚛️ Trying React handler');
     tryReactHandler(btn);
 
     // Wait for menu to open
+    console.log('⏳ Waiting for menu to open...');
     const menu = await waitFor('[role="menu"][data-state="open"]', document, 2500);
+    console.log('📋 Menu found:', !!menu);
     if (!menu) return false;
 
     // Find "Read aloud" item
+    console.log('🔍 Looking for Read aloud item...');
     let item = menu.querySelector('[role="menuitem"][aria-label="Read aloud"]') ||
                menu.querySelector('[data-testid="voice-play-turn-action-button"]');
 
     if (!item) {
+      console.log('🔍 Direct selectors failed, trying text search...');
       const candidates = menu.querySelectorAll('[role="menuitem"], .__menu-item, [data-radix-collection-item]');
+      console.log('🔍 Menu candidates:', candidates.length);
+      candidates.forEach((el, i) => console.log(`  ${i}: "${el.textContent?.trim()}" | ${el.tagName} | ${el.getAttribute('aria-label')}`));
       item = Array.from(candidates).find(el => /read\s*aloud/i.test(el.textContent || ''));
     }
 
+    console.log('🎵 Read aloud item found:', !!item);
     if (!item) return false;
 
     // Click read aloud item
+    console.log('🎵 Clicking read aloud item');
     let r2 = simulatePointerSequence(item);
     if (r2.topAtPoint && r2.topAtPoint !== item) {
+      console.log('🚧 Overlay over read aloud, bypassing');
       const prev = r2.topAtPoint.style.pointerEvents;
       r2.topAtPoint.style.pointerEvents = 'none';
       r2 = simulatePointerSequence(item);
@@ -119,61 +152,84 @@
     }
 
     // Keyboard fallback for menu items
+    console.log('⌨️ Keyboard fallback for read aloud');
     if (document.activeElement !== item) { try { item.focus({ preventScroll: true }); } catch {} }
     ['keydown', 'keypress', 'keyup'].forEach(type =>
       item.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
     );
 
     // Final fallback
+    console.log('⚛️ React handler fallback for read aloud');
     tryReactHandler(item);
 
-    // After read aloud is triggered, scroll to the last edit button
+    // After read aloud is triggered, scroll to the second-to-last copy button
+    console.log('📜 Scrolling to second-to-last copy button...');
     await sleep(500); // Give time for menu to close
     
-    const editBtns = Array.from(document.querySelectorAll('button[aria-label="Edit message"]'));
-    const lastEditBtn = editBtns.at(-1);
-    if (lastEditBtn) {
-      lastEditBtn.scrollIntoView({ block: 'center', inline: 'center' });
+    // Find all copy buttons and get the second-to-last one (-2)
+    const allCopyButtons = [...document.querySelectorAll('button[aria-label="Copy"][data-testid="copy-turn-action-button"]')];
+    const secondToLastCopyBtn = allCopyButtons.at(-2);
+    console.log('📋 Second-to-last copy button found:', !!secondToLastCopyBtn, `(${allCopyButtons.length} total copy buttons)`);
+    if (secondToLastCopyBtn) {
+      secondToLastCopyBtn.scrollIntoView({ block: 'start', inline: 'nearest' });
     }
 
+    console.log('✅ clickReadAloud completed successfully');
     return true;
   };
 
-  // Check for new assistant messages and trigger read aloud
-  const checkForNewMessage = async () => {
-    const allBtns = Array.from(document.querySelectorAll(
-      'button[id^="radix-"][aria-haspopup="menu"]'
-    )).filter(el => {
-      const r = el.getBoundingClientRect();
-      return r.width > 0 && r.height > 0;
-    });
-
-    const newest = allBtns.at(-2); // Second-to-last is usually newest assistant
-    if (newest && !newest.dataset._autoVoiceClicked) {
-      await sleep(300); // Give UI time to settle
-      await clickReadAloud();
+  // Check for new copy buttons and trigger read aloud
+  const checkForNewCopy = async (copyBtn) => {
+    console.log('🔄 checkForNewCopy called');
+    
+    // Check if this copy button was already processed
+    if (copyBtn.dataset._autoProcessed) {
+      console.log('⏭️ Copy button already processed');
+      return;
     }
+    
+    console.log('✅ Marking copy button as processed');
+    copyBtn.dataset._autoProcessed = '1';
+    
+    // Give UI time to settle
+    await sleep(300);
+    
+    console.log('🚀 Triggering read aloud for new copy button...');
+    await clickReadAloud(copyBtn);
   };
 
-  // MutationObserver for detecting new content
+  // MutationObserver for detecting new copy buttons
   const obs = new MutationObserver((mutations) => {
-    let shouldCheck = false;
+    const newCopyButtons = [];
 
     for (const m of mutations) {
       for (const n of m.addedNodes) {
         if (n.nodeType !== 1) continue;
-        if (n.querySelector?.('button[id^="radix-"][aria-haspopup="menu"]')) {
-          shouldCheck = true;
-          break;
+        
+        // Check if the added node is a copy button
+        if (n.matches?.('button[aria-label="Copy"][data-testid="copy-turn-action-button"]')) {
+          console.log('📋 Direct copy button detected');
+          newCopyButtons.push(n);
+        }
+        
+        // Check if the added node contains copy buttons
+        const copyBtns = n.querySelectorAll?.('button[aria-label="Copy"][data-testid="copy-turn-action-button"]');
+        if (copyBtns?.length) {
+          console.log('📋 Copy buttons found in added node:', copyBtns.length);
+          newCopyButtons.push(...copyBtns);
         }
       }
-      if (shouldCheck) break;
     }
 
-    if (shouldCheck) {
-      setTimeout(checkForNewMessage, 120);
-    }
+    // Process new copy buttons
+    newCopyButtons.forEach(copyBtn => {
+      if (!copyBtn.dataset._autoProcessed) {
+        console.log('📋 New copy button detected, processing...');
+        setTimeout(() => checkForNewCopy(copyBtn), 120);
+      }
+    });
   });
 
+  console.log('👁️ MutationObserver started (watching for copy buttons)');
   obs.observe(document.body, { childList: true, subtree: true });
 })();
