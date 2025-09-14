@@ -2,9 +2,13 @@
 freqtrade download-data --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/main.json --timerange 20250801- --timeframes 1m 3m 5m 15m 30m 1h 4h --datadir /allah/freqtrade/user_data/data/binance
 
 # --timerange 1752105600-1752109200
-freqtrade backtesting --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --timerange 20250801- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+freqtrade backtesting --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --timerange 20250901- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
 
-freqtrade backtesting --strategy gamble_vola --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_vola.json --timerange 20250901- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+freqtrade backtesting --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --timerange 1756684800-1756688400 --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+
+freqtrade backtesting --strategy gamble_test --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 1756684800-1756688400 --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 100 --fee 0
+
+freqtrade backtesting --strategy ml_pre --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/ml_pre.json --timerange 20250901- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
 
 freqtrade trade --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json  
 
@@ -13,4 +17,4 @@ freqtrade webserver --userdir /allah/blue/freq/project/user_data --config /allah
 import pandas as pd
 pd.set_option("display.max_columns", None)
 
-
+export COLUMNS=100

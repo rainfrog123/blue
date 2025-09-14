@@ -8,7 +8,7 @@ from freqtrade.strategy import IStrategy
 
 logger = logging.getLogger(__name__)
 
-class gamble(IStrategy):
+class ml_pre(IStrategy):
     """Trend-following strategy using TEMA reversal signals."""
     
     INTERFACE_VERSION = 3

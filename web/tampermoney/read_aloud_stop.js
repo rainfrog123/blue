@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         read aloud stop
-// @description  Press Alt+M to click the "Stop" (voice) button on ChatGPT
+// @description  Press Alt+M to stop voice playback (finds Stop in open menu) on ChatGPT
 // @namespace    gp-voice-stop
-// @version      2.0.0
+// @version      3.1.0
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
 // @match        https://www.chatgpt.com/*
@@ -13,8 +13,6 @@
   'use strict';
 
   console.log('🛑 Voice stop script loaded (Alt+M)');
-
-  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   function simulatePointerSequence(el) {
     const r = el.getBoundingClientRect();
@@ -59,96 +57,92 @@
     return false;
   };
 
-  // Find the Stop button with robust detection
-  function findStopButton() {
-    console.log('🔍 Looking for Stop button...');
+  // Find Stop item in the already-open menu
+  function findStopInOpenMenu() {
+    console.log('🔍 Looking for Stop in open menu...');
     
-    // Primary: aria-label="Stop" + data-testid
-    let btn = document.querySelector(
-      'button[aria-label="Stop"][data-testid="voice-play-turn-action-button"]'
-    );
-    if (btn) {
-      console.log('✅ Stop button found via primary selector');
-      return btn;
+    // Look for open menu (should already be open when voice is playing)
+    const menu = document.querySelector('[role="menu"][data-state="open"]');
+    if (!menu) {
+      console.log('❌ No open menu found');
+      return null;
     }
 
-    console.log('🔍 Primary selector failed, trying fallback methods...');
+    console.log('📋 Found open menu, looking for Stop item...');
     
-    // Fallback: same testid, check aria-label and SVG patterns
-    const candidates = Array.from(
-      document.querySelectorAll('button[data-testid="voice-play-turn-action-button"]')
-    ).filter((b) => {
-      const rect = b.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0; // visible
-    });
+    // Primary selectors for Stop item
+    let stopItem = menu.querySelector('[role="menuitem"][aria-label="Stop"]') ||
+                   menu.querySelector('[data-testid="voice-play-turn-action-button"][aria-label="Stop"]');
 
-    console.log('🔍 Found voice button candidates:', candidates.length);
-    
-    for (const b of candidates) {
-      const aria = (b.getAttribute('aria-label') || '').toLowerCase();
-      console.log(`🔍 Checking candidate: aria-label="${aria}"`);
+    if (!stopItem) {
+      console.log('🔍 Primary selectors failed, trying text search...');
+      // Fallback: search by text content
+      const candidates = menu.querySelectorAll('[role="menuitem"], .__menu-item, [data-radix-collection-item]');
+      console.log('🔍 Menu candidates:', candidates.length);
+      candidates.forEach((el, i) => console.log(`  ${i}: "${el.textContent?.trim()}" | ${el.tagName} | ${el.getAttribute('aria-label')}`));
       
-      if (aria.includes('stop')) {
-        console.log('✅ Stop button found via aria-label');
-        return b;
-      }
-      
-      // Extra fallback: look for square stop icon pattern
-      const hasSquarePath = !!b.querySelector('svg path[fill-rule][clip-rule]');
-      if (hasSquarePath) {
-        console.log('✅ Stop button found via SVG pattern');
-        return b;
-      }
+      stopItem = Array.from(candidates).find(el => 
+        el.getAttribute('aria-label')?.toLowerCase() === 'stop' ||
+        el.textContent?.trim().toLowerCase() === 'stop'
+      );
     }
 
-    console.log('❌ No Stop button found');
+    if (stopItem) {
+      console.log('✅ Stop item found in open menu');
+      return stopItem;
+    }
+
+    console.log('❌ No Stop item found in open menu');
     return null;
   }
 
   function clickStop() {
     console.log('🛑 clickStop called');
     
-    const btn = findStopButton();
-    if (!btn) {
-      console.log('❌ No Stop button found');
+    const stopItem = findStopInOpenMenu();
+    if (!stopItem) {
+      console.log('❌ No Stop item found');
       return false;
     }
 
-    console.log('🖱️ Clicking Stop button');
+    console.log('🛑 Clicking Stop menu item');
     
-    // Try comprehensive clicking sequence
-    let res = simulatePointerSequence(btn);
+    // Try comprehensive clicking sequence for menu item
+    let res = simulatePointerSequence(stopItem);
     
     // Handle overlays
-    if (res.topAtPoint && res.topAtPoint !== btn) {
-      console.log('🚧 Overlay detected, bypassing');
+    if (res.topAtPoint && res.topAtPoint !== stopItem) {
+      console.log('🚧 Overlay over Stop item, bypassing');
       const prev = res.topAtPoint.style.pointerEvents;
       res.topAtPoint.style.pointerEvents = 'none';
-      res = simulatePointerSequence(btn);
+      res = simulatePointerSequence(stopItem);
       res.topAtPoint.style.pointerEvents = prev;
     }
 
-    // Keyboard fallback
-    console.log('⌨️ Keyboard fallback for Stop');
+    // Keyboard fallback for menu items
+    console.log('⌨️ Keyboard fallback for Stop item');
+    if (document.activeElement !== stopItem) { 
+      try { stopItem.focus({ preventScroll: true }); } catch {} 
+    }
     ['keydown', 'keypress', 'keyup'].forEach(type =>
-      btn.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
+      stopItem.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', bubbles: true, cancelable: true }))
     );
 
     // React handler fallback
-    console.log('⚛️ React handler fallback for Stop');
-    tryReactHandler(btn);
+    console.log('⚛️ React handler fallback for Stop item');
+    tryReactHandler(stopItem);
 
     // Simple click fallback
-    console.log('🖱️ Simple click fallback');
-    btn.click();
+    console.log('🖱️ Simple click fallback for Stop item');
+    stopItem.click();
 
     // Visual feedback
-    btn.animate([
+    stopItem.animate([
       { outline: '2px solid #ff4d4f', outlineOffset: '2px' }, 
       { outline: 'none' }
     ], { duration: 300 });
 
-    console.log('✅ Stop button clicked successfully');
+    console.log('✅ Stop item clicked successfully');
     return true;
   }
 

@@ -11,7 +11,7 @@
   'use strict';
 
   console.log('🤖 Auto-read script loaded (copy button approach)');
-  
+
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   function simulatePointerSequence(el) {
@@ -63,21 +63,21 @@
   const clickReadAloud = async (copyBtn) => {
     console.log('🎯 clickReadAloud called with copy button');
     console.log('🔍 Copy button element:', copyBtn);
-    
+
     // Find the parent actions container (contains both Copy and More actions buttons)
     const actionsContainer = copyBtn.parentElement;
     console.log('🔍 Actions container found:', !!actionsContainer);
     console.log('🔍 Actions container class:', actionsContainer?.className);
-    
+
     if (!actionsContainer) {
       console.log('❌ No actions container found');
       return false;
     }
-    
+
     // Find the More actions button inside the same actions container
     const btn = actionsContainer.querySelector('button[aria-label="More actions"][aria-haspopup="menu"][id^="radix-"]');
     console.log('🔍 More actions button found:', !!btn, btn?.id);
-    
+
     if (!btn) {
       console.log('🔍 More actions button not found, listing all buttons in container:');
       const allButtons = actionsContainer.querySelectorAll('button');
@@ -98,7 +98,7 @@
     // Click More actions button
     console.log('🖱️ Clicking More actions button');
     let res = simulatePointerSequence(btn);
-    
+
     // Handle overlays
     if (res.topAtPoint && res.topAtPoint !== btn) {
       console.log('🚧 Overlay detected, bypassing');
@@ -165,7 +165,7 @@
     // After read aloud is triggered, scroll to the second-to-last copy button
     console.log('📜 Scrolling to second-to-last copy button...');
     await sleep(500); // Give time for menu to close
-    
+
     // Find all copy buttons and get the second-to-last one (-2)
     const allCopyButtons = [...document.querySelectorAll('button[aria-label="Copy"][data-testid="copy-turn-action-button"]')];
     const secondToLastCopyBtn = allCopyButtons.at(-2);
@@ -181,19 +181,19 @@
   // Check for new copy buttons and trigger read aloud
   const checkForNewCopy = async (copyBtn) => {
     console.log('🔄 checkForNewCopy called');
-    
+
     // Check if this copy button was already processed
     if (copyBtn.dataset._autoProcessed) {
       console.log('⏭️ Copy button already processed');
       return;
     }
-    
+
     console.log('✅ Marking copy button as processed');
     copyBtn.dataset._autoProcessed = '1';
-    
+
     // Give UI time to settle
     await sleep(300);
-    
+
     console.log('🚀 Triggering read aloud for new copy button...');
     await clickReadAloud(copyBtn);
   };
@@ -205,13 +205,13 @@
     for (const m of mutations) {
       for (const n of m.addedNodes) {
         if (n.nodeType !== 1) continue;
-        
+
         // Check if the added node is a copy button
         if (n.matches?.('button[aria-label="Copy"][data-testid="copy-turn-action-button"]')) {
           console.log('📋 Direct copy button detected');
           newCopyButtons.push(n);
         }
-        
+
         // Check if the added node contains copy buttons
         const copyBtns = n.querySelectorAll?.('button[aria-label="Copy"][data-testid="copy-turn-action-button"]');
         if (copyBtns?.length) {
@@ -221,15 +221,40 @@
       }
     }
 
-    // Process new copy buttons
+    // Process new copy buttons with extra validation
     newCopyButtons.forEach(copyBtn => {
       if (!copyBtn.dataset._autoProcessed) {
-        console.log('📋 New copy button detected, processing...');
-        setTimeout(() => checkForNewCopy(copyBtn), 120);
+        // Double-check this is truly a new button by checking if it's visible and in viewport
+        const rect = copyBtn.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          console.log('📋 New copy button detected, processing...');
+          setTimeout(() => checkForNewCopy(copyBtn), 120);
+        } else {
+          console.log('📋 Skipping invisible copy button');
+          copyBtn.dataset._autoProcessed = '1'; // Mark as processed to avoid future checks
+        }
+      } else {
+        console.log('📋 Copy button already processed, skipping');
       }
     });
   });
 
-  console.log('👁️ MutationObserver started (watching for copy buttons)');
-  obs.observe(document.body, { childList: true, subtree: true });
+  // Wait for page to fully settle, then mark existing buttons and start observing
+  const initializeScript = async () => {
+    // Wait for page to settle
+    await sleep(2000);
+    
+    // Mark existing copy buttons as already processed
+    const existingCopyButtons = document.querySelectorAll('button[aria-label="Copy"][data-testid="copy-turn-action-button"]');
+    console.log(`🔧 Marking ${existingCopyButtons.length} existing copy buttons as processed`);
+    existingCopyButtons.forEach(btn => btn.dataset._autoProcessed = '1');
+
+    // Add additional delay before starting observer
+    await sleep(500);
+    
+    console.log('👁️ MutationObserver started (watching for copy buttons)');
+    obs.observe(document.body, { childList: true, subtree: true });
+  };
+
+  initializeScript();
 })();
