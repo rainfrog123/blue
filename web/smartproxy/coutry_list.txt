@@ -145,7 +145,7 @@
  {'location': 'Berlin', 'prefix': 'city'},
  {'location': 'Moscow', 'prefix': 'city'},
  {'location': 'Vietnam', 'prefix': 'vn'},
- {'location': 'US', 'prefix': 'gate'},
+ {'location': 'Random US', 'prefix': 'gate'},
  {'location': 'Malta', 'prefix': 'mt'},
  {'location': 'Europe', 'prefix': 'eu'},
  {'location': 'Alabama', 'prefix': 'state'},
@@ -202,5 +202,4 @@
  {'location': 'Europe', 'prefix': 'eu'},
  {'location': 'Germany', 'prefix': 'de'},
  {'location': 'Romania', 'prefix': 'ro'},
- {'location': 'Netherlands', 'prefix': 'nl'},
- {'location': 'United Kingdom', 'prefix': 'uk'}]
+ {'location': 'Netherlands', 'prefix': 'nl'}]

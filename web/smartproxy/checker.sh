@@ -2,21 +2,21 @@
 
 # SmartProxy Configuration
 base_url="https://ip.decodo.com/json"
-username="user-sp5uwd5fih"
-password="15yFvupp9fbN_zzP0D"
+username="user-sp19qgy7m9"
+password="+26iSboeQ0wUyx4qEw"
 proxy_server="gate.decodo.com:7000"
 session_duration="60"  # in minutes (1-1440)
-country="us"           # two-letter country code
+country="gb"           # two-letter country code
 # city="Hamburg"         # city name (use underscores for spaces)
 # state=""            # state code (for US - use us_state_name format)
 # continent=""        # continent code (eu, na, as, sa, af, oc)
 # asn=""              # ASN number
 
 # Session prefix (p = persistent, r = random)
-session_prefix="app1e2112"
+session_prefix="assxle33"
 
 # Define number of sessions to test
-num_sessions=10
+num_sessions=33
 
 # IPQS Configuration
 ipqs_api_key="740F92cS9nqqV41L0u7jfbSepB3dff08"
@@ -37,6 +37,10 @@ build_auth_string() {
     local session_name=$1
     local auth_string="${username}"
     
+    # Add session parameters first
+    auth_string="${auth_string}-session-${session_name}"
+    auth_string="${auth_string}-sessionduration-${session_duration}"
+    
     # Add location parameters (in priority order)
     if [[ -n "$continent" ]]; then
         auth_string="${auth_string}-continent-${continent}"
@@ -54,10 +58,6 @@ build_auth_string() {
     if [[ -n "$asn" && -z "$city" ]]; then
         auth_string="${auth_string}-asn-${asn}"
     fi
-    
-    # Add session parameters
-    auth_string="${auth_string}-session-${session_name}"
-    auth_string="${auth_string}-sessionduration-${session_duration}"
     
     echo "${auth_string}:${password}"
 }

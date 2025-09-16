@@ -51,4 +51,4 @@ alias diskspace='df -h'
 alias myip='curl -s http://ipinfo.io/ip'
 alias tampermonkey='cursor /allah/blue/web/tampermonkey'
 export DISPLAY=:10
-export PATH="$HOME/development/flutter/bin:$PATH"
+export PATH="$HOME/development/flutter/bin:$PATH"export PATH="$HOME/.local/bin:$PATH"
