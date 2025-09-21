@@ -243,15 +243,15 @@
   const initializeScript = async () => {
     // Wait for page to settle
     await sleep(2000);
-    
+
     // Mark existing copy buttons as already processed
     const existingCopyButtons = document.querySelectorAll('button[aria-label="Copy"][data-testid="copy-turn-action-button"]');
     console.log(`🔧 Marking ${existingCopyButtons.length} existing copy buttons as processed`);
     existingCopyButtons.forEach(btn => btn.dataset._autoProcessed = '1');
 
     // Add additional delay before starting observer
-    await sleep(500);
-    
+    await sleep(5000);
+
     console.log('👁️ MutationObserver started (watching for copy buttons)');
     obs.observe(document.body, { childList: true, subtree: true });
   };

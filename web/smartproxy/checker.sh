@@ -13,10 +13,17 @@ country="gb"           # two-letter country code
 # asn=""              # ASN number
 
 # Session prefix (p = persistent, r = random)
-session_prefix="assxle33"
+fruits=("apple" "banana" "orange" "grape" "kiwi" "mango" "peach" "cherry" "lemon" "lime" "plum" "berry" "melon" "papaya")
+chars=("a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z")
+random_fruit=${fruits[$RANDOM % ${#fruits[@]}]}
+random_nums=$(printf "%02d" $((RANDOM % 100)))
+random_char1=${chars[$RANDOM % ${#chars[@]}]}
+random_char2=${chars[$RANDOM % ${#chars[@]}]}
+random_char3=${chars[$RANDOM % ${#chars[@]}]}
+session_prefix="${random_fruit}${random_nums}${random_char1}${random_char2}${random_char3}"
 
 # Define number of sessions to test
-num_sessions=33
+num_sessions=10
 
 # IPQS Configuration
 ipqs_api_key="740F92cS9nqqV41L0u7jfbSepB3dff08"
@@ -85,7 +92,8 @@ else
     echo "Location: $country"
 fi
 echo "Session duration: $session_duration minutes"
-echo "Concurrent sessions: $max_concurrent"
+echo "Sessions to test: $num_sessions"
+echo "Max concurrent: $max_concurrent"
 echo "======================================"
 
 echo "Phase 1: Collecting IPs from SmartProxy..."
@@ -96,7 +104,7 @@ test_session() {
     local result_file="$2"
     
     local auth_string=$(build_auth_string "$session")
-    local response=$(curl -s -U "${auth_string}" -x "${proxy_server}" "${base_url}")
+    local response=$(curl -s -x "socks5h://${auth_string}@${proxy_server}" "${base_url}")
     
     if [ $? -eq 0 ]; then
         local ip=$(echo $response | jq -r '.proxy.ip')
