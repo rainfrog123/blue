@@ -86,7 +86,7 @@ echo "Port range: $proxy_port_min-$proxy_port_max (random)"
 get_country_name() {
     local prefix="$1"
     local script_dir="$(dirname "${BASH_SOURCE[0]}")"
-    local country_file="${script_dir}/coutry_list.txt"
+    local country_file="${script_dir}/countries.txt"
     
     if [[ -f "$country_file" ]]; then
         local country_name=$(grep "'prefix': '$prefix'" "$country_file" | head -1 | sed -n "s/.*'location': '\([^']*\)'.*/\1/p")

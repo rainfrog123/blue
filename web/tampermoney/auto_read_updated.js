@@ -12,6 +12,14 @@
 
   console.log('🤖 Auto-read script loaded (copy button approach)');
 
+  // Emergency cleanup function
+  window._autoReadCleanup = () => {
+    document.querySelectorAll('[style*="pointer-events: none"]').forEach(el => {
+      el.style.pointerEvents = '';
+    });
+    console.log('🚑 Emergency cleanup completed - pointer events restored');
+  };
+
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   function simulatePointerSequence(el) {
@@ -99,13 +107,23 @@
     console.log('🖱️ Clicking More actions button');
     let res = simulatePointerSequence(btn);
 
-    // Handle overlays
-    if (res.topAtPoint && res.topAtPoint !== btn) {
-      console.log('🚧 Overlay detected, bypassing');
-      const prev = res.topAtPoint.style.pointerEvents;
-      res.topAtPoint.style.pointerEvents = 'none';
+    // Handle overlays with safe restoration
+    let overlayEl = null;
+    let origVal = null;
+    
+    try {
+      if (res.topAtPoint && res.topAtPoint !== btn) {
+        console.log('🚧 Overlay detected, bypassing');
+        overlayEl = res.topAtPoint;
+        origVal = overlayEl.style.pointerEvents;
+        overlayEl.style.pointerEvents = 'none';
+      }
       res = simulatePointerSequence(btn);
-      res.topAtPoint.style.pointerEvents = prev;
+    } finally {
+      // ALWAYS restore pointer events
+      if (overlayEl && document.contains(overlayEl)) {
+        overlayEl.style.pointerEvents = origVal || '';
+      }
     }
 
     // Keyboard fallback
@@ -140,15 +158,26 @@
     console.log('🎵 Read aloud item found:', !!item);
     if (!item) return false;
 
-    // Click read aloud item
+    // Click read aloud item with safe restoration
     console.log('🎵 Clicking read aloud item');
     let r2 = simulatePointerSequence(item);
-    if (r2.topAtPoint && r2.topAtPoint !== item) {
-      console.log('🚧 Overlay over read aloud, bypassing');
-      const prev = r2.topAtPoint.style.pointerEvents;
-      r2.topAtPoint.style.pointerEvents = 'none';
-      r2 = simulatePointerSequence(item);
-      r2.topAtPoint.style.pointerEvents = prev;
+    
+    let overlayEl2 = null;
+    let origVal2 = null;
+    
+    try {
+      if (r2.topAtPoint && r2.topAtPoint !== item) {
+        console.log('🚧 Overlay over read aloud, bypassing');
+        overlayEl2 = r2.topAtPoint;
+        origVal2 = overlayEl2.style.pointerEvents;
+        overlayEl2.style.pointerEvents = 'none';
+        r2 = simulatePointerSequence(item);
+      }
+    } finally {
+      // ALWAYS restore pointer events
+      if (overlayEl2 && document.contains(overlayEl2)) {
+        overlayEl2.style.pointerEvents = origVal2 || '';
+      }
     }
 
     // Keyboard fallback for menu items

@@ -4,11 +4,11 @@
 $baseUrl = "https://ip.decodo.com/json"
 $username = "user-sp3j58curv"
 $password = "9oOoKQ8+z8pkcUsnv0"
-$proxyHost = "gate.decodo.com"
+$proxyHost = "gb.decodo.com"
 $proxyPortMin = 30001    # Minimum port range
 $proxyPortMax = 40000    # Maximum port range
 $sessionDuration = "60"  # in minutes (1-1440)
-$country = "se"          # two-letter country code
+$country = "gb"          # two-letter country code
 # $city = "Hamburg"      # city name (use underscores for spaces)
 # $state = ""            # state code (for US - use us_state_name format)
 # $continent = ""        # continent code (eu, na, as, sa, af, oc)
@@ -21,7 +21,7 @@ $sessionPrefix = "session"
 $numSessions = 33
 
 # IPQS Configuration
-$ipqsApiKey = "740F92cS9nqqV41L0u7jfbSepB3dff08"
+$ipqsApiKey = "POYGDAv8gXSH6CRWUMqFlTUlyZDhPJt5"
 $ipqsBaseUrl = "https://ipqualityscore.com/api/json/ip/$ipqsApiKey"
 $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
@@ -49,7 +49,7 @@ function Build-AuthString {
         $authString = "$authString-asn-$asn"
     }
     
-    return "$authString`:$password"
+    return $authString
 }
 
 # Get random proxy port within range
@@ -58,21 +58,6 @@ function Get-ProxyPort {
     return Get-Random -Minimum $proxyPortMin -Maximum ($proxyPortMax + 1)
 }
 
-# Get country name from prefix using country_list.txt
-function Get-CountryName {
-    param([string]$Prefix)
-    
-    $scriptDir = Split-Path -Parent $MyInvocation.ScriptName
-    $countryFile = Join-Path $scriptDir "coutry_list.txt"
-    
-    if (Test-Path $countryFile) {
-        $line = Get-Content $countryFile | Where-Object { $_ -match "'prefix': '$Prefix'" } | Select-Object -First 1
-        if ($line -match "'location': '([^']*)'") {
-            return $matches[1]
-        }
-    }
-    return $Prefix
-}
 
 # Initialize collections
 $ipList = @()
@@ -90,11 +75,9 @@ Write-Host "Proxy host: $proxyHost"
 Write-Host "Port range: $proxyPortMin-$proxyPortMax (random)"
 
 if ($city) {
-    $countryFull = Get-CountryName $country
-    Write-Host "Location: $city, $countryFull"
+    Write-Host "Location: $city, $country"
 } else {
-    $countryFull = Get-CountryName $country
-    Write-Host "Location: $countryFull"
+    Write-Host "Location: $country"
 }
 
 Write-Host "Session duration: $sessionDuration minutes"
@@ -128,16 +111,17 @@ $testSessionScript = {
             $authString = "$authString-asn-$Asn"
         }
         
-        return "$authString`:$Password"
+        return $authString
     }
     
     $authString = Build-AuthString -SessionNum $SessionNum -Username $Username -SessionDuration $SessionDuration -Country $Country -City $City -State $State -Continent $Continent -Asn $Asn
     $proxyPort = Get-Random -Minimum $ProxyPortMin -Maximum ($ProxyPortMax + 1)
-    $proxyUrl = "http://$authString@$ProxyHost`:$proxyPort"
+    $proxyUrl = "https://$ProxyHost`:$proxyPort"
+    $credential = New-Object PSCredential($authString, (ConvertTo-SecureString $Password -AsPlainText -Force))
     $sessionName = "$SessionPrefix$SessionNum"
     
     try {
-        $response = Invoke-RestMethod -Uri $BaseUrl -Proxy $proxyUrl -TimeoutSec 30
+        $response = Invoke-RestMethod -Uri $BaseUrl -Proxy $proxyUrl -ProxyCredential $credential -TimeoutSec 30
         
         if ($response.proxy.ip) {
             return @{
@@ -200,8 +184,7 @@ foreach ($result in $results) {
             $ipList += $result.IP
             $cityList += $result.City
             $countryList += $result.CountryName
-            $cleanCmd = $result.AuthString -replace '"', ''
-            $proxyLinks[$result.IP] = "https://$cleanCmd@$proxyHost`:$($result.ProxyPort)"
+            $proxyLinks[$result.IP] = "https://$($result.AuthString):$password@$proxyHost`:$($result.ProxyPort)"
             $sessionToIp[$result.SessionName] = $result.IP
         }
     } else {
