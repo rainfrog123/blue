@@ -2,8 +2,8 @@
 
 # SmartProxy Configuration
 base_url="https://ip.decodo.com/json"
-username="user-sp19qgy7m9"
-password="+26iSboeQ0wUyx4qEw"
+username="user-sp3j58curv"
+password="9oOoKQ8+z8pkcUsnv0"
 proxy_server="gate.decodo.com:7000"
 session_duration="60"  # in minutes (1-1440)
 country="gb"           # two-letter country code
