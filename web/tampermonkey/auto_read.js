@@ -110,7 +110,7 @@
     // Handle overlays with safe restoration
     let overlayEl = null;
     let origVal = null;
-    
+
     try {
       if (res.topAtPoint && res.topAtPoint !== btn) {
         console.log('🚧 Overlay detected, bypassing');
@@ -161,10 +161,10 @@
     // Click read aloud item with safe restoration
     console.log('🎵 Clicking read aloud item');
     let r2 = simulatePointerSequence(item);
-    
+
     let overlayEl2 = null;
     let origVal2 = null;
-    
+
     try {
       if (r2.topAtPoint && r2.topAtPoint !== item) {
         console.log('🚧 Overlay over read aloud, bypassing');
