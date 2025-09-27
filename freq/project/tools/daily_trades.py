@@ -387,7 +387,7 @@ def main():
     
     manager = BinanceDailyTradesManager()
     
-    start_date = datetime(2025, 5, 1)
+    start_date = datetime(2025, 9, 1)
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     
