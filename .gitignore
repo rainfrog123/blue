@@ -16,7 +16,9 @@ user_data/plot/
 user_data/ml_datasets/
 
 # TradingView collector data
-freq/project/collector/tradingview_collector/data/
+freq/project/tools/collector/tradingview_collector/data/
+*.db
+*.log
 
 # AWS/Cloud provider output files
 linux/vps/aws/nuke-output*.txt
