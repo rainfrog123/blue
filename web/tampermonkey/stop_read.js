@@ -27,7 +27,7 @@
     const cx = r.left + r.width / 2;
     const cy = r.top + r.height / 2;
 
-    el.scrollIntoView({ block: 'center', inline: 'center' });
+    el.scrollIntoView({ block: 'nearest', inline: 'center' });
     // Scroll down to position between center and end
     window.scrollBy(0, 200);
     try { el.focus({ preventScroll: true }); } catch {}
