@@ -38,5 +38,6 @@ __pycache__/
 # Temporary files
 *.tmp
 *.temp
-.DS_Storeweb/patchright/test/
+.DS_Store
+web/patchright/test/
 web/patchright/test_report.json
