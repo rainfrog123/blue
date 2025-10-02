@@ -7,6 +7,9 @@ import json
 from datetime import datetime
 from patchright.async_api import async_playwright
 
+# Configuration
+NUM_PORTS_TO_TEST = 63  # Change this number to test more/fewer ports
+
 async def test_proxy_port(port):
     """Test a specific proxy port and return the result"""
     try:
@@ -80,7 +83,7 @@ async def test_proxy_port(port):
         }
 
 async def test_all_proxies():
-    """Test 13 randomly selected proxy ports from 30001 to 49999 concurrently"""
+    """Test randomly selected proxy ports from 30001 to 49999 concurrently"""
     
     # Clear and recreate test directory for fresh screenshots
     test_dir = "test"
@@ -97,11 +100,11 @@ async def test_all_proxies():
         os.remove(report_path)
         print(f"🗑️  Cleared existing {report_path}")
     
-    # Randomly select 13 ports from the range 30001-49999
+    # Randomly select ports from the range 30001-49999
     all_ports = list(range(30001, 50000))  # Exclude 50000 and above
-    selected_ports = sorted(random.sample(all_ports, 13))
+    selected_ports = sorted(random.sample(all_ports, NUM_PORTS_TO_TEST))
     
-    print(f"\n🚀 Testing 13 random proxy ports from 30001-49999 on gb.decodo.com...")
+    print(f"\n🚀 Testing {NUM_PORTS_TO_TEST} random proxy ports from 30001-49999 on gb.decodo.com...")
     print(f"Selected ports: {selected_ports}")
     print("="*80)
     print("Running all tests concurrently...")
@@ -118,6 +121,10 @@ async def test_all_proxies():
     print("="*80)
     
     processed_results = []
+    blocked_ports = []
+    error_ports = []
+    unblocked_ports = []
+    
     for i, result in enumerate(results):
         port = selected_ports[i]
         if isinstance(result, Exception):
@@ -134,15 +141,28 @@ async def test_all_proxies():
         
         processed_results.append(result)
         
-        # Display result
+        # Categorize results
         if result['success']:
-            screenshot_info = f" - Screenshot: {result['screenshot_path']}"
             if result['blocked']:
-                print(f"Port {result['port']}: 🚫 BLOCKED ({', '.join(result['block_reasons'])}){screenshot_info}")
+                blocked_ports.append(result)
             else:
-                print(f"Port {result['port']}: ✅ SUCCESS ({result['search_results_count']} results){screenshot_info}")
+                unblocked_ports.append(result)
         else:
-            print(f"Port {result['port']}: ❌ ERROR ({result.get('error', 'Unknown error')})")
+            error_ports.append(result)
+    
+    # Display unblocked ports (detailed)
+    for result in unblocked_ports:
+        print(f"Port {result['port']}: ✅ SUCCESS ({result['search_results_count']} results) - Screenshot: {result['screenshot_path']}")
+    
+    # Display blocked ports (concise)
+    if blocked_ports:
+        blocked_port_list = [str(r['port']) for r in blocked_ports]
+        print(f"Ports {', '.join(blocked_port_list)}: 🚫 BLOCKED ({len(blocked_ports)} total)")
+    
+    # Display error ports (concise)
+    if error_ports:
+        error_port_list = [str(r['port']) for r in error_ports]
+        print(f"Ports {', '.join(error_port_list)}: ❌ ERROR ({len(error_ports)} total)")
     
     results = processed_results
     print("\n" + "="*80)
@@ -151,9 +171,9 @@ async def test_all_proxies():
     
     # Count results
     successful_tests = [r for r in results if r['success']]
-    blocked_count = len([r for r in successful_tests if r['blocked']])
-    unblocked_count = len([r for r in successful_tests if not r['blocked']])
-    error_count = len([r for r in results if not r['success']])
+    blocked_count = len(blocked_ports)
+    unblocked_count = len(unblocked_ports)
+    error_count = len(error_ports)
     
     print(f"Total ports tested: {len(results)}")
     print(f"✅ Successful connections: {len(successful_tests)}")
@@ -161,27 +181,22 @@ async def test_all_proxies():
     print(f"🟢 Unblocked: {unblocked_count}" + (" ⭐ WORKING PROXIES FOUND!" if unblocked_count > 0 else ""))
     print(f"❌ Connection errors: {error_count}")
     
-    # Show detailed results for blocked vs unblocked
+    # Show detailed results for blocked vs unblocked (concise)
     if blocked_count > 0:
-        print(f"\n🚫 BLOCKED PORTS ({blocked_count}):")
-        for result in successful_tests:
-            if result['blocked']:
-                print(f"   Port {result['port']}: {', '.join(result['block_reasons'])}")
+        blocked_port_list = [str(r['port']) for r in blocked_ports]
+        print(f"\n🚫 BLOCKED PORTS ({blocked_count}): {', '.join(blocked_port_list)}")
     
     if unblocked_count > 0:
         print(f"\n🟢 UNBLOCKED PORTS ({unblocked_count}) ⭐:")
-        for result in successful_tests:
-            if not result['blocked']:
-                print(f"   ✅ Port {result['port']}: {result['search_results_count']} search results found")
-                print(f"      Screenshot: {result['screenshot_path']}")
+        for result in unblocked_ports:
+            print(f"   ✅ Port {result['port']}: {result['search_results_count']} search results found")
+            print(f"      Screenshot: {result['screenshot_path']}")
     else:
         print(f"\n🟢 UNBLOCKED PORTS: None found")
     
     if error_count > 0:
-        print(f"\n❌ ERROR PORTS ({error_count}):")
-        for result in results:
-            if not result['success']:
-                print(f"   Port {result['port']}: {result.get('error', 'Unknown error')}")
+        error_port_list = [str(r['port']) for r in error_ports]
+        print(f"\n❌ ERROR PORTS ({error_count}): {', '.join(error_port_list)}")
     
     # Final conclusion
     print("\n" + "="*80)
@@ -206,10 +221,7 @@ async def test_all_proxies():
         print(f"\n📷 SCREENSHOTS: {successful_screenshots} screenshots saved in ./test/ directory")
         print("   Files named: port_XXXXX_screenshot.png")
     
-    # Get unblocked and blocked ports for concise reporting
-    unblocked_ports = [r for r in successful_tests if not r['blocked']]
-    blocked_ports = [r for r in successful_tests if r['blocked']]
-    error_ports = [r for r in results if not r['success']]
+    # Use the already categorized results
     
     # Generate concise JSON report
     report_data = {

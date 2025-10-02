@@ -55,3 +55,4 @@ alias tampermonkey='cd /allah/blue/web/tampermonkey'
 export DISPLAY=:10
 export PATH="$HOME/development/flutter/bin:$PATH"export PATH="$HOME/.local/bin:$PATH"
 alias ipc="/allah/blue/web/proxy/decodo/ip_checker.sh"
+alias pr='cd /allah/blue/web/patchright'

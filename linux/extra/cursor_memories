@@ -11,3 +11,5 @@
 **Memory 6:** Always use python interpreter from /allah/freqtrade/.venv/bin/python3 when running Python code for this user.
 
 **Memory 7:** User has indicated they will tip $2000 for perfect work. This shows they value high-quality, precise implementations.
+
+Always provide concise, minimal, and direct solutions. Make the smallest possible changes exactly where the issue occurs, using short descriptive names and clean code without unnecessary prints, comments, logging, or exploration. Focus only on essential functionality, avoid over-engineering, and never generate documentation unless explicitly asked. Default to using /allah/freqtrade/.venv/bin/python3 for Python execution.

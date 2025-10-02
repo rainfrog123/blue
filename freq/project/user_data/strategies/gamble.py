@@ -25,27 +25,6 @@ class gamble(IStrategy):
     tema_length = 50
     atr_length = 14
 
-    @informative('1m')
-    def populate_indicators_1m(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        dataframe['tema'] = ta.TEMA(dataframe['close'], timeperiod=self.tema_length)
-        dataframe['tema_prev'] = dataframe['tema'].shift(1)
-        dataframe['tema_trend'] = np.where(dataframe['tema'] > dataframe['tema_prev'], 1, -1)
-        return dataframe
-
-    def custom_exit(self, pair: str, trade: Trade, current_time: datetime, current_rate: float, current_profit: float, **kwargs):
-        if trade.has_open_orders:
-            return None
-        if trade.nr_of_successful_exits == 0 and trade.get_custom_data("tp_placed") != True:
-            trade.set_custom_data(key="tp_placed", value=True)
-            return "place_tp_now"
-        return None
-
-    def custom_exit_price(self, pair: str, trade: Trade, current_time: datetime, proposed_rate: float, current_profit: float, exit_tag: str | None, **kwargs) -> float:
-        """Set custom exit price - 0.2% profit target."""
-        risk_factor = 0.002
-        target = trade.open_rate * (1 - risk_factor) if trade.is_short else trade.open_rate * (1 + risk_factor)
-        return target
-
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """Calculate indicators. 1m data merged via @informative."""
         dataframe['tema'] = ta.TEMA(dataframe['close'], timeperiod=self.tema_length)
@@ -69,6 +48,27 @@ class gamble(IStrategy):
         dataframe.loc[(dataframe['trend_flip'] & (dataframe['trend'] == 'UP') & dataframe['random_entry'] & tema_1m_filter_long), 'enter_long'] = 1
         dataframe.loc[(dataframe['trend_flip'] & (dataframe['trend'] == 'DOWN') & dataframe['random_entry'] & tema_1m_filter_short), 'enter_short'] = 1
         return dataframe
+
+    @informative('1m')
+    def populate_indicators_1m(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
+        dataframe['tema'] = ta.TEMA(dataframe['close'], timeperiod=self.tema_length)
+        dataframe['tema_prev'] = dataframe['tema'].shift(1)
+        dataframe['tema_trend'] = np.where(dataframe['tema'] > dataframe['tema_prev'], 1, -1)
+        return dataframe
+
+    def custom_exit(self, pair: str, trade: Trade, current_time: datetime, current_rate: float, current_profit: float, **kwargs):
+        if trade.has_open_orders:
+            return None
+        if trade.nr_of_successful_exits == 0 and trade.get_custom_data("tp_placed") != True:
+            trade.set_custom_data(key="tp_placed", value=True)
+            return "place_tp_now"
+        return None
+
+    def custom_exit_price(self, pair: str, trade: Trade, current_time: datetime, proposed_rate: float, current_profit: float, exit_tag: str | None, **kwargs) -> float:
+        """Set custom exit price - 0.2% profit target."""
+        risk_factor = 0.002
+        target = trade.open_rate * (1 - risk_factor) if trade.is_short else trade.open_rate * (1 + risk_factor)
+        return target
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """Exit signals - relies on ROI and stoploss."""
