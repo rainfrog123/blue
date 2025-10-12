@@ -1,5 +1,5 @@
 #!/bin/bash
-
+pip install fastparquet matplotlib
 cd /allah/blue/freq/project/tools
 
 /allah/freqtrade/.venv/bin/python3 daily_trades.py
