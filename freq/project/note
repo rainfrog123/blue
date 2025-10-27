@@ -8,11 +8,11 @@ freqtrade backtesting --strategy gamble --userdir /allah/blue/freq/project/user_
 
 freqtrade backtesting --strategy gamble_test --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 1756684800-1756688400 --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 100 --fee 0
 
-freqtrade backtesting --strategy ml_pre --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/ml_pre.json --timerange 20250901- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+freqtrade backtesting --strategy atr_tp --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 1761501600-1761505200 --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
 
 freqtrade trade --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json  
 
-freqtrade webserver --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json --datadir /allah/freqtrade/user_data/data/binance
+freqtrade webserver --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --datadir /allah/freqtrade/user_data/data/binance
 
 import pandas as pd
 pd.set_option("display.max_columns", None)

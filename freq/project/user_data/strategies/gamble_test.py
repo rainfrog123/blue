@@ -24,7 +24,7 @@ class gamble_test(IStrategy):
     use_custom_exit = True
     tema_length = 50
     atr_length = 14
-
+    
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """Calculate indicators. 1m data merged via @informative."""
         dataframe['tema'] = ta.TEMA(dataframe['close'], timeperiod=self.tema_length)

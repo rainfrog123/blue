@@ -1,8 +1,8 @@
 {
-    "max_open_trades": 1,
+    "max_open_trades": -1,
     "stake_currency": "USDT",
-    "stake_amount": "unlimited",
-    "export_ml_dataset": false,
+    "stake_amount": 100,
+    "export_ml_dataset": true,
     "tradable_balance_ratio": 1,
     "fiat_display_currency": "USD",
     "dry_run": false,
