@@ -10,6 +10,11 @@ freqtrade backtesting --strategy gamble_test --userdir /allah/blue/freq/project/
 
 freqtrade backtesting --strategy atr_tp --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 1761501600-1761505200 --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
 
+freqtrade backtesting --strategy atr_tp --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 20251001- --datadir /allah/freqtrade/user_data/data/binance --cache none --starting-balance 10000 --eps --fee 0
+
+# Hyperopt to find best ATR SL multiplier (k), TP is auto 2x SL
+freqtrade hyperopt --strategy atr_tp --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --timerange 1761501600-1761505200 --datadir /allah/freqtrade/user_data/data/binance --hyperopt-loss SharpeHyperOptLossDaily --spaces sell -e 100 --fee 0
+
 freqtrade trade --strategy gamble --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble.json  
 
 freqtrade webserver --userdir /allah/blue/freq/project/user_data --config /allah/blue/freq/project/user_data/config/gamble_test.json --datadir /allah/freqtrade/user_data/data/binance

@@ -1,4 +1,19 @@
 #!/bin/bash
+cd /allah/freqtrade
+
+# Save the current branch
+current_branch=$(git branch --show-current)
+
+# Get all local branches and run setup for each
+for branch in $(git branch | sed 's/^[* ]*//'); do
+    echo "Processing branch: $branch"
+    git checkout "$branch"
+    # Pipe "Y" to make setup.sh non-interactive (install dev dependencies which includes everything)
+    echo "Y" | ./setup.sh -u
+done
+
+# Return to the original branch
+git checkout "$current_branch"
 pip install fastparquet matplotlib
 cd /allah/blue/freq/project/tools
 
