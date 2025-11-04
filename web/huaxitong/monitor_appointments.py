@@ -20,80 +20,32 @@ class AppointmentMonitor:
             "Client-Version": "7.1.1",
             "Accept-Encoding": "gzip, deflate, br",
             "Accept-Language": "en-GB;q=1",
-            "token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzU1NDQ2NDk0LCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3NTgwMzg0OTR9.aCOfJR9zPZfigeMmjRbCUmypadibO-e2_yXwhOspSzc***HXGYAPP",
-            "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzU1NDQ2NDk0LCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3NTgwMzg0OTR9.aCOfJR9zPZfigeMmjRbCUmypadibO-e2_yXwhOspSzc***HXGYAPP",
+            "token": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzYyMjUyMDE4LCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3NjQ4NDQwMTh9.uJjbbfjVPJ9s-gxmSyE94sPkiCoUMRm500ZNACnIov4***HXGYAPP",
+            "accessToken": "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzYyMjUyMDE4LCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3NjQ4NDQwMTh9.uJjbbfjVPJ9s-gxmSyE94sPkiCoUMRm500ZNACnIov4***HXGYAPP",
             "Content-Type": "application/json",
             "User-Agent": "hua yi tong/7.1.1 (iPhone; iOS 15.7.1; Scale/3.00)",
             "Connection": "keep-alive",
-            "Cookie": "acw_tc=0a472f9217554465078907866e6c5fce8d73d0fa07e8972a700e4b3198e7df"
+            "Cookie": "acw_tc=1a0c39d517622521666711325e1d4a38b46413dac72c7dd846be940d0c3d7e"
         }
         
-        # Multiple doctors to monitor
+        # Doctor to monitor
         self.doctors = [
             {
-                "name": "戴晴晴 (耳鼻喉眩晕专科)",
+                "name": "唐新 (肩肘运动医学/微创)",
                 "payload": {
                     "hospitalCode": "HID0101",
                     "deptCode": "",
-                    "doctorId": "4028b881646e3d8701646e3d876301f6",
+                    "doctorId": "4028b88164b5af330164b5af33e10001",
                     "channelCode": "PATIENT_IOS",
                     "appCode": "HXGYAPP",
                     "hospitalAreaCode": "",
                     "tabAreaCode": "",
                     "cardId": "",
-                    "encrypt": "0pBD0zoaW/BZcze33xLcSg==",
+                    "encrypt": "enKQHUmF2Yeelk1t6dArBg==",
                     "deptCategoryCode": "",
                     "appointmentType": "1"
                 }
-            },
-            # {
-            #     "name": "王茹 (美容烧伤整形-四级专家)",
-            #     "payload": {
-            #         "hospitalCode": "HID0101",
-            #         "deptCode": "",
-            #         "doctorId": "4028b881646e3d8701646e3d871f0071",
-            #         "channelCode": "PATIENT_IOS",
-            #         "appCode": "HXGYAPP",
-            #         "hospitalAreaCode": "",
-            #         "tabAreaCode": "",
-            #         "cardId": "",
-            #         "encrypt": "FU+k39GWflNAKvkCDVD+oQ==",
-            #         "deptCategoryCode": "",
-            #         "appointmentType": "1"
-            #     }
-            # },
-            # {
-            #     "name": "李正勇 (美容烧伤整形-一级专家)",
-            #     "payload": {
-            #         "hospitalCode": "HID0101",
-            #         "deptCode": "",
-            #         "doctorId": "4028b082715335fa017153530154008d",
-            #         "channelCode": "PATIENT_IOS",
-            #         "appCode": "HXGYAPP",
-            #         "hospitalAreaCode": "",
-            #         "tabAreaCode": "",
-            #         "cardId": "",
-            #         "encrypt": "FU+k39GWflNAKvkCDVD+oQ==",
-            #         "deptCategoryCode": "",
-            #         "appointmentType": "1"
-            #     }
-            # }
-            # {
-            #     "name": "伍俊良 (美容烧伤整形-四级专家)",
-            #     "payload": {
-            #         "hospitalCode": "HID0101",
-            #         "deptCode": "",
-            #         "doctorId": "4028b881646e3d8701646e3d87190048",
-            #         "channelCode": "PATIENT_IOS",
-            #         "appCode": "HXGYAPP",
-            #         "hospitalAreaCode": "",
-            #         "tabAreaCode": "",
-            #         "cardId": "",
-            #         "encrypt": "jdMJ/J+qvttOzzmkISTAoQ==",
-            #         "deptCategoryCode": "",
-            #         "appointmentType": "1"
-            #     }
-            # }
+            }
         ]
         
         
@@ -189,17 +141,9 @@ class AppointmentMonitor:
             
             response = requests.post(self.url, headers=headers, json=payload, timeout=30)
             if response.status_code == 200:
-                response_data = response.json()
-                # Debug: Print response structure
-                print(f"DEBUG - {doctor_name} API Response Code: {response_data.get('code')}")
-                print(f"DEBUG - {doctor_name} API Response Message: {response_data.get('msg')}")
-                if response_data.get('data'):
-                    source_items = response_data.get('data', {}).get('sourceItemsRespVos', [])
-                    print(f"DEBUG - {doctor_name} Found {len(source_items) if source_items else 0} source items")
-                return response_data
+                return response.json()
             else:
-                print(f"Error for {doctor_name}: HTTP {response.status_code}")
-                print(f"DEBUG - Response text: {response.text[:200]}...")
+                print(f"❌ HTTP {response.status_code}: {response.text[:100]}...")
                 return None
         except requests.exceptions.RequestException as e:
             print(f"Request error for {doctor_name}: {e}")
@@ -215,22 +159,19 @@ class AppointmentMonitor:
             return f"时段{schedule_range}"
     
     def extract_remaining_numbers(self, data: Dict[str, Any], doctor_name: str) -> List[Dict[str, Any]]:
-        """Extract all remainingNum entries from the response"""
-        remaining_entries = []
-        seen_ids = set()  # Track unique schedule IDs to avoid duplicates
-        
+        """Extract all appointment entries from the response"""
         if not data or data.get("code") != "1":
-            return remaining_entries
+            return []
             
-        response_data = data.get("data", {})
+        entries = []
+        seen_ids = set()
         
-        def add_entry_if_unique(item):
-            """Add entry only if we haven't seen this schedule ID before"""
+        def add_entry(item):
             schedule_id = item.get("sysScheduleId")
             if schedule_id and schedule_id not in seen_ids:
                 seen_ids.add(schedule_id)
                 schedule_range = item.get("scheduleRange", 0)
-                remaining_entries.append({
+                entries.append({
                     "id": schedule_id,
                     "scheduleDate": item.get("scheduleDate"),
                     "scheduleRange": schedule_range,
@@ -241,75 +182,55 @@ class AppointmentMonitor:
                     "deptName": item.get("deptName"),
                     "hospitalAreaName": item.get("hospitalAreaName"),
                     "dayDesc": item.get("dayDesc"),
-                    "admLocation": item.get("admLocation")
+                    "admLocation": item.get("admLocation"),
+                    "regFee": item.get("regFee", 0),
+                    "serviceFee": item.get("serviceFee", 0),
+                    "regTitelName": item.get("regTitelName", "")
                 })
         
-        # Check sourceItemsRespVos
-        source_items = response_data.get("sourceItemsRespVos", [])
-        if source_items is None:
-            source_items = []
-        for item in source_items:
-            # Filter for 华西坝院区 only for beauty doctors (王茹, 李正勇, 伍俊良)
-            if ("王茹" in doctor_name or "李正勇" in doctor_name or "伍俊良" in doctor_name) and item.get("hospitalAreaCode") != "HID0101":
-                continue
-            add_entry_if_unique(item)
+        response_data = data.get("data", {})
         
-        # Check nested sourceItems structure  
-        source_items_nested = response_data.get("sourceItems", [])
-        if source_items_nested is None:
-            source_items_nested = []
-        for area in source_items_nested:
-            if area is None:
-                continue
-            # Filter for 华西坝院区 only for beauty doctors (王茹, 李正勇, 伍俊良)
-            if ("王茹" in doctor_name or "李正勇" in doctor_name or "伍俊良" in doctor_name) and area.get("areaCode") != "HID0101":
-                continue
-            area_items = area.get("sourceItemsRespVos", [])
-            if area_items is None:
-                area_items = []
-            for item in area_items:
-                add_entry_if_unique(item)
+        # Process flat list
+        for item in response_data.get("sourceItemsRespVos", []) or []:
+            add_entry(item)
         
-        return remaining_entries
+        # Process nested structure
+        for area in response_data.get("sourceItems", []) or []:
+            if area:
+                for item in area.get("sourceItemsRespVos", []) or []:
+                    add_entry(item)
+        
+        return entries
     
     def check_for_changes(self, current_entries: List[Dict[str, Any]], doctor_name: str) -> List[Dict[str, Any]]:
-        """Check for appointments that changed in availableCount (0→positive) or status (2→any)"""
+        """Check for appointments that changed: availableCount (0→positive) or status (0/2约满/3停诊→1可约)"""
         changes = []
         
         for entry in current_entries:
             entry_id = entry["id"]
-            current_available = entry["availableCount"]
-            current_status = entry["status"]
-            
-            change_detected = False
             changed_fields = []
             
-            # Check availableCount changes from 0 to positive
-            available_key = f"{doctor_name}_{entry_id}_availableCount"
-            previous_available = self.previous_remaining.get(available_key, 0)
+            # Track availableCount: 0 → positive
+            avail_key = f"{doctor_name}_{entry_id}_avail"
+            prev_avail = self.previous_remaining.get(avail_key, 0)
+            curr_avail = entry["availableCount"]
             
-            if previous_available == 0 and current_available > 0:
-                change_detected = True
-                changed_fields.append(f"availableCount: {previous_available} → {current_available}")
+            if prev_avail == 0 and curr_avail > 0:
+                changed_fields.append(f"availableCount: {prev_avail} → {curr_avail}")
+            self.previous_remaining[avail_key] = curr_avail
             
-            # Update availableCount tracking
-            self.previous_remaining[available_key] = current_available
-            
-            # Check status changes FROM 2 to any other value
+            # Track status: any (0,2约满,3停诊) → 1可约
             status_key = f"{doctor_name}_{entry_id}_status"
-            previous_status = self.previous_remaining.get(status_key, 2)  # Default to 2 for first time
+            prev_status = self.previous_remaining.get(status_key, -1)
+            curr_status = entry["status"]
             
-            if previous_status == 2 and current_status != 2:
-                change_detected = True
-                changed_fields.append(f"status: {previous_status} → {current_status}")
+            if prev_status >= 0 and curr_status == 1 and prev_status != 1:
+                changed_fields.append(f"status: {prev_status} → {curr_status}")
+            self.previous_remaining[status_key] = curr_status
             
-            # Update status tracking
-            self.previous_remaining[status_key] = current_status
-            
-            # If any change detected, add to changes dict (only one entry per appointment slot)
-            if change_detected:
+            # Add to changes if anything changed
+            if changed_fields:
                 change_info = entry.copy()
-                change_info["changed_fields"] = changed_fields
                 change_info["changes_summary"] = ", ".join(changed_fields)
                 changes.append(change_info)
         
@@ -333,11 +254,18 @@ class AppointmentMonitor:
         for doctor_name, doctor_changes in changes_by_doctor.items():
             print(f"\n  👨‍⚕️ {doctor_name}:")
             for change in doctor_changes:
+                reg_fee = change.get("regFee", 0)
+                service_fee = change.get("serviceFee", 0)
+                total_fee = reg_fee + service_fee
+                reg_title = change.get("regTitelName", "")
+                
                 print(f"    Slot {slot_counter}:")
                 print(f"      📅 Date: {change['scheduleDate']} {change['timePeriod']} ({change['dayDesc']})")
                 print(f"      🏥 Department: {change['deptName']}")
                 print(f"      📍 Location: {change['admLocation']}")
                 print(f"      🏢 Hospital Area: {change['hospitalAreaName']}")
+                print(f"      💰 Fee: ¥{reg_fee} + ¥{service_fee} = ¥{total_fee} ({reg_title})")
+                print(f"      🔢 Available: {change.get('availableCount', 0)} slots")
                 print(f"      🔄 Changes: {change['changes_summary']}")
                 slot_counter += 1
         
@@ -395,15 +323,12 @@ class AppointmentMonitor:
                 ])
                 
                 for change in doctor_changes:
-                    # Determine fee based on doctor
-                    if "戴晴晴" in doctor_name:
-                        fee_info = "挂号费17元 + 服务费2元"
-                    elif "李正勇" in doctor_name:
-                        fee_info = "挂号费90元 + 服务费2元"
-                    elif "王茹" in doctor_name or "伍俊良" in doctor_name:
-                        fee_info = "挂号费20元 + 服务费2元"
-                    else:
-                        fee_info = "挂号费17元 + 服务费2元"
+                    # Get actual fee information from the data
+                    reg_fee = change.get("regFee", 0)
+                    service_fee = change.get("serviceFee", 0)
+                    total_fee = reg_fee + service_fee
+                    reg_title = change.get("regTitelName", "")
+                    fee_info = f"挂号费{reg_fee}元 + 服务费{service_fee}元 = 总计{total_fee}元 ({reg_title})"
                     
                     desp_lines.extend([
                         f"",
@@ -412,8 +337,9 @@ class AppointmentMonitor:
                         f"- 🏥 科室: {change['deptName']}",
                         f"- 📍 地点: {change['admLocation']}",
                         f"- 🏢 院区: {change['hospitalAreaName']}",
-                        f"- 🔄 变化: {change['changes_summary']}",
-                        f"- 💰 费用: {fee_info}"
+                        f"- 💰 费用: {fee_info}",
+                        f"- 🔢 可预约数: {change.get('availableCount', 0)}",
+                        f"- 🔄 变化: {change['changes_summary']}"
                     ])
                     slot_counter += 1
             
@@ -456,14 +382,11 @@ class AppointmentMonitor:
     def run_monitor(self):
         """Main monitoring loop"""
         print(f"🔍 Starting appointment monitor...")
-        print(f"⏰ Normal: 10-20s intervals | Peak: 5s intervals (7:59-8:04 AM/PM 中国时间)")
-        print(f"🎯 Monitoring {len(self.doctors)} doctors:")
-        for i, doctor in enumerate(self.doctors, 1):
-            print(f"   {i}. {doctor['name']}")
+        print(f"⏰ Normal: 15-25s intervals | Peak: 5s intervals (7:59-8:04 AM/PM 中国时间)")
+        print(f"🎯 Monitoring: 唐新 (肩肘运动医学/微创)")
         print(f"🛡️ Anti-detection: Dynamic timestamps, randomized intervals, rotating User-Agents")
         print(f"📱 WeChat notifications: Enabled via Server酱")
-        print(f"🔍 Monitoring: availableCount (0→positive), status (2→any), time periods (上午/下午)")
-        print(f"🏥 戴晴晴: Monitoring ENT Vertigo Specialist")
+        print(f"🔍 Tracking: availableCount (0→positive), status (0/2约满/3停诊→1可约), time periods (上午/下午)")
         print("="*60)
         
         iteration = 0
@@ -472,63 +395,53 @@ class AppointmentMonitor:
                 iteration += 1
                 timestamp = datetime.now(self.cst_tz).strftime("%Y-%m-%d %H:%M:%S CST")
                 
-                print(f"[{timestamp}] Check #{iteration} - Checking {len(self.doctors)} doctors...")
+                print(f"[{timestamp}] Check #{iteration}")
                 
                 all_changes = []
                 all_entries = []
                 
-                # Check each doctor
-                for doctor in self.doctors:
-                    doctor_name = doctor["name"]
-                    doctor_payload = doctor["payload"]
-                    
-                    print(f"[{timestamp}] Checking {doctor_name}...")
-                    
-                    # Send request for this doctor
-                    response_data = self.send_request(doctor_payload, doctor_name)
-                    
-                    if response_data:
-                        # Extract remaining numbers for this doctor
-                        current_entries = self.extract_remaining_numbers(response_data, doctor_name)
-                        
-                        if current_entries:
-                            # Add doctor name to entries for logging
-                            for entry in current_entries:
-                                entry["doctor_name"] = doctor_name
-                            all_entries.extend(current_entries)
-                            
-                            # Check for changes for this doctor
-                            changes = self.check_for_changes(current_entries, doctor_name)
-                            if changes:
-                                # Add doctor name to changes
-                                for change in changes:
-                                    change["doctor_name"] = doctor_name
-                                all_changes.extend(changes)
-                                
-                            # Show summary for this doctor
-                            total_available = sum(e["availableCount"] for e in current_entries)
-                            total_active_status = sum(1 for e in current_entries if e["status"] == 1)
-                            print(f"[{timestamp}] {doctor_name}: {total_available} available, {total_active_status} active")
-                        else:
-                            print(f"[{timestamp}] {doctor_name}: No appointment data found")
-                    else:
-                        print(f"[{timestamp}] {doctor_name}: Failed to get response")
-                    
-                    # Small delay between doctors
-                    time.sleep(random.uniform(1, 3))
+                # Check doctor
+                doctor = self.doctors[0]
+                doctor_name = doctor["name"]
+                response_data = self.send_request(doctor["payload"], doctor_name)
                 
-                # Notify if any changes found                   
-                if all_changes:
-                    # Notify about all changes
-                    self.notify_user(all_changes)
-                else:
-                    # Show overall summary
-                    total_available = sum(e["availableCount"] for e in all_entries)
-                    total_active_status = sum(1 for e in all_entries if e["status"] == 1)
-                    print(f"[{timestamp}] Overall: No new slots. Total available: {total_available}, active status: {total_active_status}")
+                if response_data:
+                    current_entries = self.extract_remaining_numbers(response_data, doctor_name)
                     
-                if not all_entries:
-                    print(f"[{timestamp}] No appointment data found for any doctor")
+                    if current_entries:
+                        # Add doctor name to entries
+                        for entry in current_entries:
+                            entry["doctor_name"] = doctor_name
+                        all_entries = current_entries
+                        
+                        # Check for changes
+                        changes = self.check_for_changes(current_entries, doctor_name)
+                        if changes:
+                            for change in changes:
+                                change["doctor_name"] = doctor_name
+                            all_changes = changes
+                        
+                        # Display summary
+                        total_avail = sum(e["availableCount"] for e in current_entries)
+                        status_1_count = sum(1 for e in current_entries if e["status"] == 1)
+                        print(f"✓ {total_avail} slots, {status_1_count} bookable (status=1)")
+                        
+                        # Show slot details
+                        for entry in current_entries:
+                            status_map = {1: "可约", 2: "约满", 3: "停诊"}
+                            status_label = status_map.get(entry["status"], f"状态{entry['status']}")
+                            fee = entry["regFee"] + entry["serviceFee"]
+                            print(f"  • {entry['scheduleDate']} {entry['timePeriod']} | "
+                                  f"{entry['hospitalAreaName']} | {entry['deptName']} | "
+                                  f"可约:{entry['availableCount']} | ¥{fee} | {status_label}")
+                    else:
+                        print(f"⚠ No appointment data")
+                else:
+                    print(f"❌ Failed to get response")
+                
+                # Notify if changes found
+                if all_changes:
+                    self.notify_user(all_changes)
                 
                 # Get appropriate wait time based on current time
                 wait_time = self.get_wait_time()
