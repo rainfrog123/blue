@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Deactivate any active virtual environment
+unset VIRTUAL_ENV
+
 cd /allah/freqtrade
 
 # Save the current branch
