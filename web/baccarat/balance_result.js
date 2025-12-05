@@ -24,18 +24,7 @@
         INIT_DELAY: 1000,
         DEBUG: true,
 
-        // Selectors (prioritized arrays - first match wins)
         SELECTORS: {
-            balanceLabel: [
-                '[data-testid="wallet-mobile-label"]',
-                '.Eh_Ej',
-                'div'
-            ],
-            balanceValue: [
-                '[data-testid="wallet-mobile-balance-value"] span',
-                '.Eh_Ek span',
-                'span[dir="ltr"]'
-            ],
             resultLabel: ['.km_kp'],
             resultValue: ['.km_ky'],
             roundNumber: ['.jV_jW', '.ju_jv', '[class*="round"]']
@@ -78,31 +67,12 @@
         lastBalance: null,
 
         findBalanceElement() {
-            // Method 1: data-testid approach (most reliable)
-            const labels = document.querySelectorAll(CONFIG.SELECTORS.balanceLabel[0]);
+            const labels = document.querySelectorAll('[data-testid="wallet-mobile-label"]');
             for (const label of labels) {
                 if (label.textContent.trim() === 'Balance') {
-                    const valueSpan = label.parentElement?.querySelector(CONFIG.SELECTORS.balanceValue[0]);
-                    if (valueSpan) return valueSpan;
+                    return label.parentElement?.querySelector('[data-testid="wallet-mobile-balance-value"] span');
                 }
             }
-
-            // Method 2: Class-based approach
-            const labelByClass = document.querySelector(CONFIG.SELECTORS.balanceLabel[1]);
-            if (labelByClass?.textContent.trim() === 'Balance') {
-                const valueSpan = labelByClass.parentElement?.querySelector(CONFIG.SELECTORS.balanceValue[1]);
-                if (valueSpan) return valueSpan;
-            }
-
-            // Method 3: Generic div search (fallback)
-            const allDivs = document.querySelectorAll('div');
-            for (const div of allDivs) {
-                if (div.textContent.trim() === 'Balance' && div.children.length === 0) {
-                    const sibling = div.parentElement?.querySelector('span[dir="ltr"]');
-                    if (sibling) return sibling;
-                }
-            }
-
             return null;
         },
 
