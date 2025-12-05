@@ -1,58 +1,84 @@
+# === PROMPT ===
 if [ -n "$CURSOR_AGENT" ]; then
   PS1='$ '
 else
   PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] 🚀🚀🚀  $ "
 fi
+
+# === SHELL ===
 export EDITOR='cursor'
 HISTSIZE=10000
 HISTFILESIZE=20000
 HISTCONTROL=ignoreboth:erasedups
-alias ft='cd /allah/freqtrade'
-alias li='cd /allah/blue/linux'
-alias ftc='cd /allah/freqtrade/freqtrade'
+
+# === ENV ===
+export DISPLAY=:10
+export PATH="$HOME/development/flutter/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# === DIR: Core ===
 alias al='cd /allah'
+alias bl='cd /allah/blue/'
+
+# === DIR: Freqtrade ===
+alias ft='cd /allah/freqtrade'
+alias ftc='cd /allah/freqtrade/freqtrade'
+alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
+
+# === DIR: Freq Project ===
+alias co='cd /allah/blue/freq/project/tools/collector/tradingview_collector'
+alias config='cd /allah/blue/freq/project/user_data/config'
 alias fq='cd /allah/blue/freq'
 alias mi='cd /allah/blue/freq/misc'
-alias user='cd /allah/blue/freq/project/user_data'
-alias strat='cd /allah/blue/freq/project/user_data/strategies'
-alias tv='cd /allah/blue/freq/misc/tradingview'
-alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
-alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
-alias ftpy='/allah/freqtrade/.venv/bin/python3'
-alias note='cursor /allah/blue/freq/project/note'
-alias bl='cd /allah/blue/'
 alias ml='cd /allah/blue/freq/project/ml_datasets'
-alias tools='cd /allah/blue/freq/project/tools'
 alias pro='cd /allah/blue/freq/project'
 alias st='cd /allah/blue/freq/project/user_data/strategies'
-alias config='cd /allah/blue/freq/project/user_data/config'
-alias dt='cd /allah/data/ml'
-alias web='cd /allah/blue/web'
+alias strat='cd /allah/blue/freq/project/user_data/strategies'
+alias tools='cd /allah/blue/freq/project/tools'
+alias tv='cd /allah/blue/freq/misc/tradingview'
+alias user='cd /allah/blue/freq/project/user_data'
+
+# === DIR: Web ===
 alias ba='cd /allah/blue/web/baccarat'
+alias decodo='cd /allah/blue/web/proxy/decodo'
+alias pr='cd /allah/blue/web/patchright'
 alias sm='cd /allah/blue/web/smartproxy'
-alias co='cd /allah/blue/freq/project/tools/collector/tradingview_collector'
-alias vps='cd /allah/blue/linux/vps'
+alias tampermonkey='cd /allah/blue/web/tampermonkey'
+alias web='cd /allah/blue/web'
+
+# === DIR: Linux & VPS ===
 alias aws='cd /allah/blue/linux/vps/aws'
-alias gcp='cd /allah/blue/linux/vps/gcp'
-alias linode='cd /allah/blue/linux/vps/linode'
 alias extra='cd /allah/blue/linux/extra'
-alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
-alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
-alias code='cursor'
-alias bashrc='cursor /allah/blue/linux/extra/bashrc'
-alias rc='cursor /allah/blue/linux/extra/bashrc'
-alias gs='git status'
+alias gcp='cd /allah/blue/linux/vps/gcp'
+alias li='cd /allah/blue/linux'
+alias linode='cd /allah/blue/linux/vps/linode'
+alias vps='cd /allah/blue/linux/vps'
+
+# === DIR: Data ===
+alias dt='cd /allah/data/ml'
+
+# === Freqtrade Commands ===
+alias ftpy='/allah/freqtrade/.venv/bin/python3'
+alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
+
+# === Git ===
 alias ga='git add'
 alias gc='git commit -m'
-alias gp='git push'
 alias gl='git pull'
+alias gp='git push'
+alias gs='git status'
+
+# === TensorBoard ===
+alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+
+# === Utility ===
+alias bashrc='cursor /allah/blue/linux/extra/bashrc'
 alias cls='clear'
-alias lsh='ls -la | head'
-alias decodo='cd /allah/blue/web/proxy/decodo'
+alias code='cursor'
 alias diskspace='df -h'
-alias myip='curl -s http://ipinfo.io/ip'
-alias tampermonkey='cd /allah/blue/web/tampermonkey'
-export DISPLAY=:10
-export PATH="$HOME/development/flutter/bin:$PATH"export PATH="$HOME/.local/bin:$PATH"
 alias ipc="/allah/blue/web/proxy/decodo/ip_checker.sh"
-alias pr='cd /allah/blue/web/patchright'
+alias lsh='ls -la | head'
+alias myip='curl -s http://ipinfo.io/ip'
+alias note='cursor /allah/blue/freq/project/note'
+alias rc='cursor /allah/blue/linux/extra/bashrc'
