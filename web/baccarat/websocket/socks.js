@@ -208,16 +208,22 @@
     function updateBetStatus(tableId, canBet, gameId) {
         const id = tableId;
         if (!id) return;
-        
-        const prev = tables.get(id) || {};
-        tables.set(id, {
-            ...prev,
-            id,
-            uid: prev.uid || assignUid(id),
-            canBet,
-            currentGame: gameId,
-            betStatusTime: Date.now()
-        });
+        const apply = (flag) => {
+            const prev = tables.get(id) || {};
+            tables.set(id, {
+                ...prev,
+                id,
+                uid: prev.uid || assignUid(id),
+                canBet: flag,
+                currentGame: gameId,
+                betStatusTime: Date.now()
+            });
+        };
+        if (canBet) {
+            setTimeout(() => apply(true), 2000);
+        } else {
+            apply(false);
+        }
     }
 
     // Game format: statisticLA (last action)

@@ -17,8 +17,7 @@
         MIN_BET_FRAC: 1/8,
         MAX_BET_FRAC: 1/2,
         MIN_ROUNDS: 20,
-        MAX_TABLES: 20,
-        BET_DELAY: 1000,
+        BET_DELAY: 3000,
         CLICK_DELAY: 50,
         // DOM selectors
         PLAYER_BTN: '[data-betcode="0"]',
@@ -26,11 +25,20 @@
         TILE_SEL: '[id^="TileHeight-"]'
     };
 
-    // Secure random
+    // Simple random
     const rand = {
-        bool: () => crypto.getRandomValues(new Uint8Array(1))[0] & 1,
-        float: () => crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000,
+        bool: () => Math.random() < 0.5,
+        float: () => Math.random(),
         side: () => rand.bool() ? 'P' : 'B'
+    };
+
+    const shuffle = (list) => {
+        const a = [...list];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(rand.float() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
     };
 
     // Wait for pp API
@@ -61,6 +69,13 @@
             };
             balanceHistory.push(entry);
             console.log(`[Bal] ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} → $${bal.toFixed(2)} (${entry.type})`);
+
+            // Check if we should restart auto betting due to recovered balance
+            if (betManager.stoppedDueToLowBalance && bal >= Config.CHIP_VALUE) {
+                console.log(`[Bet] Balance recovered: $${bal.toFixed(2)} - restarting auto betting`);
+                betManager.stoppedDueToLowBalance = false;
+                betManager.start();
+            }
         }
         lastBalance = bal;
     };
@@ -74,9 +89,53 @@
         }
         lastBalance = getBalance();
         console.log(`[Bal] Watching balance: $${lastBalance.toFixed(2)}`);
-        
+
         const observer = new MutationObserver(trackBalance);
         observer.observe(target, { childList: true, subtree: true, characterData: true });
+    };
+
+    // Handle insufficient funds popup
+    const handleInsufficientFundsPopup = () => {
+        const popup = document.querySelector('[data-testid="popup-content"]');
+        if (!popup) return false;
+
+        const title = popup.querySelector('[data-testid="blocking-popup-title"]');
+        if (!title || title.textContent !== 'Insufficient funds') return false;
+
+        console.log('[Popup] Insufficient funds popup detected');
+
+        // Click "No, thanks" button
+        const buttons = popup.querySelectorAll('button[data-testid="button"]');
+        for (const btn of buttons) {
+            const span = btn.querySelector('span[data-testid="button-content"]');
+            if (span && span.textContent === 'No, thanks') {
+                simulateClick(btn);
+                console.log('[Popup] Clicked "No, thanks"');
+                return true;
+            }
+        }
+
+        // If no "No, thanks" button found, click first button as fallback
+        const allButtons = popup.querySelectorAll('button[data-testid="button"]');
+        if (allButtons.length > 0) {
+            simulateClick(allButtons[0]);
+            console.log('[Popup] Clicked first button (fallback)');
+            return true;
+        }
+
+        return false;
+    };
+
+    // Watch for insufficient funds popup
+    const watchForPopup = () => {
+        const observer = new MutationObserver(() => {
+            handleInsufficientFundsPopup();
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
     };
 
     // Calculate bet size
@@ -116,14 +175,10 @@
     const clickBet = async (tile, selector, clicks) => {
         const btn = tile.querySelector(selector);
         if (!btn) return false;
-        
-        // Scroll tile into view first
-        tile.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        await sleep(200);  // Wait for scroll to complete
-        
-        for (let i = 0; i < clicks; i++) {
+
+        for (let j = 0; j < clicks; j++) {
             simulateClick(btn);
-            if (i < clicks - 1) await sleep(Config.CLICK_DELAY);
+            if (j < clicks - 1) await sleep(Config.CLICK_DELAY);
         }
         return true;
     };
@@ -143,104 +198,149 @@
         return true;
     };
 
-    // Get ranked tables from pp API
+    // Betting availability from pp WebSocket
+    const canBetNow = (t) => t?.canBet === true;
+
+    // Get all tables eligible for random bet (>=20 rounds, P/B diff <=3, open)
     const getRankedTables = () => {
         if (!window.pp) return [];
-        return [...Object.values(window.pp.tables())]
-            .filter(t => (t.total || 0) >= Config.MIN_ROUNDS)
-            .map(t => ({
-                ...t,
-                ratio: t.total > 0 ? Math.abs((t.P || 0) - (t.B || 0)) / t.total : 1
-            }))
-            .sort((a, b) => a.ratio - b.ratio)
-            .slice(0, Config.MAX_TABLES);
+        return shuffle(
+            [...Object.values(window.pp.tables())]
+                .filter(t => {
+                    const total = t.total || 0;
+                    const diff = Math.abs((t.P || 0) - (t.B || 0));
+                    return total >= Config.MIN_ROUNDS && diff <= 3 && canBetNow(t);
+                })
+        );
     };
 
     // Betting Manager
     class BetManager {
         constructor() {
             this.running = false;
-            this.queue = [];
-            this.idx = 0;
             this.lastBet = null;
+            this.intervalId = null;
+            this.stoppedDueToLowBalance = false;
+            this.balanceCheckInterval = null;
         }
 
         start() {
             if (this.running) return;
             this.running = true;
-            this.refreshQueue();
-            this.next();
             console.log('[Bet] Started');
+            if (this.balanceCheckInterval) {
+                clearInterval(this.balanceCheckInterval);
+                this.balanceCheckInterval = null;
+            }
+            this.next();
         }
 
-        stop() {
+        stop(keepFlag = false) {
             this.running = false;
+            if (!keepFlag) this.stoppedDueToLowBalance = false;
+            if (this.intervalId) {
+                clearInterval(this.intervalId);
+                this.intervalId = null;
+            }
+            if (this.balanceCheckInterval) {
+                clearInterval(this.balanceCheckInterval);
+                this.balanceCheckInterval = null;
+            }
             console.log('[Bet] Stopped');
         }
 
-        refreshQueue() {
-            this.queue = getRankedTables();
-            this.idx = 0;
+        stopDueToLowBalance() {
+            this.stoppedDueToLowBalance = true;
+            this.stop(true);
+            // Start periodic balance check to restart when balance recovers
+            this.balanceCheckInterval = setInterval(() => {
+                if (!this.stoppedDueToLowBalance) {
+                    clearInterval(this.balanceCheckInterval);
+                    this.balanceCheckInterval = null;
+                    return;
+                }
+                const bal = getBalance();
+                if (bal >= Config.CHIP_VALUE) {
+                    console.log(`[Bet] Balance recovered: $${bal.toFixed(2)} - restarting auto betting`);
+                    this.stoppedDueToLowBalance = false;
+                    clearInterval(this.balanceCheckInterval);
+                    this.balanceCheckInterval = null;
+                    this.start();
+                }
+            }, 2000); // Check every 2 seconds
         }
 
         async next() {
             if (!this.running) return;
 
-            if (this.idx >= this.queue.length) {
-                this.refreshQueue();
+            // Check balance first - stop if too low
+            const balance = getBalance();
+            if (balance <= Config.CHIP_VALUE) {
+                console.log(`[Bet] Balance too low: $${balance.toFixed(2)} - stopping auto betting`);
+                this.stopDueToLowBalance();
+                return;
             }
 
-            const table = this.queue[this.idx++];
-            if (!table) {
-                await sleep(100);
-                return this.next();
+            // Refresh candidates and pick random table
+            const candidates = getRankedTables();
+            if (candidates.length === 0) {
+                console.log('[Bet] No eligible tables');
+                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+                return;
             }
 
-            // Find corresponding tile (by index for now)
-            const tile = getTileByIndex(this.idx - 1);
+            const table = candidates[Math.floor(Math.random() * candidates.length)];
+
+            // Find corresponding tile by table UID
+            const tileIdx = table.uid - 1; // UIDs start from 1
+            const tile = getTileByIndex(tileIdx);
             if (!tile) {
-                await sleep(100);
-                return this.next();
+                console.log(`[Bet] Tile not found for table ${table.name || table.id}`);
+                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+                return;
             }
 
-            // Check if betting is open (button not disabled)
-            const pBtn = tile.querySelector(Config.PLAYER_BTN);
-            const bBtn = tile.querySelector(Config.BANKER_BTN);
-            const isOpen = pBtn && bBtn && 
-                !pBtn.className.includes('disabled') && 
-                !bBtn.className.includes('disabled');
-
-            if (!isOpen) {
-                await sleep(100);
-                return this.next();
+            // Check betting status from pp WebSocket
+            if (!canBetNow(table)) {
+                console.log(`[Bet] Table not open: ${table.name || table.id}`);
+                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+                return;
             }
+
+            // Scroll tile into view and wait for buttons
+            tile.scrollIntoView({block: 'center'});
+            const side = rand.side();
+            const selector = side === 'P' ? Config.PLAYER_BTN : Config.BANKER_BTN;
 
             // Place bet
             const { amount, clicks } = calcBet();
             if (clicks === 0) {
-                console.log('[Bet] Insufficient balance');
-                await sleep(100);
-                return this.next();
+                console.log('[Bet] Insufficient balance for bet calculation');
+                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+                return;
             }
 
-            const side = rand.side();
-            const selector = side === 'P' ? Config.PLAYER_BTN : Config.BANKER_BTN;
-            const placed = await clickBet(tile, selector, clicks);
-
-            if (placed) {
-                this.lastBet = { table: table.name || table.id, side, amount, time: Date.now() };
-                console.log(`[Bet] ${table.name || table.id} | ${side} $${amount.toFixed(2)} | P:${table.P} B:${table.B} T:${table.T}`);
+            // Wait for button to appear (same logic as manual betting)
+            for (let i = 0; i < 60; i++) { // ~3s max
+                const btn = tile.querySelector(selector);
+                if (btn) {
+                    const placed = await clickBet(tile, selector, clicks);
+                    if (placed) {
+                        this.lastBet = { table: table.name || table.id, side, amount, time: Date.now() };
+                        console.log(`[Bet] ${table.name || table.id} | ${side} $${amount.toFixed(2)} | P:${table.P} B:${table.B} T:${table.T}`);
+                    }
+                    this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+                    return;
+                }
+                await sleep(50);
             }
-
-            await sleep(Config.BET_DELAY);
-            this.next();
+            console.log('[Bet] Button not found');
+            this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
         }
 
         status() {
             return {
                 running: this.running,
-                queue: this.queue.length,
-                idx: this.idx,
                 last: this.lastBet,
                 balance: getBalance()
             };
@@ -286,11 +386,15 @@
         // Manual betting
         player: async (tileIdx, clicks = 1) => {
             const tile = getTileByIndex(tileIdx);
-            return tile ? clickBet(tile, Config.PLAYER_BTN, clicks) : false;
+            if (!tile) return false;
+            tile.scrollIntoView({block: 'center'});
+            return clickBet(tile, Config.PLAYER_BTN, clicks);
         },
         banker: async (tileIdx, clicks = 1) => {
             const tile = getTileByIndex(tileIdx);
-            return tile ? clickBet(tile, Config.BANKER_BTN, clicks) : false;
+            if (!tile) return false;
+            tile.scrollIntoView({block: 'center'});
+            return clickBet(tile, Config.BANKER_BTN, clicks);
         },
         
         // Get ranked tables from pp
@@ -301,14 +405,24 @@
         get: (uidOrId) => {
             const data = window.pp?.get(uidOrId);
             if (!data) return null;
-            const ele = findTile(data.id) || findTile(data.name);
+            const idx = Number.isInteger(data.uid) ? data.uid - 1 : null;
+            const ele = findTile(data.id) || findTile(data.name) || (idx !== null ? getTileByIndex(idx) : null);
             return {
                 ...data,
                 ele,
                 bet: async (clicks = 1, side = 'P') => {
                     if (!ele) { console.log('[Bet] Tile not found'); return false; }
+                    const t = window.pp?.get(uidOrId) || data;
+                    if (t?.canBet === false) { console.log('[Bet] Table not open'); return false; }
+                    ele.scrollIntoView({block: 'center' });
                     const sel = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
-                    return clickBet(ele, sel, clicks);
+                    for (let i = 0; i < 60; i++) { // ~3s max
+                        const btn = ele.querySelector(sel);
+                        if (btn) return clickBet(ele, sel, clicks);
+                        await sleep(50);
+                    }
+                    console.log('[Bet] Button not found');
+                    return false;
                 }
             };
         },
@@ -330,6 +444,7 @@
 
     // Initialize
     watchBalance();
+    watchForPopup();
     waitForPP().then(() => {
         console.log('[Bet] v3.3 ready | Data from pp API');
         console.log('[Bet] Commands: bet.start() bet.stop() bet.status() bet.history()');
@@ -348,7 +463,7 @@
 ║  ───────────                                                                 ║
 ║  bet.start()              Start auto-betting                                 ║
 ║  bet.stop()               Stop auto-betting                                  ║
-║  bet.status()             Current status {running, queue, last, balance}     ║
+║  bet.status()             Current status {running, last, balance}            ║
 ║                                                                              ║
 ║  MANUAL BETTING                                                              ║
 ║  ──────────────                                                              ║
