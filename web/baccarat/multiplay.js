@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         multiplay
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Monitors all baccarat tables data and tracks changes
+// @version      2.2
+// @description  Multi-table Baccarat monitor and auto-betting system
 // @author       You
 // @match        *://client.pragmaticplaylive.net/desktop/multibaccarat/*
 // @grant        none
@@ -12,566 +12,689 @@
 (function() {
     'use strict';
 
-    const CONFIG = {
-        TILE_SELECTOR: '.TileComponent_tileMobile__2wg6p',
-        DISABLED_SELECTOR: '[class*="TileBetBoard_disabled__"]',
-        CHECK_INTERVAL: 1000, // Check every second
-        DEBUG: false,
-        BET_DELAY: 1000, // 1s delay before betting
-        TOP_COUNT: 20, // Top N tables to bet on
-        BALANCE_KEY: 'currentBalance', // Same key as balance detector
-        MIN_BET_FRACTION: 1/8, // 1/8 of balance
-        MAX_BET_FRACTION: 1/2, // 1/2 of balance
-        CLICK_VALUE: 0.2 // Each click = 0.2
+    const Settings = {
+        TILE_SELECTOR: '[id^="TileHeight-"]',
+        TABLE_NAME_SELECTOR: '.rM_r1',
+        MIN_BET_SELECTOR: '.wL_wM span[dir="ltr"]',
+        TABLE_ID_SELECTOR: '.wq_wr',
+        STATS_CONTAINER_SELECTOR: '.ot_ov',
+        STATS_VALUE_SELECTOR: '.ot_oy',
+        ROUND_NUMBER_SELECTOR: '.ot_oC .ot_oy',
+        PLAYER_BUTTON_SELECTOR: '.lq_lv',
+        BANKER_BUTTON_SELECTOR: '.lq_lw',
+        TIE_BUTTON_SELECTOR: '.lq_lx',
+        PLAYER_PAIR_SELECTOR: '.lq_lB',
+        BANKER_PAIR_SELECTOR: '.lq_lF',
+        POLL_INTERVAL_MS: 1000,
+        BET_DELAY_MS: 1000,
+        CLICK_DELAY_MS: 50,
+        INIT_DELAY_MS: 2000,
+        BETTING_START_DELAY_MS: 10000,
+        BALANCE_STORAGE_KEY: 'currentBalance',
+        CHIP_VALUE: 0.2,
+        MIN_BET_FRACTION: 1/8,
+        MAX_BET_FRACTION: 1/2,
+        MIN_ROUNDS_THRESHOLD: 20,
+        MAX_RANKED_TABLES: 20,
+        DEBUG_MODE: false
     };
 
-    class CryptoRandom {
-        static randomBool() {
-            return crypto.getRandomValues(new Uint8Array(1))[0] & 1;
-        }
-        static randomFloat() {
-            const array = new Uint32Array(1);
-            crypto.getRandomValues(array);
-            return array[0] / (0xFFFFFFFF + 1);
-        }
-        static randomInt(min, max) {
-            return Math.floor(this.randomFloat() * (max - min + 1)) + min;
-        }
-        static randomSide() {
-            return this.randomBool() ? 'Player' : 'Banker';
-        }
-    }
+    const debug = (message, ...args) => Settings.DEBUG_MODE && console.log(`[Multi] ${message}`, ...args);
 
-    class TableData {
-        constructor(element, id) {
+    const SecureRandom = {
+        boolean: () => crypto.getRandomValues(new Uint8Array(1))[0] & 1,
+        decimal: () => crypto.getRandomValues(new Uint32Array(1))[0] / 0x100000000,
+        integer: (min, max) => min + Math.floor(SecureRandom.decimal() * (max - min + 1)),
+        bettingSide: () => SecureRandom.boolean() ? 'Player' : 'Banker'
+    };
+
+    const query = (selector, context = document) => context.querySelector(selector);
+    const queryAll = (selector, context = document) => context.querySelectorAll(selector);
+
+    const extractNumber = (text) => {
+        if (!text) return 0;
+        const number = parseInt(text.replace(/\D/g, ''), 10);
+        return isNaN(number) ? 0 : number;
+    };
+
+    class BaccaratTable {
+        constructor(element, index) {
             this.element = element;
-            this.id = id;
-            this.data = {};
-            this.previousData = {};
+            this.index = index;
+            this.tableKey = `table_${index}`;
+            this.previousState = null;
+            this.state = this.parseState();
         }
 
-        parseTableData() {
-            try {
-                const text = this.element.innerText;
-                const lines = text.split('\n').map(line => line.trim()).filter(line => line);
-                
-                const newData = {
-                    name: '',
-                    minBet: '',
-                    maxBet: '',
-                    roundNumber: 0,
-                    currentResult: '',
-                    counters: { P: 0, B: 0, T: 0 },
-                    additionalNumbers: [],
-                    lastResults: [],
-                    tableId: '',
-                    rawText: text,
-                    timestamp: Date.now(),
-                    // Betting state data
-                    bettingState: 'unknown'
+        parseState() {
+            const element = this.element;
+
+            const state = {
+                // Basic table info
+                tileId: element.id || '',
+                tableName: query(Settings.TABLE_NAME_SELECTOR, element)?.textContent?.trim() || '',
+                minimumBet: query(Settings.MIN_BET_SELECTOR, element)?.textContent?.trim() || '',
+                tableIdentifier: query(Settings.TABLE_ID_SELECTOR, element)?.textContent?.trim() || '',
+                roundNumber: 0,
+
+                // Tile dimensions and position
+                tile: {
+                    width: parseInt(element.style.width) || 0,
+                    height: parseInt(element.style.height) || 0,
+                    transform: element.style.transform || '',
+                    visible: element.style.display !== 'none'
+                },
+
+                // Win/loss statistics
+                winCounts: { P: 0, B: 0, T: 0 },
+                pairCounts: { PP: 0, BP: 0 },
+
+                // Current hand info
+                currentHand: {
+                    playerScore: 0,
+                    bankerScore: 0,
+                    playerCards: [],
+                    bankerCards: [],
+                    lastWinner: ''
+                },
+
+                // Road/history
+                bigRoad: [],
+
+                // Status
+                isBettingOpen: this.checkBettingOpen(element),
+                hasFavorite: false,
+                updatedAt: Date.now()
+            };
+
+            // Parse round number from .ot_oC .ot_oy (e.g., "#58")
+            const roundElement = query(Settings.ROUND_NUMBER_SELECTOR, element);
+            if (roundElement) {
+                const match = roundElement.textContent.match(/#(\d+)/);
+                if (match) state.roundNumber = parseInt(match[1], 10);
+            }
+
+            // Parse all stats from stats container
+            const statsContainer = query(Settings.STATS_CONTAINER_SELECTOR, element);
+            if (statsContainer) {
+                const statMapping = {
+                    '#stats-count-player': (val) => state.winCounts.P = val,
+                    '#stats-count-banker': (val) => state.winCounts.B = val,
+                    '#stats-count-tie': (val) => state.winCounts.T = val,
+                    '#stats-count-player-pair': (val) => state.pairCounts.PP = val,
+                    '#stats-count-banker-pair': (val) => state.pairCounts.BP = val
                 };
 
-                // Parse each line
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-                    
-                    // Table name (first line, usually contains "Baccarat")
-                    if (i === 0 && line.includes('Baccarat')) {
-                        newData.name = line;
-                    }
-                    
-                    // Minimum bet (starts with $ but not -$)
-                    else if (line.startsWith('$') && !line.startsWith('-$')) {
-                        newData.minBet = line;
-                    }
-                    
-                    // Maximum bet (starts with -$, remove the negative sign)
-                    else if (line.startsWith('-$')) {
-                        newData.maxBet = line.substring(1); // Remove the - sign
-                    }
-                    
-                    // Round number (starts with #)
-                    else if (line.startsWith('#')) {
-                        newData.roundNumber = parseInt(line.substring(1)) || 0;
-                    }
-                    
-                    // Current result (single letter P, B, or T)
-                    else if (line.length === 1 && ['P', 'B', 'T'].includes(line)) {
-                        newData.currentResult = line;
-                    }
-                    
-                    // Counters (number following P, B, T)
-                    else if (/^\d+$/.test(line)) {
-                        const prevLine = lines[i-1];
-                        if (prevLine === 'P') newData.counters.P = parseInt(line);
-                        else if (prevLine === 'B') newData.counters.B = parseInt(line);
-                        else if (prevLine === 'T') newData.counters.T = parseInt(line);
-                        else newData.additionalNumbers.push(parseInt(line));
-                    }
-                    
-                    // Last results (sequences of P, B, T)
-                    else if (/^[PBT]+$/.test(line) && line.length > 1) {
-                        newData.lastResults = line.split('');
-                    }
-                    
-                    // Table ID (starts with ID:)
-                    else if (line.startsWith('ID:')) {
-                        newData.tableId = line;
+                for (const [href, setter] of Object.entries(statMapping)) {
+                    const svg = query(`use[href="${href}"]`, statsContainer);
+                    if (svg) {
+                        const valueEl = svg.closest('div[tabindex]')?.querySelector(Settings.STATS_VALUE_SELECTOR);
+                        if (valueEl) setter(extractNumber(valueEl.textContent));
                     }
                 }
-
-                // Check betting state using disabled element
-                const disabled = this.element.querySelector(CONFIG.DISABLED_SELECTOR);
-                newData.bettingState = disabled ? 'closed' : 'open';
-
-                return newData;
-            } catch (error) {
-                console.error(`[TableMonitor] Error parsing table ${this.id}:`, error);
-                return null;
             }
+
+            // Parse current hand scores (Player: .so_sr blue, Banker: .so_sq red)
+            const playerScoreEl = query('.so_sr', element);
+            const bankerScoreEl = query('.so_sq', element);
+            if (playerScoreEl) state.currentHand.playerScore = extractNumber(playerScoreEl.textContent);
+            if (bankerScoreEl) state.currentHand.bankerScore = extractNumber(bankerScoreEl.textContent);
+
+            // Parse current hand cards from SVG use elements
+            // Player cards in .lq_lv, Banker cards in .lq_lw
+            const playerArea = query(Settings.PLAYER_BUTTON_SELECTOR, element);
+            const bankerArea = query(Settings.BANKER_BUTTON_SELECTOR, element);
+
+            if (playerArea) {
+                const cardUses = queryAll('use[href^="#card-"]', playerArea);
+                state.currentHand.playerCards = [...cardUses].map(use => this.parseCardHref(use.getAttribute('href')));
+            }
+
+            if (bankerArea) {
+                const cardUses = queryAll('use[href^="#card-"]', bankerArea);
+                state.currentHand.bankerCards = [...cardUses].map(use => this.parseCardHref(use.getAttribute('href')));
+            }
+
+            // Parse last winner from win message (.zz_zG)
+            const winnerEl = query('.zz_zG', element);
+            if (winnerEl) {
+                state.currentHand.lastWinner = winnerEl.textContent?.trim() || '';
+            }
+
+            // Parse big road history from SVG table
+            const roadTable = query('.of_ok', element);
+            if (roadTable) {
+                const roadUses = queryAll('use[href^="#big-bigroad-"]', roadTable);
+                state.bigRoad = [...roadUses].map(use => {
+                    const href = use.getAttribute('href') || '';
+                    // Format: #big-bigroad-XY# where X is P/B/T, Y is N/B/P/E (natural/banker pair/player pair/etc)
+                    const match = href.match(/#big-bigroad-([PBT])([NBPE])(\d)/);
+                    if (match) {
+                        return {
+                            winner: match[1], // P, B, or T
+                            modifier: match[2], // N=normal, B=banker pair, P=player pair, E=?
+                            index: parseInt(match[3])
+                        };
+                    }
+                    return { raw: href };
+                });
+            }
+
+            // Check if table is favorited (star icon filled)
+            const starPath = query('.rE_rH', element);
+            if (starPath) {
+                const fill = window.getComputedStyle(starPath).fill;
+                state.hasFavorite = fill && fill !== 'none' && fill !== 'transparent';
+            }
+
+            // Fallback to text parsing if needed
+            if (!state.tableName || !state.winCounts.P) {
+                this.parseStateFromText(state);
+            }
+
+            return state;
         }
 
-        update() {
-            this.previousData = { ...this.data };
-            const newData = this.parseTableData();
-            
-            if (newData) {
-                this.data = newData;
-                this.detectChanges();
-                return true;
+        parseCardHref(href) {
+            if (!href) return null;
+            // Format: #card-RANK-SUIT (e.g., #card-4-clubs, #card-j-diamonds)
+            const match = href.match(/#card-([^-]+)-(\w+)/);
+            if (match) {
+                return { rank: match[1].toUpperCase(), suit: match[2] };
             }
-            return false;
+            return { raw: href };
         }
 
-        detectChanges() {
-            const changes = [];
-            
-            // Round number change
-            if (this.previousData.roundNumber && this.data.roundNumber !== this.previousData.roundNumber) {
-                const diff = this.data.roundNumber - this.previousData.roundNumber;
-                changes.push(`Round #${this.previousData.roundNumber} → #${this.data.roundNumber} (${diff > 0 ? '+' : ''}${diff})`);
-            }
-            
-            // Counter changes
-            ['P', 'B', 'T'].forEach(side => {
-                if (this.previousData.counters && this.data.counters[side] !== this.previousData.counters[side]) {
-                    const diff = this.data.counters[side] - (this.previousData.counters[side] || 0);
-                    changes.push(`${side} ${this.previousData.counters[side] || 0} → ${this.data.counters[side]} (${diff > 0 ? '+' : ''}${diff})`);
-                }
-            });
-            
-            // Current result change
-            if (this.previousData.currentResult && this.data.currentResult !== this.previousData.currentResult) {
-                changes.push(`Result ${this.previousData.currentResult} → ${this.data.currentResult}`);
-            }
-            
-            // Last results change
-            if (this.previousData.lastResults && JSON.stringify(this.data.lastResults) !== JSON.stringify(this.previousData.lastResults)) {
-                changes.push(`Results ${this.previousData.lastResults.join('')} → ${this.data.lastResults.join('')}`);
-            }
-            
-            // Betting state change
-            if (this.previousData.bettingState && this.data.bettingState !== this.previousData.bettingState) {
-                changes.push(`Betting ${this.previousData.bettingState} → ${this.data.bettingState}`);
-            }
+        checkBettingOpen(element) {
+            // Check if betting buttons are clickable (not disabled)
+            const playerBtn = query(Settings.PLAYER_BUTTON_SELECTOR, element);
+            const bankerBtn = query(Settings.BANKER_BUTTON_SELECTOR, element);
 
-            if (changes.length > 0 && CONFIG.DEBUG) {
-                console.log(`[TableMonitor] ${this.data.name || `Table ${this.id}`}:`);
-                changes.forEach(change => console.log(`  📊 ${change}`));
-            }
-        }
+            if (!playerBtn || !bankerBtn) return false;
 
-        getStatus() {
-            return {
-                id: this.id,
-                name: this.data.name,
-                round: this.data.roundNumber,
-                result: this.data.currentResult,
-                counters: this.data.counters,
-                bettingLimits: `${this.data.minBet} - ${this.data.maxBet}`,
-                tableId: this.data.tableId,
-                lastUpdate: new Date(this.data.timestamp).toLocaleTimeString(),
-                // Betting state
-                bettingState: this.data.bettingState
+            // Check for disabled class patterns
+            const hasDisabled = (el) => {
+                const classes = el.className || '';
+                return classes.includes('disabled') || classes.includes('Disabled');
             };
+
+            return !hasDisabled(playerBtn) && !hasDisabled(bankerBtn);
+        }
+
+        parseStateFromText(state) {
+            const lines = this.element.innerText.split('\n').map(line => line.trim()).filter(Boolean);
+
+            for (let i = 0; i < lines.length; i++) {
+                const currentLine = lines[i];
+                const previousLine = lines[i - 1];
+
+                if (!state.tableName && currentLine.includes('Baccarat')) {
+                    state.tableName = currentLine;
+                }
+                else if (currentLine.startsWith('#') && !state.roundNumber) {
+                    state.roundNumber = parseInt(currentLine.slice(1), 10) || 0;
+                }
+                else if (currentLine.length === 1 && 'PBT'.includes(currentLine)) {
+                    state.lastResult = currentLine;
+                }
+                else if (/^\d+$/.test(currentLine) && previousLine && 'PBT'.includes(previousLine)) {
+                    state.winCounts[previousLine] = parseInt(currentLine, 10);
+                }
+                else if (/^[PBT]{2,}$/.test(currentLine)) {
+                    state.resultHistory = currentLine.split('');
+                }
+            }
+        }
+
+        refresh() {
+            this.previousState = this.state;
+            this.state = this.parseState();
+            return this.getChanges();
+        }
+
+        getChanges() {
+            if (!this.previousState) return [];
+
+            const changes = [];
+            const previous = this.previousState;
+            const current = this.state;
+
+            if (previous.roundNumber && current.roundNumber !== previous.roundNumber) {
+                changes.push(`Round #${previous.roundNumber} → #${current.roundNumber}`);
+            }
+
+            for (const side of ['P', 'B', 'T']) {
+                if (current.winCounts[side] !== previous.winCounts[side]) {
+                    changes.push(`${side}: ${previous.winCounts[side]} → ${current.winCounts[side]}`);
+                }
+            }
+
+            if (previous.isBettingOpen !== current.isBettingOpen) {
+                changes.push(`Betting: ${previous.isBettingOpen ? 'open' : 'closed'} → ${current.isBettingOpen ? 'open' : 'closed'}`);
+            }
+
+            if (changes.length && Settings.DEBUG_MODE) {
+                debug(`${current.tableName}:`, changes.join(' | '));
+            }
+
+            return changes;
+        }
+
+        get totalRounds() {
+            const { P, B, T } = this.state.winCounts;
+            return P + B + T;
+        }
+
+        get winDifference() {
+            const { P, B } = this.state.winCounts;
+            return Math.abs(P - B);
+        }
+
+        get balanceRatio() {
+            return this.totalRounds > 0 ? this.winDifference / this.totalRounds : 1;
+        }
+
+        async clickBetButton(selector, clickCount) {
+            const selectors = selector.split(', ');
+            let button = null;
+
+            for (const sel of selectors) {
+                button = query(sel, this.element);
+                if (button) break;
+            }
+
+            if (!button) return false;
+
+            for (let i = 0; i < clickCount; i++) {
+                button.click();
+                if (i < clickCount - 1) {
+                    await new Promise(resolve => setTimeout(resolve, Settings.CLICK_DELAY_MS));
+                }
+            }
+
+            return true;
+        }
+
+        placeBetOnPlayer(clickCount) {
+            return this.clickBetButton(Settings.PLAYER_BUTTON_SELECTOR, clickCount);
+        }
+
+        placeBetOnBanker(clickCount) {
+            return this.clickBetButton(Settings.BANKER_BUTTON_SELECTOR, clickCount);
         }
     }
 
     class TableMonitor {
         constructor() {
-            this.tables = new Map();
-            this.isRunning = false;
-            this.intervalId = null;
+            this.tableRegistry = new Map();
+            this.isMonitoring = false;
+            this.pollInterval = null;
         }
 
-        findTables() {
-            const tiles = document.querySelectorAll(CONFIG.TILE_SELECTOR);
-            const currentTableIds = new Set();
+        scanTables() {
+            const tileElements = queryAll(Settings.TILE_SELECTOR);
+            const activeTableKeys = new Set();
 
-            tiles.forEach((tile, index) => {
-                const tableId = `table_${index}`;
-                currentTableIds.add(tableId);
+            tileElements.forEach((tileElement, index) => {
+                const tableKey = `table_${index}`;
+                activeTableKeys.add(tableKey);
 
-                if (!this.tables.has(tableId)) {
-                    // New table found
-                    const tableData = new TableData(tile, tableId);
-                    tableData.update();
-                    this.tables.set(tableId, tableData);
-                    if (CONFIG.DEBUG) console.log(`[TableMonitor] New table detected: ${tableData.data.name || tableId}`);
+                if (this.tableRegistry.has(tableKey)) {
+                    const table = this.tableRegistry.get(tableKey);
+                    table.element = tileElement;
+                    table.refresh();
                 } else {
-                    // Update existing table
-                    const tableData = this.tables.get(tableId);
-                    tableData.element = tile; // Update element reference
-                    tableData.update();
+                    const table = new BaccaratTable(tileElement, index);
+                    this.tableRegistry.set(tableKey, table);
+                    debug(`New table: ${table.state.tableName || tableKey}`);
                 }
             });
 
-            // Remove tables that no longer exist
-            for (const [tableId, tableData] of this.tables) {
-                if (!currentTableIds.has(tableId)) {
-                    if (CONFIG.DEBUG) console.log(`[TableMonitor] Table removed: ${tableData.data.name || tableId}`);
-                    this.tables.delete(tableId);
+            for (const [tableKey] of this.tableRegistry) {
+                if (!activeTableKeys.has(tableKey)) {
+                    this.tableRegistry.delete(tableKey);
+                    debug(`Removed: ${tableKey}`);
                 }
             }
 
-            return tiles.length;
+            return tileElements.length;
         }
 
-        start() {
-            if (this.isRunning) return;
+        startMonitoring() {
+            if (this.isMonitoring) return;
 
-            if (CONFIG.DEBUG) console.log('[TableMonitor] Starting table monitoring...');
-            this.isRunning = true;
+            this.isMonitoring = true;
+            this.scanTables();
+            this.pollInterval = setInterval(() => this.scanTables(), Settings.POLL_INTERVAL_MS);
 
-            // Initial scan
-            const tableCount = this.findTables();
-            if (CONFIG.DEBUG) console.log(`[TableMonitor] Found ${tableCount} tables`);
-
-            // Set up periodic monitoring
-            this.intervalId = setInterval(() => {
-                if (this.isRunning) {
-                    this.findTables();
-                }
-            }, CONFIG.CHECK_INTERVAL);
-
-            if (CONFIG.DEBUG) console.log(`[TableMonitor] Monitoring ${this.tables.size} tables every ${CONFIG.CHECK_INTERVAL}ms`);
+            debug(`Started monitoring ${this.tableRegistry.size} tables`);
         }
 
-        stop() {
-            if (!this.isRunning) return;
+        stopMonitoring() {
+            if (!this.isMonitoring) return;
 
-            if (CONFIG.DEBUG) console.log('[TableMonitor] Stopping table monitoring...');
-            this.isRunning = false;
+            this.isMonitoring = false;
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
 
-            if (this.intervalId) {
-                clearInterval(this.intervalId);
-                this.intervalId = null;
-            }
+            debug('Stopped monitoring');
         }
 
-        getTableData(tableId) {
-            const table = this.tables.get(tableId);
-            return table ? table.data : null;
+        getTable(tableKey) {
+            return this.tableRegistry.get(tableKey);
         }
 
         getAllTables() {
-            const result = {};
-            for (const [tableId, tableData] of this.tables) {
-                result[tableId] = tableData.data;
-            }
-            return result;
+            return [...this.tableRegistry.values()];
         }
 
-        getTableStatus() {
-            const status = [];
-            for (const [tableId, tableData] of this.tables) {
-                status.push(tableData.getStatus());
-            }
-            return status;
+        getRankedTables() {
+            return this.getAllTables()
+                .filter(table => table.totalRounds >= Settings.MIN_ROUNDS_THRESHOLD)
+                .sort((a, b) => a.balanceRatio - b.balanceRatio)
+                .slice(0, Settings.MAX_RANKED_TABLES);
         }
 
         printStatus() {
-            console.log('\n[TableMonitor] Current Status:');
-            const status = this.getTableStatus();
-            status.forEach(table => {
-                console.log(`📋 ${table.name}`);
-                console.log(`   Round: #${table.round} | Result: ${table.result} | P:${table.counters.P} B:${table.counters.B} T:${table.counters.T}`);
-                console.log(`   Betting: ${table.bettingState}`);
-                console.log(`   Betting Limits: ${table.bettingLimits} | ${table.tableId} | Updated: ${table.lastUpdate}`);
-            });
+            console.log('\n═══ TABLE STATUS ═══');
+            for (const table of this.getAllTables()) {
+                const s = table.state;
+                const statusIcon = s.isBettingOpen ? '🟢' : '🔴';
+                const favIcon = s.hasFavorite ? '⭐' : '';
+                const hand = s.currentHand;
+                const lastWin = hand.lastWinner ? ` [${hand.lastWinner}]` : '';
+                console.log(`${statusIcon}${favIcon} ${s.tableName} | #${s.roundNumber} | P:${s.winCounts.P} B:${s.winCounts.B} T:${s.winCounts.T} | PP:${s.pairCounts.PP} BP:${s.pairCounts.BP}${lastWin} | ${s.tableIdentifier}`);
+            }
         }
     }
 
-    class BettingManager {
-        constructor(monitor) {
-            this.monitor = monitor;
-            this.betList = [];
-            this.currentIndex = 0;
-            this.isRunning = false;
-            this.currentTable = null;
-            this.betSide = '';
+    class AutoBetManager {
+        constructor(tableMonitor) {
+            this.tableMonitor = tableMonitor;
+            this.bettingQueue = [];
+            this.currentQueueIndex = 0;
+            this.isAutoBetting = false;
+            this.activeTable = null;
+            this.lastBettingSide = '';
             this.lastBetAmount = 0;
         }
 
-        getBalance() {
-            const balance = localStorage.getItem(CONFIG.BALANCE_KEY);
-            return balance ? parseFloat(balance) : 0;
+        getAccountBalance() {
+            return parseFloat(localStorage.getItem(Settings.BALANCE_STORAGE_KEY)) || 0;
         }
 
-        calcBetAmount() {
-            const balance = this.getBalance();
-            if (balance < CONFIG.CLICK_VALUE) return { amount: 0, clicks: 0 };
+        calculateBetSize() {
+            const balance = this.getAccountBalance();
+            if (balance < Settings.CHIP_VALUE) return { amount: 0, clicks: 0 };
 
-            const minBet = balance * CONFIG.MIN_BET_FRACTION;
-            const maxBet = balance * CONFIG.MAX_BET_FRACTION;
-            const randomBet = minBet + CryptoRandom.randomFloat() * (maxBet - minBet);
-            
-            const clicks = Math.max(1, Math.floor(randomBet / CONFIG.CLICK_VALUE));
-            const amount = clicks * CONFIG.CLICK_VALUE;
-            
-            return { amount, clicks };
+            const minimumBet = balance * Settings.MIN_BET_FRACTION;
+            const maximumBet = balance * Settings.MAX_BET_FRACTION;
+            const randomBet = minimumBet + SecureRandom.decimal() * (maximumBet - minimumBet);
+            const clickCount = Math.max(1, Math.floor(randomBet / Settings.CHIP_VALUE));
+
+            return {
+                amount: clickCount * Settings.CHIP_VALUE,
+                clicks: clickCount
+            };
         }
 
-        start() {
-            if (this.isRunning) return;
-            this.isRunning = true;
-            this.refreshBetList();
-            this.processNext();
-            console.log('[Betting] Started betting state-based betting');
+        refreshBettingQueue() {
+            this.bettingQueue = this.tableMonitor.getRankedTables();
+            this.currentQueueIndex = 0;
+            debug(`Queue refreshed: ${this.bettingQueue.length} tables`);
         }
 
-        stop() {
-            this.isRunning = false;
-            this.currentTable = null;
-            if (CONFIG.DEBUG) console.log('[Betting] Stopped');
+        startAutoBetting() {
+            if (this.isAutoBetting) return;
+
+            this.isAutoBetting = true;
+            this.refreshBettingQueue();
+            this.processNextTable();
+
+            console.log('[Betting] Started');
         }
 
-        refreshBetList() {
-            const ranked = [];
-            for (const [id, table] of this.monitor.tables) {
-                const { P, B, T } = table.data.counters;
-                const total = P + B + T;
-                if (total > 20) {
-                    const diff = Math.abs(B - P);
-                    const ratio = total > 0 ? diff / total : 1;
-                    ranked.push({ id, P, B, diff, ratio, total });
-                }
+        stopAutoBetting() {
+            this.isAutoBetting = false;
+            this.activeTable = null;
+            console.log('[Betting] Stopped');
+        }
+
+        processNextTable() {
+            if (!this.isAutoBetting) return;
+
+            if (this.currentQueueIndex >= this.bettingQueue.length) {
+                this.refreshBettingQueue();
             }
-            this.betList = ranked.sort((a, b) => a.ratio - b.ratio).slice(0, CONFIG.TOP_COUNT);
-            this.currentIndex = 0;
-            console.log(`[Betting] Refreshed list: ${this.betList.length} tables`);
-        }
 
-        processNext() {
-            if (!this.isRunning) return;
+            this.activeTable = this.bettingQueue[this.currentQueueIndex];
+            this.currentQueueIndex++;
 
-            if (this.currentIndex >= this.betList.length) {
-                this.currentIndex = 0;
-                this.refreshBetList();
-                this.processNext();
+            if (!this.activeTable) {
+                setTimeout(() => this.processNextTable(), 100);
                 return;
             }
 
-            const tableInfo = this.betList[this.currentIndex];
-            this.currentTable = this.monitor.tables.get(tableInfo.id);
-            
-            if (!this.currentTable) {
-                this.currentIndex++;
-                setTimeout(() => this.processNext(), 100);
-                return;
-            }
+            this.activeTable.refresh();
 
-            // Check betting state instead of waiting for round changes
-            this.checkBettingState();
-        }
-
-        checkBettingState() {
-            if (!this.isRunning || !this.currentTable) return;
-
-            const bettingState = this.currentTable.data.bettingState;
-            
-            if (bettingState === 'open') {
-                // Table is open for betting, place bet immediately
-                this.placeBet();
+            if (this.activeTable.state.isBettingOpen) {
+                this.executeBet();
             } else {
-                // Table is closed, skip to next one
-                if (CONFIG.DEBUG) console.log(`[Betting] Table ${this.currentTable.id} closed (${bettingState}), skipping...`);
-                this.moveToNext();
+                debug(`${this.activeTable.tableKey} closed, skipping`);
+                setTimeout(() => this.processNextTable(), 100);
             }
         }
 
-        async placeBet() {
-            if (!this.isRunning || !this.currentTable) return;
+        async executeBet() {
+            if (!this.isAutoBetting || !this.activeTable) return;
 
-            const { amount, clicks } = this.calcBetAmount();
+            const { amount, clicks } = this.calculateBetSize();
             if (clicks === 0) {
-                if (CONFIG.DEBUG) console.log(`[Betting] Insufficient balance for ${this.currentTable.id}`);
-                this.moveToNext();
+                debug('Insufficient balance');
+                setTimeout(() => this.processNextTable(), 100);
                 return;
             }
 
-            this.betSide = CryptoRandom.randomSide();
+            this.lastBettingSide = SecureRandom.bettingSide();
             this.lastBetAmount = amount;
-            
-            const success = this.betSide === 'Player' ? 
-                await this.betPlayer(this.currentTable.id, clicks) : 
-                await this.betBanker(this.currentTable.id, clicks);
 
-            if (success) {
-                const table = this.currentTable.data;
-                const balance = this.getBalance();
-                console.log(`[Betting] ${table.name || this.currentTable.id}`);
-                console.log(`  Round #${table.roundNumber} | P:${table.counters.P} B:${table.counters.B} T:${table.counters.T} | Current: ${table.currentResult}`);
-                console.log(`  Bet ${this.betSide} $${amount.toFixed(2)} (${clicks} clicks) | Balance: $${balance.toFixed(2)}`);
-                console.log(`  ${table.bettingLimits || `${table.minBet} - ${table.maxBet}`} | ${table.tableId}`);
-                console.log(`  Betting State: ${table.bettingState}`);
+            const betPlaced = this.lastBettingSide === 'Player'
+                ? await this.activeTable.placeBetOnPlayer(clicks)
+                : await this.activeTable.placeBetOnBanker(clicks);
+
+            if (betPlaced) {
+                this.logBetDetails();
             }
-            // Wait after bet before moving to next table
-            setTimeout(() => this.moveToNext(), CONFIG.BET_DELAY);
+
+            setTimeout(() => this.processNextTable(), Settings.BET_DELAY_MS);
         }
 
-        moveToNext() {
-            this.currentIndex++;
-            this.currentTable = null;
-            setTimeout(() => this.processNext(), 100);
-        }
+        logBetDetails() {
+            const tableState = this.activeTable.state;
+            const balance = this.getAccountBalance();
 
-        async betPlayer(id, clicks = 1) {
-            const ele = this.monitor.tables.get(id)?.element;
-            if (!ele) return false;
-            const btn = ele.querySelector('div.betPositionBGTemp.mobile.player');
-            if (!btn) return false;
-
-            for (let i = 0; i < clicks; i++) {
-                btn.click();
-                if (i < clicks - 1) await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return true;
-        }
-
-        async betBanker(id, clicks = 1) {
-            const ele = this.monitor.tables.get(id)?.element;
-            if (!ele) return false;
-            const btn = ele.querySelector('div.betPositionBGTemp.mobile.banker');
-            if (!btn) return false;
-
-            for (let i = 0; i < clicks; i++) {
-                btn.click();
-                if (i < clicks - 1) await new Promise(resolve => setTimeout(resolve, 50));
-            }
-            return true;
+            console.log(`\n[Bet] ${tableState.tableName}`);
+            console.log(`  #${tableState.roundNumber} | P:${tableState.winCounts.P} B:${tableState.winCounts.B} T:${tableState.winCounts.T}`);
+            console.log(`  ${this.lastBettingSide} $${this.lastBetAmount.toFixed(2)} | Balance: $${balance.toFixed(2)}`);
+            console.log(`  ${tableState.minimumBet} | ${tableState.tableIdentifier}`);
         }
 
         getStatus() {
             return {
-                running: this.isRunning,
-                listLength: this.betList.length,
-                currentIndex: this.currentIndex,
-                currentTable: this.currentTable?.id || null,
-                currentTableBettingState: this.currentTable?.data.bettingState || null,
-                betSide: this.betSide,
-                lastBetAmount: this.lastBetAmount,
-                balance: this.getBalance()
+                running: this.isAutoBetting,
+                queueSize: this.bettingQueue.length,
+                index: this.currentQueueIndex,
+                current: this.activeTable?.tableKey || null,
+                lastSide: this.lastBettingSide,
+                lastAmount: this.lastBetAmount,
+                balance: this.getAccountBalance()
             };
         }
     }
 
-    // Initialize the monitor and betting manager
-    const monitor = new TableMonitor();
-    const betting = new BettingManager(monitor);
+    const tableMonitor = new TableMonitor();
+    const autoBetManager = new AutoBetManager(tableMonitor);
 
-    // Start monitoring after DOM is ready
     setTimeout(() => {
-        monitor.start();
-        if (CONFIG.DEBUG) console.log('[TableMonitor] table checker v1.0 initialized');
-        
-        // Auto-start betting after tables are detected
-            setTimeout(() => {
-            betting.start();
-            if (CONFIG.DEBUG) console.log('[Betting] Auto-started');
-            }, 10000);
-    }, 2000);
+        tableMonitor.startMonitoring();
 
-    // Global API
+        // Auto-betting disabled - focusing on data collection
+        // setTimeout(() => {
+        //     autoBetManager.startAutoBetting();
+        // }, Settings.BETTING_START_DELAY_MS);
+
+    }, Settings.INIT_DELAY_MS);
+
     window.tableMonitor = {
-        start: () => monitor.start(),
-        stop: () => monitor.stop(),
-        status: () => monitor.printStatus(),
-        getTables: () => monitor.getAllTables(),
-        getTable: (id) => monitor.getTableData(id),
-        count: () => monitor.tables.size,
-        list: () => {
-            console.log('Available tables:');
-            monitor.tables.forEach((table, id) => {
-                console.log(`${id}: ${table.data.name || 'Unknown'} - Round #${table.data.roundNumber}`);
-            });
+        start: () => tableMonitor.startMonitoring(),
+        stop: () => tableMonitor.stopMonitoring(),
+        status: () => tableMonitor.printStatus(),
+        count: () => tableMonitor.tableRegistry.size,
+        list: () => tableMonitor.getAllTables().map(t => ({ id: t.tableKey, name: t.state.tableName, round: t.state.roundNumber })),
+        getTables: () => Object.fromEntries([...tableMonitor.tableRegistry].map(([k, v]) => [k, v.state])),
+        getTable: (id) => tableMonitor.getTable(id)?.state || null,
+        getEle: (id) => tableMonitor.getTable(id)?.element || null,
+        rank: () => tableMonitor.getRankedTables().map(t => ({
+            id: t.tableKey,
+            name: t.state.tableName,
+            P: t.state.winCounts.P,
+            B: t.state.winCounts.B,
+            total: t.totalRounds,
+            ratio: t.balanceRatio.toFixed(3)
+        })),
+        betPlayer: (id, clicks = 1) => tableMonitor.getTable(id)?.placeBetOnPlayer(clicks),
+        betBanker: (id, clicks = 1) => tableMonitor.getTable(id)?.placeBetOnBanker(clicks),
+        startBetting: () => autoBetManager.startAutoBetting(),
+        stopBetting: () => autoBetManager.stopAutoBetting(),
+        bettingStatus: () => autoBetManager.getStatus(),
+        getBalance: () => autoBetManager.getAccountBalance(),
+        calcBet: () => autoBetManager.calculateBetSize(),
+        getBettingStates: () => tableMonitor.getAllTables().map(t => ({
+            id: t.tableKey,
+            name: t.state.tableName,
+            isOpen: t.state.isBettingOpen
+        })),
+        getTableBettingState: (id) => tableMonitor.getTable(id)?.state.isBettingOpen ?? null,
+        toggleDebug: () => {
+            Settings.DEBUG_MODE = !Settings.DEBUG_MODE;
+            console.log(`Debug: ${Settings.DEBUG_MODE ? 'ON' : 'OFF'}`);
         },
-        toggleLogging: () => {
-            CONFIG.DEBUG = !CONFIG.DEBUG;
-            console.log(`[TableMonitor] Logging ${CONFIG.DEBUG ? 'enabled' : 'disabled'}`);
-        },
-        getEle: (id) => {
-            const table = monitor.tables.get(id);
-            return table ? table.element : null;
-        },
-        betPlayer: (id, clicks = 1) => betting.betPlayer(id, clicks),
-        betBanker: (id, clicks = 1) => betting.betBanker(id, clicks),
-        getBalance: () => betting.getBalance(),
-        calcBet: () => betting.calcBetAmount(),
-        rank: () => {
-            const ranked = [];
-            for (const [id, table] of monitor.tables) {
-                const { P, B, T } = table.data.counters;
-                const total = P + B + T;
-                if (total > 20) {
-                    const diff = Math.abs(B - P);
-                    const ratio = total > 0 ? diff / total : 1;
-                    ranked.push({ id, name: table.data.name, P, B, diff, ratio, total });
-                }
-            }
-            return ranked.sort((a, b) => a.ratio - b.ratio);
-        },
-        startBetting: () => betting.start(),
-        stopBetting: () => betting.stop(),
-        bettingStatus: () => betting.getStatus(),
-        // Betting state functions
-        getBettingStates: () => {
-            const states = [];
-            for (const [id, table] of monitor.tables) {
-                states.push({
-                    id,
-                    name: table.data.name,
-                    bettingState: table.data.bettingState
-                });
-            }
-            return states;
-        },
-        getTableBettingState: (id) => {
-            const table = monitor.tables.get(id);
-            return table ? table.data.bettingState : null;
+        testSelectors: (id = 'table_0') => {
+            const table = tableMonitor.getTable(id);
+            if (!table) return console.log(`Table ${id} not found`);
+            const el = table.element;
+            const s = table.state;
+            console.log('═══ FULL TABLE STATE ═══');
+            console.log('Tile ID:', s.tileId);
+            console.log('Table Name:', s.tableName);
+            console.log('Table ID:', s.tableIdentifier);
+            console.log('Min Bet:', s.minimumBet);
+            console.log('Round #:', s.roundNumber);
+            console.log('Tile:', s.tile);
+            console.log('Win Counts:', s.winCounts);
+            console.log('Pair Counts:', s.pairCounts);
+            console.log('Current Hand:', s.currentHand);
+            console.log('Big Road Length:', s.bigRoad.length);
+            console.log('Big Road Sample:', s.bigRoad.slice(0, 5));
+            console.log('Betting Open:', s.isBettingOpen);
+            console.log('Has Favorite:', s.hasFavorite);
+            console.log('─── Raw Selectors ───');
+            console.log('Stats Container:', !!query(Settings.STATS_CONTAINER_SELECTOR, el));
+            console.log('Player Btn:', !!query(Settings.PLAYER_BUTTON_SELECTOR, el));
+            console.log('Banker Btn:', !!query(Settings.BANKER_BUTTON_SELECTOR, el));
+            console.log('Road Table:', !!query('.of_ok', el));
+            console.log('Win Message:', query('.zz_zG', el)?.textContent);
+            return s;
         }
     };
 
-    if (CONFIG.DEBUG) {
-        console.log('[TableMonitor] API available: window.tableMonitor');
-        console.log('Monitor: start(), stop(), status(), getTables(), getEle(id), rank(), list(), count(), toggleLogging()');
-        console.log('Betting: betPlayer(id, clicks), betBanker(id, clicks), startBetting(), stopBetting(), bettingStatus()');
-        console.log('Balance: getBalance(), calcBet()');
-        console.log('States: getBettingStates(), getTableBettingState(id)');
-    }
+    console.log('[Multi] v2.2 loaded | API: window.tableMonitor');
 
 })();
 
-// dont remove my quick commands
-// window.tableMonitor.betPlayer('table_0');
-// window.tableMonitor.getEle('table_0');
-// window.tableMonitor.status();
-// window.tableMonitor.rank();
-// window.tableMonitor.startBetting();
-// window.tableMonitor.bettingStatus();
-// window.tableMonitor.stopBetting();
-// window.tableMonitor.getTables();
-// window.tableMonitor.getBalance();
-// window.tableMonitor.calcBet();
-// window.tableMonitor.getBettingStates();
-// window.tableMonitor.getTableBettingState('table_0');
+/*
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                        MULTIPLAY API REFERENCE                                ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  MONITORING CONTROL                                                          ║
+║  ─────────────────                                                           ║
+║  tableMonitor.start()          Start polling tables (auto-starts on load)    ║
+║  tableMonitor.stop()           Stop polling tables                           ║
+║  tableMonitor.toggleDebug()    Toggle debug logging ON/OFF                   ║
+║                                                                              ║
+║  TABLE INFO                                                                  ║
+║  ──────────                                                                  ║
+║  tableMonitor.count()          Number of tables detected                     ║
+║  tableMonitor.status()         Print all tables with stats to console        ║
+║  tableMonitor.list()           Array of {id, name, round} for all tables     ║
+║  tableMonitor.rank()           Tables ranked by balance ratio (most balanced)║
+║                                                                              ║
+║  SINGLE TABLE DATA                                                           ║
+║  ─────────────────                                                           ║
+║  tableMonitor.getTables()      Object with all table states keyed by id      ║
+║  tableMonitor.getTable('table_0')     Full state object for one table        ║
+║  tableMonitor.getEle('table_0')       Raw DOM element for one table          ║
+║  tableMonitor.testSelectors('table_0') Debug: test all selectors on table    ║
+║                                                                              ║
+║  STATE OBJECT STRUCTURE                                                      ║
+║  ──────────────────────                                                      ║
+║  {                                                                           ║
+║    tileId: "TileHeight-xxx",           // DOM element id                     ║
+║    tableName: "Baccarat 3",            // Display name                       ║
+║    minimumBet: "$0.2",                 // Min bet string                     ║
+║    tableIdentifier: "ID: 10940298819", // Unique table ID                    ║
+║    roundNumber: 58,                    // Current round #                    ║
+║    tile: { width, height, transform, visible },                              ║
+║    winCounts: { P: 22, B: 28, T: 8 },  // Player/Banker/Tie wins             ║
+║    pairCounts: { PP: 6, BP: 5 },       // Player Pair/Banker Pair counts     ║
+║    currentHand: {                                                            ║
+║      playerScore: 9,                   // Current player score               ║
+║      bankerScore: 2,                   // Current banker score               ║
+║      playerCards: [{rank, suit}, ...], // Player cards dealt                 ║
+║      bankerCards: [{rank, suit}, ...], // Banker cards dealt                 ║
+║      lastWinner: "PLAYER"              // Last round winner                  ║
+║    },                                                                        ║
+║    bigRoad: [{winner, modifier, index}, ...], // Road history                ║
+║    isBettingOpen: true,                // Can place bets now                 ║
+║    hasFavorite: false,                 // Star favorited                     ║
+║    updatedAt: 1733500000000            // Last update timestamp              ║
+║  }                                                                           ║
+║                                                                              ║
+║  BETTING STATUS                                                              ║
+║  ──────────────                                                              ║
+║  tableMonitor.getBettingStates()              All tables betting status      ║
+║  tableMonitor.getTableBettingState('table_0') Single table betting status    ║
+║                                                                              ║
+║  MANUAL BETTING (use with caution)                                           ║
+║  ─────────────────────────────────                                           ║
+║  tableMonitor.betPlayer('table_0', 5)  Click player bet 5 times              ║
+║  tableMonitor.betBanker('table_0', 5)  Click banker bet 5 times              ║
+║  tableMonitor.startBetting()           Start auto-betting system             ║
+║  tableMonitor.stopBetting()            Stop auto-betting system              ║
+║  tableMonitor.bettingStatus()          Current auto-bet status               ║
+║  tableMonitor.getBalance()             Get stored balance from localStorage  ║
+║  tableMonitor.calcBet()                Calculate bet size based on balance   ║
+║                                                                              ║
+║  QUICK EXAMPLES                                                              ║
+║  ──────────────                                                              ║
+║  // See all tables at a glance                                               ║
+║  tableMonitor.status()                                                       ║
+║                                                                              ║
+║  // Get full data for first table                                            ║
+║  tableMonitor.getTable('table_0')                                            ║
+║                                                                              ║
+║  // Find tables with most rounds played                                      ║
+║  tableMonitor.rank()                                                         ║
+║                                                                              ║
+║  // Export all table data as JSON                                            ║
+║  JSON.stringify(tableMonitor.getTables(), null, 2)                           ║
+║                                                                              ║
+║  // Watch specific table's road history                                      ║
+║  tableMonitor.getTable('table_0').bigRoad                                    ║
+║                                                                              ║
+║  // Get current hand cards                                                   ║
+║  tableMonitor.getTable('table_0').currentHand                                ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+*/
