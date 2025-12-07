@@ -1,12 +1,7 @@
-sudo docker run -d \
-  --name xray \
-  --restart=always \
-  -p 30201:30201/tcp -p 30201:30201/udp \
-  -v /etc/xray:/etc/xray \
-  teddysun/xray
+#!/bin/bash
+sudo mkdir -p /etc/xray
 
-  https://hub.docker.com/r/teddysun/xray
-
+sudo tee /etc/xray/config.json > /dev/null << 'EOF'
 {
   "inbounds": [
     {
@@ -38,22 +33,15 @@ sudo docker run -d \
     { "protocol": "blackhole", "settings": {}, "tag": "blocked" }
   ]
 }
+EOF
 
-sudo mkdir -p /etc/xray
-sudo code /etc/xray/config.json
+sudo docker rm -f xray 2>/dev/null
+sudo docker run -d \
+  --name xray \
+  --restart=always \
+  -p 30201:30201/tcp -p 30201:30201/udp \
+  -v /etc/xray:/etc/xray \
+  teddysun/xray
 
-
-
-- { name: 'ali_vmess',
-    type: vmess,
-    server: hk.edgesoftware.xyz,  # now pointing via Cloudflare DNS to 47.86.43.185
-    port: 30201,
-    uuid: bb553795-6a8f-493c-960c-12a6f2f65eee,
-    alterId: 0,
-    cipher: auto,
-    udp: true,
-    network: ws,
-    ws-opts:
-      { path: /,
-        headers: { Host: live.bilibili.com } }
-  }
+echo "Done. Client config:"
+echo "server: hk.edgesoftware.xyz, port: 30201, uuid: bb553795-6a8f-493c-960c-12a6f2f65eee"
