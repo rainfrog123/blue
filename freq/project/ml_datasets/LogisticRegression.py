@@ -1183,9 +1183,9 @@ ax2.text(0.5, 0.5, diagnosis, fontsize=14, ha='center', transform=ax2.transAxes,
         bbox=dict(boxstyle='round', facecolor=color, alpha=0.2))
 ax2.text(0.5, 0.2, f"Final Train Score: {train_mean[-1]:.4f}\nFinal CV Score: {test_mean[-1]:.4f}\nGap: {gap:.4f}",
         fontsize=12, ha='center', transform=ax2.transAxes, family='monospace')
-    
-    plt.tight_layout()
-    plt.show()
+
+plt.tight_layout()
+plt.show()
 
 # %% [CELL 15: Odds Ratios - Interpret Coefficients]
 print("\n" + "=" * 70)
@@ -1224,7 +1224,7 @@ print("-" * 60)
 for name, coef, or_val in zip(feature_names, coefs, odds_ratios):
     if or_val > 1:
         interp = f"+{(or_val-1)*100:.1f}% odds per unit ↑"
-        else:
+    else:
         interp = f"-{(1-or_val)*100:.1f}% odds per unit ↑"
     print(f"{name:<15} {coef:<12.4f} {or_val:<12.4f} {interp}")
 
@@ -1257,10 +1257,10 @@ for bar, val in zip(bars2, odds_ratios):
             f'{val:.3f}', va='center', fontsize=11, fontweight='bold')
 ax2.legend()
 ax2.grid(True, alpha=0.3, axis='x')
-    
-    plt.tight_layout()
-    plt.show()
-    
+
+plt.tight_layout()
+plt.show()
+
 # %% [CELL 16: Common Mistakes to Avoid]
 print("\n" + "=" * 70)
 print("🚫 CELL 16: Common Mistakes to Avoid")
