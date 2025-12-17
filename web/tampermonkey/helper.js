@@ -25,7 +25,7 @@
 
 (function () {
     'use strict';
-    
+
     const currentUrl = window.location.href;
     if (!(
         currentUrl.startsWith('https://chatgpt.com/') ||
