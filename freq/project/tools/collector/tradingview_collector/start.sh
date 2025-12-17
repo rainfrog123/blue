@@ -10,7 +10,7 @@ $PYTHON -c "import websocket, pandas, tabulate" 2>/dev/null || \
     $PYTHON -m pip install -q websocket-client pandas tabulate
 
 # Start collector
-mkdir -p "$SCRIPT_DIR/data/logs"
+mkdir -p "$SCRIPT_DIR/data"
 tmux kill-session -t $SESSION 2>/dev/null || true
 tmux new-session -d -s $SESSION "cd $SCRIPT_DIR && $PYTHON main.py"
 

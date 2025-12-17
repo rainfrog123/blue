@@ -1,133 +1,111 @@
-"""TradingView WebSocket client for 5-second candles."""
+"""TradingView WebSocket client for OHLCV candles."""
 
 import websocket
 import json
-import time
+import re
+import random
+import string
 import threading
 import asyncio
-import re
 from datetime import datetime
 from typing import AsyncGenerator, Dict, Any, Optional
-from config import AUTH_TOKEN, WS_URL, SESSION_ID, SYMBOLS
 
-HEADERS = {
-    "Origin": "https://www.tradingview.com",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-}
+def gen_session(prefix: str = "cs") -> str:
+    return f"{prefix}_{''.join(random.choices(string.ascii_letters + string.digits, k=12))}"
 
-def get_payloads(session_id, symbol, auth_token):
-    """Generate WebSocket payloads."""
-    return {
-        'auth': json.dumps({"m": "set_auth_token", "p": [auth_token]}),
-        'session': json.dumps({"m": "chart_create_session", "p": [session_id, ""]}),
-        'resolve': json.dumps({
-            "m": "resolve_symbol",
-            "p": [session_id, "sds_sym_1", 
-                 f'={{"adjustment":"splits","currency-id":"XTVCUSDT","session":"regular","symbol":"{symbol}"}}']
-        }),
-        'series': json.dumps({
-            "m": "create_series",
-            "p": [session_id, "sds_1", "s1", "sds_sym_1", "5S", 300, ""]
-        })
-    }
-
-def wrap_message(msg: str) -> str:
+def wrap(msg: str) -> str:
     return f"~m~{len(msg)}~m~{msg}"
 
-def split_tradingview_messages(raw):
-    messages = []
+def unwrap(raw: str) -> list:
+    msgs = []
     while raw:
-        match = re.match(r"~m~(\d+)~m~", raw)
-        if not match:
-            break
-        length = int(match.group(1))
-        start = match.end()
-        end = start + length
-        json_part = raw[start:end]
-        messages.append(json_part)
+        m = re.match(r"~m~(\d+)~m~", raw)
+        if not m: break
+        end = m.end() + int(m.group(1))
+        msgs.append(raw[m.end():end])
         raw = raw[end:]
-    return messages
+    return msgs
 
-class TradingViewClient:
-    """TradingView WebSocket client for 5s candles."""
+class TVClient:
+    WS_URL = "wss://prodata.tradingview.com/socket.io/websocket"
+    HEADERS = {"Origin": "https://www.tradingview.com"}
     
-    def __init__(self):
-        self.ws = None
+    def __init__(self, auth_token: str, symbols: list, timeframe: str = "5S", bars: int = 300):
+        self.auth_token = auth_token
+        self.symbols = symbols
+        self.timeframe = timeframe
+        self.bars = bars
+        self.ws: Optional[websocket.WebSocketApp] = None
         self._queue: Optional[asyncio.Queue] = None
-        self._loop = None
-        self._current_candle = None
-        self.payloads = get_payloads(SESSION_ID, SYMBOLS[0], AUTH_TOKEN)
-
+        self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._current: Dict[str, list] = {}
+        self.chart_session = gen_session("cs")
+    
+    def _send(self, msg: dict):
+        if self.ws:
+            self.ws.send(wrap(json.dumps(msg)))
+    
     def _on_open(self, ws):
-        """Initialize WebSocket connection sequence."""
-        def send_sequence():
-            for delay, payload in [(0, 'auth'), (1, 'session'), (2, 'resolve'), (3, 'series')]:
-                time.sleep(delay)
-                ws.send(wrap_message(self.payloads[payload]))
-        threading.Thread(target=send_sequence, daemon=True).start()
-
+        self._send({"m": "set_auth_token", "p": [self.auth_token]})
+        self._send({"m": "set_locale", "p": ["en", "US"]})
+        self._send({"m": "chart_create_session", "p": [self.chart_session, ""]})
+        self._send({"m": "switch_timezone", "p": [self.chart_session, "Etc/UTC"]})
+        
+        for i, sym in enumerate(self.symbols):
+            sym_id, series_id = f"sds_sym_{i+1}", f"sds_{i+1}"
+            self._send({"m": "resolve_symbol", "p": [
+                self.chart_session, sym_id,
+                f'={{"adjustment":"splits","session":"regular","symbol":"{sym}"}}'
+            ]})
+            self._send({"m": "create_series", "p": [
+                self.chart_session, series_id, f"s{i+1}", sym_id, self.timeframe, self.bars, ""
+            ]})
+    
     def _on_message(self, ws, message):
-        """Process incoming WebSocket messages."""
-        for msg in split_tradingview_messages(message):
+        for msg in unwrap(message):
+            if not msg.strip(): continue
+            if msg.startswith("~h~"):
+                ws.send(wrap(msg))
+                continue
             try:
-                if not msg.strip():
-                    continue
-                    
-                # Handle heartbeat
-                if re.match(r"^~h~\d+$", msg):
-                    ws.send(f"~m~{len(msg)}~m~{msg}")
-                    continue
-                
-                # Process candle data
                 data = json.loads(msg)
-                if data.get("m") == "du" and len(data.get("p", [])) > 1:
-                    self._process_candle_data(data["p"][1])
-            except Exception:
-                pass
-
-    def _process_candle_data(self, data):
-        """Extract and queue candle data."""
-        sds_data = data.get("sds_1", {}).get("s", [])
-        for bar in sds_data:
-            ohlcv = bar["v"]
-            candle_time = int(ohlcv[0])
-            
-            # Emit previous candle when new one arrives
-            if self._current_candle and candle_time != self._current_candle[0]:
-                candle = {
-                    "time": datetime.utcfromtimestamp(self._current_candle[0]),
-                    "open": self._current_candle[1],
-                    "high": self._current_candle[2],
-                    "low": self._current_candle[3],
-                    "close": self._current_candle[4],
-                    "volume": self._current_candle[5]
-                }
-                if self._queue:
-                    asyncio.run_coroutine_threadsafe(self._queue.put(candle), self._loop)
-            
-            self._current_candle = ohlcv
-
-    def _run_ws(self):
-        """Run WebSocket connection."""
+                m, p = data.get("m"), data.get("p", [])
+                if m in ("du", "timescale_update") and len(p) > 1:
+                    self._handle_bars(p[1])
+            except: pass
+    
+    def _handle_bars(self, data: dict):
+        for key, val in data.items():
+            if key.startswith("sds_") and "s" in val:
+                for bar in val["s"]:
+                    self._emit_bar(bar["v"])
+    
+    def _emit_bar(self, ohlcv: list):
+        ts = int(ohlcv[0])
+        symbol = self.symbols[0]
+        prev = self._current.get(symbol)
+        if prev and prev[0] != ts:
+            self._put({"symbol": symbol, "time": datetime.utcfromtimestamp(prev[0]),
+                      "open": prev[1], "high": prev[2], "low": prev[3], "close": prev[4], "volume": prev[5]})
+        self._current[symbol] = ohlcv
+    
+    def _put(self, data: dict):
+        if self._queue and self._loop:
+            asyncio.run_coroutine_threadsafe(self._queue.put(data), self._loop)
+    
+    def _run(self):
         self.ws = websocket.WebSocketApp(
-            WS_URL,
-            header=[f"{k}: {v}" for k, v in HEADERS.items()],
-            on_open=self._on_open,
-            on_message=self._on_message,
-            on_error=lambda ws, error: None,
-            on_close=lambda ws, status, msg: None
-        )
+            self.WS_URL, header=[f"{k}: {v}" for k, v in self.HEADERS.items()],
+            on_open=self._on_open, on_message=self._on_message,
+            on_error=lambda ws, e: None, on_close=lambda ws, s, m: None)
         self.ws.run_forever()
-
-    async def candle_generator(self) -> AsyncGenerator[Dict[str, Any], None]:
-        """Async generator yielding 5s candles."""
+    
+    async def stream(self) -> AsyncGenerator[Dict[str, Any], None]:
         self._queue = asyncio.Queue()
         self._loop = asyncio.get_event_loop()
-        threading.Thread(target=self._run_ws, daemon=True).start()
-        
+        threading.Thread(target=self._run, daemon=True).start()
         try:
             while True:
                 yield await self._queue.get()
         finally:
-            if self.ws:
-                self.ws.close() 
+            if self.ws: self.ws.close()
