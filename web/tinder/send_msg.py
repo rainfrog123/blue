@@ -15,8 +15,17 @@ headers = {
 MY_ID = "5bd5cac4f56a08b23bc4224a"
 
 def get_matches():
-    r = requests.get("https://api.gotinder.com/v2/matches", headers=headers, params={"locale": "en", "count": 60})
-    return r.json().get("data", {}).get("matches", [])
+    all_matches, token = [], None
+    while True:
+        params = {"locale": "en", "count": 60}
+        if token:
+            params["page_token"] = token
+        data = requests.get("https://api.gotinder.com/v2/matches", headers=headers, params=params).json().get("data", {})
+        all_matches.extend(data.get("matches", []))
+        token = data.get("next_page_token")
+        if not token:
+            break
+    return all_matches
 
 def send_msg(match_id, other_id, msg):
     url = f"https://api.gotinder.com/user/matches/{match_id}"
