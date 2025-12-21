@@ -37,6 +37,7 @@ alias strat='cd /allah/blue/freq/project/user_data/strategies'
 alias tools='cd /allah/blue/freq/project/tools'
 alias tv='cd /allah/blue/freq/misc/tradingview'
 alias user='cd /allah/blue/freq/project/user_data'
+alias tinder='cd /allah/blue/web/tinder'
 
 # === DIR: Web ===
 alias ba='cd /allah/blue/web/baccarat'
