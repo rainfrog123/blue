@@ -1,4 +1,4 @@
-//@version=5
+//@version=6
 indicator("TEMA Indicator with Minimalistic Trend Changes", overlay=true)
 
 // Input parameters
@@ -27,7 +27,6 @@ if na(previous_trend)
     previous_trend := trend
 else
     if trend != previous_trend
-        // Reset the trend duration on change
         trend_duration := 1
         previous_trend := trend
     else
@@ -37,7 +36,7 @@ else
 tema_color = switch
     trend == "UP" => color.green
     trend == "DOWN" => color.red
-    true => color.gray  // "STABLE" and default case
+    => color.gray
 plot(tema, color=tema_color, title="TEMA")
 
 // Plot small triangles at trend changes
