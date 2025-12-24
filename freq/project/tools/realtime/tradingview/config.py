@@ -1,17 +1,19 @@
-"""TradingView collector config."""
+"""TradingView collector configuration."""
 
 import os
+from pathlib import Path
 
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = Path(__file__).parent.absolute()
 DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-DB_PATH = os.path.join(DATA_DIR, "tv.db")
+DB_PATH = os.path.join(DATA_DIR, "tv_candles.db")
 LOG_FILE = os.path.join(DATA_DIR, "collector.log")
 
 # Auth token (get from browser devtools -> Network -> WS -> set_auth_token)
 AUTH_TOKEN = "eyJhbGciOiJSUzUxMiIsImtpZCI6IkdaeFUiLCJ0eXAiOiJKV1QifQ.eyJ1c2VyX2lkIjoxMjQyNjY5NjksImV4cCI6MTc2NjAxOTYzNSwiaWF0IjoxNzY2MDA1MjM1LCJwbGFuIjoicHJvX3ByZW1pdW1fdHJpYWwiLCJwcm9zdGF0dXMiOiJub25fcHJvIiwiZXh0X2hvdXJzIjoxLCJwZXJtIjoibnNlX2RseSIsInN0dWR5X3Blcm0iOiJ0di12b2x1bWVieXByaWNlLHR2LXByb3N0dWRpZXMsdHYtY2hhcnRfcGF0dGVybnMsdHYtY2hhcnRwYXR0ZXJucyIsIm1heF9zdHVkaWVzIjoyNSwibWF4X2Z1bmRhbWVudGFscyI6MTAsIm1heF9jaGFydHMiOjgsIm1heF9hY3RpdmVfYWxlcnRzIjo0MDAsIm1heF9zdHVkeV9vbl9zdHVkeSI6MjQsImZpZWxkc19wZXJtaXNzaW9ucyI6WyJyZWZib25kcyJdLCJ3YXRjaGxpc3Rfc3ltYm9sc19saW1pdCI6MTAwMCwibXVsdGlwbGVfd2F0Y2hsaXN0cyI6MSwibXVsdGlmbGFnZ2VkX3N5bWJvbHNfbGlzdHMiOjEsIm1heF9hbGVydF9jb25kaXRpb25zIjo1LCJtYXhfb3ZlcmFsbF9hbGVydHMiOjIwMDAsIm1heF9vdmVyYWxsX3dhdGNobGlzdF9hbGVydHMiOjUsIm1heF9hY3RpdmVfcHJpbWl0aXZlX2FsZXJ0cyI6NDAwLCJtYXhfYWN0aXZlX2NvbXBsZXhfYWxlcnRzIjo0MDAsIm1heF9hY3RpdmVfd2F0Y2hsaXN0X2FsZXJ0cyI6MiwibWF4X2Nvbm5lY3Rpb25zIjo1MH0.iCd4ShLyy4w1pD7jI2ggGPIXEZledp9waTuch0e7idHkWxNFwV6UDmUr3HEgyLg9K1KMayXzRrhI1KGsI-CICwImoPJmZR2IfuyXFCZdLwEjBOfWoalJ-One9VkuC6iWoo4uWVHS228Pz-V7Lp04HOdjx2O40o0Tzu9OOYYt-l0"
 
+# Symbols
 SYMBOLS = ["BINANCE:ETHUSDT.P"]
 TIMEFRAME = "5S"
 INITIAL_BARS = 300
@@ -19,3 +21,4 @@ RETENTION_HOURS = 3
 PRUNE_INTERVAL = 600
 
 LOG_LEVEL = "INFO"
+

@@ -1,10 +1,10 @@
-"""Database for candles."""
+"""SQLite database for TradingView candles."""
 
 import sqlite3
 from contextlib import contextmanager
 from config import DB_PATH
 
-class Database:
+class CandleDatabase:
     def __init__(self, path: str = DB_PATH):
         self.path = path
         self._init()
@@ -42,3 +42,4 @@ class Database:
     def count(self):
         with self.conn() as c:
             return c.execute('SELECT COUNT(*) FROM candles').fetchone()[0]
+

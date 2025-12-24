@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""View collected candles."""
+"""View collected TradingView candles."""
 
 from datetime import datetime
-from database import Database
+from database import CandleDatabase
 from config import SYMBOLS
 
 def main():
-    db = Database()
-    print(f"=== TV Collector ({db.count():,} candles) ===\n")
+    db = CandleDatabase()
+    print(f"=== TradingView Collector ({db.count():,} candles) ===\n")
     
     for sym in SYMBOLS:
         candles = db.get(sym, 15)
@@ -20,3 +20,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

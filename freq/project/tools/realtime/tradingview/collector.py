@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""TradingView candle collector."""
+"""TradingView 5-second candle collector."""
 
 import asyncio
 import logging
 from datetime import datetime, timedelta
 from client import TVClient
-from database import Database
+from database import CandleDatabase
 from config import AUTH_TOKEN, SYMBOLS, TIMEFRAME, INITIAL_BARS, RETENTION_HOURS, PRUNE_INTERVAL, LOG_LEVEL, LOG_FILE
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL),
@@ -14,7 +14,7 @@ logging.basicConfig(level=getattr(logging, LOG_LEVEL),
 log = logging.getLogger('tv')
 
 async def main():
-    db = Database()
+    db = CandleDatabase()
     client = TVClient(AUTH_TOKEN, SYMBOLS, TIMEFRAME, INITIAL_BARS)
     last_prune = datetime.now()
     
@@ -35,3 +35,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         log.info("Stopped")
+

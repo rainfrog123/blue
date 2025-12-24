@@ -109,3 +109,4 @@ class TVClient:
                 yield await self._queue.get()
         finally:
             if self.ws: self.ws.close()
+

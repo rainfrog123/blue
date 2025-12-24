@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+CCXT-based 5-second OHLCV candle collector.
+Collects real-time trades from Binance and aggregates them into 5s candles.
+"""
+
 import asyncio
 import logging
 import time
@@ -11,8 +16,8 @@ import ccxt.pro as ccxtpro
 from dataclasses import dataclass
 from asyncio import Queue, Semaphore
 
-from database import MarketDatabase
-from settings import EXCHANGE, EXCHANGE_CREDENTIALS, SYMBOLS, LOG_LEVEL, LOG_FILE
+from database import CandleDatabase
+from config import EXCHANGE, EXCHANGE_CREDENTIALS, SYMBOLS, LOG_LEVEL, LOG_FILE
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format='%(asctime)s - %(levelname)s - %(message)s',
                    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()])
@@ -46,7 +51,7 @@ class Candle:
 
 class DataCollector:
     def __init__(self):
-        self.db = MarketDatabase()
+        self.db = CandleDatabase()
         self.exchange = None
         self.running = False
         
@@ -287,3 +292,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+

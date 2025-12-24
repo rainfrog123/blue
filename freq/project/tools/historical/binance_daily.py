@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"""
+Download daily ETH/USDT trade data from Binance Data Vision.
+Downloads zip files, extracts to CSV, converts to Parquet format.
+"""
+
 import requests
 import os
 import time
@@ -21,7 +26,8 @@ BASE_URL = "https://data.binance.vision/data/futures/um/daily/trades/ETHUSDT"
 DEFAULT_OUTPUT_DIR = "/allah/data/trades"
 DEFAULT_DATA_DIR = os.path.join(DEFAULT_OUTPUT_DIR, "eth_usdt_daily_trades")
 
-class BinanceDailyTradesManager:
+class BinanceDailyTradesDownloader:
+    """Download and manage daily ETH/USDT trade data from Binance."""
     
     def __init__(self, trades_dir=None):
         os.makedirs(DEFAULT_OUTPUT_DIR, exist_ok=True)
@@ -88,7 +94,6 @@ class BinanceDailyTradesManager:
             for chunk in chunks:
                 if 'timestamp' in chunk.columns:
                     chunk['timestamp'] = pd.to_datetime(chunk['timestamp'])
-                mode = 'write' if first else 'append'
                 chunk.to_parquet(
                     parquet_path,
                     compression='snappy',
@@ -99,7 +104,7 @@ class BinanceDailyTradesManager:
                 first = False
             
             os.remove(csv_path)
-            print(f"Converted and compressed: {os.path.basename(csv_path)} → {os.path.basename(parquet_path)}")
+            print(f"Converted: {os.path.basename(csv_path)} → {os.path.basename(parquet_path)}")
             return True
         except Exception as e:
             print(f"Error converting to parquet: {e}")
@@ -136,7 +141,8 @@ class BinanceDailyTradesManager:
             print(f"Error extracting zip: {e}")
             return False
 
-    def download_daily_trades(self, year=2025, month=3):
+    def download(self, year=2025, month=3):
+        """Download daily trades for a specific month."""
         existing_files = self.get_existing_files()
         print(f"\nFound {len(existing_files)} existing processed files")
         if existing_files:
@@ -235,7 +241,7 @@ class BinanceDailyTradesManager:
             print(f"Error parsing date: {e}")
             sys.exit(1)
     
-    def get_daily_dates(self):
+    def get_available_dates(self):
         all_files = glob.glob(os.path.join(self.trades_dir, "ETHUSDT-trades-????-??-??.parquet"))
         dates = []
         
@@ -275,23 +281,30 @@ class BinanceDailyTradesManager:
                 continue
         
         filtered_files.sort()
-        
         return filtered_files
     
-    def load_parquet_files(self, file_paths, columns=None, sample_rate=None, verbose=True):
-        if not file_paths:
+    def load_trades(self, start_date, end_date=None, columns=None, sample_rate=None, verbose=True):
+        """Load trades for a specific date range."""
+        files = self.get_parquet_files(start_date, end_date)
+        
+        if not files:
             if verbose:
-                print("No files found for the specified date range")
+                print(f"No files found for the specified date range: {start_date} to {end_date or start_date}")
             return None
+        
+        if verbose:
+            print(f"Found {len(files)} files for the specified date range")
+            for file in files:
+                print(f"  - {os.path.basename(file)}")
         
         dfs = []
         total_size = 0
         
         if verbose:
-            print(f"Loading {len(file_paths)} files...")
-            file_iter = tqdm(file_paths)
+            print(f"Loading {len(files)} files...")
+            file_iter = tqdm(files)
         else:
-            file_iter = file_paths
+            file_iter = files
             
         for file_path in file_iter:
             try:
@@ -325,23 +338,9 @@ class BinanceDailyTradesManager:
             result['datetime'] = pd.to_datetime(result['time'], unit='ms')
         
         return result
-    
-    def load_trades(self, start_date, end_date=None, columns=None, sample_rate=None, verbose=True):
-        files = self.get_parquet_files(start_date, end_date)
-        
-        if not files:
-            if verbose:
-                print(f"No files found for the specified date range: {start_date} to {end_date or start_date}")
-            return None
-        
-        if verbose:
-            print(f"Found {len(files)} files for the specified date range")
-            for file in files:
-                print(f"  - {os.path.basename(file)}")
-        
-        return self.load_parquet_files(files, columns, sample_rate, verbose)
 
-    def visualize_trades(self, df, timeframe='1min', price_col='price', save_path=None):
+    def visualize(self, df, timeframe='1min', price_col='price', save_path=None):
+        """Visualize trade data with the specified timeframe."""
         if df is None or len(df) == 0:
             print("No data to visualize")
             return
@@ -354,11 +353,9 @@ class BinanceDailyTradesManager:
             return
         
         df = df.set_index('datetime')
-        
         resampled = df[price_col].resample(timeframe).agg(['first', 'max', 'min', 'last'])
         
         fig, ax = plt.figure(figsize=(12, 6)), plt.gca()
-        
         ax.plot(resampled.index, resampled['last'], label=f'ETH/USDT ({timeframe} timeframe)')
         
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M'))
@@ -370,7 +367,6 @@ class BinanceDailyTradesManager:
         
         plt.grid(True, alpha=0.3)
         plt.legend()
-        
         plt.tight_layout()
         
         if save_path:
@@ -385,25 +381,25 @@ def main():
     pd.set_option('display.width', None)
     pd.set_option('display.float_format', lambda x: '%.5f' % x)
     
-    manager = BinanceDailyTradesManager()
+    downloader = BinanceDailyTradesDownloader()
     
     start_date = datetime(2025, 9, 1)
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     
-    print(f"Downloading ETH/USDT trades data from March 2025 to {yesterday.strftime('%Y-%m-%d')}...")
+    print(f"Downloading ETH/USDT trades data from September 2025 to {yesterday.strftime('%Y-%m-%d')}...")
     
     current_date = start_date
     while current_date <= yesterday:
         print(f"\nProcessing {current_date.strftime('%B %Y')}...")
-        manager.download_daily_trades(year=current_date.year, month=current_date.month)
+        downloader.download(year=current_date.year, month=current_date.month)
         
         if current_date.month == 12:
             current_date = datetime(current_date.year + 1, 1, 1)
         else:
             current_date = datetime(current_date.year, current_date.month + 1, 1)
     
-    daily_dates = manager.get_daily_dates()
+    daily_dates = downloader.get_available_dates()
     if daily_dates:
         print(f"\nAvailable data files ({len(daily_dates)}):")
         for date in daily_dates:
@@ -414,3 +410,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

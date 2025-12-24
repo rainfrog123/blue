@@ -26,7 +26,7 @@ alias ftc='cd /allah/freqtrade/freqtrade'
 alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
 
 # === DIR: Freq Project ===
-alias co='cd /allah/blue/freq/project/tools/collector/tradingview_collector'
+alias co='cd /allah/blue/freq/project/tools/realtime/tradingview'
 alias config='cd /allah/blue/freq/project/user_data/config'
 alias fq='cd /allah/blue/freq'
 alias mi='cd /allah/blue/freq/misc'
