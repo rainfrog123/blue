@@ -1,0 +1,133 @@
+{
+  "symbol": "ETHUSDT",
+  "start_time": "2025-12-24T19:56:17.961088",
+  "duration_seconds": 15.023109674453735,
+  "total_samples": 71,
+  "api_errors": 0,
+  "rpi_events_count": 12,
+  "rpi_appearance_rate": 16.901408450704224,
+  "total_hidden_bid_notional": 133848.6374700001,
+  "total_hidden_ask_notional": 165986.87332,
+  "events": [
+    {
+      "elapsed": 1.7165288925170898,
+      "best_bid": 2943.82,
+      "best_ask": 2943.83,
+      "spread_bps": 0.03396941054500024,
+      "total_hidden_bid": 20880.515260000055,
+      "total_hidden_ask": 20.606809999999037,
+      "bid_levels": 1,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 5.098368883132935,
+      "best_bid": 2943.82,
+      "best_ask": 2943.83,
+      "spread_bps": 0.03396941054500024,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 65150.755200000014,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 5.31612753868103,
+      "best_bid": 2943.82,
+      "best_ask": 2943.83,
+      "spread_bps": 0.03396941054500024,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 34198.47311,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 7.642649173736572,
+      "best_bid": 2943.96,
+      "best_ask": 2943.97,
+      "spread_bps": 0.033967795132630756,
+      "total_hidden_bid": 197.19305999999983,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 7.853499412536621,
+      "best_bid": 2943.96,
+      "best_ask": 2943.97,
+      "spread_bps": 0.033967795132630756,
+      "total_hidden_bid": 497.47854,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 9.332971334457397,
+      "best_bid": 2943.96,
+      "best_ask": 2943.97,
+      "spread_bps": 0.033967795132630756,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 20.607789999999035,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 10.388265371322632,
+      "best_bid": 2943.96,
+      "best_ask": 2943.97,
+      "spread_bps": 0.033967795132630756,
+      "total_hidden_bid": 117.75840000006025,
+      "total_hidden_ask": 20.607789999999035,
+      "bid_levels": 1,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 11.231885194778442,
+      "best_bid": 2944.2,
+      "best_ask": 2944.21,
+      "spread_bps": 0.033965026213250364,
+      "total_hidden_bid": 1209.96345,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 12.288717269897461,
+      "best_bid": 2943.99,
+      "best_ask": 2944.0,
+      "spread_bps": 0.03396744899437084,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 20.60947000000427,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 12.499755620956421,
+      "best_bid": 2943.99,
+      "best_ask": 2944.0,
+      "spread_bps": 0.03396744899437084,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 294.44500000000414,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 12.71087384223938,
+      "best_bid": 2944.29,
+      "best_ask": 2944.3,
+      "spread_bps": 0.033963987984282414,
+      "total_hidden_bid": 84631.357,
+      "total_hidden_ask": 48592.028150000006,
+      "bid_levels": 7,
+      "ask_levels": 7
+    },
+    {
+      "elapsed": 12.922728776931763,
+      "best_bid": 2944.35,
+      "best_ask": 2944.36,
+      "spread_bps": 0.03396329586689879,
+      "total_hidden_bid": 26314.371759999998,
+      "total_hidden_ask": 17668.739999999998,
+      "bid_levels": 4,
+      "ask_levels": 3
+    }
+  ]
+}
