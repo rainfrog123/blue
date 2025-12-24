@@ -3,114 +3,112 @@ import pandas as pd
 import numpy as np
 import talib as ta
 
-df = pd.read_feather('/allah/data/ml/atr_tp-1124-2038.feather')
+df = pd.read_feather('/allah/data/ml/TemaSlope-ETH_USDT_USDT-1224-1550.feather')
 print(f"Dataset: {df.shape}, Trades: {df['profit_ratio'].notna().sum()}")
+print(f"Exit reasons:\n{df['exit_reason'].value_counts()}")
 
 # %% [CELL 2: Feature Engineering]
 df_features = df.copy()
 o, h, l, c, v = df['open'], df['high'], df['low'], df['close'], df['volume']
 
-# === PRICE ACTION FEATURES (15) ===
-df_features['body'] = (c - o) / o * 100  # body size %
-df_features['body_abs'] = abs(c - o) / o * 100
-df_features['upper_wick'] = (h - np.maximum(o, c)) / c * 100
-df_features['lower_wick'] = (np.minimum(o, c) - l) / c * 100
-df_features['range'] = (h - l) / c * 100
-df_features['body_ratio'] = df_features['body_abs'] / (df_features['range'] + 1e-10)  # body/range
-df_features['upper_wick_ratio'] = df_features['upper_wick'] / (df_features['range'] + 1e-10)
-df_features['lower_wick_ratio'] = df_features['lower_wick'] / (df_features['range'] + 1e-10)
-df_features['close_pos'] = (c - l) / (h - l + 1e-10)  # where close is in range [0,1]
-df_features['gap'] = (o - c.shift(1)) / c.shift(1) * 100  # gap from prev close
-df_features['ret_1'] = c.pct_change(1) * 100  # 1-bar return
-df_features['ret_3'] = c.pct_change(3) * 100
-df_features['ret_5'] = c.pct_change(5) * 100
-df_features['high_break'] = (h > h.shift(1)).astype(int)  # broke prev high
-df_features['low_break'] = (l < l.shift(1)).astype(int)   # broke prev low
+# === STRATEGY FEATURES (from dataset) ===
+# tema, tema_slope already exist
 
-# === VOLATILITY REGIME (10) ===
-df_features['atr_7'] = ta.ATR(h, l, c, timeperiod=7)
-df_features['atr_14'] = ta.ATR(h, l, c, timeperiod=14)
-df_features['atr_ratio'] = df_features['atr_7'] / (df_features['atr_14'] + 1e-10)  # vol expansion
-df_features['range_ma'] = df_features['range'].rolling(10).mean()
-df_features['range_std'] = df_features['range'].rolling(10).std()
-df_features['vol_regime'] = df_features['range'] / (df_features['range_ma'] + 1e-10)  # current vs avg
-df_features['bb_width'] = (ta.BBANDS(c, 12)[0] - ta.BBANDS(c, 12)[2]) / c * 100  # BB width %
-df_features['vol_ma'] = v.rolling(10).mean()
-df_features['vol_ratio'] = v / (df_features['vol_ma'] + 1e-10)  # volume spike
-df_features['natr'] = ta.NATR(h, l, c, timeperiod=7)  # normalized ATR
+# === TICK MICROSTRUCTURE (use existing counts) ===
+df_features['tick_total'] = df['open_count'] + df['high_count'] + df['low_count'] + df['close_count']
+df_features['tick_imbalance'] = (df['high_count'] - df['low_count']) / (df_features['tick_total'] + 1e-10)
+df_features['tick_activity'] = df_features['tick_total'] / (df_features['tick_total'].rolling(12).mean() + 1e-10)
+df_features['tick_concentration'] = df['max_count'] / (df_features['tick_total'] + 1e-10)
 
-# === CANDLE PATTERNS (15) ===
-df_features['cdl_doji'] = ta.CDLDOJI(o, h, l, c) / 100
-df_features['cdl_hammer'] = ta.CDLHAMMER(o, h, l, c) / 100
-df_features['cdl_engulf'] = ta.CDLENGULFING(o, h, l, c) / 100
-df_features['cdl_morning'] = ta.CDLMORNINGSTAR(o, h, l, c) / 100
-df_features['cdl_evening'] = ta.CDLEVENINGSTAR(o, h, l, c) / 100
-df_features['cdl_3white'] = ta.CDL3WHITESOLDIERS(o, h, l, c) / 100
-df_features['cdl_3black'] = ta.CDL3BLACKCROWS(o, h, l, c) / 100
-df_features['cdl_harami'] = ta.CDLHARAMI(o, h, l, c) / 100
-df_features['cdl_piercing'] = ta.CDLPIERCING(o, h, l, c) / 100
-df_features['cdl_darkcloud'] = ta.CDLDARKCLOUDCOVER(o, h, l, c) / 100
-df_features['cdl_shooting'] = ta.CDLSHOOTINGSTAR(o, h, l, c) / 100
-df_features['cdl_invhammer'] = ta.CDLINVERTEDHAMMER(o, h, l, c) / 100
-df_features['cdl_marubozu'] = ta.CDLMARUBOZU(o, h, l, c) / 100
-df_features['cdl_spinning'] = ta.CDLSPINNINGTOP(o, h, l, c) / 100
-df_features['cdl_hangman'] = ta.CDLHANGINGMAN(o, h, l, c) / 100
+# === PRICE MOMENTUM (very short-term for 5s bars) ===
+df_features['ret_1'] = c.pct_change(1) * 100
+df_features['ret_3'] = c.pct_change(3) * 100  # 15 seconds
+df_features['ret_6'] = c.pct_change(6) * 100  # 30 seconds
+df_features['ret_12'] = c.pct_change(12) * 100  # 1 minute
+df_features['ret_24'] = c.pct_change(24) * 100  # 2 minutes
 
-# === MOMENTUM & TREND (12) ===
-df_features['rsi_7'] = ta.RSI(c, timeperiod=7)
-df_features['rsi_14'] = ta.RSI(c, timeperiod=14)
-df_features['rsi_slope'] = df_features['rsi_7'].diff(3)  # RSI momentum
-df_features['macd'], df_features['macd_sig'], df_features['macd_hist'] = ta.MACD(c, 6, 13, 5)
-df_features['ema_5'] = ta.EMA(c, 5)
-df_features['ema_12'] = ta.EMA(c, 12)
-df_features['ema_cross'] = (df_features['ema_5'] > df_features['ema_12']).astype(int)
-df_features['price_vs_ema5'] = (c - df_features['ema_5']) / df_features['ema_5'] * 100
-df_features['price_vs_ema12'] = (c - df_features['ema_12']) / df_features['ema_12'] * 100
-df_features['adx'] = ta.ADX(h, l, c, timeperiod=7)
-df_features['plus_di'] = ta.PLUS_DI(h, l, c, timeperiod=7)
-df_features['minus_di'] = ta.MINUS_DI(h, l, c, timeperiod=7)
+# Momentum acceleration
+df_features['mom_accel'] = df_features['ret_3'] - df_features['ret_3'].shift(3)
+df_features['mom_consistency'] = (df_features['ret_1'] > 0).rolling(6).sum() / 6  # % positive bars
 
-# === OSCILLATORS (8) ===
-df_features['stoch_k'], df_features['stoch_d'] = ta.STOCH(h, l, c, 7, 3, 3)
-df_features['cci'] = ta.CCI(h, l, c, timeperiod=7)
-df_features['willr'] = ta.WILLR(h, l, c, timeperiod=7)
-df_features['mfi'] = ta.MFI(h, l, c, v, timeperiod=7)
-df_features['obv'] = ta.OBV(c, v)
-df_features['obv_slope'] = df_features['obv'].diff(5)
-df_features['cmo'] = ta.CMO(c, timeperiod=7)
-df_features['roc'] = ta.ROC(c, timeperiod=5)
+# === TEMA DYNAMICS ===
+df_features['tema_slope_accel'] = df['tema_slope'].diff(1)
+df_features['tema_slope_ma'] = df['tema_slope'].rolling(6).mean()
+df_features['tema_slope_std'] = df['tema_slope'].rolling(12).std()
+df_features['tema_slope_z'] = (df['tema_slope'] - df_features['tema_slope_ma']) / (df_features['tema_slope_std'] + 1e-10)
+df_features['price_vs_tema'] = (c - df['tema']) / df['tema'] * 100
+
+# === VOLATILITY (ultra short-term) ===
+df_features['range_pct'] = (h - l) / c * 100
+df_features['range_ma6'] = df_features['range_pct'].rolling(6).mean()
+df_features['range_ratio'] = df_features['range_pct'] / (df_features['range_ma6'] + 1e-10)
+df_features['atr_6'] = ta.ATR(h, l, c, timeperiod=6)
+df_features['natr_6'] = ta.NATR(h, l, c, timeperiod=6)
+
+# Volatility regime
+df_features['vol_expanding'] = (df_features['range_pct'] > df_features['range_pct'].rolling(12).mean()).astype(int)
+
+# === VOLUME DYNAMICS ===
+df_features['vol_ma6'] = v.rolling(6).mean()
+df_features['vol_ma24'] = v.rolling(24).mean()
+df_features['vol_ratio'] = v / (df_features['vol_ma6'] + 1e-10)
+df_features['vol_trend'] = df_features['vol_ma6'] / (df_features['vol_ma24'] + 1e-10)
+df_features['vol_price_corr'] = df_features['ret_1'].rolling(12).corr(v)
+
+# === CANDLE STRUCTURE ===
+df_features['body_pct'] = (c - o) / o * 100
+df_features['body_abs'] = abs(c - o) / (h - l + 1e-10)  # body/range ratio
+df_features['upper_wick'] = (h - np.maximum(o, c)) / (h - l + 1e-10)
+df_features['lower_wick'] = (np.minimum(o, c) - l) / (h - l + 1e-10)
+df_features['close_pos'] = (c - l) / (h - l + 1e-10)
+
+# Consecutive candle patterns
+df_features['consec_up'] = (df_features['body_pct'] > 0).rolling(6).sum()
+df_features['consec_down'] = (df_features['body_pct'] < 0).rolling(6).sum()
+
+# === RSI (short period) ===
+df_features['rsi_6'] = ta.RSI(c, timeperiod=6)
+df_features['rsi_slope'] = df_features['rsi_6'].diff(3)
+
+# === PRICE LEVELS ===
+df_features['dist_from_high_12'] = (c - h.rolling(12).max()) / c * 100
+df_features['dist_from_low_12'] = (c - l.rolling(12).min()) / c * 100
+df_features['price_position'] = (c - l.rolling(24).min()) / (h.rolling(24).max() - l.rolling(24).min() + 1e-10)
 
 new_cols = [col for col in df_features.columns if col not in df.columns]
 print(f"Features added: {len(new_cols)}")
 
 # %% [CELL 3: Binary Labels & Filter Trades]
-df_features['is_profitable'] = (df_features['profit_ratio'] > 0).astype(int)
+# Label: 1 if exit_reason is 'roi', 0 otherwise (stop_loss, timeout, force_exit)
 df_features = df_features[df_features['profit_ratio'].notna()].copy()
+df_features['is_profitable'] = (df_features['exit_reason'] == 'roi').astype(int)
 
 wins = (df_features['is_profitable'] == 1).sum()
 losses = (df_features['is_profitable'] == 0).sum()
-print(f"Trades: {len(df_features)} (Win: {wins} [{wins/len(df_features)*100:.1f}%], Loss: {losses})")
+print(f"Trades: {len(df_features)} (ROI: {wins} [{wins/len(df_features)*100:.1f}%], Other: {losses})")
 
 # %% [CELL 4: Feature Scaling]
 from sklearn.preprocessing import StandardScaler
 
 feature_cols = [
-    # Price action (15)
-    'body', 'body_abs', 'upper_wick', 'lower_wick', 'range', 'body_ratio',
-    'upper_wick_ratio', 'lower_wick_ratio', 'close_pos', 'gap',
-    'ret_1', 'ret_3', 'ret_5', 'high_break', 'low_break',
-    # Volatility (10)
-    'atr_7', 'atr_14', 'atr_ratio', 'range_ma', 'range_std', 'vol_regime',
-    'bb_width', 'vol_ma', 'vol_ratio', 'natr',
-    # Candle patterns (15)
-    'cdl_doji', 'cdl_hammer', 'cdl_engulf', 'cdl_morning', 'cdl_evening',
-    'cdl_3white', 'cdl_3black', 'cdl_harami', 'cdl_piercing', 'cdl_darkcloud',
-    'cdl_shooting', 'cdl_invhammer', 'cdl_marubozu', 'cdl_spinning', 'cdl_hangman',
-    # Momentum (12)
-    'rsi_7', 'rsi_14', 'rsi_slope', 'macd', 'macd_sig', 'macd_hist',
-    'ema_cross', 'price_vs_ema5', 'price_vs_ema12', 'adx', 'plus_di', 'minus_di',
-    # Oscillators (8)
-    'stoch_k', 'stoch_d', 'cci', 'willr', 'mfi', 'obv_slope', 'cmo', 'roc'
+    # Strategy features
+    'tema', 'tema_slope',
+    # Tick microstructure (4)
+    'tick_total', 'tick_imbalance', 'tick_activity', 'tick_concentration',
+    # Price momentum (7)
+    'ret_1', 'ret_3', 'ret_6', 'ret_12', 'ret_24', 'mom_accel', 'mom_consistency',
+    # TEMA dynamics (5)
+    'tema_slope_accel', 'tema_slope_ma', 'tema_slope_std', 'tema_slope_z', 'price_vs_tema',
+    # Volatility (6)
+    'range_pct', 'range_ma6', 'range_ratio', 'atr_6', 'natr_6', 'vol_expanding',
+    # Volume dynamics (5)
+    'vol_ma6', 'vol_ma24', 'vol_ratio', 'vol_trend', 'vol_price_corr',
+    # Candle structure (7)
+    'body_pct', 'body_abs', 'upper_wick', 'lower_wick', 'close_pos', 'consec_up', 'consec_down',
+    # RSI (2)
+    'rsi_6', 'rsi_slope',
+    # Price levels (3)
+    'dist_from_high_12', 'dist_from_low_12', 'price_position'
 ]
 
 df_scaled = df_features.copy()
