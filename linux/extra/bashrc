@@ -40,6 +40,7 @@ alias to='cd /allah/blue/freq/project/tools'
 alias tv='cd /allah/blue/freq/misc/tradingview'
 alias user='cd /allah/blue/freq/project/user_data'
 alias tinder='cd /allah/blue/web/tinder'
+alias us='cd /allah/blue/freq/project/user_data'
 
 # === DIR: Web ===
 alias ba='cd /allah/blue/web/baccarat'
