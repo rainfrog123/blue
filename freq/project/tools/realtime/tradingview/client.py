@@ -39,6 +39,7 @@ class TVClient:
         self._queue: Optional[asyncio.Queue] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._current: Dict[str, list] = {}
+        self._seen: set = set()
         self.chart_session = gen_session("cs")
     
     def _send(self, msg: dict):
@@ -71,22 +72,28 @@ class TVClient:
                 data = json.loads(msg)
                 m, p = data.get("m"), data.get("p", [])
                 if m in ("du", "timescale_update") and len(p) > 1:
-                    self._handle_bars(p[1])
+                    self._handle_bars(p[1], m == "timescale_update")
             except: pass
     
-    def _handle_bars(self, data: dict):
+    def _handle_bars(self, data: dict, is_history: bool = False):
         for key, val in data.items():
             if key.startswith("sds_") and "s" in val:
                 for bar in val["s"]:
-                    self._emit_bar(bar["v"])
+                    self._emit_bar(bar["v"], bar.get("i", 0) < 0 or is_history)
     
-    def _emit_bar(self, ohlcv: list):
+    def _emit_bar(self, ohlcv: list, is_history: bool = False):
         ts = int(ohlcv[0])
         symbol = self.symbols[0]
+        if is_history:
+            if ts not in self._seen:
+                self._seen.add(ts)
+                self._put({"symbol": symbol, "time": datetime.utcfromtimestamp(ts),
+                          "open": ohlcv[1], "high": ohlcv[2], "low": ohlcv[3], "close": ohlcv[4], "volume": ohlcv[5], "is_history": True})
+            return
         prev = self._current.get(symbol)
         if prev and prev[0] != ts:
             self._put({"symbol": symbol, "time": datetime.utcfromtimestamp(prev[0]),
-                      "open": prev[1], "high": prev[2], "low": prev[3], "close": prev[4], "volume": prev[5]})
+                      "open": prev[1], "high": prev[2], "low": prev[3], "close": prev[4], "volume": prev[5], "is_history": False})
         self._current[symbol] = ohlcv
     
     def _put(self, data: dict):

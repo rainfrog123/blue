@@ -50,4 +50,6 @@ print(f'Short trades: {len(trades[trades["is_short"] == True])}')
 # %% Profit Distribution
 trades['profit_ratio'].hist(bins=50)
 
+# %% df exit reason 
+df['exit_reason'].value_counts()
 # %%

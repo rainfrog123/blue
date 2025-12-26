@@ -25,9 +25,10 @@ class CandleDatabase:
                 PRIMARY KEY (symbol, ts))''')
             c.execute('CREATE INDEX IF NOT EXISTS idx_candles_ts ON candles(ts)')
     
-    def insert(self, symbol: str, ts: int, o: float, h: float, l: float, c: float, v: float):
+    def insert(self, symbol: str, ts: int, o: float, h: float, l: float, c: float, v: float, ignore: bool = False):
         with self.conn() as conn:
-            conn.execute('INSERT OR REPLACE INTO candles VALUES (?,?,?,?,?,?,?)', (symbol, ts, o, h, l, c, v))
+            sql = 'INSERT OR IGNORE INTO candles VALUES (?,?,?,?,?,?,?)' if ignore else 'INSERT OR REPLACE INTO candles VALUES (?,?,?,?,?,?,?)'
+            conn.execute(sql, (symbol, ts, o, h, l, c, v))
             conn.commit()
     
     def get(self, symbol: str, limit: int = 100):

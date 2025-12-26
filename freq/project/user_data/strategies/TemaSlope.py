@@ -58,3 +58,4 @@ class TemaSlope(IStrategy):
                 proposed_leverage: float, max_leverage: float, entry_tag: str | None,
                 side: str, **kwargs) -> float:
         return 1
+
