@@ -33,11 +33,11 @@ class TestExecution(IStrategy):
     INTERFACE_VERSION = 3
     timeframe = '5s'
     can_short: bool = True
-    process_only_new_candles = True
+    process_only_new_candles = True  # Allow same-bar exit order placement
     startup_candle_count: int = 10
     
     # Tight SL for quick test cycles
-    stoploss = -0.05  # 5% account loss (small for testing)
+    stoploss = -0.15  # 0.1% price move = 15% account loss at 150x
     trailing_stop = False
     use_custom_stoploss = False
     
@@ -45,9 +45,13 @@ class TestExecution(IStrategy):
     minimal_roi = {"0": 100}
     
     # Strategy parameters
-    tp_percent = 0.05  # 5% account profit target
+    tp_price_pct = 0.001  # 0.1% price move = 15% account profit at 150x
     max_chase_minutes = 2  # Short chase time for testing
     target_leverage = 150  # High leverage for testing
+    trade_cooldown_minutes = 5  # Wait 5 min between trades
+    
+    # Track last trade time
+    _last_trade_time: datetime | None = None
     
     # Order types - limit with Post-Only
     order_types = {
@@ -76,6 +80,7 @@ class TestExecution(IStrategy):
         Long: Green candle (close > open)
         Short: Red candle (close < open)
         """
+        pair = metadata.get('pair', 'unknown')
         
         # Long on green candle
         dataframe.loc[
@@ -94,24 +99,31 @@ class TestExecution(IStrategy):
         return dataframe
 
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
-        """No signal exits - only TP/SL."""
+        """No signal exits - use custom_exit or stoploss only."""
+        # Don't set exit signals here - they block entries!
+        # Exit is handled by custom_exit when trade exists
         return dataframe
 
     def custom_exit(self, pair: str, trade: Trade, current_time: datetime,
-                    current_rate: float, current_profit: float, **kwargs) -> str | None:
-        """Take profit at target."""
-        if current_profit >= self.tp_percent:
-            return 'tp_target'
-        return None
+                    current_rate: float, current_profit: float, **kwargs) -> str | bool:
+        """Signal exit only if no exit order already open."""
+        # Check if there's already an open exit order - don't re-signal
+        # ft_order_side is 'buy'/'sell', compare with trade.exit_side
+        for order in trade.open_orders:
+            if order.ft_order_side == trade.exit_side:
+                return False  # Exit order already pending, don't replace it
+        
+        logger.info(f"🎯 Placing TP order for {pair}")
+        return 'tp_target'  # Place TP order
 
     def custom_exit_price(self, pair: str, trade: Trade, current_time: datetime,
                           proposed_rate: float, current_profit: float,
                           exit_tag: str | None, **kwargs) -> float:
-        """Exit at TP target price."""
+        """Exit at TP target price - order placed immediately at this price."""
         if trade.is_short:
-            tp_price = trade.open_rate * (1 - self.tp_percent)
+            tp_price = trade.open_rate * (1 - self.tp_price_pct)  # 0.1% below entry
         else:
-            tp_price = trade.open_rate * (1 + self.tp_percent)
+            tp_price = trade.open_rate * (1 + self.tp_price_pct)  # 0.1% above entry
         return tp_price
 
     def adjust_entry_price(
@@ -161,24 +173,12 @@ class TestExecution(IStrategy):
         **kwargs,
     ) -> float | None:
         """
-        Adjust exit orders to TP target.
+        Keep exit order at TP price - don't adjust unless way off.
         """
         if order is None or trade is None:
             return proposed_rate
         
-        if trade.is_short:
-            tp_price = trade.open_rate * (1 - self.tp_percent)
-            target = min(proposed_rate, tp_price)
-        else:
-            tp_price = trade.open_rate * (1 + self.tp_percent)
-            target = max(proposed_rate, tp_price)
-        
-        price_diff = abs(target - current_order_rate) / current_order_rate
-        
-        if price_diff > 0.0001:
-            logger.info(f"🎯 Adjusting exit {pair}: {current_order_rate:.4f} -> {target:.4f}")
-            return target
-        
+        # Keep existing order - don't chase exit price
         return current_order_rate
 
     def leverage(self, pair: str, current_time: datetime, current_rate: float,
@@ -190,7 +190,7 @@ class TestExecution(IStrategy):
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, current_time: datetime,
                             entry_tag: str | None, side: str, **kwargs) -> bool:
-        """Log entry."""
+        """Log entry - cooldown disabled for testing."""
         logger.info(f"📈 TEST ENTRY {side.upper()} {pair} @ {rate:.4f} ({order_type}, {time_in_force})")
         return True
 
