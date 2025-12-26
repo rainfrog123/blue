@@ -37,7 +37,7 @@ class TestExecution(IStrategy):
     startup_candle_count: int = 10
     
     # Tight SL for quick test cycles
-    stoploss = -0.15  # 0.1% price move = 15% account loss at 150x
+    stoploss = -0.10  # 0.1% price move = 15% account loss at 150x
     trailing_stop = False
     use_custom_stoploss = False
     
