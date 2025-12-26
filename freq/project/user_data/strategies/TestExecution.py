@@ -36,10 +36,6 @@ class TestExecution(IStrategy):
     process_only_new_candles = True
     startup_candle_count: int = 10
     
-    # Warmup: wait N seconds before allowing trades
-    warmup_seconds = 15
-    _start_time = None
-    
     # Tight SL for quick test cycles
     stoploss = -0.05  # 5% account loss (small for testing)
     trailing_stop = False
@@ -51,7 +47,7 @@ class TestExecution(IStrategy):
     # Strategy parameters
     tp_percent = 0.05  # 5% account profit target
     max_chase_minutes = 2  # Short chase time for testing
-    target_leverage = 10  # Lower leverage for testing
+    target_leverage = 150  # High leverage for testing
     
     # Order types - limit with Post-Only
     order_types = {
@@ -194,19 +190,7 @@ class TestExecution(IStrategy):
     def confirm_trade_entry(self, pair: str, order_type: str, amount: float,
                             rate: float, time_in_force: str, current_time: datetime,
                             entry_tag: str | None, side: str, **kwargs) -> bool:
-        """Log entry - block during warmup period."""
-        # Initialize start time on first call
-        if self._start_time is None:
-            self._start_time = current_time
-            logger.info(f"⏳ Warmup started - waiting {self.warmup_seconds}s before trading")
-        
-        # Block entries during warmup
-        elapsed = (current_time - self._start_time).total_seconds()
-        if elapsed < self.warmup_seconds:
-            remaining = self.warmup_seconds - elapsed
-            logger.info(f"⏳ Warmup: {remaining:.1f}s remaining - blocking entry")
-            return False
-        
+        """Log entry."""
         logger.info(f"📈 TEST ENTRY {side.upper()} {pair} @ {rate:.4f} ({order_type}, {time_in_force})")
         return True
 
