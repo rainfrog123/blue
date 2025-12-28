@@ -87,6 +87,12 @@
         "username": "freqtrader",
         "password": "jingxian"
     },
+    "auto_topup": {
+        "enabled": true,
+        "from_account": "funding",
+        "to_account": "future",
+        "buffer": 0.01
+    },
     "bot_name": "spread_capture",
     "initial_state": "running",
     "force_entry_enable": false,
