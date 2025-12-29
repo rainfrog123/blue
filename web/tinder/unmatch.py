@@ -1,21 +1,12 @@
 #%% imports & config
-import requests, time, random, ast
+import requests, time, random, ast, json
+from pathlib import Path
 
-headers = {
-    "accept": "application/json",
-    "content-type": "application/json",
-    "origin": "https://tinder.com",
-    "referer": "https://tinder.com/",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
-    "platform": "web",
-    "app-version": "1064500",
-    "tinder-version": "6.45.0",
-    "x-auth-token": "4d81eb3b-6a11-4c6d-b553-9c3cfa6c3141",
-    "persistent-device-id": "d0cb6f53-c922-4160-8fe4-bbcec0171fc3",
-    "app-session-id": "88776ae9-789a-428f-9775-6178e299f034",
-    "user-session-id": "673aa357-6393-4c15-9f80-b1b6a84e528e",
-}
-MY_ID = "5bd5cac4f56a08b23bc4224a"
+auth = json.loads((Path(__file__).parent / "auth.json").read_text())
+MY_ID = auth.pop("my_id")
+headers = {"accept": "application/json", "content-type": "application/json", "origin": "https://tinder.com",
+           "referer": "https://tinder.com/", "platform": "web",
+           "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", **auth}
 
 #%% load matches from file
 with open('/allah/blue/web/tinder/matches.py') as f:
