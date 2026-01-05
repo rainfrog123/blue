@@ -54,6 +54,15 @@ echo "net.ipv4.tcp_congestion_control = bbr" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 
 # ============================================================================
+# HOSTNAME CONFIGURATION
+# ============================================================================
+
+# Change hostname to "blue" permanently
+sudo hostnamectl set-hostname blue
+echo "blue" | sudo tee /etc/hostname
+sudo sed -i 's/127.0.1.1.*/127.0.1.1\tblue/' /etc/hosts
+
+# ============================================================================
 # ENVIRONMENT CONFIGURATION
 # ============================================================================
 
@@ -114,4 +123,9 @@ echo "- Shadowsocks-R configured on port 19000"
 echo "- Root SSH access enabled"
 echo "- Custom bashrc linked"
 echo "- BBR congestion control enabled"
+echo "- Hostname changed to 'blue'"
+echo ""
+echo "System will restart in 5 seconds..."
+sleep 5
+sudo reboot
 
