@@ -494,11 +494,10 @@
             })),
 
         status: () => {
-            console.log(`\n═══ PP TABLES (${tables.size}) | msgs:${msgCount} | seq:${lastSeq} ═══\n`);
-            [...tables.values()]
-                .filter(t => t.total > 0)
+            const active = [...tables.values()].filter(t => t.total > 0);
+            console.log(`\n═══ PP TABLES (${active.length}) | msgs:${msgCount} | seq:${lastSeq} ═══\n`);
+            active
                 .sort((a, b) => a.uid - b.uid)
-                .slice(0, 30)
                 .forEach(t => {
                     const bet = t.canBet ? '✓' : ' ';
                     const seq = getPBTSequence(t).slice(-8).join('');
