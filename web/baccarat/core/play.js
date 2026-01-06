@@ -144,7 +144,7 @@
         // Get eligible tables, excluding failed ones
         const tables = window.pick.eligible().filter(t => {
             const id = t.gameId || t.id;
-            return !State.failedTables.has(id);
+            return id && !State.failedTables.has(id);
         });
 
         if (tables.length === 0) {
@@ -154,7 +154,8 @@
 
         // Pick the best one (first in sorted list)
         const table = tables[0];
-        log(`Selected table: ${table.name || table.gameId} | P:${table.P} B:${table.B} T:${table.T}`);
+        const tableId = table.gameId || table.id;
+        log(`Selected: ${table.name || tableId} | Score:${table.score} | P:${table.P} B:${table.B} T:${table.T}`);
         return table;
     };
 
@@ -345,7 +346,14 @@
         const table = State.focusedTable;
         const tableId = table.gameId || table.id;
 
-        // Refresh table data
+        if (!tableId) {
+            log('Table has no valid ID', 'error');
+            State.focusedTable = null;
+            scheduleNext();
+            return;
+        }
+
+        // Refresh table data from socks.js
         const freshTable = window.pp?.get(tableId);
         if (!freshTable) {
             log(`Table ${tableId} no longer available`, 'error');
@@ -360,10 +368,10 @@
             return;
         }
 
-        // Find tile
-        const tile = findTile(freshTable.gameId) || findTile(freshTable.id);
+        // Find tile - try gameId, lobbyId, and id
+        const tile = findTile(freshTable.gameId) || findTile(freshTable.lobbyId) || findTile(freshTable.id);
         if (!tile) {
-            log(`Tile not found for ${freshTable.name || tableId}`, 'error');
+            log(`Tile not found for ${freshTable.name || tableId} (gameId:${freshTable.gameId}, lobbyId:${freshTable.lobbyId})`, 'error');
             scheduleNext();
             return;
         }

@@ -283,8 +283,10 @@
             return {
                 ...t,
                 ...result,
-                ratio: ratio.toFixed(3),
-                tieRatio: (tieRatio * 100).toFixed(1) + '%',
+                ratio,  // Keep as number for calculations
+                ratioStr: ratio.toFixed(3),  // String for display
+                tieRatio,  // Keep as number
+                tieRatioStr: (tieRatio * 100).toFixed(1) + '%',  // String for display
                 streak: currentStreak(seq),
                 longest: longestStreak(seq),
                 altIn12: countAlternations(seq.slice(-12)),
