@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         play
 // @namespace    http://tampermonkey.net/
-// @version      5.0
-// @description  Martingale betting system for baccarat - 1-2-4 progression
+// @version      5.1
+// @description  Martingale betting system for baccarat - 1-2-4 progression, 50/50 sides
 // @author       You
 // @match        *://client.pragmaticplaylive.net/desktop/multibaccarat/*
 // @grant        none
@@ -27,7 +27,7 @@
         MAX_TABLE_LOSS: -7,         // Leave table (one failed sequence)
 
         // Betting
-        SIDE: 'B',                  // Banker only
+        SIDE: null,                 // null = 50/50 random, 'B' = Banker only, 'P' = Player only
         BET_DELAY: 2000,            // Delay between bet attempts (ms)
         WAIT_FOR_RESULT: 15000,     // Max wait for result (ms)
 
@@ -147,11 +147,26 @@
     };
 
     // ═══════════════════════════════════════════════════════════════════════
+    // SIDE SELECTION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Get side for current bet (respects Config.SIDE or random 50/50)
+    const chooseSide = () => {
+        if (Config.SIDE === 'B') return 'B';
+        if (Config.SIDE === 'P') return 'P';
+        // 50/50 random
+        return Math.random() < 0.5 ? 'P' : 'B';
+    };
+
+    // Track chosen side for current sequence
+    let sequenceSide = null;
+
+    // ═══════════════════════════════════════════════════════════════════════
     // BET EXECUTION
     // ═══════════════════════════════════════════════════════════════════════
 
-    const placeBet = async (tile, units) => {
-        const selector = Config.SIDE === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
+    const placeBet = async (tile, units, side) => {
+        const selector = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
         const clicks = units; // 1 unit = 1 click
 
         // Wait for button to appear
@@ -236,8 +251,9 @@
 
     const processResult = (result) => {
         const betUnits = getCurrentBetUnits();
-        const won = (result === Config.SIDE) || (result === 'T' && Config.SIDE === 'B');
-        // Note: Tie on Banker bet typically returns stake, treating as neutral/win
+        const betSide = sequenceSide || 'B';
+        const won = (result === betSide);
+        // Note: Tie returns stake, treating as push
 
         if (result === 'T') {
             // Tie - push (no change)
@@ -252,6 +268,7 @@
             State.sessionWins++;
             State.currentStep = 0;
             State.sequenceUnits = 0;
+            sequenceSide = null; // Reset side for next sequence
             State.lastResult = 'W';
             log(`WON +1 unit | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units`, 'win');
         } else {
@@ -269,6 +286,7 @@
                 const tableId = State.focusedTable?.gameId || State.focusedTable?.id;
                 log(`SEQUENCE FAILED on ${tableId} | Total loss: ${State.sequenceUnits} units`, 'exit');
                 markTableFailed(tableId);
+                sequenceSide = null; // Reset side for next table
             }
         }
     };
@@ -340,14 +358,20 @@
         // Record current count before bet
         const countBefore = freshTable.total || 0;
 
+        // Choose side for this sequence (keep same side throughout sequence)
+        if (sequenceSide === null) {
+            sequenceSide = chooseSide();
+        }
+        const betSide = sequenceSide;
+
         // Place bet
         tile.scrollIntoView({ block: 'center' });
         const betUnits = getCurrentBetUnits();
         const betDollars = betUnits * Config.UNIT_SIZE;
 
-        log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${Config.SIDE} x${betUnits} ($${betDollars.toFixed(2)})`, 'bet');
+        log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${betSide} x${betUnits} ($${betDollars.toFixed(2)})`, 'bet');
 
-        const placed = await placeBet(tile, betUnits);
+        const placed = await placeBet(tile, betUnits, betSide);
         if (!placed) {
             log('Bet placement failed', 'error');
             scheduleNext();
@@ -358,7 +382,7 @@
         State.lastBet = {
             table: freshTable.name || tableId,
             tableId,
-            side: Config.SIDE,
+            side: betSide,
             units: betUnits,
             step: State.currentStep + 1,
             time: Date.now()
@@ -374,7 +398,7 @@
 
         if (result === null) {
             log('Result timeout - treating as loss', 'error');
-            processResult(Config.SIDE === 'B' ? 'P' : 'B'); // Opposite side = loss
+            processResult(sequenceSide === 'B' ? 'P' : 'B'); // Opposite side = loss
         } else {
             processResult(result);
         }
@@ -443,8 +467,9 @@
         }
 
         State.running = true;
+        const sideMode = Config.SIDE === null ? '50/50' : Config.SIDE;
         log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${Config.UNIT_SIZE}`, 'info');
-        log(`Rules: 1-2-4 | Side: ${Config.SIDE} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
+        log(`Rules: 1-2-4 | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
 
         betCycle();
     };
@@ -470,6 +495,7 @@
         State.failedTables.clear();
         State.lastBet = null;
         State.lastResult = null;
+        sequenceSide = null;
         log('Session RESET', 'info');
     };
 
@@ -558,10 +584,10 @@
         if (window.pp && window.pick) {
             console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║              MARTINGALE BETTING SYSTEM v5.0                  ║
+║              MARTINGALE BETTING SYSTEM v5.1                  ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
-║  STRATEGY: 1-2-4 Progression | Banker Only                   ║
+║  STRATEGY: 1-2-4 Progression | 50/50 Random Side             ║
 ║                                                              ║
 ║  EXIT RULES:                                                 ║
 ║  • Max 3 steps per sequence                                  ║
@@ -577,7 +603,7 @@
 ║                                                              ║
 ║  CONFIG (modify before start):                               ║
 ║  play.config.UNIT_SIZE = 0.2    Base unit ($)                ║
-║  play.config.SIDE = 'B'         Side (B/P)                   ║
+║  play.config.SIDE = null        null=50/50, 'B', 'P'         ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 `);

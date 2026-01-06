@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         pick
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Table selection rules for baccarat betting
+// @version      2.0
+// @description  Martingale table scoring and selection for baccarat
 // @author       You
 // @match        *://client.pragmaticplaylive.net/*
 // @match        *://*.stake.com/*
@@ -14,185 +14,317 @@
     'use strict';
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SELECTION RULES - Customize these to change table picking behavior
+    // MARTINGALE SCORING RULES
     // ═══════════════════════════════════════════════════════════════════════
+    //
+    // A "good enough" table = variance is smooth enough that 1-2-4 Martingale
+    // has a reasonable chance to complete without 3 losses in a row.
+    //
+    // HARD PASS: fail ANY → score = 0 (reject)
+    // MUST-HAVE: fail ANY → score = 0 (reject)
+    // BONUS: add points for favorable conditions
 
     const Rules = {
-        // Minimum rounds before table is eligible
-        MIN_ROUNDS: 20,
+        // ─────────────────────────────────────────────────────────────────────
+        // HARD PASS (fail one = instant reject)
+        // ─────────────────────────────────────────────────────────────────────
+        HARD_MIN_TOTAL: 30,           // Rule 1: Too early if < 30
+        HARD_MAX_TIE_RATIO: 0.12,     // Rule 2: Tie pollution if T/total > 12%
+        HARD_MAX_CHOP_IN_10: 7,       // Rule 3: Max alternations in last 10
+        HARD_REJECT_SPEED: true,      // Rule 4: Reject Speed Baccarat tables
 
-        // Maximum P/B difference (absolute)
-        MAX_PB_DIFF: 3,
+        // ─────────────────────────────────────────────────────────────────────
+        // MUST-HAVE (all must pass)
+        // ─────────────────────────────────────────────────────────────────────
+        MUST_MIN_TOTAL: 40,           // Rule 6: Enough history
+        MUST_RATIO_MIN: 0.05,         // Rule 7: Ratio floor (avoid disguised chop)
+        MUST_RATIO_MAX: 0.25,         // Rule 7: Ratio ceiling (avoid extreme run)
+        MUST_HAVE_STREAK: true,       // Rule 8: Must see BB/BBB/PP/PPP in last 20
+        MUST_NO_FLIP_IN_6: true,      // Rule 9: Last 6 can't be pure alternation
+        MUST_CAN_BET: true,           // Rule 10: Must be open for betting
 
-        // Must be open for betting
-        REQUIRE_CAN_BET: true,
-
-        // Ratio threshold (|P-B|/total) - lower = more balanced
-        MAX_RATIO: 0.15,
-
-        // Minimum total games for ratio to matter
-        RATIO_MIN_GAMES: 30,
-
-        // Streak detection
-        MAX_STREAK: 6,          // Avoid tables with streaks longer than this
-        MIN_STREAK_FOR_BET: 3,  // Bet against streak if >= this length
+        // ─────────────────────────────────────────────────────────────────────
+        // BONUS SCORING (higher = better)
+        // ─────────────────────────────────────────────────────────────────────
+        BONUS_IDEAL_TOTAL: 60,        // Bonus if total >= this
+        BONUS_IDEAL_RATIO_MIN: 0.08,  // Ideal ratio range
+        BONUS_IDEAL_RATIO_MAX: 0.18,
+        BONUS_STREAK_LEN: 3,          // Bonus if current streak >= this
+        BONUS_LOW_TIES: 0.06,         // Bonus if tie ratio < this
     };
 
     // ═══════════════════════════════════════════════════════════════════════
-    // HELPER FUNCTIONS
+    // HELPERS
     // ═══════════════════════════════════════════════════════════════════════
-
-    // Calculate P/B ratio (lower = more balanced)
-    const calcRatio = (t) => {
-        if (!t || !t.total || t.total === 0) return 999;
-        const diff = Math.abs((t.P || 0) - (t.B || 0));
-        return diff / t.total;
-    };
 
     // Get P/B/T sequence from pp API
     const getSequence = (t) => {
         if (!window.pp) return [];
-        if (typeof t === 'number' || typeof t === 'string') {
-            return window.pp.pbt(t) || [];
-        }
-        return window.pp.pbt(t?.uid || t?.id) || [];
+        const id = t?.uid || t?.gameId || t?.id || t;
+        return window.pp.pbt(id) || [];
     };
 
-    // Detect current streak at end of sequence
-    // Returns { side: 'P'|'B'|'T'|null, length: N }
+    // Calculate ratio: |P-B| / total
+    const calcRatio = (t) => {
+        if (!t || !t.total || t.total === 0) return 999;
+        return Math.abs((t.P || 0) - (t.B || 0)) / t.total;
+    };
+
+    // Calculate tie ratio: T / total
+    const calcTieRatio = (t) => {
+        if (!t || !t.total || t.total === 0) return 999;
+        return (t.T || 0) / t.total;
+    };
+
+    // Count alternations in sequence (PBPBPB = 5 alternations)
+    const countAlternations = (seq) => {
+        if (!seq || seq.length < 2) return 0;
+        let alt = 0;
+        for (let i = 1; i < seq.length; i++) {
+            if (seq[i] !== seq[i-1] && seq[i] !== 'T' && seq[i-1] !== 'T') {
+                alt++;
+            }
+        }
+        return alt;
+    };
+
+    // Check if sequence is pure alternation (BPBPBP)
+    const isPureAlternation = (seq) => {
+        if (!seq || seq.length < 2) return false;
+        const filtered = seq.filter(x => x !== 'T');
+        if (filtered.length < 2) return false;
+        for (let i = 1; i < filtered.length; i++) {
+            if (filtered[i] === filtered[i-1]) return false;
+        }
+        return true;
+    };
+
+    // Check for streak patterns (BB, BBB, PP, PPP) in sequence
+    const hasStreakPattern = (seq) => {
+        if (!seq || seq.length < 2) return false;
+        const str = seq.join('');
+        return /BB|PP/.test(str);
+    };
+
+    // Get current streak at end of sequence
     const detectStreak = (seq) => {
         if (!seq || seq.length === 0) return { side: null, length: 0 };
         const last = seq[seq.length - 1];
+        if (last === 'T') return { side: 'T', length: 1 };
         let count = 0;
         for (let i = seq.length - 1; i >= 0; i--) {
             if (seq[i] === last) count++;
-            else break;
+            else if (seq[i] !== 'T') break;
         }
         return { side: last, length: count };
     };
 
-    // Count consecutive same results from end
-    const getStreakLength = (t) => {
-        const seq = getSequence(t);
-        return detectStreak(seq).length;
-    };
-
-    // Get the dominant side (which has more wins)
-    const getDominant = (t) => {
-        if (!t) return null;
-        if ((t.P || 0) > (t.B || 0)) return 'P';
-        if ((t.B || 0) > (t.P || 0)) return 'B';
-        return null; // tied
-    };
-
-    // Get the underdog side (fewer wins)
-    const getUnderdog = (t) => {
-        const dom = getDominant(t);
-        if (dom === 'P') return 'B';
-        if (dom === 'B') return 'P';
-        return null;
+    // Check if table name suggests Speed Baccarat
+    const isSpeedTable = (t) => {
+        const name = (t?.name || t?.tableName || '').toLowerCase();
+        return name.includes('speed');
     };
 
     // ═══════════════════════════════════════════════════════════════════════
-    // FILTER FUNCTIONS
+    // SCORING FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════════
 
-    // Basic eligibility check
-    const isEligible = (t) => {
-        if (!t) return false;
-        const total = t.total || 0;
-        const diff = Math.abs((t.P || 0) - (t.B || 0));
+    // Check HARD PASS rules - any fail = immediate reject
+    const checkHardPass = (t) => {
+        const reasons = [];
 
-        // Minimum rounds
-        if (total < Rules.MIN_ROUNDS) return false;
-
-        // P/B difference check
-        if (diff > Rules.MAX_PB_DIFF) return false;
-
-        // Must be open for betting
-        if (Rules.REQUIRE_CAN_BET && t.canBet !== true) return false;
-
-        // Ratio check (only if enough games)
-        if (total >= Rules.RATIO_MIN_GAMES) {
-            const ratio = calcRatio(t);
-            if (ratio > Rules.MAX_RATIO) return false;
+        // Rule 1: Too early
+        if ((t.total || 0) < Rules.HARD_MIN_TOTAL) {
+            reasons.push(`too-early:${t.total}<${Rules.HARD_MIN_TOTAL}`);
         }
 
-        return true;
+        // Rule 2: Tie pollution
+        const tieRatio = calcTieRatio(t);
+        if (tieRatio > Rules.HARD_MAX_TIE_RATIO) {
+            reasons.push(`tie-pollution:${(tieRatio*100).toFixed(1)}%>${Rules.HARD_MAX_TIE_RATIO*100}%`);
+        }
+
+        // Rule 3: Chop in last 10
+        const seq = getSequence(t);
+        const last10 = seq.slice(-10);
+        const altIn10 = countAlternations(last10);
+        if (altIn10 >= Rules.HARD_MAX_CHOP_IN_10) {
+            reasons.push(`chop:${altIn10}alt/${Rules.HARD_MAX_CHOP_IN_10}max`);
+        }
+
+        // Rule 4: Speed Baccarat
+        if (Rules.HARD_REJECT_SPEED && isSpeedTable(t)) {
+            reasons.push('speed-table');
+        }
+
+        return { pass: reasons.length === 0, reasons };
     };
 
-    // Check if table has a streak worth betting against
-    const hasActionableStreak = (t) => {
-        const streak = detectStreak(getSequence(t));
-        return streak.length >= Rules.MIN_STREAK_FOR_BET && streak.side !== 'T';
+    // Check MUST-HAVE rules - all must pass
+    const checkMustHave = (t) => {
+        const reasons = [];
+        const seq = getSequence(t);
+
+        // Rule 6: Enough history
+        if ((t.total || 0) < Rules.MUST_MIN_TOTAL) {
+            reasons.push(`low-history:${t.total}<${Rules.MUST_MIN_TOTAL}`);
+        }
+
+        // Rule 7: Ratio in safe zone
+        const ratio = calcRatio(t);
+        if (ratio < Rules.MUST_RATIO_MIN) {
+            reasons.push(`ratio-low:${ratio.toFixed(3)}<${Rules.MUST_RATIO_MIN}`);
+        }
+        if (ratio > Rules.MUST_RATIO_MAX) {
+            reasons.push(`ratio-high:${ratio.toFixed(3)}>${Rules.MUST_RATIO_MAX}`);
+        }
+
+        // Rule 8: Streak evidence in last 20
+        if (Rules.MUST_HAVE_STREAK) {
+            const last20 = seq.slice(-20);
+            if (!hasStreakPattern(last20)) {
+                reasons.push('no-streak-pattern');
+            }
+        }
+
+        // Rule 9: No immediate flip (pure alternation in last 6)
+        if (Rules.MUST_NO_FLIP_IN_6) {
+            const last6 = seq.slice(-6);
+            if (last6.length >= 6 && isPureAlternation(last6)) {
+                reasons.push('pure-alternation-in-6');
+            }
+        }
+
+        // Rule 10: Betting window calm
+        if (Rules.MUST_CAN_BET && t.canBet !== true) {
+            reasons.push('not-open');
+        }
+
+        return { pass: reasons.length === 0, reasons };
+    };
+
+    // Calculate bonus score (higher = better)
+    const calcBonusScore = (t) => {
+        let score = 0;
+        const seq = getSequence(t);
+
+        // Bonus: More history
+        if ((t.total || 0) >= Rules.BONUS_IDEAL_TOTAL) {
+            score += 10;
+        }
+
+        // Bonus: Ideal ratio range
+        const ratio = calcRatio(t);
+        if (ratio >= Rules.BONUS_IDEAL_RATIO_MIN && ratio <= Rules.BONUS_IDEAL_RATIO_MAX) {
+            score += 15;
+        }
+
+        // Bonus: Current streak
+        const streak = detectStreak(seq);
+        if (streak.length >= Rules.BONUS_STREAK_LEN && streak.side !== 'T') {
+            score += streak.length * 5; // 5 points per streak length
+        }
+
+        // Bonus: Low ties
+        const tieRatio = calcTieRatio(t);
+        if (tieRatio < Rules.BONUS_LOW_TIES) {
+            score += 10;
+        }
+
+        // Bonus: Not too choppy in last 10
+        const last10 = seq.slice(-10);
+        const altIn10 = countAlternations(last10);
+        if (altIn10 <= 4) {
+            score += 10;
+        }
+
+        return score;
+    };
+
+    // Main scoring function
+    // Returns: { score: 0-100, eligible: bool, hardPass: {}, mustHave: {}, breakdown: {} }
+    const scoreTable = (t) => {
+        if (!t) return { score: 0, eligible: false, reasons: ['no-table'] };
+
+        // Hard pass check
+        const hard = checkHardPass(t);
+        if (!hard.pass) {
+            return {
+                score: 0,
+                eligible: false,
+                hardPass: hard,
+                mustHave: { pass: false, reasons: ['skipped'] },
+                reasons: hard.reasons
+            };
+        }
+
+        // Must-have check
+        const must = checkMustHave(t);
+        if (!must.pass) {
+            return {
+                score: 0,
+                eligible: false,
+                hardPass: hard,
+                mustHave: must,
+                reasons: must.reasons
+            };
+        }
+
+        // Calculate bonus score
+        const bonus = calcBonusScore(t);
+        const baseScore = 50; // Base score for passing all checks
+        const finalScore = Math.min(100, baseScore + bonus);
+
+        return {
+            score: finalScore,
+            eligible: true,
+            hardPass: hard,
+            mustHave: must,
+            bonus,
+            reasons: []
+        };
     };
 
     // ═══════════════════════════════════════════════════════════════════════
     // SELECTION FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════════
 
-    // Get all eligible tables
-    const getEligible = () => {
+    // Get all tables with scores
+    const getAllScored = () => {
         if (!window.pp) return [];
-        return [...Object.values(window.pp.tables())]
-            .filter(isEligible)
-            .map(t => ({
+        const tables = Object.values(window.pp.tables());
+        return tables.map(t => {
+            const result = scoreTable(t);
+            const seq = getSequence(t);
+            return {
                 ...t,
+                ...result,
                 ratio: calcRatio(t),
-                streak: detectStreak(getSequence(t)),
-                sequence: getSequence(t).slice(-10).join('')
-            }));
-    };
-
-    // Get tables sorted by ratio (most balanced first)
-    const getByRatio = () => {
-        return getEligible().sort((a, b) => a.ratio - b.ratio);
-    };
-
-    // Get tables with actionable streaks
-    const getStreaky = () => {
-        return getEligible()
-            .filter(hasActionableStreak)
-            .sort((a, b) => b.streak.length - a.streak.length);
-    };
-
-    // Get random eligible table
-    const getRandom = () => {
-        const eligible = getEligible();
-        if (eligible.length === 0) return null;
-        return eligible[Math.floor(Math.random() * eligible.length)];
-    };
-
-    // Get best table by custom scoring
-    // Lower score = better
-    const getBest = () => {
-        const eligible = getEligible();
-        if (eligible.length === 0) return null;
-
-        return eligible.reduce((best, t) => {
-            // Score: ratio (lower is better) + streak penalty
-            const score = t.ratio + (t.streak.length > Rules.MAX_STREAK ? 1 : 0);
-            const bestScore = best.ratio + (best.streak.length > Rules.MAX_STREAK ? 1 : 0);
-            return score < bestScore ? t : best;
+                tieRatio: calcTieRatio(t),
+                streak: detectStreak(seq),
+                last10: seq.slice(-10).join('')
+            };
         });
     };
 
-    // Suggest which side to bet on for a table
-    const suggestSide = (t) => {
-        if (!t) return null;
+    // Get eligible tables sorted by score (best first)
+    const getEligible = () => {
+        return getAllScored()
+            .filter(t => t.eligible)
+            .sort((a, b) => b.score - a.score);
+    };
 
-        // If there's a streak, bet against it
-        const streak = detectStreak(getSequence(t));
-        if (streak.length >= Rules.MIN_STREAK_FOR_BET && streak.side !== 'T') {
-            return streak.side === 'P' ? 'B' : 'P';
-        }
+    // Get best table
+    const getBest = () => {
+        const eligible = getEligible();
+        return eligible[0] || null;
+    };
 
-        // Otherwise bet on underdog (fewer wins catches up)
-        const underdog = getUnderdog(t);
-        if (underdog) return underdog;
-
-        // Fallback: random
-        return Math.random() < 0.5 ? 'P' : 'B';
+    // Quick pick for play.js
+    const pick = () => {
+        const table = getBest();
+        if (!table) return null;
+        return { table, score: table.score };
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -200,113 +332,167 @@
     // ═══════════════════════════════════════════════════════════════════════
 
     window.pick = {
-        // Rules (can be modified at runtime)
+        // Rules (modifiable at runtime)
         rules: Rules,
 
-        // Calculations
-        ratio: calcRatio,
-        streak: (t) => detectStreak(getSequence(t)),
-        sequence: getSequence,
-        dominant: getDominant,
-        underdog: getUnderdog,
-
-        // Filters
-        isEligible,
-        hasStreak: hasActionableStreak,
+        // Scoring
+        score: scoreTable,
+        scoreAll: getAllScored,
 
         // Selection
-        all: getEligible,           // All eligible tables
-        byRatio: getByRatio,        // Sorted by ratio (best first)
-        streaky: getStreaky,        // Tables with streaks
-        random: getRandom,          // Random eligible table
-        best: getBest,              // Best table by scoring
-        suggest: suggestSide,       // Suggest P or B for table
+        eligible: getEligible,
+        all: getEligible, // Alias
+        best: getBest,
+        pick,
 
-        // Quick pick: returns {table, side} or null
-        pick: () => {
-            const table = getBest();
-            if (!table) return null;
-            return { table, side: suggestSide(table) };
+        // Helpers
+        ratio: calcRatio,
+        tieRatio: calcTieRatio,
+        streak: (t) => detectStreak(getSequence(t)),
+        alternations: (t) => countAlternations(getSequence(t).slice(-10)),
+        hasStreak: (t) => hasStreakPattern(getSequence(t).slice(-20)),
+        isSpeed: isSpeedTable,
+
+        // Status display
+        status: () => {
+            const all = getAllScored();
+            const eligible = all.filter(t => t.eligible);
+            const rejected = all.filter(t => !t.eligible && t.total >= 20);
+
+            console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║            MARTINGALE TABLE SCORES (${eligible.length}/${all.length} eligible)            ║
+╠══════════════════════════════════════════════════════════════╣`);
+
+            if (eligible.length === 0) {
+                console.log('║  No eligible tables found                                    ║');
+            } else {
+                eligible.slice(0, 10).forEach((t, i) => {
+                    const name = (t.name || t.gameId || '?').slice(0, 16).padEnd(16);
+                    const bet = t.canBet ? '✓' : ' ';
+                    const str = t.streak.length > 1 ? `${t.streak.length}${t.streak.side}` : '--';
+                    console.log(
+                        `║ ${String(i+1).padStart(2)}.${bet} ${name} ` +
+                        `S:${String(t.score).padStart(2)} ` +
+                        `P:${String(t.P||0).padStart(2)} B:${String(t.B||0).padStart(2)} ` +
+                        `r:${t.ratio.toFixed(2)} ${str.padEnd(3)} [${t.last10}]`
+                    );
+                });
+            }
+
+            console.log('╠══════════════════════════════════════════════════════════════╣');
+            console.log('║  REJECTED (top reasons):                                     ║');
+
+            // Show rejection reasons summary
+            const reasonCounts = {};
+            rejected.forEach(t => {
+                t.reasons.forEach(r => {
+                    const key = r.split(':')[0];
+                    reasonCounts[key] = (reasonCounts[key] || 0) + 1;
+                });
+            });
+            Object.entries(reasonCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .forEach(([reason, count]) => {
+                    console.log(`║  • ${reason}: ${count} tables`.padEnd(63) + '║');
+                });
+
+            console.log('╚══════════════════════════════════════════════════════════════╝');
         },
 
-        // Print status
-        status: () => {
-            const eligible = getEligible();
-            console.log(`\n═══ PICK STATUS (${eligible.length} eligible) ═══\n`);
-            console.log(`Rules: min=${Rules.MIN_ROUNDS} maxDiff=${Rules.MAX_PB_DIFF} maxRatio=${Rules.MAX_RATIO}`);
-            eligible.slice(0, 15).forEach(t => {
-                const bet = t.canBet ? '✓' : ' ';
-                const sug = suggestSide(t);
-                console.log(
-                    `#${String(t.uid).padStart(2)}${bet} ${(t.name || t.id).slice(0,16).padEnd(16)} ` +
-                    `P:${String(t.P||0).padStart(2)} B:${String(t.B||0).padStart(2)} ` +
-                    `r:${t.ratio.toFixed(2)} s:${t.streak.length}${t.streak.side||'-'} → ${sug} ` +
-                    `[${t.sequence}]`
-                );
-            });
+        // Quick single-table check
+        check: (uidOrId) => {
+            const t = window.pp?.get(uidOrId);
+            if (!t) {
+                console.log('Table not found');
+                return null;
+            }
+
+            const result = scoreTable(t);
+            const seq = getSequence(t);
+
+            console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║  TABLE: ${(t.name || t.gameId || '?').slice(0, 40).padEnd(40)}        ║
+╠══════════════════════════════════════════════════════════════╣
+║  Score: ${String(result.score).padStart(3)} / 100    Eligible: ${result.eligible ? 'YES ✓' : 'NO ✗'}                    ║
+║  P: ${String(t.P||0).padStart(2)}  B: ${String(t.B||0).padStart(2)}  T: ${String(t.T||0).padStart(2)}  Total: ${String(t.total||0).padStart(3)}                        ║
+║  Ratio: ${calcRatio(t).toFixed(3)}   Tie%: ${(calcTieRatio(t)*100).toFixed(1)}%                              ║
+║  Last 10: ${seq.slice(-10).join('').padEnd(10)}                                      ║
+╠══════════════════════════════════════════════════════════════╣`);
+
+            if (!result.eligible) {
+                console.log('║  REJECTED:                                                   ║');
+                result.reasons.forEach(r => {
+                    console.log(`║  ✗ ${r}`.padEnd(63) + '║');
+                });
+            } else {
+                console.log('║  PASSED ALL CHECKS                                           ║');
+                console.log(`║  Bonus score: +${result.bonus}`.padEnd(63) + '║');
+            }
+
+            console.log('╚══════════════════════════════════════════════════════════════╝');
+            return result;
+        },
+
+        // Help
+        help: () => {
+            console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║              MARTINGALE PICKER v2.0 - HELP                   ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  SCORING SYSTEM                                              ║
+║  ──────────────                                              ║
+║  Score 0 = REJECTED (fails hard pass or must-have rules)     ║
+║  Score 50+ = ELIGIBLE (passes all checks + bonus)            ║
+║  Score 100 = IDEAL (all bonuses)                             ║
+║                                                              ║
+║  HARD PASS RULES (fail ONE = reject)                         ║
+║  • total < 30 (too early)                                    ║
+║  • ties > 12% (tie pollution)                                ║
+║  • alternations ≥ 7 in last 10 (chop)                        ║
+║  • Speed Baccarat table                                      ║
+║                                                              ║
+║  MUST-HAVE RULES (ALL must pass)                             ║
+║  • total ≥ 40 (enough history)                               ║
+║  • 0.05 ≤ ratio ≤ 0.25 (safe zone)                           ║
+║  • BB/PP pattern in last 20 (streak evidence)                ║
+║  • last 6 not pure alternation                               ║
+║  • canBet = true                                             ║
+║                                                              ║
+║  COMMANDS                                                    ║
+║  ────────                                                    ║
+║  pick.status()      Show all scored tables                   ║
+║  pick.check(1)      Check specific table                     ║
+║  pick.eligible()    Get eligible tables (sorted)             ║
+║  pick.best()        Get best table                           ║
+║  pick.pick()        Get {table, score} for play.js           ║
+║  pick.score(t)      Score a table object                     ║
+║                                                              ║
+║  CUSTOMIZE                                                   ║
+║  ─────────                                                   ║
+║  pick.rules.MUST_MIN_TOTAL = 50    // Stricter history       ║
+║  pick.rules.HARD_REJECT_SPEED = false  // Allow speed        ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`);
         }
     };
 
-    // Wait for pp API
+    // ═══════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+
     const waitForPP = () => new Promise(resolve => {
         const check = () => window.pp ? resolve() : setTimeout(check, 100);
         check();
     });
 
     waitForPP().then(() => {
-        console.log('[Pick] v1.0 | Table selection rules');
-        console.log('[Pick] API: pick.status() pick.pick() pick.all() pick.suggest(t)');
+        console.log('[Pick] v2.0 | Martingale table scoring');
+        console.log('[Pick] Commands: pick.status() pick.check(uid) pick.help()');
     });
 
 })();
-
-/*
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                        TABLE PICKER API v1.0                                 ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  REQUIRES: socks.js (provides pp API with table data)                        ║
-║                                                                              ║
-║  RULES (pick.rules - modify at runtime)                                      ║
-║  ─────────────────────────────────────                                       ║
-║  MIN_ROUNDS: 20          Minimum games before eligible                       ║
-║  MAX_PB_DIFF: 3          Maximum |P-B| difference                            ║
-║  REQUIRE_CAN_BET: true   Must be open for betting                            ║
-║  MAX_RATIO: 0.15         Maximum ratio for eligibility                       ║
-║  RATIO_MIN_GAMES: 30     Min games for ratio check                           ║
-║  MAX_STREAK: 6           Avoid streaks longer than this                      ║
-║  MIN_STREAK_FOR_BET: 3   Bet against streak if >= this                       ║
-║                                                                              ║
-║  SELECTION                                                                   ║
-║  ─────────                                                                   ║
-║  pick.pick()             Quick pick: {table, side} or null                   ║
-║  pick.all()              All eligible tables                                 ║
-║  pick.byRatio()          Sorted by ratio (best first)                        ║
-║  pick.streaky()          Tables with actionable streaks                      ║
-║  pick.random()           Random eligible table                               ║
-║  pick.best()             Best table by scoring                               ║
-║  pick.suggest(t)         Suggest 'P' or 'B' for table                        ║
-║                                                                              ║
-║  ANALYSIS                                                                    ║
-║  ────────                                                                    ║
-║  pick.ratio(t)           Calculate P/B ratio                                 ║
-║  pick.streak(t)          Get streak {side, length}                           ║
-║  pick.sequence(t)        Get P/B/T sequence array                            ║
-║  pick.dominant(t)        Get dominant side 'P'|'B'|null                      ║
-║  pick.underdog(t)        Get underdog side                                   ║
-║  pick.isEligible(t)      Check if table passes rules                         ║
-║  pick.hasStreak(t)       Check if table has actionable streak                ║
-║                                                                              ║
-║  STATUS                                                                      ║
-║  ──────                                                                      ║
-║  pick.status()           Print all eligible tables with analysis             ║
-║                                                                              ║
-║  CUSTOMIZING RULES                                                           ║
-║  ─────────────────                                                           ║
-║  pick.rules.MIN_ROUNDS = 30     // Change minimum rounds                     ║
-║  pick.rules.MAX_PB_DIFF = 5     // Allow bigger difference                   ║
-║  pick.rules.MAX_RATIO = 0.20    // More lenient ratio                        ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-*/
-
