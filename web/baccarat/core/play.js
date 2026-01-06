@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         play
 // @namespace    http://tampermonkey.net/
-// @version      5.1
-// @description  Martingale betting system for baccarat - 1-2-4 progression, 50/50 sides
+// @version      5.2
+// @description  Martingale betting system for baccarat - 1-2-4 progression, dynamic unit sizing
 // @author       You
 // @match        *://client.pragmaticplaylive.net/desktop/multibaccarat/*
 // @grant        none
@@ -19,7 +19,8 @@
     const Config = {
         // Martingale progression (1-2-4)
         STEPS: [1, 2, 4],           // Unit multipliers per step
-        UNIT_SIZE: 0.2,             // Base unit in dollars (1 click = 1 unit)
+        UNIT_FRACTION: 1/7,         // Unit = balance / 7
+        MIN_UNIT: 0.2,              // Minimum unit size in dollars
 
         // Exit rules (in units)
         SESSION_STOP_LOSS: -6,      // Stop entire session
@@ -47,6 +48,8 @@
         sessionBets: 0,             // Total bets placed
         sessionWins: 0,             // Winning bets
         sessionLosses: 0,           // Losing bets
+        sessionUnitSize: 0,         // Unit size for this session (calculated at start)
+        sessionStartBalance: 0,     // Balance when session started
 
         // Current sequence
         currentStep: 0,             // 0 = fresh, 1 = after 1 loss, 2 = after 2 losses
@@ -66,6 +69,15 @@
         intervalId: null,
         resultTimeout: null
     };
+
+    // Calculate unit size: balance/7, minimum 0.2
+    const calcUnitSize = (balance) => {
+        const calculated = balance * Config.UNIT_FRACTION;
+        return Math.max(Config.MIN_UNIT, Math.round(calculated * 100) / 100); // Round to cents
+    };
+
+    // Get current unit size (use session's fixed unit)
+    const getUnitSize = () => State.sessionUnitSize || Config.MIN_UNIT;
 
     // ═══════════════════════════════════════════════════════════════════════
     // UTILITIES
@@ -308,7 +320,8 @@
         // Check balance
         const balance = getBalance();
         const neededUnits = getCurrentBetUnits();
-        const neededDollars = neededUnits * Config.UNIT_SIZE;
+        const unitSize = getUnitSize();
+        const neededDollars = neededUnits * unitSize;
 
         if (balance < neededDollars) {
             log(`Balance too low: $${balance.toFixed(2)} < $${neededDollars.toFixed(2)} needed`, 'exit');
@@ -367,7 +380,7 @@
         // Place bet
         tile.scrollIntoView({ block: 'center' });
         const betUnits = getCurrentBetUnits();
-        const betDollars = betUnits * Config.UNIT_SIZE;
+        const betDollars = betUnits * getUnitSize();
 
         log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${betSide} x${betUnits} ($${betDollars.toFixed(2)})`, 'bet');
 
@@ -461,14 +474,18 @@
         }
 
         const balance = getBalance();
-        if (balance < Config.UNIT_SIZE) {
+        if (balance < Config.MIN_UNIT) {
             log(`Balance too low: $${balance.toFixed(2)}`, 'error');
             return;
         }
 
+        // Calculate unit size for this session (1/7 of balance, min 0.2)
+        State.sessionStartBalance = balance;
+        State.sessionUnitSize = calcUnitSize(balance);
+
         State.running = true;
         const sideMode = Config.SIDE === null ? '50/50' : Config.SIDE;
-        log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${Config.UNIT_SIZE}`, 'info');
+        log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} (1/${Math.round(1/Config.UNIT_FRACTION)} of balance)`, 'info');
         log(`Rules: 1-2-4 | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
 
         betCycle();
@@ -489,6 +506,8 @@
         State.sessionBets = 0;
         State.sessionWins = 0;
         State.sessionLosses = 0;
+        State.sessionUnitSize = 0;
+        State.sessionStartBalance = 0;
         State.currentStep = 0;
         State.sequenceUnits = 0;
         State.focusedTable = null;
@@ -501,20 +520,22 @@
 
     const status = () => {
         const balance = getBalance();
-        const profitDollars = State.sessionUnits * Config.UNIT_SIZE;
+        const unitSize = getUnitSize();
+        const profitDollars = State.sessionUnits * unitSize;
+        const nextBetDollars = getCurrentBetUnits() * unitSize;
 
         console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                    MARTINGALE STATUS                         ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Running: ${State.running ? 'YES' : 'NO'}                                               ║
-║  Balance: $${balance.toFixed(2).padEnd(10)} Unit: $${Config.UNIT_SIZE}                    ║
+║  Running: ${State.running ? 'YES' : 'NO '}                                              ║
+║  Balance: $${balance.toFixed(2).padEnd(8)}  Start: $${(State.sessionStartBalance || balance).toFixed(2).padEnd(8)}         ║
+║  Unit: $${unitSize.toFixed(2)} (1/7 of start balance, min $${Config.MIN_UNIT})          ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Session Units: ${(State.sessionUnits > 0 ? '+' : '') + State.sessionUnits}                                        ║
-║  Session P/L:   $${(profitDollars > 0 ? '+' : '') + profitDollars.toFixed(2)}                                   ║
-║  Bets: ${State.sessionBets}  Wins: ${State.sessionWins}  Losses: ${State.sessionLosses}                            ║
+║  Session Units: ${String((State.sessionUnits > 0 ? '+' : '') + State.sessionUnits).padEnd(5)}  ($${(profitDollars > 0 ? '+' : '') + profitDollars.toFixed(2)})                    ║
+║  Bets: ${String(State.sessionBets).padEnd(3)} Wins: ${String(State.sessionWins).padEnd(3)} Losses: ${String(State.sessionLosses).padEnd(3)}                      ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Current Step: ${State.currentStep + 1}/${Config.STEPS.length} (next bet: ${getCurrentBetUnits()} units)                  ║
+║  Current Step: ${State.currentStep + 1}/${Config.STEPS.length} (next: ${getCurrentBetUnits()}u = $${nextBetDollars.toFixed(2)})                ║
 ║  Sequence P/L: ${State.sequenceUnits} units                                   ║
 ║  Focused Table: ${(State.focusedTable?.name || State.focusedTable?.gameId || 'None').slice(0, 20).padEnd(20)}            ║
 ║  Failed Tables: ${State.failedTables.size}                                           ║
@@ -571,7 +592,8 @@
         // Quick helpers
         balance: getBalance,
         units: () => State.sessionUnits,
-        profit: () => State.sessionUnits * Config.UNIT_SIZE
+        unitSize: getUnitSize,
+        profit: () => State.sessionUnits * getUnitSize()
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -584,10 +606,11 @@
         if (window.pp && window.pick) {
             console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║              MARTINGALE BETTING SYSTEM v5.1                  ║
+║              MARTINGALE BETTING SYSTEM v5.2                  ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
 ║  STRATEGY: 1-2-4 Progression | 50/50 Random Side             ║
+║  UNIT: Balance / 7 at session start (min $0.20)              ║
 ║                                                              ║
 ║  EXIT RULES:                                                 ║
 ║  • Max 3 steps per sequence                                  ║
@@ -601,9 +624,10 @@
 ║  play.status()    Show current state                         ║
 ║  play.reset()     Reset session                              ║
 ║                                                              ║
-║  CONFIG (modify before start):                               ║
-║  play.config.UNIT_SIZE = 0.2    Base unit ($)                ║
-║  play.config.SIDE = null        null=50/50, 'B', 'P'         ║
+║  CONFIG:                                                     ║
+║  play.config.UNIT_FRACTION = 1/7    Unit = balance * this    ║
+║  play.config.MIN_UNIT = 0.2         Minimum unit ($)         ║
+║  play.config.SIDE = null            null=50/50, 'B', 'P'     ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 `);
