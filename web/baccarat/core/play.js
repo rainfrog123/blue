@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         play
 // @namespace    http://tampermonkey.net/
-// @version      5.2
-// @description  Martingale betting system for baccarat - 1-2-4 progression, dynamic unit sizing
+// @version      5.3
+// @description  Martingale betting system for baccarat - win=1 unit, lose=double, profit at +3 units
 // @author       You
 // @match        *://client.pragmaticplaylive.net/desktop/multibaccarat/*
 // @grant        none
@@ -24,13 +24,12 @@
 
         // Exit rules (in units)
         SESSION_STOP_LOSS: -6,      // Stop entire session
-        SESSION_STOP_WIN: 4,        // Take profit and stop
-        MAX_TABLE_LOSS: -7,         // Leave table (one failed sequence)
+        SESSION_STOP_WIN: 3,        // Take profit at +3 units, start new session
 
         // Betting
         SIDE: null,                 // null = 50/50 random, 'B' = Banker only, 'P' = Player only
         BET_DELAY: 2000,            // Delay between bet attempts (ms)
-        WAIT_FOR_RESULT: 15000,     // Max wait for result (ms)
+        WAIT_FOR_RESULT: 30000,     // Max wait for result (ms) - Speed Baccarat can be ~27s
 
         // DOM selectors
         PLAYER_BTN: '[data-betcode="0"]',
@@ -57,7 +56,8 @@
 
         // Table focus
         focusedTable: null,         // The ONE table we're playing
-        failedTables: new Set(),    // Tables that failed us (one failed sequence)
+        usedTables: new Set(),      // Tables we've completed a sequence on (win or lose)
+        tableBetCount: 0,           // Bets placed on current table
 
         // Execution
         running: false,
@@ -141,10 +141,10 @@
             return null;
         }
 
-        // Get eligible tables, excluding failed ones
+        // Get eligible tables, excluding already used ones
         const tables = window.pick.eligible().filter(t => {
             const id = t.gameId || t.id;
-            return id && !State.failedTables.has(id);
+            return id && !State.usedTables.has(id);
         });
 
         if (tables.length === 0) {
@@ -213,16 +213,37 @@
 
     const waitForResult = async (tableId, lastKnownCount) => {
         const startTime = Date.now();
+        let lastLoggedTotal = null;
 
         while (Date.now() - startTime < Config.WAIT_FOR_RESULT) {
             const t = window.pp?.get(tableId);
-            if (t && t.total > lastKnownCount) {
+            if (!t) {
+                log(`Table ${tableId} not found in pp`, 'error');
+                await sleep(500);
+                continue;
+            }
+
+            // Log when total changes (for debugging)
+            if (t.total !== lastLoggedTotal) {
+                console.log(`[DEBUG] ${tableId}: total=${t.total} (waiting for >${lastKnownCount}), updates=${t.updates}`);
+                lastLoggedTotal = t.total;
+            }
+
+            // Detect shoe reset during wait (total dropped to 0 or 1)
+            if (lastKnownCount > 5 && t.total <= 1) {
+                log(`Shoe reset during wait (total: ${lastKnownCount} → ${t.total})`, 'info');
+                return 'SHOE_RESET';
+            }
+
+            if (t.total > lastKnownCount) {
                 // New result arrived
                 const result = getTableLastResult(tableId);
+                log(`Result detected: ${result} (total: ${lastKnownCount} → ${t.total})`, 'info');
                 return result;
             }
             await sleep(200);
         }
+        log(`Timeout after ${Config.WAIT_FOR_RESULT/1000}s - total still ${lastLoggedTotal}, needed >${lastKnownCount}`, 'error');
         return null; // Timeout
     };
 
@@ -237,21 +258,47 @@
             return { exit: true, reason: 'stop-loss' };
         }
 
-        // Session stop-win
+        // Take profit
         if (State.sessionUnits >= Config.SESSION_STOP_WIN) {
-            log(`SESSION STOP-WIN reached: +${State.sessionUnits} units`, 'exit');
-            return { exit: true, reason: 'stop-win' };
+            log(`TAKE PROFIT: +${State.sessionUnits} units`, 'win');
+            return { exit: true, reason: 'take-profit' };
         }
 
         return { exit: false };
     };
 
-    const markTableFailed = (tableId) => {
-        State.failedTables.add(tableId);
-        log(`Table ${tableId} marked as FAILED (sequence lost)`, 'exit');
+    // Start a new session (after taking profit)
+    const startNewSession = () => {
+        const balance = getBalance();
+        const oldUnits = State.sessionUnits;
+        
+        // Reset session state
+        State.sessionUnits = 0;
+        State.sessionBets = 0;
+        State.sessionWins = 0;
+        State.sessionLosses = 0;
+        State.currentStep = 0;
+        State.sequenceUnits = 0;
+        State.focusedTable = null;
+        State.usedTables.clear();
+        State.tableBetCount = 0;
+        sequenceSide = null;
+        
+        // Recalculate unit size based on new balance
+        State.sessionStartBalance = balance;
+        State.sessionUnitSize = calcUnitSize(balance);
+        
+        log(`NEW SESSION | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} | Previous: +${oldUnits}u`, 'info');
+    };
+
+    // Mark table as used (completed one sequence - win or lose)
+    const markTableDone = (tableId, reason) => {
+        State.usedTables.add(tableId);
+        log(`Table ${tableId} DONE (${reason}) - moving to new table`, 'exit');
         State.focusedTable = null;
         State.currentStep = 0;
         State.sequenceUnits = 0;
+        State.tableBetCount = 0;
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -276,30 +323,32 @@
         }
 
         if (won) {
-            // WIN - reset sequence, add 1 unit profit
+            // WIN - add 1 unit profit, reset to bet 1 unit
             State.sessionUnits += 1; // Martingale profit is always 1 unit
             State.sessionWins++;
-            State.currentStep = 0;
-            State.sequenceUnits = 0;
-            sequenceSide = null; // Reset side for next sequence
             State.lastResult = 'W';
-            log(`WON +1 unit | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units`, 'win');
+            State.currentStep = 0; // Reset to 1 unit bet
+            State.sequenceUnits = 0;
+            sequenceSide = null; // Choose new side next bet
+            log(`WON +1 unit | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
         } else {
-            // LOSS - advance step, track loss
+            // LOSS - double bet (advance step)
             State.sessionUnits -= betUnits;
             State.sequenceUnits -= betUnits;
             State.sessionLosses++;
             State.currentStep++;
             State.lastResult = 'L';
 
-            log(`LOST -${betUnits} units | Step ${State.currentStep}/${Config.STEPS.length} | Session: ${State.sessionUnits} units`, 'loss');
+            log(`LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
 
-            // Check if sequence failed (max steps reached)
+            // If max step reached, reset and continue (lost 1+2+4=7 units)
             if (State.currentStep >= Config.STEPS.length) {
-                const tableId = State.focusedTable?.gameId || State.focusedTable?.id;
-                log(`SEQUENCE FAILED on ${tableId} | Total loss: ${State.sequenceUnits} units`, 'exit');
-                markTableFailed(tableId);
-                sequenceSide = null; // Reset side for next table
+                log(`Max step reached (lost 7 units) | Resetting to 1 unit`, 'loss');
+                State.currentStep = 0;
+                State.sequenceUnits = 0;
+                sequenceSide = null;
+            } else {
+                log(`Next bet: ${getCurrentBetUnits()} units (doubling)`, 'info');
             }
         }
     };
@@ -314,20 +363,51 @@
         // Check session exit conditions
         const exit = checkExitConditions();
         if (exit.exit) {
+            // Check if we can start a new session (have minimum unit)
+            const balance = getBalance();
+            const minUnit = calcUnitSize(balance);
+            if (balance >= minUnit) {
+                // Start new session
+                startNewSession();
+                scheduleNext();
+                return;
+            }
+            // Not enough balance - stop completely
             stop();
             return;
         }
 
-        // Check balance
-        const balance = getBalance();
+        // Check balance (wait for UI to update after wins)
         const neededUnits = getCurrentBetUnits();
         const unitSize = getUnitSize();
         const neededDollars = neededUnits * unitSize;
 
+        let balance = getBalance();
         if (balance < neededDollars) {
-            log(`Balance too low: $${balance.toFixed(2)} < $${neededDollars.toFixed(2)} needed`, 'exit');
-            stop();
-            return;
+            log(`Balance low ($${balance.toFixed(2)}) - waiting 6s for UI update...`, 'info');
+            await sleep(6000);
+            balance = getBalance();
+            if (balance < neededDollars) {
+                // Can't afford current step - check if we can afford minimum unit
+                const minBet = unitSize; // 1 unit
+                if (balance >= minBet) {
+                    // Reset to step 1 and start new session
+                    log(`Can't double ($${balance.toFixed(2)} < $${neededDollars.toFixed(2)}) - resetting to 1 unit, new table`, 'info');
+                    State.currentStep = 0;
+                    State.sequenceUnits = 0;
+                    sequenceSide = null;
+                    if (State.focusedTable) {
+                        const tableId = State.focusedTable.gameId || State.focusedTable.id;
+                        markTableDone(tableId, 'cant-double');
+                    }
+                    scheduleNext();
+                    return;
+                }
+                log(`Balance too low: $${balance.toFixed(2)} < $${minBet.toFixed(2)} minimum`, 'exit');
+                stop();
+                return;
+            }
+            log(`Balance updated: $${balance.toFixed(2)} - continuing`, 'info');
         }
 
         // Select table if we don't have one
@@ -341,6 +421,7 @@
             // Reset sequence for new table
             State.currentStep = 0;
             State.sequenceUnits = 0;
+            State.tableBetCount = 0;
         }
 
         const table = State.focusedTable;
@@ -358,6 +439,14 @@
         if (!freshTable) {
             log(`Table ${tableId} no longer available`, 'error');
             State.focusedTable = null;
+            scheduleNext();
+            return;
+        }
+
+        // New shoe detected (total reset) - move to new table
+        if (freshTable.total <= 1) {
+            log(`New shoe detected (total=${freshTable.total}) - finding new table`, 'info');
+            markTableDone(tableId, 'new-shoe');
             scheduleNext();
             return;
         }
@@ -417,16 +506,42 @@
 
         State.waitingForResult = false;
 
-        if (result === null) {
+        if (result === 'SHOE_RESET') {
+            // Shoe reset during wait - move to new table (bet voided)
+            log('Shoe reset - moving to new table (bet voided)', 'info');
+            markTableDone(tableId, 'shoe-reset');
+            scheduleNext();
+            return;
+        } else if (result === null) {
             log('Result timeout - treating as loss', 'error');
             processResult(sequenceSide === 'B' ? 'P' : 'B'); // Opposite side = loss
         } else {
             processResult(result);
         }
 
+        // Wait 3s then check if shoe reset (total dropped to 0 = new shoe)
+        await sleep(3000);
+        const tableAfter = window.pp?.get(tableId);
+        if (tableAfter && tableAfter.total === 0) {
+            log(`New shoe detected (total=0) - moving to new table`, 'info');
+            markTableDone(tableId, 'new-shoe');
+            scheduleNext();
+            return;
+        }
+
         // Check exit conditions again after result
         const exitAfter = checkExitConditions();
         if (exitAfter.exit) {
+            // Check if we can start a new session (have minimum unit)
+            const balanceAfter = getBalance();
+            const minUnitAfter = calcUnitSize(balanceAfter);
+            if (balanceAfter >= minUnitAfter) {
+                // Start new session
+                startNewSession();
+                scheduleNext();
+                return;
+            }
+            // Not enough balance - stop completely
             stop();
             return;
         }
@@ -494,7 +609,7 @@
         State.running = true;
         const sideMode = Config.SIDE === null ? '50/50' : Config.SIDE;
         log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} (1/${Math.round(1/Config.UNIT_FRACTION)} of balance)`, 'info');
-        log(`Rules: 1-2-4 | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
+        log(`Rules: WIN→1u, LOSE→double | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
 
         betCycle();
     };
@@ -519,7 +634,8 @@
         State.currentStep = 0;
         State.sequenceUnits = 0;
         State.focusedTable = null;
-        State.failedTables.clear();
+        State.usedTables.clear();
+        State.tableBetCount = 0;
         State.lastBet = null;
         State.lastResult = null;
         sequenceSide = null;
@@ -543,12 +659,11 @@
 ║  Session Units: ${String((State.sessionUnits > 0 ? '+' : '') + State.sessionUnits).padEnd(5)}  ($${(profitDollars > 0 ? '+' : '') + profitDollars.toFixed(2)})                    ║
 ║  Bets: ${String(State.sessionBets).padEnd(3)} Wins: ${String(State.sessionWins).padEnd(3)} Losses: ${String(State.sessionLosses).padEnd(3)}                      ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Current Step: ${State.currentStep + 1}/${Config.STEPS.length} (next: ${getCurrentBetUnits()}u = $${nextBetDollars.toFixed(2)})                ║
+║  Next Bet: ${getCurrentBetUnits()}u ($${nextBetDollars.toFixed(2)})                                    ║
 ║  Sequence P/L: ${State.sequenceUnits} units                                   ║
-║  Focused Table: ${(State.focusedTable?.name || State.focusedTable?.gameId || 'None').slice(0, 20).padEnd(20)}            ║
-║  Failed Tables: ${State.failedTables.size}                                           ║
+║  Table: ${(State.focusedTable?.name || State.focusedTable?.gameId || 'None').slice(0, 25).padEnd(25)}                   ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Stop-Loss: ${Config.SESSION_STOP_LOSS} units | Stop-Win: +${Config.SESSION_STOP_WIN} units              ║
+║  Stop-Loss: ${Config.SESSION_STOP_LOSS} units | Stop-Win: +${Config.SESSION_STOP_WIN} units               ║
 ╚══════════════════════════════════════════════════════════════╝
 `);
         return {
@@ -561,7 +676,7 @@
             losses: State.sessionLosses,
             currentStep: State.currentStep,
             focusedTable: State.focusedTable,
-            failedTables: [...State.failedTables]
+            usedTables: [...State.usedTables]
         };
     };
 
@@ -581,20 +696,21 @@
         config: Config,
 
         // State (read-only inspection)
-        state: () => ({ ...State, failedTables: [...State.failedTables] }),
+        state: () => ({ ...State, usedTables: [...State.usedTables] }),
 
         // Manual operations
         setTable: (uidOrId) => {
             const t = window.pp?.get(uidOrId);
             if (t) {
                 State.focusedTable = t;
+                State.tableBetCount = 0;
                 log(`Manually set table: ${t.name || t.gameId}`);
             }
         },
 
-        clearFailed: () => {
-            State.failedTables.clear();
-            log('Cleared failed tables list');
+        clearUsed: () => {
+            State.usedTables.clear();
+            log('Cleared used tables list - can reuse all tables');
         },
 
         // Quick helpers
@@ -614,17 +730,19 @@
         if (window.pp && window.pick) {
             console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║              MARTINGALE BETTING SYSTEM v5.2                  ║
+║              MARTINGALE BETTING SYSTEM v5.3                  ║
 ╠══════════════════════════════════════════════════════════════╣
 ║                                                              ║
-║  STRATEGY: 1-2-4 Progression | 50/50 Random Side             ║
+║  STRATEGY: Classic Martingale                                ║
+║  • WIN  → bet 1 unit (always reset)                          ║
+║  • LOSE → double bet (1→2→4)                                 ║
+║  • Take profit at +3 units                                   ║
+║                                                              ║
 ║  UNIT: Balance / 7 at session start (min $0.20)              ║
 ║                                                              ║
 ║  EXIT RULES:                                                 ║
-║  • Max 3 steps per sequence                                  ║
-║  • Failed sequence → leave table immediately                 ║
 ║  • Session stop-loss: -6 units                               ║
-║  • Session stop-win: +4 units                                ║
+║  • Session stop-win: +3 units                                ║
 ║                                                              ║
 ║  COMMANDS:                                                   ║
 ║  play.start()     Start Martingale                           ║
