@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         play
 // @namespace    http://tampermonkey.net/
-// @version      4.0
-// @description  Baccarat betting execution using pp (data) and pick (selection) APIs
+// @version      5.0
+// @description  Martingale betting system for baccarat - 1-2-4 progression
 // @author       You
 // @match        *://client.pragmaticplaylive.net/desktop/multibaccarat/*
 // @grant        none
@@ -13,19 +13,58 @@
     'use strict';
 
     // ═══════════════════════════════════════════════════════════════════════
-    // CONFIGURATION
+    // MARTINGALE CONFIGURATION
     // ═══════════════════════════════════════════════════════════════════════
 
     const Config = {
-        CHIP_VALUE: 0.2,
-        MIN_BET_FRAC: 1/8,
-        MAX_BET_FRAC: 1/2,
-        BET_DELAY: 3000,
-        CLICK_DELAY: 50,
+        // Martingale progression (1-2-4)
+        STEPS: [1, 2, 4],           // Unit multipliers per step
+        UNIT_SIZE: 0.2,             // Base unit in dollars (1 click = 1 unit)
+
+        // Exit rules (in units)
+        SESSION_STOP_LOSS: -6,      // Stop entire session
+        SESSION_STOP_WIN: 4,        // Take profit and stop
+        MAX_TABLE_LOSS: -7,         // Leave table (one failed sequence)
+
+        // Betting
+        SIDE: 'B',                  // Banker only
+        BET_DELAY: 2000,            // Delay between bet attempts (ms)
+        WAIT_FOR_RESULT: 15000,     // Max wait for result (ms)
+
         // DOM selectors
         PLAYER_BTN: '[data-betcode="0"]',
         BANKER_BTN: '[data-betcode="1"]',
         TILE_SEL: '[id^="TileHeight-"]'
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const State = {
+        // Session tracking (in units)
+        sessionUnits: 0,            // +/- units this session
+        sessionBets: 0,             // Total bets placed
+        sessionWins: 0,             // Winning bets
+        sessionLosses: 0,           // Losing bets
+
+        // Current sequence
+        currentStep: 0,             // 0 = fresh, 1 = after 1 loss, 2 = after 2 losses
+        sequenceUnits: 0,           // Units in current sequence
+
+        // Table focus
+        focusedTable: null,         // The ONE table we're playing
+        failedTables: new Set(),    // Tables that failed us (one failed sequence)
+
+        // Execution
+        running: false,
+        waitingForResult: false,
+        lastBet: null,
+        lastResult: null,
+
+        // Timers
+        intervalId: null,
+        resultTimeout: null
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -34,118 +73,35 @@
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    const rand = {
-        bool: () => Math.random() < 0.5,
-        float: () => Math.random(),
-        side: () => rand.bool() ? 'P' : 'B'
-    };
-
-    // Simulate full mouse click sequence
     const simulateClick = (el) => {
         if (!el) return false;
         ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(type => {
             el.dispatchEvent(new MouseEvent(type, {
-                bubbles: true,
-                cancelable: true,
-                view: window
+                bubbles: true, cancelable: true, view: window
             }));
         });
         return true;
     };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // BALANCE TRACKING
-    // ═══════════════════════════════════════════════════════════════════════
+    const log = (msg, type = 'info') => {
+        const prefix = {
+            'info': '[Play]',
+            'bet': '[BET]',
+            'win': '[WIN]',
+            'loss': '[LOSS]',
+            'exit': '[EXIT]',
+            'error': '[ERR]'
+        }[type] || '[Play]';
+        console.log(`${prefix} ${msg}`);
+    };
 
-    const balanceHistory = [];
-    let lastBalance = null;
+    // ═══════════════════════════════════════════════════════════════════════
+    // BALANCE
+    // ═══════════════════════════════════════════════════════════════════════
 
     const getBalance = () => {
         const el = document.querySelector('[data-testid="wallet-mobile-balance"] [data-testid="wallet-mobile-value"] span');
         return el ? parseFloat(el.textContent.replace(/[^0-9.]/g, '')) || 0 : 0;
-    };
-
-    const trackBalance = () => {
-        const bal = getBalance();
-        if (bal !== lastBalance && lastBalance !== null) {
-            const delta = bal - lastBalance;
-            const entry = {
-                time: Date.now(),
-                balance: bal,
-                prev: lastBalance,
-                delta,
-                type: delta > 0 ? 'WIN' : delta < 0 ? 'BET' : 'SAME'
-            };
-            balanceHistory.push(entry);
-            console.log(`[Bal] ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} → $${bal.toFixed(2)} (${entry.type})`);
-
-            // Check if we should restart auto betting due to recovered balance
-            if (betManager.stoppedDueToLowBalance && bal >= Config.CHIP_VALUE) {
-                console.log(`[Play] Balance recovered: $${bal.toFixed(2)} - restarting`);
-                betManager.stoppedDueToLowBalance = false;
-                betManager.start();
-            }
-        }
-        lastBalance = bal;
-    };
-
-    const watchBalance = () => {
-        const target = document.querySelector('[data-testid="wallet-mobile-balance"]');
-        if (!target) {
-            setTimeout(watchBalance, 500);
-            return;
-        }
-        lastBalance = getBalance();
-        console.log(`[Bal] Watching: $${lastBalance.toFixed(2)}`);
-        const observer = new MutationObserver(trackBalance);
-        observer.observe(target, { childList: true, subtree: true, characterData: true });
-    };
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // POPUP HANDLING
-    // ═══════════════════════════════════════════════════════════════════════
-
-    const handleInsufficientFundsPopup = () => {
-        const popup = document.querySelector('[data-testid="popup-content"]');
-        if (!popup) return false;
-
-        const title = popup.querySelector('[data-testid="blocking-popup-title"]');
-        if (!title || title.textContent !== 'Insufficient funds') return false;
-
-        console.log('[Popup] Insufficient funds detected');
-        const buttons = popup.querySelectorAll('button[data-testid="button"]');
-        for (const btn of buttons) {
-            const span = btn.querySelector('span[data-testid="button-content"]');
-            if (span && span.textContent === 'No, thanks') {
-                simulateClick(btn);
-                console.log('[Popup] Dismissed');
-                return true;
-            }
-        }
-        if (buttons.length > 0) {
-            simulateClick(buttons[0]);
-            return true;
-        }
-        return false;
-    };
-
-    const watchForPopup = () => {
-        const observer = new MutationObserver(handleInsufficientFundsPopup);
-        observer.observe(document.body, { childList: true, subtree: true });
-    };
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // BET SIZE CALCULATION
-    // ═══════════════════════════════════════════════════════════════════════
-
-    const calcBet = () => {
-        const bal = getBalance();
-        if (bal < Config.CHIP_VALUE) return { amount: 0, clicks: 0 };
-        const min = bal * Config.MIN_BET_FRAC;
-        const max = bal * Config.MAX_BET_FRAC;
-        const bet = min + rand.float() * (max - min);
-        const clicks = Math.max(1, Math.floor(bet / Config.CHIP_VALUE));
-        return { amount: clicks * Config.CHIP_VALUE, clicks };
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -163,310 +119,473 @@
         return null;
     };
 
-    const getTileByIndex = (idx) => {
-        const tiles = document.querySelectorAll(Config.TILE_SEL);
-        return tiles[idx] || null;
+    // ═══════════════════════════════════════════════════════════════════════
+    // TABLE SELECTION (from pick module)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const selectTable = () => {
+        if (!window.pick) {
+            log('pick API not available', 'error');
+            return null;
+        }
+
+        // Get eligible tables, excluding failed ones
+        const tables = window.pick.eligible().filter(t => {
+            const id = t.gameId || t.id;
+            return !State.failedTables.has(id);
+        });
+
+        if (tables.length === 0) {
+            log('No eligible tables (all failed or none available)', 'exit');
+            return null;
+        }
+
+        // Pick the best one (first in sorted list)
+        const table = tables[0];
+        log(`Selected table: ${table.name || table.gameId} | P:${table.P} B:${table.B} T:${table.T}`);
+        return table;
     };
 
     // ═══════════════════════════════════════════════════════════════════════
     // BET EXECUTION
     // ═══════════════════════════════════════════════════════════════════════
 
-    const clickBet = async (tile, selector, clicks) => {
-        const btn = tile.querySelector(selector);
-        if (!btn) return false;
-        for (let j = 0; j < clicks; j++) {
-            simulateClick(btn);
-            if (j < clicks - 1) await sleep(Config.CLICK_DELAY);
-        }
-        return true;
-    };
+    const placeBet = async (tile, units) => {
+        const selector = Config.SIDE === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
+        const clicks = units; // 1 unit = 1 click
 
-    const placeBet = async (tile, side, clicks) => {
-        const selector = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
         // Wait for button to appear
         for (let i = 0; i < 60; i++) {
             const btn = tile.querySelector(selector);
-            if (btn) return clickBet(tile, selector, clicks);
+            if (btn) {
+                for (let j = 0; j < clicks; j++) {
+                    simulateClick(btn);
+                    if (j < clicks - 1) await sleep(50);
+                }
+                return true;
+            }
             await sleep(50);
         }
         return false;
     };
 
     // ═══════════════════════════════════════════════════════════════════════
-    // BETTING MANAGER
+    // RESULT DETECTION
     // ═══════════════════════════════════════════════════════════════════════
 
-    class BetManager {
-        constructor() {
-            this.running = false;
-            this.lastBet = null;
-            this.intervalId = null;
-            this.stoppedDueToLowBalance = false;
-            this.balanceCheckInterval = null;
-            this.stats = { bets: 0, wins: 0, losses: 0 };
+    const getTableLastResult = (tableId) => {
+        if (!window.pp) return null;
+        const t = window.pp.get(tableId);
+        if (!t) return null;
+
+        // Get the last result from PBT sequence
+        const pbt = window.pp.lastN(tableId, 1);
+        return pbt[0] || null; // 'P', 'B', or 'T'
+    };
+
+    const waitForResult = async (tableId, lastKnownCount) => {
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < Config.WAIT_FOR_RESULT) {
+            const t = window.pp?.get(tableId);
+            if (t && t.total > lastKnownCount) {
+                // New result arrived
+                const result = getTableLastResult(tableId);
+                return result;
+            }
+            await sleep(200);
+        }
+        return null; // Timeout
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // EXIT CONDITIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const checkExitConditions = () => {
+        // Session stop-loss
+        if (State.sessionUnits <= Config.SESSION_STOP_LOSS) {
+            log(`SESSION STOP-LOSS reached: ${State.sessionUnits} units`, 'exit');
+            return { exit: true, reason: 'stop-loss' };
         }
 
-        start() {
-            if (this.running) return;
-            this.running = true;
-            console.log('[Play] Started');
-            if (this.balanceCheckInterval) {
-                clearInterval(this.balanceCheckInterval);
-                this.balanceCheckInterval = null;
-            }
-            this.next();
+        // Session stop-win
+        if (State.sessionUnits >= Config.SESSION_STOP_WIN) {
+            log(`SESSION STOP-WIN reached: +${State.sessionUnits} units`, 'exit');
+            return { exit: true, reason: 'stop-win' };
         }
 
-        stop(keepFlag = false) {
-            this.running = false;
-            if (!keepFlag) this.stoppedDueToLowBalance = false;
-            if (this.intervalId) {
-                clearInterval(this.intervalId);
-                this.intervalId = null;
-            }
-            if (this.balanceCheckInterval) {
-                clearInterval(this.balanceCheckInterval);
-                this.balanceCheckInterval = null;
-            }
-            console.log('[Play] Stopped');
+        return { exit: false };
+    };
+
+    const markTableFailed = (tableId) => {
+        State.failedTables.add(tableId);
+        log(`Table ${tableId} marked as FAILED (sequence lost)`, 'exit');
+        State.focusedTable = null;
+        State.currentStep = 0;
+        State.sequenceUnits = 0;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MARTINGALE LOGIC
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const getCurrentBetUnits = () => {
+        return Config.STEPS[State.currentStep] || Config.STEPS[0];
+    };
+
+    const processResult = (result) => {
+        const betUnits = getCurrentBetUnits();
+        const won = (result === Config.SIDE) || (result === 'T' && Config.SIDE === 'B');
+        // Note: Tie on Banker bet typically returns stake, treating as neutral/win
+
+        if (result === 'T') {
+            // Tie - push (no change)
+            log(`TIE - push (no units change)`, 'info');
+            State.lastResult = 'T';
+            return;
         }
 
-        stopDueToLowBalance() {
-            this.stoppedDueToLowBalance = true;
-            this.stop(true);
-            this.balanceCheckInterval = setInterval(() => {
-                if (!this.stoppedDueToLowBalance) {
-                    clearInterval(this.balanceCheckInterval);
-                    this.balanceCheckInterval = null;
-                    return;
-                }
-                const bal = getBalance();
-                if (bal >= Config.CHIP_VALUE) {
-                    console.log(`[Play] Balance recovered: $${bal.toFixed(2)}`);
-                    this.stoppedDueToLowBalance = false;
-                    clearInterval(this.balanceCheckInterval);
-                    this.balanceCheckInterval = null;
-                    this.start();
-                }
-            }, 2000);
+        if (won) {
+            // WIN - reset sequence, add 1 unit profit
+            State.sessionUnits += 1; // Martingale profit is always 1 unit
+            State.sessionWins++;
+            State.currentStep = 0;
+            State.sequenceUnits = 0;
+            State.lastResult = 'W';
+            log(`WON +1 unit | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units`, 'win');
+        } else {
+            // LOSS - advance step, track loss
+            State.sessionUnits -= betUnits;
+            State.sequenceUnits -= betUnits;
+            State.sessionLosses++;
+            State.currentStep++;
+            State.lastResult = 'L';
+
+            log(`LOST -${betUnits} units | Step ${State.currentStep}/${Config.STEPS.length} | Session: ${State.sessionUnits} units`, 'loss');
+
+            // Check if sequence failed (max steps reached)
+            if (State.currentStep >= Config.STEPS.length) {
+                const tableId = State.focusedTable?.gameId || State.focusedTable?.id;
+                log(`SEQUENCE FAILED on ${tableId} | Total loss: ${State.sequenceUnits} units`, 'exit');
+                markTableFailed(tableId);
+            }
+        }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MAIN BETTING LOOP
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const betCycle = async () => {
+        if (!State.running) return;
+
+        // Check session exit conditions
+        const exit = checkExitConditions();
+        if (exit.exit) {
+            stop();
+            return;
         }
 
-        async next() {
-            if (!this.running) return;
+        // Check balance
+        const balance = getBalance();
+        const neededUnits = getCurrentBetUnits();
+        const neededDollars = neededUnits * Config.UNIT_SIZE;
 
-            // Check balance
-            const balance = getBalance();
-            if (balance <= Config.CHIP_VALUE) {
-                console.log(`[Play] Balance too low: $${balance.toFixed(2)}`);
-                this.stopDueToLowBalance();
-                return;
-            }
-
-            // Use pick API to get table and side
-            if (!window.pick) {
-                console.log('[Play] Waiting for pick API...');
-                this.intervalId = setTimeout(() => this.next(), 1000);
-                return;
-            }
-
-            const choice = window.pick.pick();
-            if (!choice) {
-                console.log('[Play] No eligible tables');
-                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
-                return;
-            }
-
-            const { table, side } = choice;
-
-            // Find tile
-            const tile = findTile(table.gameId) || findTile(table.id) || getTileByIndex(table.uid - 1);
-            if (!tile) {
-                console.log(`[Play] Tile not found: ${table.name || table.gameId}`);
-                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
-                return;
-            }
-
-            // Check betting still open
-            if (table.canBet !== true) {
-                console.log(`[Play] Table closed: ${table.name}`);
-                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
-                return;
-            }
-
-            // Scroll and bet
-            tile.scrollIntoView({ block: 'center' });
-            const { amount, clicks } = calcBet();
-            if (clicks === 0) {
-                this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
-                return;
-            }
-
-            const placed = await placeBet(tile, side, clicks);
-            if (placed) {
-                this.lastBet = {
-                    table: table.name || table.gameId,
-                    side,
-                    amount,
-                    time: Date.now(),
-                    P: table.P,
-                    B: table.B,
-                    T: table.T,
-                    streak: table.streak
-                };
-                this.stats.bets++;
-                console.log(
-                    `[Play] ${table.name || table.id} | ${side} $${amount.toFixed(2)} | ` +
-                    `P:${table.P} B:${table.B} streak:${table.streak?.length || 0}${table.streak?.side || ''}`
-                );
-            } else {
-                console.log('[Play] Bet failed - button not found');
-            }
-
-            this.intervalId = setTimeout(() => this.next(), Config.BET_DELAY);
+        if (balance < neededDollars) {
+            log(`Balance too low: $${balance.toFixed(2)} < $${neededDollars.toFixed(2)} needed`, 'exit');
+            stop();
+            return;
         }
 
-        status() {
-            return {
-                running: this.running,
-                last: this.lastBet,
-                balance: getBalance(),
-                stats: this.stats
-            };
+        // Select table if we don't have one
+        if (!State.focusedTable) {
+            State.focusedTable = selectTable();
+            if (!State.focusedTable) {
+                log('No table selected - stopping', 'exit');
+                stop();
+                return;
+            }
+            // Reset sequence for new table
+            State.currentStep = 0;
+            State.sequenceUnits = 0;
         }
-    }
 
-    const betManager = new BetManager();
+        const table = State.focusedTable;
+        const tableId = table.gameId || table.id;
+
+        // Refresh table data
+        const freshTable = window.pp?.get(tableId);
+        if (!freshTable) {
+            log(`Table ${tableId} no longer available`, 'error');
+            State.focusedTable = null;
+            scheduleNext();
+            return;
+        }
+
+        // Check if betting is open
+        if (!freshTable.canBet) {
+            scheduleNext(500); // Check again soon
+            return;
+        }
+
+        // Find tile
+        const tile = findTile(freshTable.gameId) || findTile(freshTable.id);
+        if (!tile) {
+            log(`Tile not found for ${freshTable.name || tableId}`, 'error');
+            scheduleNext();
+            return;
+        }
+
+        // Record current count before bet
+        const countBefore = freshTable.total || 0;
+
+        // Place bet
+        tile.scrollIntoView({ block: 'center' });
+        const betUnits = getCurrentBetUnits();
+        const betDollars = betUnits * Config.UNIT_SIZE;
+
+        log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${Config.SIDE} x${betUnits} ($${betDollars.toFixed(2)})`, 'bet');
+
+        const placed = await placeBet(tile, betUnits);
+        if (!placed) {
+            log('Bet placement failed', 'error');
+            scheduleNext();
+            return;
+        }
+
+        State.sessionBets++;
+        State.lastBet = {
+            table: freshTable.name || tableId,
+            tableId,
+            side: Config.SIDE,
+            units: betUnits,
+            step: State.currentStep + 1,
+            time: Date.now()
+        };
+
+        // Wait for result
+        State.waitingForResult = true;
+        log('Waiting for result...', 'info');
+
+        const result = await waitForResult(tableId, countBefore);
+
+        State.waitingForResult = false;
+
+        if (result === null) {
+            log('Result timeout - treating as loss', 'error');
+            processResult(Config.SIDE === 'B' ? 'P' : 'B'); // Opposite side = loss
+        } else {
+            processResult(result);
+        }
+
+        // Check exit conditions again after result
+        const exitAfter = checkExitConditions();
+        if (exitAfter.exit) {
+            stop();
+            return;
+        }
+
+        scheduleNext();
+    };
+
+    const scheduleNext = (delay = Config.BET_DELAY) => {
+        if (!State.running) return;
+        State.intervalId = setTimeout(betCycle, delay);
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // POPUP HANDLING
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const handlePopup = () => {
+        const popup = document.querySelector('[data-testid="popup-content"]');
+        if (!popup) return;
+
+        const title = popup.querySelector('[data-testid="blocking-popup-title"]');
+        if (title?.textContent === 'Insufficient funds') {
+            log('Insufficient funds popup - stopping', 'exit');
+            const btn = popup.querySelector('button[data-testid="button"]');
+            if (btn) simulateClick(btn);
+            stop();
+        }
+    };
+
+    const watchForPopup = () => {
+        const observer = new MutationObserver(handlePopup);
+        observer.observe(document.body, { childList: true, subtree: true });
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CONTROL API
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const start = () => {
+        if (State.running) {
+            log('Already running');
+            return;
+        }
+
+        // Pre-flight checks
+        if (!window.pp) {
+            log('pp API not available - load socks.js first', 'error');
+            return;
+        }
+        if (!window.pick) {
+            log('pick API not available - load pick.js first', 'error');
+            return;
+        }
+
+        const balance = getBalance();
+        if (balance < Config.UNIT_SIZE) {
+            log(`Balance too low: $${balance.toFixed(2)}`, 'error');
+            return;
+        }
+
+        State.running = true;
+        log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${Config.UNIT_SIZE}`, 'info');
+        log(`Rules: 1-2-4 | Side: ${Config.SIDE} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
+
+        betCycle();
+    };
+
+    const stop = () => {
+        State.running = false;
+        if (State.intervalId) {
+            clearTimeout(State.intervalId);
+            State.intervalId = null;
+        }
+        log(`STOPPED | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | W:${State.sessionWins} L:${State.sessionLosses}`, 'info');
+    };
+
+    const reset = () => {
+        stop();
+        State.sessionUnits = 0;
+        State.sessionBets = 0;
+        State.sessionWins = 0;
+        State.sessionLosses = 0;
+        State.currentStep = 0;
+        State.sequenceUnits = 0;
+        State.focusedTable = null;
+        State.failedTables.clear();
+        State.lastBet = null;
+        State.lastResult = null;
+        log('Session RESET', 'info');
+    };
+
+    const status = () => {
+        const balance = getBalance();
+        const profitDollars = State.sessionUnits * Config.UNIT_SIZE;
+
+        console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║                    MARTINGALE STATUS                         ║
+╠══════════════════════════════════════════════════════════════╣
+║  Running: ${State.running ? 'YES' : 'NO'}                                               ║
+║  Balance: $${balance.toFixed(2).padEnd(10)} Unit: $${Config.UNIT_SIZE}                    ║
+╠══════════════════════════════════════════════════════════════╣
+║  Session Units: ${(State.sessionUnits > 0 ? '+' : '') + State.sessionUnits}                                        ║
+║  Session P/L:   $${(profitDollars > 0 ? '+' : '') + profitDollars.toFixed(2)}                                   ║
+║  Bets: ${State.sessionBets}  Wins: ${State.sessionWins}  Losses: ${State.sessionLosses}                            ║
+╠══════════════════════════════════════════════════════════════╣
+║  Current Step: ${State.currentStep + 1}/${Config.STEPS.length} (next bet: ${getCurrentBetUnits()} units)                  ║
+║  Sequence P/L: ${State.sequenceUnits} units                                   ║
+║  Focused Table: ${(State.focusedTable?.name || State.focusedTable?.gameId || 'None').slice(0, 20).padEnd(20)}            ║
+║  Failed Tables: ${State.failedTables.size}                                           ║
+╠══════════════════════════════════════════════════════════════╣
+║  Stop-Loss: ${Config.SESSION_STOP_LOSS} units | Stop-Win: +${Config.SESSION_STOP_WIN} units              ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+        return {
+            running: State.running,
+            balance,
+            sessionUnits: State.sessionUnits,
+            profitDollars,
+            bets: State.sessionBets,
+            wins: State.sessionWins,
+            losses: State.sessionLosses,
+            currentStep: State.currentStep,
+            focusedTable: State.focusedTable,
+            failedTables: [...State.failedTables]
+        };
+    };
 
     // ═══════════════════════════════════════════════════════════════════════
     // API
     // ═══════════════════════════════════════════════════════════════════════
 
     window.play = {
-        // Auto betting
-        start: () => betManager.start(),
-        stop: () => betManager.stop(),
-        status: () => betManager.status(),
+        // Control
+        start,
+        stop,
+        reset,
+        status,
+        s: status, // Shorthand
 
-        // Balance
-        balance: getBalance,
-        calc: calcBet,
-        history: (n = 20) => balanceHistory.slice(-n),
-        profit: () => balanceHistory.length ? getBalance() - balanceHistory[0].prev : 0,
-        summary: () => {
-            const wins = balanceHistory.filter(e => e.type === 'WIN');
-            const bets = balanceHistory.filter(e => e.type === 'BET');
-            const start = balanceHistory[0]?.prev || getBalance();
-            return {
-                start,
-                current: getBalance(),
-                profit: getBalance() - start,
-                wins: wins.length,
-                bets: bets.length,
-                totalWin: wins.reduce((s, e) => s + e.delta, 0),
-                totalBet: bets.reduce((s, e) => s + Math.abs(e.delta), 0)
-            };
-        },
-
-        // Manual betting
-        player: async (tileIdx, clicks = 1) => {
-            const tile = getTileByIndex(tileIdx);
-            if (!tile) return false;
-            tile.scrollIntoView({ block: 'center' });
-            return placeBet(tile, 'P', clicks);
-        },
-        banker: async (tileIdx, clicks = 1) => {
-            const tile = getTileByIndex(tileIdx);
-            if (!tile) return false;
-            tile.scrollIntoView({ block: 'center' });
-            return placeBet(tile, 'B', clicks);
-        },
-
-        // Bet on specific table
-        bet: async (uidOrId, side = 'P', clicks = 1) => {
-            const t = window.pp?.get(uidOrId);
-            if (!t) { console.log('[Play] Table not found'); return false; }
-            const tile = findTile(t.gameId) || findTile(t.id);
-            if (!tile) { console.log('[Play] Tile not found'); return false; }
-            if (t.canBet !== true) { console.log('[Play] Table not open'); return false; }
-            tile.scrollIntoView({ block: 'center' });
-            return placeBet(tile, side, clicks);
-        },
-
-        // Config
+        // Config (can modify before starting)
         config: Config,
 
-        // Quick print
-        print: () => {
-            const s = betManager.status();
-            console.log(`\n═══ PLAY STATUS ═══`);
-            console.log(`Running: ${s.running} | Balance: $${s.balance.toFixed(2)}`);
-            console.log(`Bets: ${s.stats.bets} | Profit: $${window.play.profit().toFixed(2)}`);
-            if (s.last) {
-                console.log(`Last: ${s.last.table} ${s.last.side} $${s.last.amount.toFixed(2)}`);
+        // State (read-only inspection)
+        state: () => ({ ...State, failedTables: [...State.failedTables] }),
+
+        // Manual operations
+        setTable: (uidOrId) => {
+            const t = window.pp?.get(uidOrId);
+            if (t) {
+                State.focusedTable = t;
+                log(`Manually set table: ${t.name || t.gameId}`);
             }
-        }
+        },
+
+        clearFailed: () => {
+            State.failedTables.clear();
+            log('Cleared failed tables list');
+        },
+
+        // Quick helpers
+        balance: getBalance,
+        units: () => State.sessionUnits,
+        profit: () => State.sessionUnits * Config.UNIT_SIZE
     };
 
     // ═══════════════════════════════════════════════════════════════════════
     // INITIALIZATION
     // ═══════════════════════════════════════════════════════════════════════
 
-    const waitForAPIs = () => new Promise(resolve => {
-        const check = () => (window.pp && window.pick) ? resolve() : setTimeout(check, 100);
-        check();
-    });
-
-    watchBalance();
     watchForPopup();
-    waitForAPIs().then(() => {
-        console.log('[Play] v4.0 | Uses pp (data) + pick (selection)');
-        console.log('[Play] Commands: play.start() play.stop() play.status() play.print()');
-    });
+
+    const init = () => {
+        if (window.pp && window.pick) {
+            console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║              MARTINGALE BETTING SYSTEM v5.0                  ║
+╠══════════════════════════════════════════════════════════════╣
+║                                                              ║
+║  STRATEGY: 1-2-4 Progression | Banker Only                   ║
+║                                                              ║
+║  EXIT RULES:                                                 ║
+║  • Max 3 steps per sequence                                  ║
+║  • Failed sequence → leave table immediately                 ║
+║  • Session stop-loss: -6 units                               ║
+║  • Session stop-win: +4 units                                ║
+║                                                              ║
+║  COMMANDS:                                                   ║
+║  play.start()     Start Martingale                           ║
+║  play.stop()      Stop betting                               ║
+║  play.status()    Show current state                         ║
+║  play.reset()     Reset session                              ║
+║                                                              ║
+║  CONFIG (modify before start):                               ║
+║  play.config.UNIT_SIZE = 0.2    Base unit ($)                ║
+║  play.config.SIDE = 'B'         Side (B/P)                   ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+        } else {
+            setTimeout(init, 500);
+        }
+    };
+
+    init();
 
 })();
-
-/*
-╔══════════════════════════════════════════════════════════════════════════════╗
-║                           PLAY API v4.0                                      ║
-╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  REQUIRES: socks.js (pp API) + pick.js (pick API)                            ║
-║                                                                              ║
-║  AUTO BETTING                                                                ║
-║  ───────────                                                                 ║
-║  play.start()            Start auto-betting using pick.pick()                ║
-║  play.stop()             Stop auto-betting                                   ║
-║  play.status()           {running, last, balance, stats}                     ║
-║  play.print()            Print current status                                ║
-║                                                                              ║
-║  MANUAL BETTING                                                              ║
-║  ──────────────                                                              ║
-║  play.player(0, 5)       Bet Player on tile 0, 5 clicks                      ║
-║  play.banker(0, 5)       Bet Banker on tile 0, 5 clicks                      ║
-║  play.bet(1, 'P', 3)     Bet on table UID 1, Player, 3 clicks                ║
-║                                                                              ║
-║  BALANCE                                                                     ║
-║  ───────                                                                     ║
-║  play.balance()          Current balance                                     ║
-║  play.calc()             Calculate bet {amount, clicks}                      ║
-║  play.history(20)        Last N balance changes                              ║
-║  play.profit()           Total profit since start                            ║
-║  play.summary()          Full stats                                          ║
-║                                                                              ║
-║  CONFIG (play.config)                                                        ║
-║  ────────────────────                                                        ║
-║  CHIP_VALUE: 0.2         Chip value per click                                ║
-║  MIN_BET_FRAC: 1/8       Min bet as fraction of balance                      ║
-║  MAX_BET_FRAC: 1/2       Max bet as fraction of balance                      ║
-║  BET_DELAY: 3000         Delay between bets (ms)                             ║
-║                                                                              ║
-║  SYSTEM ARCHITECTURE                                                         ║
-║  ───────────────────                                                         ║
-║  socks.js (pp API)   → WebSocket data collection                             ║
-║  pick.js (pick API)  → Table selection rules                                 ║
-║  play.js (play API)  → Bet execution                                         ║
-║                                                                              ║
-╚══════════════════════════════════════════════════════════════════════════════╝
-*/
-

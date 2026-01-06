@@ -377,7 +377,7 @@
         // Method 1: From beadPlate (game WebSocket) - most reliable
         // beadPlate is 2D: [[col0row0, col0row1,...], [col1row0,...], ...]
         // Fills column by column (top to bottom in each column, then next column)
-        // First char: R=Player, B=Banker, G=Tie
+        // First char: R=Banker (red), B=Player (blue), G=Tie (green)
         if (t.beadPlate && Array.isArray(t.beadPlate)) {
             const seq = [];
             const numRows = t.beadPlate[0]?.length || 6;
@@ -387,8 +387,8 @@
                     const cell = t.beadPlate[col]?.[row];
                     if (cell && cell !== '---') {
                         const c = cell.charAt(0);
-                        if (c === 'R') seq.push('P');      // Red = Player
-                        else if (c === 'B') seq.push('B'); // Blue = Banker
+                        if (c === 'R') seq.push('B');      // Red = Banker
+                        else if (c === 'B') seq.push('P'); // Blue = Player
                         else if (c === 'G') seq.push('T'); // Green = Tie
                     }
                 }

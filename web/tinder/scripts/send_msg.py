@@ -3,7 +3,7 @@ import requests, time, random, json
 from pathlib import Path
 from tqdm import tqdm
 
-auth = json.loads((Path(__file__).parent / "auth.json").read_text())
+auth = json.loads((Path(__file__).parent.parent / "config" / "auth.json").read_text())
 MY_ID = auth.pop("my_id")
 headers = {"accept": "application/json", "content-type": "application/json", "origin": "https://tinder.com",
            "referer": "https://tinder.com/", "platform": "web",
