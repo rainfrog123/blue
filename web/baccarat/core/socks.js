@@ -539,6 +539,39 @@
             return seq.slice(-n);
         },
 
+        // List all tables with full sequences
+        sequences: () => [...tables.values()]
+            .filter(t => t.total > 0)
+            .sort((a, b) => a.uid - b.uid)
+            .map(t => {
+                const seq = getPBTSequence(t);
+                return {
+                    uid: t.uid,
+                    name: t.name || t.gameId,
+                    total: t.total,
+                    P: t.P,
+                    B: t.B,
+                    T: t.T,
+                    sequence: seq,
+                    sequenceStr: seq.join('')
+                };
+            }),
+
+        // Print all tables with full sequences
+        seqAll: () => {
+            console.log(`\n═══ ALL TABLE SEQUENCES (${tables.size} tables) ═══\n`);
+            [...tables.values()]
+                .filter(t => t.total > 0)
+                .sort((a, b) => a.uid - b.uid)
+                .forEach(t => {
+                    const seq = getPBTSequence(t);
+                    const name = (t.name || t.gameId || '?').slice(0, 20).padEnd(20);
+                    console.log(`#${String(t.uid).padStart(2)} ${name} (${t.total})`);
+                    console.log(`    ${seq.join('')}`);
+                    console.log('');
+                });
+        },
+
         export: () => JSON.stringify(Object.fromEntries(tables), null, 2),
         clear: () => {
             tables.clear();
@@ -603,6 +636,8 @@
 ║  pp.pbt(1)                Get P/B/T sequence as array ['P','B','T',...]      ║
 ║  pp.pbtStr(1)             Get P/B/T sequence as string "PBTPBBPB..."         ║
 ║  pp.lastN(1, 10)          Get last N results for a table                     ║
+║  pp.sequences()           All tables with full sequences as array            ║
+║  pp.seqAll()              Print all tables with full sequences               ║
 ║                                                                              ║
 ║  EXPORT                                                                      ║
 ║  ──────                                                                      ║
