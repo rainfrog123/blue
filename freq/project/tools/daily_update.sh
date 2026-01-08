@@ -51,7 +51,7 @@ echo ""
 echo "=== Downloading OHLCV Data ==="
 freqtrade download-data \
     --userdir /allah/blue/freq/project/user_data \
-    --config /allah/blue/freq/project/user_data/config/download.json \
+    --config /allah/blue/freq/project/user_data/config/download_proxy.json \
     --timerange 20251201- \
     --timeframes 1m 3m 5m 15m 30m 1h 4h \
     --datadir /allah/freqtrade/user_data/data/binance
