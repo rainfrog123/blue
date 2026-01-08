@@ -9,8 +9,28 @@ set +e
 
 echo ">>> Installing system packages..."
 sudo apt update && sudo apt upgrade -y || echo "Warning: apt update/upgrade failed, continuing..."
-sudo apt install -y docker.io docker-compose || echo "Warning: docker installation failed, continuing..."
-sudo apt install -y tmux htop x11-apps || echo "Warning: utility packages installation failed, continuing..."
+sudo apt install -y tmux htop x11-apps curl wget git ca-certificates gnupg || echo "Warning: utility packages installation failed, continuing..."
+
+# ============================================================================
+# DOCKER INSTALLATION (Official method for Ubuntu 24.04)
+# ============================================================================
+
+echo ">>> Installing Docker (official method)..."
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings || true
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes 2>/dev/null || true
+sudo chmod a+r /etc/apt/keyrings/docker.gpg || true
+
+# Add Docker repository
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null || true
+
+# Install Docker
+sudo apt update || true
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || echo "Warning: Docker installation failed, continuing..."
+
+# Start and enable Docker
+sudo systemctl start docker || true
+sudo systemctl enable docker || true
 
 # ============================================================================
 # SHADOWSOCKS-R CONFIGURATION
