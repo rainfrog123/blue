@@ -27,7 +27,8 @@
         SESSION_STOP_WIN: 3,        // Take profit at +3 units, start new session
 
         // Betting
-        SIDE: null,                 // null = 50/50 random, 'B' = Banker only, 'P' = Player only
+        SIDE: null,                 // null = TRUE random each bet (coin flip), 'B' = Banker only, 'P' = Player only
+        CHIP_VALUE: 0.20,           // Value per click ($0.20 chip)
         BET_DELAY: 2000,            // Delay between bet attempts (ms)
         WAIT_FOR_RESULT: 30000,     // Max wait for result (ms) - Speed Baccarat can be ~27s
 
@@ -70,10 +71,12 @@
         resultTimeout: null
     };
 
-    // Calculate unit size: balance/7, minimum 0.2
+    // Calculate unit size: balance/7, rounded DOWN to nearest chip (0.2, 0.4, 0.6...)
     const calcUnitSize = (balance) => {
         const calculated = balance * Config.UNIT_FRACTION;
-        return Math.max(Config.MIN_UNIT, Math.round(calculated * 100) / 100); // Round to cents
+        // Round DOWN to nearest chip value (must be multiple of CHIP_VALUE)
+        const rounded = Math.floor(calculated / Config.CHIP_VALUE) * Config.CHIP_VALUE;
+        return Math.max(Config.MIN_UNIT, rounded);
     };
 
     // Get current unit size (use session's fixed unit)
@@ -160,27 +163,25 @@
     };
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SIDE SELECTION
+    // SIDE SELECTION - Truly random each bet (like a coin flip)
     // ═══════════════════════════════════════════════════════════════════════
 
-    // Get side for current bet (respects Config.SIDE or random 50/50)
+    // Get side for current bet - TRUE RANDOM every time
     const chooseSide = () => {
         if (Config.SIDE === 'B') return 'B';
         if (Config.SIDE === 'P') return 'P';
-        // 50/50 random
+        // True 50/50 random - fresh choice every bet
         return Math.random() < 0.5 ? 'P' : 'B';
     };
-
-    // Track chosen side for current sequence
-    let sequenceSide = null;
 
     // ═══════════════════════════════════════════════════════════════════════
     // BET EXECUTION
     // ═══════════════════════════════════════════════════════════════════════
 
-    const placeBet = async (tile, units, side) => {
+    const placeBet = async (tile, betDollars, side) => {
         const selector = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
-        const clicks = units; // 1 unit = 1 click
+        // Calculate clicks: betDollars / chip value, rounded to nearest chip
+        const clicks = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE));
 
         // Wait for button to appear
         for (let i = 0; i < 60; i++) {
@@ -190,6 +191,7 @@
                     simulateClick(btn);
                     if (j < clicks - 1) await sleep(50);
                 }
+                log(`Placed ${clicks} clicks = $${(clicks * Config.CHIP_VALUE).toFixed(2)}`, 'info');
                 return true;
             }
             await sleep(50);
@@ -282,13 +284,12 @@
         State.focusedTable = null;
         State.usedTables.clear();
         State.tableBetCount = 0;
-        sequenceSide = null;
         
         // Recalculate unit size based on new balance
         State.sessionStartBalance = balance;
         State.sessionUnitSize = calcUnitSize(balance);
         
-        log(`NEW SESSION | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} | Previous: +${oldUnits}u`, 'info');
+        console.log(`%c[NEW SESSION] Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} | Previous: ${oldUnits > 0 ? '+' : ''}${oldUnits}u`, 'background: #4CAF50; color: white; font-weight: bold; padding: 2px 6px; border-radius: 3px;');
     };
 
     // Mark table as used (completed one sequence - win or lose)
@@ -311,7 +312,7 @@
 
     const processResult = (result) => {
         const betUnits = getCurrentBetUnits();
-        const betSide = sequenceSide || 'B';
+        const betSide = State.lastBet?.side || 'B';
         const won = (result === betSide);
         // Note: Tie returns stake, treating as push
 
@@ -323,14 +324,13 @@
         }
 
         if (won) {
-            // WIN - add 1 unit profit, reset to bet 1 unit
-            State.sessionUnits += 1; // Martingale profit is always 1 unit
+            // WIN - add bet units profit, reset to bet 1 unit
+            State.sessionUnits += betUnits;
             State.sessionWins++;
             State.lastResult = 'W';
             State.currentStep = 0; // Reset to 1 unit bet
             State.sequenceUnits = 0;
-            sequenceSide = null; // Choose new side next bet
-            log(`WON +1 unit | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
+            log(`WON +${betUnits} units | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
         } else {
             // LOSS - double bet (advance step)
             State.sessionUnits -= betUnits;
@@ -341,12 +341,13 @@
 
             log(`LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
 
-            // If max step reached, reset and continue (lost 1+2+4=7 units)
+            // If max step reached, reset and find new table (lost 1+2+4=7 units)
             if (State.currentStep >= Config.STEPS.length) {
-                log(`Max step reached (lost 7 units) | Resetting to 1 unit`, 'loss');
-                State.currentStep = 0;
-                State.sequenceUnits = 0;
-                sequenceSide = null;
+                log(`Max step reached (lost 7 units) | Finding new table`, 'loss');
+                const tableId = State.focusedTable?.gameId || State.focusedTable?.id;
+                if (tableId) {
+                    markTableDone(tableId, 'max-loss');
+                }
             } else {
                 log(`Next bet: ${getCurrentBetUnits()} units (doubling)`, 'info');
             }
@@ -395,7 +396,6 @@
                     log(`Can't double ($${balance.toFixed(2)} < $${neededDollars.toFixed(2)}) - resetting to 1 unit, new table`, 'info');
                     State.currentStep = 0;
                     State.sequenceUnits = 0;
-                    sequenceSide = null;
                     if (State.focusedTable) {
                         const tableId = State.focusedTable.gameId || State.focusedTable.id;
                         markTableDone(tableId, 'cant-double');
@@ -457,6 +457,9 @@
             return;
         }
 
+        // Wait 1s after betting opens before placing bet
+        await sleep(1000);
+
         // Find tile - try gameId, lobbyId, and id
         const tile = findTile(freshTable.gameId) || findTile(freshTable.lobbyId) || findTile(freshTable.id);
         if (!tile) {
@@ -468,20 +471,18 @@
         // Record current count before bet
         const countBefore = freshTable.total || 0;
 
-        // Choose side for this sequence (keep same side throughout sequence)
-        if (sequenceSide === null) {
-            sequenceSide = chooseSide();
-        }
-        const betSide = sequenceSide;
+        // Choose side - TRUE RANDOM each bet (coin flip)
+        const betSide = chooseSide();
 
         // Place bet
         tile.scrollIntoView({ block: 'center' });
         const betUnits = getCurrentBetUnits();
         const betDollars = betUnits * getUnitSize();
 
-        log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${betSide} x${betUnits} ($${betDollars.toFixed(2)})`, 'bet');
+        const actualBet = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE)) * Config.CHIP_VALUE;
+        log(`${freshTable.name || tableId} | Step ${State.currentStep + 1} | ${betSide} x${betUnits}u ($${actualBet.toFixed(2)})`, 'bet');
 
-        const placed = await placeBet(tile, betUnits, betSide);
+        const placed = await placeBet(tile, betDollars, betSide);
         if (!placed) {
             log('Bet placement failed', 'error');
             scheduleNext();
@@ -514,7 +515,7 @@
             return;
         } else if (result === null) {
             log('Result timeout - treating as loss', 'error');
-            processResult(sequenceSide === 'B' ? 'P' : 'B'); // Opposite side = loss
+            processResult(State.lastBet?.side === 'B' ? 'P' : 'B'); // Opposite side = loss
         } else {
             processResult(result);
         }
@@ -607,7 +608,7 @@
         State.sessionUnitSize = calcUnitSize(balance);
 
         State.running = true;
-        const sideMode = Config.SIDE === null ? '50/50' : Config.SIDE;
+        const sideMode = Config.SIDE === null ? 'RANDOM (coin flip each bet)' : Config.SIDE;
         log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} (1/${Math.round(1/Config.UNIT_FRACTION)} of balance)`, 'info');
         log(`Rules: WIN→1u, LOSE→double | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
 
@@ -638,7 +639,6 @@
         State.tableBetCount = 0;
         State.lastBet = null;
         State.lastResult = null;
-        sequenceSide = null;
         log('Session RESET', 'info');
     };
 
@@ -753,7 +753,7 @@
 ║  CONFIG:                                                     ║
 ║  play.config.UNIT_FRACTION = 1/7    Unit = balance * this    ║
 ║  play.config.MIN_UNIT = 0.2         Minimum unit ($)         ║
-║  play.config.SIDE = null            null=50/50, 'B', 'P'     ║
+║  play.config.SIDE = null            null=random each bet     ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 `);

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         pick
 // @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Martingale table scoring - redesigned from real data analysis
+// @version      3.1
+// @description  Table scoring - finds random/fair tables (high chop, balanced P/B, low ties)
 // @author       You
 // @match        *://client.pragmaticplaylive.net/*
 // @match        *://*.stake.com/*
@@ -14,22 +14,23 @@
     'use strict';
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SCORING SYSTEM v3.0 - Based on Real Data Analysis
+    // SCORING SYSTEM v3.1 - Randomness-Based Selection
     // ═══════════════════════════════════════════════════════════════════════
     //
-    // Martingale needs: 
-    //   ✓ Streaky patterns (not choppy)
-    //   ✓ Balanced P/B ratio
+    // Goal: Find tables that behave like TRUE RANDOM coin flips
+    //   ✓ High alternation/chop (random P↔B switches)
+    //   ✓ Balanced P/B ratio (~50/50)
     //   ✓ Low tie interference
-    //   ✓ Enough history
+    //   ✓ No suspicious long streaks
+    //   ✓ Enough history to judge
     //
-    // Score 0-100, higher = better for Martingale
+    // Score 0-100, higher = more random = better
     // Minimum eligible: 35
 
     const Config = {
         MIN_ELIGIBLE_SCORE: 35,
         HARD_MIN_TOTAL: 30,
-        HARD_MAX_CHOP_12: 9,      // 9+ alternations in 12 = pure chop
+        HARD_MIN_CHOP_12: 3,      // 3 or fewer alternations in 12 = too streaky, suspicious
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -130,8 +131,8 @@
 
         const last12 = seq.slice(-12);
         const altIn12 = countAlternations(last12);
-        if (altIn12 >= Config.HARD_MAX_CHOP_12) {
-            return { score: 0, eligible: false, reasons: [`extreme-chop: ${altIn12}/11 in last 12`], breakdown: {} };
+        if (altIn12 <= Config.HARD_MIN_CHOP_12) {
+            return { score: 0, eligible: false, reasons: [`too-streaky: only ${altIn12}/11 alternations (suspicious)`], breakdown: {} };
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -143,106 +144,129 @@
         else breakdown.history = 4;
 
         // ─────────────────────────────────────────────────────────────────────
-        // 2. P/B BALANCE (0-20 pts)
+        // 2. P/B BALANCE (-10 to 40 pts) - CRITICAL FACTOR
         // ─────────────────────────────────────────────────────────────────────
         const ratio = Math.abs(P - B) / total;
-        if (ratio <= 0.05) {
-            breakdown.balance = 12; // Suspiciously balanced
-            notes.push('very-balanced');
-        } else if (ratio <= 0.12) {
-            breakdown.balance = 20; // Ideal
+        if (ratio <= 0.03) {
+            breakdown.balance = 40; // Near perfect balance
+        } else if (ratio <= 0.06) {
+            breakdown.balance = 36; // Excellent
+        } else if (ratio <= 0.10) {
+            breakdown.balance = 30; // Very good
+        } else if (ratio <= 0.15) {
+            breakdown.balance = 22; // Good
         } else if (ratio <= 0.20) {
-            breakdown.balance = 15; // Good
-        } else if (ratio <= 0.30) {
-            breakdown.balance = 8;  // Skewed
+            breakdown.balance = 12; // Acceptable
+            notes.push('slightly-skewed');
+        } else if (ratio <= 0.28) {
+            breakdown.balance = 4;  // Skewed
             notes.push('skewed-ratio');
         } else {
-            breakdown.balance = 0;  // Very skewed
+            breakdown.balance = -10; // Very skewed, heavy penalty
             notes.push('very-skewed');
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 3. TIE RATIO (-10 to +12 pts)
+        // 3. TIE RATIO (-25 to +30 pts) - CRITICAL FACTOR
         // ─────────────────────────────────────────────────────────────────────
         const tieRatio = T / total;
-        if (tieRatio < 0.05) breakdown.ties = 12;
-        else if (tieRatio < 0.08) breakdown.ties = 8;
-        else if (tieRatio < 0.12) breakdown.ties = 4;
-        else if (tieRatio < 0.15) breakdown.ties = 0;
-        else {
-            breakdown.ties = -10;
+        if (tieRatio < 0.03) breakdown.ties = 30;       // Excellent, very few ties
+        else if (tieRatio < 0.05) breakdown.ties = 25;  // Great
+        else if (tieRatio < 0.07) breakdown.ties = 18;  // Good
+        else if (tieRatio < 0.09) breakdown.ties = 12;  // Acceptable
+        else if (tieRatio < 0.11) breakdown.ties = 6;   // Borderline
+        else if (tieRatio < 0.13) breakdown.ties = 0;   // Neutral
+        else if (tieRatio < 0.16) {
+            breakdown.ties = -12;
+            notes.push(`elevated-ties: ${(tieRatio*100).toFixed(0)}%`);
+        } else {
+            breakdown.ties = -25;  // Heavy penalty for high ties
             notes.push(`high-ties: ${(tieRatio*100).toFixed(0)}%`);
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 4. STREAK QUALITY - Last 20 (0-25 pts)
+        // 4. PATTERN QUALITY - Last 20 (0-25 pts)
+        // Prefer balanced mix of short runs, penalize long streaks
         // ─────────────────────────────────────────────────────────────────────
         const last20 = seq.slice(-20);
-        const hasBBB = countPattern(last20, 'BBB') > 0;
-        const hasPPP = countPattern(last20, 'PPP') > 0;
-        const hasBB = countPattern(last20, 'BB') > 0;
-        const hasPP = countPattern(last20, 'PP') > 0;
-
-        breakdown.streakQuality = 0;
-        if (hasBBB || hasPPP) {
-            breakdown.streakQuality = 18;
-        } else if (hasBB && hasPP) {
-            breakdown.streakQuality = 14;
-        } else if (hasBB || hasPP) {
-            breakdown.streakQuality = 8;
+        const alt20 = countAlternations(last20);
+        const longest = longestStreak(last20);
+        
+        // Ideal: ~9-11 alternations in 20 hands (random)
+        breakdown.patternQuality = 0;
+        if (alt20 >= 12) {
+            breakdown.patternQuality = 20; // Very random
+        } else if (alt20 >= 9) {
+            breakdown.patternQuality = 16; // Good randomness
+        } else if (alt20 >= 7) {
+            breakdown.patternQuality = 10; // Acceptable
+        } else if (alt20 >= 5) {
+            breakdown.patternQuality = 4;  // Low randomness
         } else {
-            notes.push('no-streak-pattern');
+            breakdown.patternQuality = -5; // Too streaky
+            notes.push('low-randomness-20');
         }
 
-        // Bonus for longest streak
-        const longest = longestStreak(seq);
-        const streakBonus = Math.min(7, longest.length - 1);
-        breakdown.streakQuality += Math.max(0, streakBonus);
+        // Penalty for very long streaks (suspicious)
+        if (longest.length >= 6) {
+            breakdown.patternQuality -= 10;
+            notes.push(`suspicious-streak: ${longest.length}${longest.side}`);
+        } else if (longest.length >= 5) {
+            breakdown.patternQuality -= 5;
+        }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 5. CHOP PENALTY - Last 12 (-15 to +15 pts)
+        // 5. RANDOMNESS SCORE - Last 12 (-15 to +15 pts)
+        // More alternations = more random = better (true 50/50 game)
         // ─────────────────────────────────────────────────────────────────────
-        // altIn12 already calculated
-        if (altIn12 <= 4) {
-            breakdown.chop = 15;  // Streaky, great
-        } else if (altIn12 <= 6) {
-            breakdown.chop = 10;  // Some structure
-        } else if (altIn12 <= 7) {
-            breakdown.chop = 5;   // Borderline
-        } else if (altIn12 <= 8) {
-            breakdown.chop = -5;  // Choppy
-            notes.push('choppy-recent');
+        // altIn12 already calculated (max possible = 11)
+        // Ideal random: ~5-6 alternations in 12 hands
+        if (altIn12 >= 8) {
+            breakdown.randomness = 15;  // Very random, excellent
+        } else if (altIn12 >= 6) {
+            breakdown.randomness = 12;  // Good randomness
+        } else if (altIn12 >= 5) {
+            breakdown.randomness = 8;   // Acceptable
+        } else if (altIn12 >= 4) {
+            breakdown.randomness = 2;   // Low randomness
+            notes.push('low-randomness');
         } else {
-            breakdown.chop = -15; // Very choppy (shouldn't reach here due to hard pass)
+            breakdown.randomness = -15; // Too streaky, suspicious
+            notes.push('suspicious-streaks');
         }
 
         // ─────────────────────────────────────────────────────────────────────
         // 6. RECENT TREND - Last 6 (-8 to +10 pts)
+        // Prefer mixed/random patterns, penalize long streaks
         // ─────────────────────────────────────────────────────────────────────
         const last6 = seq.slice(-6);
-        if (isPureAlt(last6)) {
-            breakdown.recent = -8;
-            notes.push('pure-alt-in-6');
-        } else if (countPattern(last6, 'BBB') > 0 || countPattern(last6, 'PPP') > 0) {
-            breakdown.recent = 10; // Strong streak recently
-        } else if (countPattern(last6, 'BB') > 0 || countPattern(last6, 'PP') > 0) {
-            breakdown.recent = 6;
+        const alt6 = countAlternations(last6);
+        if (alt6 >= 4) {
+            breakdown.recent = 10; // Very mixed, random
+        } else if (alt6 >= 3) {
+            breakdown.recent = 6;  // Good mix
+        } else if (alt6 >= 2) {
+            breakdown.recent = 2;  // Some mix
+        } else if (countPattern(last6, 'BBBB') > 0 || countPattern(last6, 'PPPP') > 0) {
+            breakdown.recent = -8; // Long streak, suspicious
+            notes.push('long-streak-in-6');
         } else {
-            breakdown.recent = 2;
+            breakdown.recent = 0;
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 7. CURRENT STREAK BONUS (0-8 pts)
+        // 7. CURRENT STREAK (-5 to +5 pts)
+        // Short streaks normal, long streaks suspicious
         // ─────────────────────────────────────────────────────────────────────
         const curStreak = currentStreak(seq);
-        if (curStreak.length >= 4) {
-            breakdown.currentStreak = 8;
-        } else if (curStreak.length >= 3) {
-            breakdown.currentStreak = 5;
-        } else if (curStreak.length >= 2) {
-            breakdown.currentStreak = 2;
+        if (curStreak.length >= 5) {
+            breakdown.currentStreak = -5; // Very long, suspicious
+        } else if (curStreak.length >= 4) {
+            breakdown.currentStreak = -2; // Getting long
+        } else if (curStreak.length <= 2) {
+            breakdown.currentStreak = 5;  // Normal/short, good
         } else {
-            breakdown.currentStreak = 0;
+            breakdown.currentStreak = 2;  // 3 in a row, acceptable
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -369,7 +393,7 @@
 
             console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║           MARTINGALE PICKS v3.0 (${eligible.length} eligible / ${all.length} scored)              ║
+║           TABLE PICKER v3.1 (${eligible.length} eligible / ${all.length} scored)                  ║
 ╠══════════════════════════════════════════════════════════════════════╣`);
 
             all.slice(0, 20).forEach((t, i) => {
@@ -448,23 +472,23 @@
         help: () => {
             console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║                    MARTINGALE PICKER v3.0                            ║
+║                    TABLE PICKER v3.1 (Randomness)                    ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║                                                                      ║
 ║  SCORING (0-100, need 35+ to be eligible)                            ║
 ║  ────────────────────────────────────────                            ║
 ║  history       0-15    More rounds = more reliable                   ║
-║  balance       0-20    P/B ratio (0.05-0.12 ideal)                   ║
-║  ties        -10-12    Lower tie % = better                          ║
-║  streakQuality 0-25    BBB/PPP patterns in last 20                   ║
-║  chop        -15-15    Fewer alternations = better                   ║
-║  recent       -8-10    Last 6 pattern quality                        ║
-║  currentStreak 0-8     Active streak bonus                           ║
+║  balance    -10-40    ★★ P/B equality (≤0.06 = 36+)                  ║
+║  ties       -25-30    ★★ Low ties (<5% = 25+)                        ║
+║  patternQuality-15-20  ★ Randomness in last 20                       ║
+║  randomness  -15-15    ★ More alternations = better                  ║
+║  recent       -8-10    Last 6 randomness                             ║
+║  currentStreak -5-5    Short streaks good, long bad                  ║
 ║  canBet        0-5     Betting open bonus                            ║
 ║                                                                      ║
 ║  HARD PASS (score = 0)                                               ║
 ║  • total < 30                                                        ║
-║  • 9+ alternations in last 12 (extreme chop)                         ║
+║  • ≤3 alternations in last 12 (too streaky, suspicious)              ║
 ║                                                                      ║
 ║  COMMANDS                                                            ║
 ║  ────────                                                            ║
@@ -490,7 +514,7 @@
     });
 
     waitForPP().then(() => {
-        console.log('[Pick] v3.0 | Redesigned from real data');
+        console.log('[Pick] v3.1 | Randomness-based selection (high chop = good)');
         console.log('[Pick] Commands: pick.status() pick.summary() pick.check(uid)');
     });
 

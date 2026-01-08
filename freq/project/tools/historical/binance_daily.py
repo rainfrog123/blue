@@ -383,7 +383,7 @@ def main():
     
     downloader = BinanceDailyTradesDownloader()
     
-    start_date = datetime(2025, 9, 1)
+    start_date = datetime(2025, 12, 1)
     today = datetime.now()
     yesterday = today - timedelta(days=1)
     
