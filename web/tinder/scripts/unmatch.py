@@ -2,11 +2,9 @@
 import requests, time, random, json
 from pathlib import Path
 
-auth = json.loads((Path(__file__).parent.parent / "config" / "auth.json").read_text())
-MY_ID = auth.pop("my_id")
-headers = {"accept": "application/json", "content-type": "application/json", "origin": "https://tinder.com",
-           "referer": "https://tinder.com/", "platform": "web",
-           "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36", **auth}
+config = json.loads((Path(__file__).parent.parent / "config" / "auth.json").read_text())
+MY_ID = config["my_id"]
+headers = config["headers"]
 
 #%% get all matches
 matches, token = [], None
@@ -36,32 +34,27 @@ no_reply.sort(key=lambda m: m.get('last_activity_date', ''), reverse=True)
 print(f"Found {len(no_reply)} no-reply matches")
 
 #%% preview who will be unmatched
-for i, m in enumerate(no_reply):
+BEFORE_DATE = "2026-01-08"
+to_unmatch = [m for m in no_reply if m.get('last_activity_date', '') < BEFORE_DATE]
+print(f"Will unmatch {len(to_unmatch)} matches before {BEFORE_DATE}:")
+for i, m in enumerate(to_unmatch):
     name = m.get('person', {}).get('name', '?')
     date = m.get('last_activity_date', '')[:10]
-    mid = m.get('id', '')
     my_msg = [msg['message'][:25] for msg in m.get('messages', []) if msg.get('from') == MY_ID]
     print(f"{i+1:2}. {name:15} | {date} | {my_msg}")
 
 #%% unmatch all before date
-def unmatch_before(matches_list, before_date="2026-01-01"):
-    """Unmatch all matches with last_activity_date before the given date."""
-    to_unmatch = [m for m in matches_list if m.get('last_activity_date', '') < before_date]
-    print(f"Will unmatch {len(to_unmatch)} matches before {before_date}")
-    
-    for m in to_unmatch:
-        mid = m.get('id')
-        name = m.get('person', {}).get('name', '?')
-        date = m.get('last_activity_date', '')[:10]
-        print(f"Unmatching {name} ({date})...")
-        r = requests.delete(f"https://api.gotinder.com/user/matches/{mid}", headers=headers, params={"locale": "en"})
-        print(f"  {r.status_code}: {r.text}")
-        time.sleep(random.uniform(1, 3))
-    
-    print(f"Done! Unmatched {len(to_unmatch)} matches")
+#%% unmatch all (uses to_unmatch from preview)
+for m in to_unmatch:
+    mid = m.get('id')
+    name = m.get('person', {}).get('name', '?')
+    date = m.get('last_activity_date', '')[:10]
+    print(f"Unmatching {name} ({date})...")
+    r = requests.delete(f"https://api.gotinder.com/user/matches/{mid}", headers=headers, params={"locale": "en"})
+    print(f"  {r.status_code}: {r.text}")
+    time.sleep(random.uniform(1, 3))
 
-# Run: unmatch all no-reply before 2026-01-01
-unmatch_before(no_reply, "2026-01-01")
+print(f"Done! Unmatched {len(to_unmatch)} matches")
 
 #%% DANGER: unmatch one (test with first one)
 m = no_reply[-1]
