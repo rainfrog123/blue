@@ -43,7 +43,6 @@ for i, m in enumerate(to_unmatch):
     my_msg = [msg['message'][:25] for msg in m.get('messages', []) if msg.get('from') == MY_ID]
     print(f"{i+1:2}. {name:15} | {date} | {my_msg}")
 
-#%% unmatch all before date
 #%% unmatch all (uses to_unmatch from preview)
 for m in to_unmatch:
     mid = m.get('id')

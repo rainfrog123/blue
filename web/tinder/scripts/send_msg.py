@@ -139,7 +139,7 @@ print(f"  {r.status_code}: {r.json().get('message', r.text)}")
 #%% send to no-chat matches
 for m in tqdm(no_chat, desc="no-chat"):
     mid, oid, name = m["id"], m["person"]["_id"], m["person"].get("name", "?")
-    payload = {"userId": MY_ID, "otherId": oid, "matchId": mid, "sessionId": None, "message": "heyy 请问有在成都吗?"}
+    payload = {"userId": MY_ID, "otherId": oid, "matchId": mid, "sessionId": None, "message": "hello 有在成都吗?"}
     r = requests.post(f"https://api.gotinder.com/user/matches/{mid}", json=payload, headers=headers, params={"locale": "en"})
     print(f"{name}: {r.status_code}")
     time.sleep(random.uniform(3, 6))
