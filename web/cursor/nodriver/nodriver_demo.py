@@ -14,7 +14,7 @@ browser = await uc.start(
         "--disable-gpu",
         "--window-size=1280,720",
         "--disable-webrtc",
-        "--enforce-webrtc-ip-permission-check",
+        "--enforce-webrtc-ip-permission-check",``
         "--force-webrtc-ip-handling-policy=disable_non_proxied_udp",
     ]
 )
