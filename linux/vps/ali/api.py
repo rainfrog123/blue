@@ -3,8 +3,13 @@
 # Testing ECS (Elastic Compute Service) API operations
 
 # %% Imports and Configuration
-import os
+import sys
 from datetime import datetime
+from pathlib import Path
+
+# Add cred_loader to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "extra" / "config"))
+from cred_loader import get_alibaba
 
 from alibabacloud_ecs20140526 import models as ecs_models
 
@@ -12,9 +17,10 @@ from alibabacloud_ecs20140526 import models as ecs_models
 from alibabacloud_ecs20140526.client import Client as EcsClient
 from alibabacloud_tea_openapi import models as open_api_models
 
-# Configuration - set your credentials
-ACCESS_KEY_ID = os.environ.get("ALIBABA_CLOUD_ACCESS_KEY_ID", "")
-ACCESS_KEY_SECRET = os.environ.get("ALIBABA_CLOUD_ACCESS_KEY_SECRET", "")
+# Load credentials via cred_loader
+_alibaba = get_alibaba()
+ACCESS_KEY_ID = _alibaba["access_key_id"]
+ACCESS_KEY_SECRET = _alibaba["access_key_secret"]
 REGION_ID = "cn-hongkong"  # Change to your region
 
 

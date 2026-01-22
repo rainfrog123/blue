@@ -10,10 +10,11 @@ from pathlib import Path
 
 def get_cred_path() -> Path:
     """Get the path to the credentials file."""
-    # Windows: ~/Documents/cred.json
+    # Windows: ~/Documents/cred.json or ~/Documents/api_cred.json
     # Linux: ~/Documents/cred.json or ~/.config/cred.json
     home = Path.home()
     candidates = [
+        home / "Documents" / "api_cred.json",
         home / "Documents" / "cred.json",
         home / ".config" / "cred.json",
         Path("/allah/cred.json"),
@@ -88,6 +89,11 @@ def get_ipqs(key_index: int = 0) -> str:
         if key_index < len(ipqs["api_keys"])
         else ipqs["default_key"]
     )
+
+
+def get_alibaba() -> dict:
+    """Get Alibaba Cloud credentials."""
+    return load_cred()["alibaba"]
 
 
 if __name__ == "__main__":
