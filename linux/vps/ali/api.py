@@ -172,7 +172,7 @@ def list_instance_types(region_id: str = REGION_ID):
     return types
 
 
-# instance_types = list_instance_types()
+instance_types = list_instance_types()
 
 
 # %% List Security Groups
@@ -223,7 +223,7 @@ def get_account_balance():
         return None
 
 
-# balance = get_account_balance()
+balance = get_account_balance()
 
 
 # %% Quick Status Check
