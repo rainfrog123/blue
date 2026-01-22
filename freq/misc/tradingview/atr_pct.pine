@@ -1,0 +1,22 @@
+//@version=6
+indicator("ATR %", shorttitle="ATR%", overlay=false, precision=5)
+
+length = input.int(14, "Length", minval=1)
+smooth = input.string("RMA", "Smoothing", options=["RMA", "SMA", "EMA", "WMA"])
+
+ma(src, len) =>
+    switch smooth
+        "SMA" => ta.sma(src, len)
+        "EMA" => ta.ema(src, len)
+        "WMA" => ta.wma(src, len)
+        => ta.rma(src, len)
+
+atr = ma(ta.tr(true), length)
+atrPct = (atr / close) * 100
+
+plot(atrPct, "ATR %", color.orange, 2)
+
+var lbl = label.new(na, na, "", xloc.bar_index, yloc.price, color.new(color.black, 70), label.style_label_left, color.white, size.large)
+label.set_xy(lbl, bar_index, atrPct)
+label.set_text(lbl, str.tostring(atrPct, "#.####") + "%")
+

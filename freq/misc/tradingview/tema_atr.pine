@@ -1,0 +1,33 @@
+//@version=6
+indicator("TEMA + ATR%", overlay=true, max_labels_count=500)
+
+temaPeriod = input.int(50, "TEMA Period")
+atrPeriod = input.int(14, "ATR Period")
+
+// TEMA
+ema1 = ta.ema(close, temaPeriod)
+ema2 = ta.ema(ema1, temaPeriod)
+ema3 = ta.ema(ema2, temaPeriod)
+tema = 3 * ema1 - 3 * ema2 + ema3
+
+// ATR %
+atr = ta.rma(ta.tr(true), atrPeriod)
+atrPct = (atr / close) * 100
+atrStr = str.tostring(atrPct, "#.###") + "%"
+
+// Slope
+slope = tema > tema[1] ? 1 : tema < tema[1] ? -1 : 0
+prevSlope = slope[1]
+turnUp = slope == 1 and prevSlope == -1
+turnDown = slope == -1 and prevSlope == 1
+
+// Plot TEMA
+col = slope == 1 ? color.green : slope == -1 ? color.red : color.gray
+plot(tema, "TEMA", col, 2)
+
+// Labels with explicit y value (no yloc)
+if turnUp
+    label.new(x=bar_index, y=low, text=atrStr, color=color.green, style=label.style_label_up, textcolor=color.white, size=size.normal)
+
+if turnDown
+    label.new(x=bar_index, y=high, text=atrStr, color=color.red, style=label.style_label_down, textcolor=color.white, size=size.normal)

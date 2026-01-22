@@ -1,0 +1,182 @@
+# === WINDOWS GIT BASH CONFIGURATION ===
+# Adapted from Linux bashrc for Git Bash on Windows
+# To use: Add to your ~/.bashrc: source "$HOME/blue/linux/extra/shell/bashrc_windows"
+
+# === BASE PATHS ===
+BLUE_DIR="$HOME/blue"
+FREQTRADE_DIR="$HOME/Documents/freqtrade"  # Adjust if different
+DATA_DIR="$HOME/Documents/data"            # Adjust if different
+
+# === PROMPT ===
+if [ -n "$CURSOR_AGENT" ]; then
+  PS1='$ '
+else
+  PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] $ "
+fi
+
+# === SHELL ===
+export EDITOR='cursor'
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+
+# === PROXY ===
+export HTTP_PROXY=http://127.0.0.1:7890
+export HTTPS_PROXY=http://127.0.0.1:7890
+export http_proxy=http://127.0.0.1:7890
+export https_proxy=http://127.0.0.1:7890
+export ALL_PROXY=http://127.0.0.1:7890
+
+# === ENV ===
+# Add Flutter to PATH if installed
+if [ -d "$HOME/development/flutter/bin" ]; then
+  export PATH="$HOME/development/flutter/bin:$PATH"
+fi
+if [ -d "$HOME/.local/bin" ]; then
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# === DIR: Core ===
+alias bl='cd "$BLUE_DIR"'
+
+# === DIR: Freqtrade ===
+alias ft='cd "$FREQTRADE_DIR"'
+alias ftc='cd "$FREQTRADE_DIR/freqtrade"'
+alias usdt='cd "$FREQTRADE_DIR/user_data/data/binance/futures"'
+
+# === DIR: Data ===
+alias dt='cd "$DATA_DIR/ml"'
+
+# ============================================================
+# === BLUE DIRECTORY ALIASES (auto-generated, 2-char rule) ===
+# ============================================================
+
+# --- Level 1: $BLUE_DIR/* ---
+alias fq='cd "$BLUE_DIR/freq"'                    # freq
+alias li='cd "$BLUE_DIR/linux"'                   # linux
+alias we='cd "$BLUE_DIR/web"'                     # web
+alias web='cd "$BLUE_DIR/web"'                    # web (full)
+
+# --- Level 2: $BLUE_DIR/freq/* ---
+alias mi='cd "$BLUE_DIR/freq/misc"'               # misc
+alias pro='cd "$BLUE_DIR/freq/project"'           # project
+
+# --- Level 2: $BLUE_DIR/linux/* ---
+alias ex='cd "$BLUE_DIR/linux/extra"'             # extra
+alias extra='cd "$BLUE_DIR/linux/extra"'          # extra (full)
+alias vp='cd "$BLUE_DIR/linux/vps"'               # vps
+alias vps='cd "$BLUE_DIR/linux/vps"'              # vps (full)
+
+# --- Level 2: $BLUE_DIR/web/* ---
+alias ap='cd "$BLUE_DIR/web/apps"'                # apps
+alias au='cd "$BLUE_DIR/web/automation"'          # automation
+alias cl='cd "$BLUE_DIR/web/cloud"'               # cloud
+alias mo='cd "$BLUE_DIR/web/monitors"'            # monitors
+alias px='cd "$BLUE_DIR/web/proxy"'               # proxy
+
+# --- Level 3: $BLUE_DIR/freq/misc/* ---
+alias bi='cd "$BLUE_DIR/freq/misc/binance"'       # binance
+alias binance='cd "$BLUE_DIR/freq/misc/binance"'  # binance (full)
+alias tv='cd "$BLUE_DIR/freq/misc/tradingview"'   # tradingview
+
+# --- Level 3: $BLUE_DIR/freq/project/* ---
+alias ml='cd "$BLUE_DIR/freq/project/ml_datasets"'    # ml_datasets
+alias to='cd "$BLUE_DIR/freq/project/tools"'          # tools
+alias tools='cd "$BLUE_DIR/freq/project/tools"'       # tools (full)
+alias ud='cd "$BLUE_DIR/freq/project/user_data"'      # user_data
+alias us='cd "$BLUE_DIR/freq/project/user_data"'      # user_data (alt)
+alias user='cd "$BLUE_DIR/freq/project/user_data"'    # user_data (full)
+
+# --- Level 4: $BLUE_DIR/freq/project/tools/* ---
+alias cv='cd "$BLUE_DIR/freq/project/tools/converters"'   # converters
+alias hi='cd "$BLUE_DIR/freq/project/tools/historical"'   # historical
+alias re='cd "$BLUE_DIR/freq/project/tools/realtime"'     # realtime
+alias co='cd "$BLUE_DIR/freq/project/tools/realtime/tradingview"'  # tradingview connector
+
+# --- Level 4: $BLUE_DIR/freq/project/user_data/* ---
+alias cf='cd "$BLUE_DIR/freq/project/user_data/config"'           # config
+alias conf='cd "$BLUE_DIR/freq/project/user_data/config"'         # config (alt)
+alias config='cd "$BLUE_DIR/freq/project/user_data/config"'       # config (full)
+alias hr='cd "$BLUE_DIR/freq/project/user_data/hyperopt_results"' # hyperopt_results
+alias hy='cd "$BLUE_DIR/freq/project/user_data/hyperopts"'        # hyperopts
+alias lo='cd "$BLUE_DIR/freq/project/user_data/logs"'             # logs
+alias md='cd "$BLUE_DIR/freq/project/user_data/models"'           # models
+alias nb='cd "$BLUE_DIR/freq/project/user_data/notebooks"'        # notebooks
+alias sc='cd "$BLUE_DIR/freq/project/user_data/scripts"'          # scripts
+alias st='cd "$BLUE_DIR/freq/project/user_data/strategies"'       # strategies
+alias strat='cd "$BLUE_DIR/freq/project/user_data/strategies"'    # strategies (full)
+
+# --- Level 3: $BLUE_DIR/linux/extra/* ---
+alias excf='cd "$BLUE_DIR/linux/extra/config"'    # config (ex+cf)
+alias cu='cd "$BLUE_DIR/linux/extra/cursor"'      # cursor
+alias ne='cd "$BLUE_DIR/linux/extra/network"'     # network
+alias nt='cd "$BLUE_DIR/linux/extra/notes"'       # notes
+alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'   # scripts (ex+sc)
+alias sh='cd "$BLUE_DIR/linux/extra/shell"'       # shell
+
+# --- Level 3: $BLUE_DIR/linux/vps/* ---
+alias ali='cd "$BLUE_DIR/linux/vps/ali"'          # ali (3 chars, al=allah)
+alias aw='cd "$BLUE_DIR/linux/vps/aws"'           # aws
+alias aws='cd "$BLUE_DIR/linux/vps/aws"'          # aws (full)
+alias gcvps='cd "$BLUE_DIR/linux/vps/gcp"'        # gcp (gc=git commit)
+alias gcp='cd "$BLUE_DIR/linux/vps/gcp"'          # gcp (full, override git)
+alias lnvps='cd "$BLUE_DIR/linux/vps/linode"'     # linode vps
+alias vpsc='cd "$BLUE_DIR/linux/vps/scripts"'     # vps scripts
+alias vu='cd "$BLUE_DIR/linux/vps/vultr"'         # vultr
+
+# --- Level 3: $BLUE_DIR/web/apps/* ---
+alias ac='cd "$BLUE_DIR/web/apps/alt_calculator"' # alt_calculator
+
+# --- Level 3: $BLUE_DIR/web/automation/* ---
+alias an='cd "$BLUE_DIR/web/automation/antidetect"'   # antidetect
+alias ba='cd "$BLUE_DIR/web/automation/baccarat"'     # baccarat
+alias pr='cd "$BLUE_DIR/web/automation/patchright"'   # patchright
+alias tm='cd "$BLUE_DIR/web/automation/tampermonkey"' # tampermonkey
+alias tampermonkey='cd "$BLUE_DIR/web/automation/tampermonkey"'  # tampermonkey (full)
+alias ti='cd "$BLUE_DIR/web/automation/tinder"'       # tinder
+alias tinder='cd "$BLUE_DIR/web/automation/tinder"'   # tinder (full)
+
+# --- Level 3: $BLUE_DIR/web/cloud/* ---
+alias linode='cd "$BLUE_DIR/web/cloud/linode"'    # linode
+
+# --- Level 3: $BLUE_DIR/web/monitors/* ---
+alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'  # huaxitong
+alias hx='cd "$BLUE_DIR/web/monitors/hxkq"'       # hxkq
+
+# --- Level 3: $BLUE_DIR/web/proxy/* ---
+alias de='cd "$BLUE_DIR/web/proxy/decodo"'        # decodo
+alias decodo='cd "$BLUE_DIR/web/proxy/decodo"'    # decodo (full)
+alias ra='cd "$BLUE_DIR/web/proxy/rayobyte"'      # rayobyte
+
+# === Freqtrade Commands ===
+alias ftpy='"$FREQTRADE_DIR/.venv/Scripts/python.exe"'
+alias ftrun='"$FREQTRADE_DIR/.venv/Scripts/python.exe" "$FREQTRADE_DIR/freqtrade/main.py"'
+
+# === Git ===
+alias ga='git add'
+alias gc='git commit -m'
+alias gl='git pull'
+alias gp='git push'
+alias gs='git status'
+
+# === TensorBoard ===
+alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+
+# === Utility ===
+alias bashrc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
+alias cls='clear'
+alias code='cursor'
+alias diskspace='df -h'
+alias ipc='"$BLUE_DIR/web/proxy/decodo/ip_checker.sh"'
+alias lsh='ls -la | head'
+alias myip='curl -s http://ipinfo.io/ip'
+alias note='cursor "$BLUE_DIR/freq/project/note"'
+alias rc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
+
+# Antidetect alias
+alias an='cd "$BLUE_DIR/web/automation/antidetect"'
+
+# === Windows-specific helpers ===
+alias explorer='explorer.exe .'
+alias open='start'

@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "C:\\Users\\jar71\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+    "python.terminal.activateEnvironment": true,
+    "python.testing.pytestEnabled": true,
+    "editor.codeLens": true,
+    "jupyter.interactiveWindow.creationMode": "perFile"
+}

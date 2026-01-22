@@ -1,0 +1,19 @@
+//@version=6
+indicator("TEMA Trend", overlay=true)
+
+period = input.int(50, "Period")
+
+ema1 = ta.ema(close, period)
+ema2 = ta.ema(ema1, period)
+ema3 = ta.ema(ema2, period)
+tema = 3 * ema1 - 3 * ema2 + ema3
+
+slope = tema > tema[1] ? 1 : tema < tema[1] ? -1 : 0
+slopeChange = slope != slope[1] and not na(slope[1])
+
+col = slope == 1 ? color.green : slope == -1 ? color.red : color.gray
+plot(tema, "TEMA", col)
+
+plotshape(slopeChange and slope == 1, location=location.belowbar, color=color.green, style=shape.triangleup, size=size.tiny)
+plotshape(slopeChange and slope == -1, location=location.abovebar, color=color.red, style=shape.triangledown, size=size.tiny)
+

@@ -1,0 +1,45 @@
+//@version=6
+indicator("VWAP", overlay=true)
+
+hideDWM = input.bool(false, "Hide on Daily+")
+anchor = input.string("Hour", "Anchor", options=["15min", "30min", "Hour", "2H", "4H", "Session", "Week", "Month"])
+src = input.source(hlc3, "Source")
+
+showBand1 = input.bool(true, "Band 1")
+mult1 = input.float(1.0, "Mult 1", step=0.5)
+showBand2 = input.bool(false, "Band 2")
+mult2 = input.float(2.0, "Mult 2", step=0.5)
+
+isNew = switch anchor
+    "15min"   => timeframe.change("15")
+    "30min"   => timeframe.change("30")
+    "Hour"    => timeframe.change("60")
+    "2H"      => timeframe.change("120")
+    "4H"      => timeframe.change("240")
+    "Session" => timeframe.change("D")
+    "Week"    => timeframe.change("W")
+    "Month"   => timeframe.change("M")
+    => false
+
+if na(src[1])
+    isNew := true
+
+float vwapVal = na, float upper1 = na, float lower1 = na, float upper2 = na, float lower2 = na
+
+if not (hideDWM and timeframe.isdwm)
+    [v, stdev, _] = ta.vwap(src, isNew, 1)
+    vwapVal := v
+    band = stdev - v
+    upper1 := v + band * mult1
+    lower1 := v - band * mult1
+    upper2 := v + band * mult2
+    lower2 := v - band * mult2
+
+plot(vwapVal, "VWAP", #2962FF)
+u1 = plot(showBand1 ? upper1 : na, "Upper1", color.green)
+l1 = plot(showBand1 ? lower1 : na, "Lower1", color.green)
+fill(u1, l1, color.new(color.green, 95))
+u2 = plot(showBand2 ? upper2 : na, "Upper2", color.olive)
+l2 = plot(showBand2 ? lower2 : na, "Lower2", color.olive)
+fill(u2, l2, color.new(color.olive, 95))
+

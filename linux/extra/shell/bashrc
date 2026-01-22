@@ -1,0 +1,159 @@
+# === PROMPT ===
+if [ -n "$CURSOR_AGENT" ]; then
+  PS1='$ '
+else
+  PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] 🚀🚀🚀  $ "
+fi
+
+# === SHELL ===
+export EDITOR='cursor'
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+
+# === ENV ===
+export DISPLAY=:10
+export PATH="$HOME/development/flutter/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+# === DIR: Core ===
+alias al='cd /allah'
+alias bl='cd /allah/blue'
+
+# === DIR: Freqtrade ===
+alias ft='cd /allah/freqtrade'
+alias ftc='cd /allah/freqtrade/freqtrade'
+alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
+
+# === DIR: Data ===
+alias dt='cd /allah/data/ml'
+
+# ============================================================
+# === BLUE DIRECTORY ALIASES (auto-generated, 2-char rule) ===
+# ============================================================
+
+# --- Level 1: /allah/blue/* ---
+alias fq='cd /allah/blue/freq'                    # freq
+alias li='cd /allah/blue/linux'                   # linux
+alias we='cd /allah/blue/web'                     # web
+alias web='cd /allah/blue/web'                    # web (full)
+
+# --- Level 2: /allah/blue/freq/* ---
+alias mi='cd /allah/blue/freq/misc'               # misc
+alias pro='cd /allah/blue/freq/project'           # project
+
+# --- Level 2: /allah/blue/linux/* ---
+alias ex='cd /allah/blue/linux/extra'             # extra
+alias extra='cd /allah/blue/linux/extra'          # extra (full)
+alias vp='cd /allah/blue/linux/vps'               # vps
+alias vps='cd /allah/blue/linux/vps'              # vps (full)
+
+# --- Level 2: /allah/blue/web/* ---
+alias ap='cd /allah/blue/web/apps'                # apps
+alias au='cd /allah/blue/web/automation'          # automation
+alias cl='cd /allah/blue/web/cloud'               # cloud
+alias mo='cd /allah/blue/web/monitors'            # monitors
+alias px='cd /allah/blue/web/proxy'               # proxy
+
+# --- Level 3: /allah/blue/freq/misc/* ---
+alias bi='cd /allah/blue/freq/misc/binance'       # binance
+alias binance='cd /allah/blue/freq/misc/binance'  # binance (full)
+alias tv='cd /allah/blue/freq/misc/tradingview'   # tradingview
+
+# --- Level 3: /allah/blue/freq/project/* ---
+alias ml='cd /allah/blue/freq/project/ml_datasets'    # ml_datasets
+alias to='cd /allah/blue/freq/project/tools'          # tools
+alias tools='cd /allah/blue/freq/project/tools'       # tools (full)
+alias ud='cd /allah/blue/freq/project/user_data'      # user_data
+alias us='cd /allah/blue/freq/project/user_data'      # user_data (alt)
+alias user='cd /allah/blue/freq/project/user_data'    # user_data (full)
+
+# --- Level 4: /allah/blue/freq/project/tools/* ---
+alias cv='cd /allah/blue/freq/project/tools/converters'   # converters
+alias hi='cd /allah/blue/freq/project/tools/historical'   # historical
+alias re='cd /allah/blue/freq/project/tools/realtime'     # realtime
+alias co='cd /allah/blue/freq/project/tools/realtime/tradingview'  # tradingview connector
+
+# --- Level 4: /allah/blue/freq/project/user_data/* ---
+alias cf='cd /allah/blue/freq/project/user_data/config'           # config
+alias conf='cd /allah/blue/freq/project/user_data/config'         # config (alt)
+alias config='cd /allah/blue/freq/project/user_data/config'       # config (full)
+alias hr='cd /allah/blue/freq/project/user_data/hyperopt_results' # hyperopt_results
+alias hy='cd /allah/blue/freq/project/user_data/hyperopts'        # hyperopts
+alias lo='cd /allah/blue/freq/project/user_data/logs'             # logs
+alias md='cd /allah/blue/freq/project/user_data/models'           # models
+alias nb='cd /allah/blue/freq/project/user_data/notebooks'        # notebooks
+alias sc='cd /allah/blue/freq/project/user_data/scripts'          # scripts
+alias st='cd /allah/blue/freq/project/user_data/strategies'       # strategies
+alias strat='cd /allah/blue/freq/project/user_data/strategies'    # strategies (full)
+
+# --- Level 3: /allah/blue/linux/extra/* ---
+alias excf='cd /allah/blue/linux/extra/config'    # config (ex+cf)
+alias cu='cd /allah/blue/linux/extra/cursor'      # cursor
+alias ne='cd /allah/blue/linux/extra/network'     # network
+alias nt='cd /allah/blue/linux/extra/notes'       # notes
+alias exsc='cd /allah/blue/linux/extra/scripts'   # scripts (ex+sc)
+alias sh='cd /allah/blue/linux/extra/shell'       # shell
+
+# --- Level 3: /allah/blue/linux/vps/* ---
+alias ali='cd /allah/blue/linux/vps/ali'          # ali (3 chars, al=allah)
+alias aw='cd /allah/blue/linux/vps/aws'           # aws
+alias aws='cd /allah/blue/linux/vps/aws'          # aws (full)
+alias gcvps='cd /allah/blue/linux/vps/gcp'        # gcp (gc=git commit)
+alias gcp='cd /allah/blue/linux/vps/gcp'          # gcp (full, override git)
+alias lnvps='cd /allah/blue/linux/vps/linode'     # linode vps
+alias vpsc='cd /allah/blue/linux/vps/scripts'     # vps scripts
+alias vu='cd /allah/blue/linux/vps/vultr'         # vultr
+
+# --- Level 3: /allah/blue/web/apps/* ---
+alias ac='cd /allah/blue/web/apps/alt_calculator' # alt_calculator
+
+# --- Level 3: /allah/blue/web/automation/* ---
+alias an='cd /allah/blue/web/automation/antidetect'   # antidetect
+alias ba='cd /allah/blue/web/automation/baccarat'     # baccarat
+alias pr='cd /allah/blue/web/automation/patchright'   # patchright
+alias tm='cd /allah/blue/web/automation/tampermonkey' # tampermonkey
+alias tampermonkey='cd /allah/blue/web/automation/tampermonkey'  # tampermonkey (full)
+alias ti='cd /allah/blue/web/automation/tinder'       # tinder
+alias tinder='cd /allah/blue/web/automation/tinder'   # tinder (full)
+
+# --- Level 3: /allah/blue/web/cloud/* ---
+alias linode='cd /allah/blue/web/cloud/linode'    # linode
+
+# --- Level 3: /allah/blue/web/monitors/* ---
+alias hu='cd /allah/blue/web/monitors/huaxitong'  # huaxitong
+alias hx='cd /allah/blue/web/monitors/hxkq'       # hxkq
+
+# --- Level 3: /allah/blue/web/proxy/* ---
+alias de='cd /allah/blue/web/proxy/decodo'        # decodo
+alias decodo='cd /allah/blue/web/proxy/decodo'    # decodo (full)
+alias ra='cd /allah/blue/web/proxy/rayobyte'      # rayobyte
+
+# === Freqtrade Commands ===
+alias ftpy='/allah/freqtrade/.venv/bin/python3'
+alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
+
+# === Git ===
+alias ga='git add'
+alias gc='git commit -m'
+alias gl='git pull'
+alias gp='git push'
+alias gs='git status'
+
+# === TensorBoard ===
+alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
+
+# === Utility ===
+alias bashrc='cursor /allah/blue/linux/extra/shell/bashrc'
+alias cls='clear'
+alias code='cursor'
+alias diskspace='df -h'
+alias ipc="/allah/blue/web/proxy/decodo/ip_checker.sh"
+alias lsh='ls -la | head'
+alias myip='curl -s http://ipinfo.io/ip'
+alias note='cursor /allah/blue/freq/project/note'
+alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
+
+# Antidetect alias
+alias an="cd /allah/blue/web/automation/antidetect"

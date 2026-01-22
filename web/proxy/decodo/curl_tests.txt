@@ -1,0 +1,76 @@
+curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" \
+  -A 'Mozilla/5.0' "https://www.google.com/search?q=test"
+
+
+curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" \
+  -A 'Mozilla/5.0' \
+  -x "https://user-sp3j58curv-sessionduration-60-country-gb:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:45010" \
+  "https://www.google.com/search?q=test"
+
+
+curl -s -o /dev/null -w "%{http_code} %{url_effective}\n" \
+  -A 'Mozilla/5.0' \
+  -x "https://user-sp3j58curv-sessionduration-60-country-gb:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:30002" \
+  "https://www.google.com/search?q=test" -L
+
+curl -s -L -A 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' \
+  "https://www.google.com/search?q=foo" \
+  --max-time 30 \
+  -x "https://user-sp3j58curv-sessionduration-60-country-gb:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:30012" \
+  -D - | head -n 1 && echo "Final URL: $(curl -s -L -A 'Mozilla/5.0' -x http://user:pass@proxy-host:proxy-port 'https://www.google.com/search?q=foo' --max-time 30 -w '%{url_effective}\n')"
+
+
+curl -s -D - \
+  -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' \
+  'https://www.google.com/search?q=gmail&oq=gmail' \
+  --max-time 30 \
+  -x "https://user-sp3j58curv-sessionduration-60-country-gb:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:30012"
+  -x "http://user:pass@proxy-host:proxy-port"
+
+
+
+curl -s -D - \
+  'https://www.google.com/search?q=gmail&oq=gmail&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDEyNTBqMGo3qAIAsAIB&sourceid=chrome&ie=UTF-8&sei=tu7SaMf5M8m7hbIP6LiW4Qw' \
+  --max-time 30 \
+  -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36' \
+  -H 'accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'accept-encoding: gzip, deflate, br, zstd' \
+  -H 'accept-language: en-GB,en;q=0.9' \
+  -H 'cookie: AEC=AaJma5vCIlJubBDOW13W-qaN12RXGHkTK7J6W5h9ydth6zn1HmH0z7ZwJA; __Secure-ENID=28.SE=QtLt43PF1DJSXv6016p24-qiwZIu8mgc6Rz6YZ36azGGFYK32w_Uy-j8im5KE7M068lVqAaONqKPMTwGbFsQVnbNDq8wH9AO6akonsA7HkRZ3dAHtOW70ENONCj_OVy9_N-oY02kLcR9yiDzZDOyHGwD_gBxrWFC6I74DHYBmSa0u4UOieC1kPDMZIMGg5Dq4HHBqDqaXrLgFudfuLzkNzCrQg; SG_SS=*n6Oao_vyAAZvV511T1d9mb58duir9-YEADQBEArZ1LVx556NrjoU2S0RlVWt1JDhk55gRgfhdLDkKa071zgArfAcm63I9xavkucTQjptPQAAAKBtAAAAHVcBB0EANep_W3Y6t_pgIISq8fTlCSwEMcOOrxniLB_Z8snH5XL7HMJADu7Y6nF5TFn6pVQ3S2Prf8V2pgIqreTYa2h8-J4WnZaxUq3UI7PGGb6DcsI8YisRRcJd7HOUJlcRgi_9Z-DRyRHJeTgjRnxu7Makubb5VLB4iDzHbCma5aZsRpzDdWDL2n-3r1miVBONH4AffAUvnGxmNznjQh-k7SAPQWlGKalrYuTxOIVdvJfp_ANDRKJBZOsu_bKoJSRN20lD72ywMJg7tEu9hNiJut11KIa1iqW8CJpjS03kZJFFGD00QjFQn4w5ergf8YoHEXzLza-HiToA_Eyyf54cj-5UwPSYeozMB_DJ3knQi2enCpiOAN5HW6pu6C4kTa3kLNMnYO6H7cN_bVPnKKepiG4ALUtQvPvSL9UiFgfPSJJXVaghu7PjpMcfxtlv3yHZ9mPV8NuJDnsD_NB3Mf7soXpAYQIq-xCHwIs6sz-xjngGtjsenslwWgA5rVDHAqFzoAKoaxZK8LGXRk7UpX6sKdi5pUbeWCwLjS478DtBnWmChIofWOXP1XUCkZpr63CgtHedY2S89OlT7AUGD0tSlvMldpftPLSoQYe6DTQwxjc9FJ27kIIGsz_p0uUKA3ABkyGjqs73Jpo7OWKo2mBGJ-ZxNccBIBPFWhQ41_Xu6R8QHWBy9BFR4mph_jegKfPDB6yVFRf8femXU0HT6X_5QRxXm0ThI9EZbzNru8oBG_OAGNfnJbXhBpI7Ro7qKFu6kt9ZMbpaQGxsIEHt89ZwsuVO2mR-CYyonqTgpZ0FBQi-JToCQic' \
+  -H 'referer: https://www.google.com/search?q=gmail&oq=gmail&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDEyNTBqMGo3qAIAsAIB&sourceid=chrome&ie=UTF-8' \
+  -H 'sec-ch-prefers-color-scheme: light' \
+  -H 'sec-ch-ua: "Chromium";v="140", "Not=A?Brand";v="24", "Google Chrome";v="140"' \
+  -H 'sec-ch-ua-arch: "arm"' \
+  -H 'sec-ch-ua-bitness: "64"' \
+  -H 'sec-ch-ua-form-factors: "Desktop"' \
+  -H 'sec-ch-ua-full-version: "140.0.7339.186"' \
+  -H 'sec-ch-ua-full-version-list: "Chromium";v="140.0.7339.186", "Not=A?Brand";v="24.0.0.0", "Google Chrome";v="140.0.7339.186"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-model: ""' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-ch-ua-platform-version: "15.5.0"' \
+  -H 'sec-ch-ua-wow64: ?0' \
+  -H 'sec-fetch-dest: document' \
+  -H 'sec-fetch-mode: navigate' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'upgrade-insecure-requests: 1' \
+  -H 'x-browser-channel: stable' \
+  -H 'x-browser-copyright: Copyright 2025 Google LLC. All rights reserved.' \
+  -H 'x-browser-validation: jFliu1AvGMEE7cpr93SSytkZ8D4=' \
+  -H 'x-browser-year: 2025' \
+  -H 'x-client-data: CITzygE='
+
+
+
+curl -x "socks5h://user-sp3j58curv-session-1-country-gb:9oOoKQ8+z8pkcUsnv0@al.decodo.com:33012" \
+     "https://ip.decodo.com/json"
+
+curl -x "socks5h://sp3j58curv:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:7000" "https://ip.decodo.com/json"
+
+curl -x "socks5h://sp3j58curv:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:7000" \ "https://ip.decodo.com/json"
+
+curl -x "socks5h://sp3j58curv:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:7000" "https://ip.decodo.com/json"
+
+curl -x "socks5h://user-sp3j58curv-session-1-country-ci:9oOoKQ8+z8pkcUsnv0@gate.decodo.com:7000" \
+
+curl -x "socks5h://user-sp3j58curv-session-1-country-gb:9oOoKQ8+z8pkcUsnv0@gate.visitxiangtan.com:7000" "https://ip.decodo.com/json"

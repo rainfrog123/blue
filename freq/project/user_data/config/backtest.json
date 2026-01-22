@@ -1,0 +1,96 @@
+{
+    "max_open_trades": -1,
+    "stake_currency": "USDT",
+    "stake_amount": 100,
+    "export_ml_dataset": true,
+    "tradable_balance_ratio": 1,
+    "fiat_display_currency": "USD",
+    "dry_run": false,
+    "dry_run_wallet": 100,
+    "timeframe": "5s",
+    "cancel_open_orders_on_exit": true,
+    "trading_mode": "futures",
+    "margin_mode": "isolated",
+    "unfilledtimeout": {
+        "entry": 10,
+        "exit": 10,
+        "exit_timeout_count": 1,
+        "unit": "minutes"
+    },
+    "order_types": {
+        "entry": "market",
+        "exit": "limit",
+        "stoploss": "market",
+        "stoploss_on_exchange": true
+    },
+    "order_time_in_force": {
+        "entry": "GTC",
+        "exit": "GTC"
+    },
+    "entry_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1,
+        "price_last_balance": 0.0,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+    "exit_pricing": {
+        "price_side": "other",
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exchange": {
+        "name": "binance",
+        "ccxt_config": {
+            "aiohttp_proxy": "",
+            "proxies": {
+                "http": "",
+                "https": ""
+            }
+        },
+        "key": "ofQzX3gGAKS777NyYIovAy1XyqLzGC2UJPMh9jqIYEfieFRy3DCkZJl15VYA2zXo",
+        "secret": "QVJpTFgHIEv74LmCT5clX8o1zAFEEqJqKpg2ePklObM1Ybv9iKNe8jvM7MRjoz07",
+        "ccxt_async_config": {},
+        "pair_whitelist": [
+            "ETH/USDT:USDT"
+        ],
+        "pair_blacklist": [
+            "BNB/.*"
+        ]
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "telegram": {
+        "enabled": false,
+        "token": "",
+        "chat_id": ""
+    },
+    "api_server": {
+        "enabled": true,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "1c085d6bcdc797d04df53675a666edc1c3b089937a59ba039a4f3e9c46ea17ea",
+        "ws_token": "K9Y1W6jzuz09ho90Zw0EEftV2U_bIQLeJw",
+        "CORS_origins": [],
+        "username": "freqtrader",
+        "password": "jingxian"
+    },
+    "bot_name": "freqtrade",
+    "initial_state": "running",
+    "force_entry_enable": false,
+    "internals": {
+        "process_throttle_secs": 1
+    },
+    "experimental": {
+        "block_bad_exchanges": false
+    },
+    "candle_type_def": "futures"
+}
