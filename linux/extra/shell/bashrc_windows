@@ -180,3 +180,6 @@ alias an='cd "$BLUE_DIR/web/automation/antidetect"'
 # === Windows-specific helpers ===
 alias explorer='explorer.exe .'
 alias open='start'
+
+# === Quick cd ===
+alias clash='cd "$HOME/.config/clash/profiles"'
