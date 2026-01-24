@@ -3,10 +3,19 @@ import sys
 import time
 from pathlib import Path
 
-# Fix Windows console encoding
-sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+# Fix Windows console encoding (skip in Jupyter)
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except AttributeError:
+    pass  # Jupyter/IPython uses custom streams
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "extra" / "config"))
+# Handle both script and Jupyter environments
+try:
+    _script_dir = Path(__file__).parent
+except NameError:
+    _script_dir = Path.cwd()  # Jupyter: assume running from script directory
+
+sys.path.insert(0, str(_script_dir.parent.parent / "extra" / "config"))
 from cred_loader import get_alibaba
 
 from alibabacloud_ecs20140526 import models as ecs_models
@@ -30,7 +39,11 @@ ecs_client = EcsClient(config)
 # Fetch the single instance
 request = ecs_models.DescribeInstancesRequest(region_id=REGION_ID, page_size=100)
 response = ecs_client.describe_instances(request)
-instances = response.body.instances.instance
+
+# Handle None response
+instances = []
+if response.body and response.body.instances and response.body.instances.instance:
+    instances = response.body.instances.instance
 
 if not instances:
     print("No instances found in this region.")
@@ -219,3 +232,44 @@ def release_all(dry_run=True):
 
 # %% EXECUTE DELETE
 release_all(dry_run=False)
+
+
+# %% Check All Existing Instances
+def list_all_instances():
+    """List all ECS instances in the region."""
+    request = ecs_models.DescribeInstancesRequest(region_id=REGION_ID, page_size=100)
+    response = ecs_client.describe_instances(request)
+    
+    # Handle None response
+    instances = []
+    if response.body and response.body.instances and response.body.instances.instance:
+        instances = response.body.instances.instance
+    
+    print(f"\n{'='*70}")
+    print(f"ALL ECS INSTANCES - Region: {REGION_ID}")
+    print(f"{'='*70}")
+    
+    if not instances:
+        print("No instances found")
+        return []
+    
+    for i, inst in enumerate(instances):
+        ips = inst.public_ip_address.ip_address if inst.public_ip_address else []
+        public_ip = ips[0] if ips else "N/A"
+        
+        print(f"\n[{i+1}] {inst.instance_name}")
+        print(f"    Instance ID: {inst.instance_id}")
+        print(f"    Status:      {inst.status}")
+        print(f"    Type:        {inst.instance_type}")
+        print(f"    Public IP:   {public_ip}")
+        print(f"    OS:          {inst.osname}")
+        print(f"    Zone:        {inst.zone_id}")
+        print(f"    Created:     {inst.creation_time}")
+    
+    print(f"\n{'='*70}")
+    print(f"Total: {len(instances)} instance(s)")
+    return instances
+
+
+# Check existing instances
+list_all_instances()
