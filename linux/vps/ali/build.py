@@ -22,6 +22,9 @@ from cred_loader import get_alibaba
 # SSH config path
 SSH_CONFIG_PATH = Path.home() / ".ssh" / "config"
 
+# RealVNC ViewerStore path
+VNC_VIEWER_STORE = Path.home() / "AppData" / "Roaming" / "RealVNC" / "ViewerStore"
+
 from alibabacloud_ecs20140526 import models as ecs_models
 from alibabacloud_ecs20140526.client import Client as EcsClient
 from alibabacloud_tea_openapi import models as open_api_models
@@ -477,6 +480,59 @@ def update_ssh_config(new_ip: str, host_alias: str = "ali_hk"):
         return False
 
 
+def update_vnc_config(new_ip: str, port: int = 5901):
+    """
+    Update RealVNC Viewer saved connection with new IP.
+    
+    Args:
+        new_ip: The new IP address
+        port: VNC port (default: 5901)
+    
+    Returns:
+        True if updated, False otherwise
+    """
+    if not VNC_VIEWER_STORE.exists():
+        print(f"[WARN] VNC ViewerStore not found: {VNC_VIEWER_STORE}")
+        return False
+    
+    try:
+        # Find all .vnc files in ViewerStore
+        vnc_files = list(VNC_VIEWER_STORE.glob("*.vnc"))
+        
+        if not vnc_files:
+            print("[WARN] No saved VNC connections found")
+            return False
+        
+        updated_count = 0
+        for vnc_file in vnc_files:
+            content = vnc_file.read_text(encoding='utf-8')
+            
+            # Check if this file has a Host line (valid VNC config)
+            if "Host=" in content:
+                # Update Host line with new IP:port
+                new_content = re.sub(
+                    r'Host=[\d\.]+:\d+',
+                    f'Host={new_ip}:{port}',
+                    content
+                )
+                
+                if new_content != content:
+                    vnc_file.write_text(new_content, encoding='utf-8')
+                    print(f"[OK] VNC config updated: {vnc_file.name} -> {new_ip}:{port}")
+                    updated_count += 1
+        
+        if updated_count > 0:
+            print(f"     Updated {updated_count} VNC connection(s)")
+            return True
+        else:
+            print("[INFO] No VNC connections needed updating")
+            return False
+            
+    except Exception as e:
+        print(f"[WARN] Failed to update VNC config: {e}")
+        return False
+
+
 # %% DRY RUN - Validate Build (no instance created)
 # Override image_id here, or leave None to use first custom image
 image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
@@ -518,6 +574,7 @@ if vswitch_id and security_group_id and image_id:
         print(f"\n[OK] Build complete! Instance ID: {new_instance_id}")
         if new_public_ip:
             update_ssh_config(new_public_ip, "ali_hk")
+            update_vnc_config(new_public_ip, port=5901)
     else:
         print(f"\n[FAIL] Build failed")
 else:
