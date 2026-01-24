@@ -4,10 +4,19 @@ import time
 import re
 from pathlib import Path
 
-# Fix Windows console encoding
-sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+# Fix Windows console encoding (skip in Jupyter)
+try:
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+except AttributeError:
+    pass  # Jupyter/IPython uses custom streams
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "extra" / "config"))
+# Handle both script and Jupyter environments
+try:
+    _script_dir = Path(__file__).parent
+except NameError:
+    _script_dir = Path.cwd()  # Jupyter: assume running from script directory
+
+sys.path.insert(0, str(_script_dir.parent.parent / "extra" / "config"))
 from cred_loader import get_alibaba
 
 # SSH config path
@@ -230,7 +239,11 @@ def list_images(image_type="self"):
         )
     
     img_response = ecs_client.describe_images(img_request)
-    images = img_response.body.images.image
+    
+    # Handle None response
+    images = []
+    if img_response.body and img_response.body.images and img_response.body.images.image:
+        images = img_response.body.images.image
     
     type_labels = {"self": "custom", "system": "system", "others": "shared", "marketplace": "marketplace"}
     label = type_labels.get(image_type, image_type)
@@ -328,14 +341,8 @@ def build_instance(
         print(f"{'!'*60}")
         return None, None
     
-    if dry_run:
-        print(f"\n{'!'*60}")
-        print("DRY RUN - No instance created")
-        print("Run: build_instance(image_id, dry_run=False) to create")
-        print(f"{'!'*60}")
-        return None, None
-    
-    print(f"\nCreating instance...")
+    action = "Validating request..." if dry_run else "Creating instance..."
+    print(f"\n{action}")
     
     try:
         # Build tags list from labels dict
@@ -366,9 +373,12 @@ def build_instance(
             internet_max_bandwidth_out=100,
             instance_charge_type="PostPaid",
             amount=1,
+            dry_run=dry_run,  # API-level validation
         )
         
         create_response = ecs_client.run_instances(create_request)
+        # Note: dry_run=True throws DryRunOperation exception (handled below)
+        
         new_instance_ids = create_response.body.instance_id_sets.instance_id_set
         
         if new_instance_ids:
@@ -404,7 +414,21 @@ def build_instance(
             return None, None
             
     except Exception as e:
-        print(f"Error creating instance: {e}")
+        error_msg = str(e)
+        # DryRunOperation means validation PASSED (Alibaba's expected response)
+        if dry_run and "DryRunOperation" in error_msg:
+            print(f"\n{'='*60}")
+            print("VALIDATION PASSED - Ready to build")
+            print(f"{'='*60}")
+            print("Run with dry_run=False to create instance")
+            return None, None
+        elif dry_run:
+            print(f"\n{'!'*60}")
+            print("VALIDATION FAILED")
+            print(f"{'!'*60}")
+            print(f"Error: {error_msg}")
+        else:
+            print(f"Error creating instance: {error_msg}")
         return None, None
 
 
@@ -415,6 +439,7 @@ print(f"    keypair='key-name'           # SSH key pair")
 print(f"    host='my-hostname'           # Hostname (default: instance_name)")
 print(f"    labels={{'env': 'prod'}}       # Tags for billing/organization")
 print(f"    spot=True                    # Use spot instance (cheaper)")
+print(f"    dry_run=True                 # Validate with API (no instance created)")
 
 
 # %% Update SSH Config
@@ -452,60 +477,56 @@ def update_ssh_config(new_ip: str, host_alias: str = "ali_hk"):
         return False
 
 
-# %% Preview Build (Dry Run)
-if custom_images and vswitch_id and security_group_id:
-    print(f"\n{'='*60}")
-    print(f"PREVIEW BUILD - Using first custom image")
-    print(f"{'='*60}")
-    img = custom_images[0]
-    print(f"Image:    {img.image_name}")
-    print(f"ID:       {img.image_id}")
-    print(f"Key Pair: {key_pair_name or 'NONE'}")
-    build_instance(img.image_id, instance_name="preview-vps", dry_run=True)
-elif not custom_images:
-    print(f"\n{'='*60}")
-    print(f"NO CUSTOM IMAGES AVAILABLE")
-    print(f"{'='*60}")
-    print("Create a custom image first using Alibaba Cloud console")
-    print("Or use: list_images('system') to see system images")
+# %% DRY RUN - Validate Build (no instance created)
+# Override image_id here, or leave None to use first custom image
+image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
+
+# Resolve image_id
+if image_id is None and custom_images:
+    image_id = custom_images[0].image_id
+
+if vswitch_id and security_group_id and image_id:
+    from datetime import datetime
+    instance_name = f"blue-{datetime.now().strftime('%m%d')}"  # e.g. blue-0124
+    build_instance(image_id, instance_name=instance_name, spot=True, dry_run=True)
 else:
-    print(f"\n{'='*60}")
-    print(f"MISSING NETWORK CONFIG")
-    print(f"{'='*60}")
-    print("Create VPC, VSwitch, and Security Group first")
+    print(f"\n{'!'*60}")
+    print(f"CANNOT VALIDATE")
+    print(f"{'!'*60}")
+    if not image_id:
+        print("- No image specified (set image_id or ensure custom_images exists)")
+    if not vswitch_id:
+        print("- No VSwitch configured")
+    if not security_group_id:
+        print("- No Security Group configured")
 
 
 # %% EXECUTE BUILD (Create New Instance)
-if custom_images and vswitch_id and security_group_id:
+# Override image_id here, or leave None to use first custom image
+image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
+
+# Resolve image_id
+if image_id is None and custom_images:
+    image_id = custom_images[0].image_id
+
+if vswitch_id and security_group_id and image_id:
     from datetime import datetime
-    timestamp = datetime.now().strftime("%m%d-%H%M")  # e.g. 0122-1430
-    instance_name = f"vps-{timestamp}"
-    
-    img = custom_images[0]
-    print(f"\n{'#'*60}")
-    print(f"# EXECUTING BUILD (SPOT INSTANCE)")
-    print(f"{'#'*60}")
-    print(f"Image:    {img.image_name} ({img.image_id})")
-    print(f"Key Pair: {key_pair_name or 'NONE'}")
-    new_instance_id, new_public_ip = build_instance(img.image_id, instance_name=instance_name, spot=True, dry_run=False)
+    instance_name = f"blue-{datetime.now().strftime('%m%d')}"  # e.g. blue-0124
+    new_instance_id, new_public_ip = build_instance(image_id, instance_name=instance_name, spot=True, dry_run=False)
     
     if new_instance_id:
         print(f"\n[OK] Build complete! Instance ID: {new_instance_id}")
-        
-        # Update SSH config with new IP
         if new_public_ip:
             update_ssh_config(new_public_ip, "ali_hk")
     else:
         print(f"\n[FAIL] Build failed")
 else:
-    print(f"\n{'#'*60}")
-    print(f"# CANNOT BUILD")
-    print(f"{'#'*60}")
-    if not custom_images:
-        print("- No custom images available")
+    print(f"\n{'!'*60}")
+    print(f"CANNOT BUILD")
+    print(f"{'!'*60}")
+    if not image_id:
+        print("- No image specified (set image_id or ensure custom_images exists)")
     if not vswitch_id:
         print("- No VSwitch configured")
     if not security_group_id:
         print("- No Security Group configured")
-    if not key_pair_name:
-        print("- No Key Pair configured (optional but recommended)")
