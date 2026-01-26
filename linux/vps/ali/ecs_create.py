@@ -559,7 +559,7 @@ else:
 
 # %% EXECUTE BUILD (Create New Instance)
 # Override image_id here, or leave None to use first custom image
-image_id = 'm-j6c0nh4f9z0xvos8r3by'  # e.g. "m-j6c0nh4f9z0xvos8r3by"
+image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
 
 # Resolve image_id
 if image_id is None and custom_images:
