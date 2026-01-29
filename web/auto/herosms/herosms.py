@@ -5,24 +5,20 @@ Compatible with SMS-Activate API protocol
 https://hero-sms.com/api
 """
 
+import sys
 import requests
 import json
 from typing import Optional, List, Dict, Any, Union
 from dataclasses import dataclass
 from enum import IntEnum
 
+# Add cred_loader to path
+sys.path.insert(0, "/allah/blue/linux/extra/config")
+from cred_loader import get_hero_sms
+
 # %% Configuration
 BASE_URL = "https://hero-sms.com/stubs/handler_api.php"
-
-# Load API key from credentials
-def load_api_key() -> str:
-    import os
-    cred_path = os.path.expanduser("~/Documents/api_cred.json")
-    with open(cred_path) as f:
-        creds = json.load(f)
-    return creds["hero_sms"]["api_key"]
-
-API_KEY = load_api_key()
+API_KEY = get_hero_sms()["api_key"]
 
 # %% Enums
 class ActivationStatus(IntEnum):
