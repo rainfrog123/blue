@@ -1,41 +1,12 @@
-# %% Show Current ECS Instance
-import sys
+# %% Setup
+"""Delete ECS instances."""
 import time
-from pathlib import Path
+from client import ecs_client, ecs_models, REGION_ID, print_header
 
-# Fix Windows console encoding (skip in Jupyter)
-try:
-    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
-except AttributeError:
-    pass  # Jupyter/IPython uses custom streams
+print_header("DELETE INSTANCE")
 
-# Handle both script and Jupyter environments
-try:
-    _script_dir = Path(__file__).parent
-except NameError:
-    _script_dir = Path.cwd()  # Jupyter: assume running from script directory
 
-sys.path.insert(0, str(_script_dir.parent.parent / "extra" / "config"))
-from cred_loader import get_alibaba
-
-from alibabacloud_ecs20140526 import models as ecs_models
-from alibabacloud_ecs20140526.client import Client as EcsClient
-from alibabacloud_tea_openapi import models as open_api_models
-
-# Load credentials
-_alibaba = get_alibaba()
-ACCESS_KEY_ID = _alibaba["access_key_id"]
-ACCESS_KEY_SECRET = _alibaba["access_key_secret"]
-REGION_ID = "cn-hongkong"
-
-# Create client
-config = open_api_models.Config(
-    access_key_id=ACCESS_KEY_ID,
-    access_key_secret=ACCESS_KEY_SECRET,
-)
-config.endpoint = f"ecs.{REGION_ID}.aliyuncs.com"
-ecs_client = EcsClient(config)
-
+# %% Show Current ECS Instance
 # Fetch the single instance
 request = ecs_models.DescribeInstancesRequest(region_id=REGION_ID, page_size=100)
 response = ecs_client.describe_instances(request)
@@ -58,7 +29,7 @@ else:
         private_ips = instance.vpc_attributes.private_ip_address.ip_address
     private_ip = private_ips[0] if private_ips else "N/A"
     
-    print(f"{'='*60}")
+    print(f"\n{'='*60}")
     print(f"TARGET INSTANCE - Region: {REGION_ID}")
     print(f"{'='*60}")
     print(f"Name:           {instance.instance_name}")
@@ -176,20 +147,17 @@ print("Run delete_instance() to delete (must be stopped first)")
 
 
 # %% Full Release (Stop + Delete)
-def release_all(dry_run=True):
+def release_all():
     """
     Release the instance and all resources.
     System disk is auto-deleted with instance.
-    
-    Args:
-        dry_run: If True, only show what would happen
     """
     if not instance:
         print("No instance found")
         return
     
     print(f"\n{'#'*60}")
-    print(f"# {'DRY RUN - ' if dry_run else ''}RELEASE INSTANCE")
+    print(f"# RELEASE INSTANCE")
     print(f"{'#'*60}")
     print(f"Instance: {instance.instance_name}")
     print(f"ID:       {instance.instance_id}")
@@ -204,13 +172,6 @@ def release_all(dry_run=True):
         print(f"\nDisks that will REMAIN (manual delete needed):")
         for disk in manual_disks:
             print(f"  - {disk.disk_id} ({disk.size}GB {disk.type})")
-    
-    if dry_run:
-        print(f"\n{'!'*60}")
-        print("DRY RUN - No changes made")
-        print("Run: release_all(dry_run=False) to actually delete")
-        print(f"{'!'*60}")
-        return
     
     # Step 1: Stop
     print(f"\n[1/2] Stopping instance...")
@@ -231,7 +192,7 @@ def release_all(dry_run=True):
 
 
 # %% EXECUTE DELETE
-release_all(dry_run=False)
+release_all()
 
 
 # %% Check All Existing Instances
