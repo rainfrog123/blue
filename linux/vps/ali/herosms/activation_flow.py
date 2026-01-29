@@ -4,7 +4,10 @@ Complete SMS activation workflow for Philippines "Any other" service
 """
 import sys
 import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
+# Fix encoding for non-Jupyter environments
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 import herosms
 import time
@@ -42,8 +45,8 @@ if status.startswith("STATUS_OK:"):
 
 # %% Step 5b: Cancel (if no code or don't need anymore)
 # Uncomment to cancel and get refund
-# result = herosms.cancel(activation_id)
-# print(f"Cancel: {result}")
+result = herosms.cancel(activation_id)
+print(f"Cancel: {result}")
 
 # %% Auto-Poll for Code (wait up to 3 minutes)
 print(f"\nPolling for SMS code...")

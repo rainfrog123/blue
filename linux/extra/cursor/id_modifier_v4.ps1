@@ -1,4 +1,4 @@
-# 设置输出编码为 UTF-8
+﻿# 设置输出编码为 UTF-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -1140,6 +1140,64 @@ function Test-FileAccessibility {
     }
 }
 
+# 🧹 清理 workspaceStorage 中的 state.vscdb 文件（修复协议处理器重复注册问题）
+function Clear-WorkspaceStateFiles {
+    Write-Host ""
+    Write-Host "$BLUE🧹 [状态清理]$NC 正在清理 workspaceStorage 中的状态文件..."
+    Write-Host "$BLUE💡 [说明]$NC 此操作可修复 'Attempted to register a second handler' 错误"
+    
+    $BASE_PATH = if ($global:CursorAppDataDir) { Join-Path $global:CursorAppDataDir "User" } else { $null }
+    if (-not $BASE_PATH) {
+        Write-Host "$YELLOW⚠️  [警告]$NC 无法解析 Cursor 用户目录，跳过状态清理"
+        return
+    }
+    
+    $workspaceStoragePath = Join-Path -Path $BASE_PATH -ChildPath "workspaceStorage"
+    if (-not (Test-Path $workspaceStoragePath)) {
+        Write-Host "$YELLOW⚠️  [警告]$NC workspaceStorage 目录不存在，跳过清理"
+        return
+    }
+    
+    $cleanedCount = 0
+    $errorCount = 0
+    
+    # 遍历所有 workspace 文件夹，删除 state.vscdb 相关文件
+    try {
+        $workspaceFolders = Get-ChildItem -Path $workspaceStoragePath -Directory -ErrorAction SilentlyContinue
+        foreach ($folder in $workspaceFolders) {
+            $stateFiles = @(
+                (Join-Path $folder.FullName "state.vscdb"),
+                (Join-Path $folder.FullName "state.vscdb.backup"),
+                (Join-Path $folder.FullName "state.vscdb-shm"),
+                (Join-Path $folder.FullName "state.vscdb-wal")
+            )
+            
+            foreach ($stateFile in $stateFiles) {
+                if (Test-Path $stateFile) {
+                    try {
+                        Remove-Item -Path $stateFile -Force -ErrorAction Stop
+                        $cleanedCount++
+                    } catch {
+                        $errorCount++
+                    }
+                }
+            }
+        }
+        
+        if ($cleanedCount -gt 0) {
+            Write-Host "$GREEN✅ [成功]$NC 已清理 $cleanedCount 个 workspace 状态文件"
+        } else {
+            Write-Host "$BLUE💡 [信息]$NC 没有需要清理的 workspace 状态文件"
+        }
+        
+        if ($errorCount -gt 0) {
+            Write-Host "$YELLOW⚠️  [警告]$NC 有 $errorCount 个文件清理失败（可能被占用）"
+        }
+    } catch {
+        Write-Host "$YELLOW⚠️  [警告]$NC 遍历 workspaceStorage 时出错: $($_.Exception.Message)"
+    }
+}
+
 # 🧹 Cursor 初始化清理功能（从旧版本移植）
 function Invoke-CursorInitialization {
     Write-Host ""
@@ -1152,7 +1210,9 @@ function Invoke-CursorInitialization {
 
     $filesToDelete = @(
         (Join-Path -Path $BASE_PATH -ChildPath "globalStorage\state.vscdb"),
-        (Join-Path -Path $BASE_PATH -ChildPath "globalStorage\state.vscdb.backup")
+        (Join-Path -Path $BASE_PATH -ChildPath "globalStorage\state.vscdb.backup"),
+        (Join-Path -Path $BASE_PATH -ChildPath "globalStorage\state.vscdb-shm"),
+        (Join-Path -Path $BASE_PATH -ChildPath "globalStorage\state.vscdb-wal")
     )
 
     $folderToCleanContents = Join-Path -Path $BASE_PATH -ChildPath "History"
@@ -1950,7 +2010,7 @@ Write-Host "$YELLOW📱  关注公众号【煎饼果子卷AI】 $NC"
 Write-Host "$YELLOW🤝  一起交流更多Cursor技巧和AI知识(脚本免费、关注公众号加群有更多技巧和大佬)  $NC"
 Write-Host "$YELLOW💡  [重要提示] 本工具免费，如果对您有帮助，请关注公众号【煎饼果子卷AI】  $NC"
 Write-Host ""
-Write-Host "$YELLOW⚡  [小小广告] Cursor官网正规成品号：Pro¥65 | Pro+¥265 | Ultra¥888 独享账号| ￥488 Team绝版次数号1000次+20刀额度 | 全部7天质保 | ，WeChat：JavaRookie666  $NC"
+Write-Host "$YELLOW⚡  [小小广告] Cursor官网正规成品号：Unlimited ♾️ ¥1050 | 7天周卡 $100 ¥210 | 7天周卡 $500 ¥1050 | 7天周卡 $1000 ¥2450 | 全部7天质保 | ，WeChat：JavaRookie666  $NC"
 Write-Host "$BLUE================================$NC"
 
 # 🎯 用户选择菜单
@@ -2305,6 +2365,9 @@ if ($executeMode -eq "MODIFY_ONLY") {
             Write-Host "$YELLOW⚠️  [禁用更新]$NC 未能确认禁用更新，可能需要手动处理"
         }
 
+        # 🧹 清理 workspace 状态文件，修复协议处理器重复注册问题
+        Clear-WorkspaceStateFiles
+
         Write-Host "$BLUE💡 [提示]$NC 现在可以启动Cursor使用新的机器码配置"
     } else {
         Write-Host ""
@@ -2447,6 +2510,9 @@ if ($executeMode -eq "MODIFY_ONLY") {
         } else {
             Write-Host "$YELLOW⚠️  [禁用更新]$NC 未能确认禁用更新，可能需要手动处理"
         }
+
+        # 🧹 清理 workspace 状态文件，修复协议处理器重复注册问题
+        Clear-WorkspaceStateFiles
     } else {
         Write-Host ""
         Write-Host "$RED❌ [失败]$NC 机器码配置修改失败！"
@@ -2459,7 +2525,7 @@ if ($executeMode -eq "MODIFY_ONLY") {
 Write-Host ""
 Write-Host "$GREEN================================$NC"
 Write-Host "$YELLOW📱  关注公众号【煎饼果子卷AI】一起交流更多Cursor技巧和AI知识(脚本免费、关注公众号加群有更多技巧和大佬)  $NC"
-Write-Host "$YELLOW⚡   [小小广告] Cursor官网正规成品号：Pro¥65 | Pro+¥265 | Ultra¥888 独享账号| ￥488 Team绝版次数号1000次+20刀额度 | 全部7天质保 | ，WeChat：JavaRookie666  $NC"
+Write-Host "$YELLOW⚡   [小小广告] Cursor官网正规成品号：Unlimited ♾️ ¥1050 | 7天周卡 $100 ¥210 | 7天周卡 $500 ¥1050 | 7天周卡 $1000 ¥2450 | 全部7天质保 | ，WeChat：JavaRookie666  $NC"
 Write-Host "$GREEN================================$NC"
 Write-Host ""
 
