@@ -69,7 +69,7 @@ alias vps='cd "$BLUE_DIR/linux/vps"'              # vps (full)
 
 # --- Level 2: $BLUE_DIR/web/* ---
 alias ap='cd "$BLUE_DIR/web/apps"'                # apps
-alias au='cd "$BLUE_DIR/web/automation"'          # automation
+alias au='cd "$BLUE_DIR/web/auto"'                # auto
 alias cl='cd "$BLUE_DIR/web/cloud"'               # cloud
 alias mo='cd "$BLUE_DIR/web/monitors"'            # monitors
 alias px='cd "$BLUE_DIR/web/proxy"'               # proxy
@@ -91,6 +91,7 @@ alias user='cd "$BLUE_DIR/freq/project/user_data"'    # user_data (full)
 alias cv='cd "$BLUE_DIR/freq/project/tools/converters"'   # converters
 alias hi='cd "$BLUE_DIR/freq/project/tools/historical"'   # historical
 alias re='cd "$BLUE_DIR/freq/project/tools/realtime"'     # realtime
+alias cc='cd "$BLUE_DIR/freq/project/tools/realtime/ccxt"'         # ccxt connector
 alias co='cd "$BLUE_DIR/freq/project/tools/realtime/tradingview"'  # tradingview connector
 
 # --- Level 4: $BLUE_DIR/freq/project/user_data/* ---
@@ -99,7 +100,6 @@ alias conf='cd "$BLUE_DIR/freq/project/user_data/config"'         # config (alt)
 alias config='cd "$BLUE_DIR/freq/project/user_data/config"'       # config (full)
 alias hr='cd "$BLUE_DIR/freq/project/user_data/hyperopt_results"' # hyperopt_results
 alias hy='cd "$BLUE_DIR/freq/project/user_data/hyperopts"'        # hyperopts
-alias lo='cd "$BLUE_DIR/freq/project/user_data/logs"'             # logs
 alias md='cd "$BLUE_DIR/freq/project/user_data/models"'           # models
 alias nb='cd "$BLUE_DIR/freq/project/user_data/notebooks"'        # notebooks
 alias sc='cd "$BLUE_DIR/freq/project/user_data/scripts"'          # scripts
@@ -114,6 +114,10 @@ alias nt='cd "$BLUE_DIR/linux/extra/notes"'       # notes
 alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'   # scripts (ex+sc)
 alias sh='cd "$BLUE_DIR/linux/extra/shell"'       # shell
 
+# --- Level 4: $BLUE_DIR/linux/extra/scripts/* ---
+alias exli='cd "$BLUE_DIR/linux/extra/scripts/linode"'     # scripts/linode
+alias ut='cd "$BLUE_DIR/linux/extra/scripts/utilities"'    # utilities
+
 # --- Level 3: $BLUE_DIR/linux/vps/* ---
 alias ali='cd "$BLUE_DIR/linux/vps/ali"'          # ali (3 chars, al=allah)
 alias aw='cd "$BLUE_DIR/linux/vps/aws"'           # aws
@@ -124,20 +128,46 @@ alias lnvps='cd "$BLUE_DIR/linux/vps/linode"'     # linode vps
 alias vpsc='cd "$BLUE_DIR/linux/vps/scripts"'     # vps scripts
 alias vu='cd "$BLUE_DIR/linux/vps/vultr"'         # vultr
 
+# --- Level 4: $BLUE_DIR/linux/vps/ali/* ---
+alias alicf='cd "$BLUE_DIR/linux/vps/ali/config"' # ali config
+alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'       # ecs
+alias se='cd "$BLUE_DIR/linux/vps/ali/setup"'     # setup
+
 # --- Level 3: $BLUE_DIR/web/apps/* ---
 alias ac='cd "$BLUE_DIR/web/apps/alt_calculator"' # alt_calculator
 
-# --- Level 3: $BLUE_DIR/web/automation/* ---
-alias an='cd "$BLUE_DIR/web/automation/antidetect"'   # antidetect
-alias ba='cd "$BLUE_DIR/web/automation/baccarat"'     # baccarat
-alias pr='cd "$BLUE_DIR/web/automation/patchright"'   # patchright
-alias tm='cd "$BLUE_DIR/web/automation/tampermonkey"' # tampermonkey
-alias tampermonkey='cd "$BLUE_DIR/web/automation/tampermonkey"'  # tampermonkey (full)
-alias ti='cd "$BLUE_DIR/web/automation/tinder"'       # tinder
-alias tinder='cd "$BLUE_DIR/web/automation/tinder"'   # tinder (full)
+# --- Level 3: $BLUE_DIR/web/auto/* ---
+alias ba='cd "$BLUE_DIR/web/auto/baccarat"'           # baccarat
+alias ca='cd "$BLUE_DIR/web/auto/camoufox"'           # camoufox
+alias hs='cd "$BLUE_DIR/web/auto/herosms"'            # herosms
+alias nd='cd "$BLUE_DIR/web/auto/nodriver"'           # nodriver
+alias oc='cd "$BLUE_DIR/web/auto/octo"'               # octo
+alias pr='cd "$BLUE_DIR/web/auto/patchright"'         # patchright
+alias tm='cd "$BLUE_DIR/web/auto/tampermonkey"'       # tampermonkey
+alias tampermonkey='cd "$BLUE_DIR/web/auto/tampermonkey"'  # tampermonkey (full)
+alias ti='cd "$BLUE_DIR/web/auto/tinder"'             # tinder
+alias tinder='cd "$BLUE_DIR/web/auto/tinder"'         # tinder (full)
+alias zd='cd "$BLUE_DIR/web/auto/zendriver"'          # zendriver
+
+# --- Level 4: $BLUE_DIR/web/auto/baccarat/* ---
+alias baco='cd "$BLUE_DIR/web/auto/baccarat/core"'    # baccarat/core
+alias bade='cd "$BLUE_DIR/web/auto/baccarat/debug"'   # baccarat/debug
+alias le='cd "$BLUE_DIR/web/auto/baccarat/legacy"'    # legacy
+alias bast='cd "$BLUE_DIR/web/auto/baccarat/static"'  # baccarat/static
+
+# --- Level 4: $BLUE_DIR/web/auto/tampermonkey/* ---
+alias tmba='cd "$BLUE_DIR/web/auto/tampermonkey/backup"'   # tampermonkey/backup
+
+# --- Level 4: $BLUE_DIR/web/auto/tinder/* ---
+alias tida='cd "$BLUE_DIR/web/auto/tinder/data"'      # tinder/data
+alias tisc='cd "$BLUE_DIR/web/auto/tinder/scripts"'   # tinder/scripts
 
 # --- Level 3: $BLUE_DIR/web/cloud/* ---
 alias linode='cd "$BLUE_DIR/web/cloud/linode"'    # linode
+
+# --- Level 4: $BLUE_DIR/web/cloud/linode/* ---
+alias gssr='cd "$BLUE_DIR/web/cloud/linode/gcp_ssr_deploy"'  # gcp_ssr_deploy
+alias lm='cd "$BLUE_DIR/web/cloud/linode/linode_manager"'    # linode_manager
 
 # --- Level 3: $BLUE_DIR/web/monitors/* ---
 alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'  # huaxitong
@@ -173,9 +203,6 @@ alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
 alias note='cursor "$BLUE_DIR/freq/project/note"'
 alias rc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
-
-# Antidetect alias
-alias an='cd "$BLUE_DIR/web/automation/antidetect"'
 
 # === Windows-specific helpers ===
 alias explorer='explorer.exe .'
