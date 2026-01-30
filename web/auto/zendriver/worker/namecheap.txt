@@ -1,0 +1,52 @@
+# Obscure 4-letter mythology names (less known = cheaper)
+tld=site
+
+# Greek obscure
+ceto
+neso
+tyro
+iaso
+bia
+pax
+enyo
+hora
+arge
+auge
+bion
+creo
+dike
+eury
+hyas
+idya
+ione
+leda
+loxo
+meda
+nike
+opis
+ossa
+pero
+rhea
+teia
+zeno
+
+# Norse obscure
+geri
+hati
+nott
+skol
+vali
+vidr
+
+# Roman obscure
+fama
+mors
+nona
+sors
+vica
+
+# Egyptian obscure
+babi
+khonsu
+shu
+nut

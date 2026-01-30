@@ -5,7 +5,7 @@ import time
 import zendriver as zd
 
 # Add herosms to path
-sys.path.insert(0, "/allah/blue/web/auto/herosms")
+sys.path.insert(0, "/allah/blue/web/auto/zendriver/herosms")
 import herosms
 
 os.environ["DISPLAY"] = ":1"

@@ -14,6 +14,7 @@ def get_cred_path() -> Path:
     # Linux: ~/api_cred.json or ~/.config/cred.json
     home = Path.home()
     candidates = [
+        Path("/allah/blue/cred.json"),  # Primary location
         home / "api_cred.json",  # Linux: ~/api_cred.json
         home / "Documents" / "api_cred.json",
         home / "Documents" / "cred.json",
@@ -100,6 +101,20 @@ def get_alibaba() -> dict:
 def get_hero_sms() -> dict:
     """Get HeroSMS credentials."""
     return load_cred()["hero_sms"]
+
+
+def get_cloudflare() -> dict:
+    """Get Cloudflare credentials."""
+    return load_cred()["cloudflare"]
+
+
+def get_cloudflare_api_token() -> str:
+    """Get Cloudflare API token."""
+    cred = load_cred()
+    # Support both formats
+    if "cloudflare" in cred:
+        return cred["cloudflare"]["api_token"]
+    return cred.get("CLOUDFLARE_API_TOKEN", "")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+name = "cursor-email-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "CODES"
+id = "963b4981b21c417e9962a295740dd0d2"
+
+# Email routing - receives emails
+# [email]
+# allowed_senders = ["*@cursor.com", "*@cursor.sh"]
