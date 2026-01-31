@@ -2,26 +2,20 @@
 """Delete ECS instances."""
 import time
 from client import ecs_client, ecs_models, REGION_ID, print_header
+from ecs_api import list_instances, list_disks
 
 print_header("DELETE INSTANCE")
 
 
 # %% Show Current ECS Instance
-# Fetch the single instance
-request = ecs_models.DescribeInstancesRequest(region_id=REGION_ID, page_size=100)
-response = ecs_client.describe_instances(request)
-
-# Handle None response
-instances = []
-if response.body and response.body.instances and response.body.instances.instance:
-    instances = response.body.instances.instance
+instances = list_instances()
 
 if not instances:
     print("No instances found in this region.")
     instance = None
 else:
     instance = instances[0]
-    ips = instance.public_ip_address.ip_address
+    ips = instance.public_ip_address.ip_address if instance.public_ip_address else []
     public_ip = ips[0] if ips else "N/A"
     
     private_ips = []
@@ -30,7 +24,7 @@ else:
     private_ip = private_ips[0] if private_ips else "N/A"
     
     print(f"\n{'='*60}")
-    print(f"TARGET INSTANCE - Region: {REGION_ID}")
+    print(f"TARGET INSTANCE")
     print(f"{'='*60}")
     print(f"Name:           {instance.instance_name}")
     print(f"Instance ID:    {instance.instance_id}")
@@ -41,31 +35,21 @@ else:
     print(f"Private IP:     {private_ip}")
     print(f"OS:             {instance.osname}")
     print(f"Zone:           {instance.zone_id}")
-    print(f"Created:        {instance.creation_time}")
     print(f"Charge Type:    {instance.instance_charge_type}")
     print(f"{'='*60}")
 
 
 # %% Show Attached Disks
 if instance:
-    disk_request = ecs_models.DescribeDisksRequest(
-        region_id=REGION_ID, 
-        instance_id=instance.instance_id
-    )
-    disk_response = ecs_client.describe_disks(disk_request)
-    disks = disk_response.body.disks.disk
+    disks = list_disks(instance_id=instance.instance_id)
     
-    print(f"\nATTACHED DISKS ({len(disks)}):")
+    print(f"\nDISK AUTO-DELETE STATUS:")
     print("-" * 60)
     for disk in disks:
         auto_del = "auto-delete" if disk.delete_with_instance else "KEEP"
-        print(f"  {disk.disk_id}")
-        print(f"    Size:     {disk.size} GB")
-        print(f"    Type:     {disk.type} ({disk.category})")
-        print(f"    On Delete: {auto_del}")
+        print(f"  {disk.disk_id}: {disk.size}GB {disk.type} -> {auto_del}")
 else:
     disks = []
-    print("No instance to check disks")
 
 
 # %% Show Security Groups
@@ -75,8 +59,6 @@ if instance:
     print("-" * 60)
     for sg_id in sg_ids:
         print(f"  {sg_id}")
-else:
-    print("No instance to check security groups")
 
 
 # %% Stop Instance
@@ -114,10 +96,6 @@ def stop_instance():
     return False
 
 
-print(f"\nCurrent status: {instance.status if instance else 'N/A'}")
-print("Run stop_instance() to stop")
-
-
 # %% Delete Instance
 def delete_instance():
     """Delete the instance"""
@@ -140,10 +118,6 @@ def delete_instance():
     except Exception as e:
         print(f"Error: {e}")
         return False
-
-
-print(f"\nInstance ID: {instance.instance_id if instance else 'N/A'}")
-print("Run delete_instance() to delete (must be stopped first)")
 
 
 # %% Full Release (Stop + Delete)
@@ -191,46 +165,13 @@ def release_all():
     print(f"{'='*60}")
 
 
+print(f"\nCurrent status: {instance.status if instance else 'N/A'}")
+print("Run release_all() to stop and delete the instance")
+
+
 # %% EXECUTE DELETE
-release_all()
+# release_all()
 
 
 # %% Check All Existing Instances
-def list_all_instances():
-    """List all ECS instances in the region."""
-    request = ecs_models.DescribeInstancesRequest(region_id=REGION_ID, page_size=100)
-    response = ecs_client.describe_instances(request)
-    
-    # Handle None response
-    instances = []
-    if response.body and response.body.instances and response.body.instances.instance:
-        instances = response.body.instances.instance
-    
-    print(f"\n{'='*70}")
-    print(f"ALL ECS INSTANCES - Region: {REGION_ID}")
-    print(f"{'='*70}")
-    
-    if not instances:
-        print("No instances found")
-        return []
-    
-    for i, inst in enumerate(instances):
-        ips = inst.public_ip_address.ip_address if inst.public_ip_address else []
-        public_ip = ips[0] if ips else "N/A"
-        
-        print(f"\n[{i+1}] {inst.instance_name}")
-        print(f"    Instance ID: {inst.instance_id}")
-        print(f"    Status:      {inst.status}")
-        print(f"    Type:        {inst.instance_type}")
-        print(f"    Public IP:   {public_ip}")
-        print(f"    OS:          {inst.osname}")
-        print(f"    Zone:        {inst.zone_id}")
-        print(f"    Created:     {inst.creation_time}")
-    
-    print(f"\n{'='*70}")
-    print(f"Total: {len(instances)} instance(s)")
-    return instances
-
-
-# Check existing instances
-list_all_instances()
+list_instances()

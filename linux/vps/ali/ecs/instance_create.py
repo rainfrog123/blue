@@ -8,6 +8,7 @@ from client import (
     ecs_client, ecs_models, REGION_ID, ACCESS_KEY_ID, ACCESS_KEY_SECRET,
     open_api_models, print_header, create_vpc_client
 )
+from ecs_api import list_images, get_latest_image
 
 print_header("BUILD SCRIPT")
 print(f"Endpoint:   ecs.{REGION_ID}.aliyuncs.com")
@@ -181,60 +182,11 @@ else:
 
 
 # %% List Custom Images
-def list_images(image_type="self"):
-    """
-    List available images.
-    
-    Args:
-        image_type: "self" (custom), "system", "others" (shared), "marketplace", or "all"
-    """
-    if image_type == "all":
-        img_request = ecs_models.DescribeImagesRequest(region_id=REGION_ID, page_size=50)
-    else:
-        img_request = ecs_models.DescribeImagesRequest(
-            region_id=REGION_ID, 
-            image_owner_alias=image_type,
-            page_size=50
-        )
-    
-    img_response = ecs_client.describe_images(img_request)
-    
-    # Handle None response
-    images = []
-    if img_response.body and img_response.body.images and img_response.body.images.image:
-        images = img_response.body.images.image
-    
-    type_labels = {"self": "custom", "system": "system", "others": "shared", "marketplace": "marketplace"}
-    label = type_labels.get(image_type, image_type)
-    
-    print(f"\n{'='*70}")
-    print(f"AVAILABLE IMAGES ({label}) - Region: {REGION_ID}")
-    print(f"{'='*70}")
-    
-    if not images:
-        print("No images found")
-        return []
-    
-    for i, img in enumerate(images):
-        print(f"\n[{i+1}] {img.image_name}")
-        print(f"    Image ID:    {img.image_id}")
-        print(f"    OS:          {img.osname}")
-        print(f"    Size:        {img.size} GB")
-        print(f"    Status:      {img.status}")
-        print(f"    Created:     {img.creation_time}")
-    
-    print(f"\n{'='*70}")
-    print(f"Total: {len(images)} image(s)")
-    return images
-
-
-# Fetch custom images
 print("\nFetching custom images...")
 custom_images = list_images("self")
 
 if custom_images:
     print(f"\n[OK] Found {len(custom_images)} custom image(s)")
-    print(f"  First: {custom_images[0].image_name}")
 else:
     print(f"\n[WARN]  No custom images found")
 
@@ -471,12 +423,16 @@ def update_vnc_config(new_ip: str, port: int = 5901):
 
 
 # %% EXECUTE BUILD (Create New Instance)
-# Override image_id here, or leave None to use first custom image
+# Override image_id here, or leave None to use latest custom image
 image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
 
-# Resolve image_id
+# Resolve image_id - always use the latest (most recently created) image
 if image_id is None and custom_images:
-    image_id = custom_images[0].image_id
+    latest_image = get_latest_image("self")
+    if latest_image:
+        image_id = latest_image.image_id
+        print(f"\n[OK] Using latest image: {latest_image.image_name}")
+        print(f"     Created: {latest_image.creation_time}")
 
 if vswitch_id and security_group_id and image_id:
     instance_name = f"blue-{datetime.now().strftime('%m%d')}"  # e.g. blue-0124
