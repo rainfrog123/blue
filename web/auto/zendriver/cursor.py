@@ -20,6 +20,7 @@ os.environ["XAUTHORITY"] = "/root/.Xauthority"
 CONFIG = {
     "profile_dir": "/tmp/cursor_chrome_profile",
     "email_domain": "@hyas.site",
+    "prefixes_file": "/allah/blue/web/auto/zendriver/worker/hyas_prefixes.txt",
     "email_worker_url": "https://cursor-email-worker.jar711red.workers.dev",
     "phone_country_id": 62,      # Turkey
     "phone_country_code": "90",
@@ -43,8 +44,31 @@ print("Imports loaded")
 
 # %% [2] Helper Functions
 def generate_email():
-    """Generate random email."""
-    prefix = ''.join(random.choices(string.ascii_lowercase, k=5))
+    """Generate email using random available prefix from file, mark as used."""
+    prefixes_file = CONFIG["prefixes_file"]
+    
+    # Read all lines
+    with open(prefixes_file, "r") as f:
+        lines = f.readlines()
+    
+    # Collect all unused prefixes with their indices
+    available = []
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "# USED" not in line:
+            available.append((i, stripped))
+    
+    if not available:
+        raise RuntimeError("No available prefixes in " + prefixes_file)
+    
+    # Random pick
+    idx, prefix = random.choice(available)
+    
+    # Mark as used
+    lines[idx] = f"{prefix} # USED\n"
+    with open(prefixes_file, "w") as f:
+        f.writelines(lines)
+    
     return f"{prefix}{CONFIG['email_domain']}"
 
 
