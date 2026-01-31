@@ -14,6 +14,7 @@ import time
 
 # %% Configuration
 COUNTRY_ID = 4  # Philippines
+COUNTRY_ID = 52  # Philippines
 SERVICE = "ot"  # Any other
 
 # %% Step 1: Check Balance
@@ -22,7 +23,7 @@ print(f"Current Balance: ${balance}")
 
 # %% Step 2: Get a Number
 print(f"\nRequesting number for service '{SERVICE}' in country {COUNTRY_ID}...")
-activation_id, phone = herosms.get_number(service=SERVICE, country=COUNTRY_ID)
+activation_id, phone = herosms.get_number(service=SERVICE, country=COUNTRY_ID, max_price=0.06, fixed_price=0.0512)
 print(f"Activation ID: {activation_id}")
 print(f"Phone Number: +{phone}")
 

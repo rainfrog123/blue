@@ -1,166 +1,365 @@
-# %% 1. IMPORTS & SETUP
+# %% [1] Imports & Config
 import os
 import sys
 import time
+import random
+import string
+import requests
 import zendriver as zd
 
-# Add herosms to path
 sys.path.insert(0, "/allah/blue/web/auto/zendriver/herosms")
 import herosms
 
+# Display config - copy Xauthority for root access
+import shutil
+shutil.copy("/home/vncuser/.Xauthority", "/root/.Xauthority")
 os.environ["DISPLAY"] = ":1"
-print("✓ Imports loaded, DISPLAY=:1")
+os.environ["XAUTHORITY"] = "/root/.Xauthority"
 
-# %% 2. LAUNCH BROWSER & GO TO CURSOR.COM
-browser = await zd.start(headless=False, sandbox=False, browser_args=["--disable-gpu"])
+# Settings (edit these as needed)
+CONFIG = {
+    "profile_dir": "/tmp/cursor_chrome_profile",
+    "email_domain": "@hyas.site",
+    "email_worker_url": "https://cursor-email-worker.jar711red.workers.dev",
+    "phone_country_id": 62,      # Turkey
+    "phone_country_code": "90",
+    "phone_service": "ot",
+    "phone_fixed_price": 0.05,
+}
+
+# Module-level state (persists across cells)
+browser = None
+page = None
+email = None
+phone = None
+phone_local = None
+phone_formatted = None
+activation_id = None
+stripe_url = None
+session_token = None
+
+print("Imports loaded")
+
+
+# %% [2] Helper Functions
+def generate_email():
+    """Generate random email."""
+    prefix = ''.join(random.choices(string.ascii_lowercase, k=5))
+    return f"{prefix}{CONFIG['email_domain']}"
+
+
+def format_phone(phone_number: str) -> tuple[str, str]:
+    """Parse phone to (local, formatted). Returns (9171234567, (917)123-4567)."""
+    cc = CONFIG["phone_country_code"]
+    local = phone_number[len(cc):] if phone_number.startswith(cc) else phone_number
+    # formatted = f"({local[:3]}){local[3:6]}-{local[6:]}"
+    return local, local  # Use raw local number without formatting
+
+
+def poll_email_code(email_addr: str, timeout: int = 300, interval: int = 5) -> str:
+    """Poll worker for email OTP code."""
+    print(f"Polling for email code: {email_addr}")
+    url = CONFIG["email_worker_url"]
+    
+    for i in range(timeout // interval):
+        try:
+            resp = requests.get(f"{url}/code", params={"email": email_addr, "service": "cursor"}, timeout=10)
+            if resp.status_code == 200:
+                code = resp.json().get("code")
+                print(f"EMAIL CODE: {code}")
+                return code
+            elif resp.status_code == 404:
+                print(f"[{i * interval:3d}s] waiting...")
+        except Exception as e:
+            print(f"[{i * interval:3d}s] error: {e}")
+        time.sleep(interval)
+    
+    raise TimeoutError(f"No code in {timeout}s")
+
+
+def poll_sms_code(act_id: str, timeout: int = 300, interval: int = 5) -> str:
+    """Poll HeroSMS for SMS code."""
+    print("Polling for SMS code...")
+    
+    for i in range(timeout // interval):
+        status = herosms.get_status(act_id)
+        print(f"[{i * interval:3d}s] {status}")
+        
+        if status.startswith("STATUS_OK:"):
+            code = status.split(":")[1]
+            print(f"SMS CODE: {code}")
+            return code
+        elif status == "STATUS_CANCEL":
+            raise Exception("Cancelled")
+        time.sleep(interval)
+    
+    herosms.cancel(act_id)
+    raise TimeoutError(f"No code in {timeout}s")
+
+
+async def fill_otp(code: str, fallback: str = None):
+    """Fill OTP inputs digit by digit."""
+    for i, digit in enumerate(str(code)):
+        try:
+            inp = await page.select(f'input[data-index="{i}"]')
+            await inp.send_keys(digit)
+            await page.sleep(0.2)
+        except:
+            if fallback:
+                inp = await page.select(fallback)
+                await inp.send_keys(code)
+                return
+            raise
+
+
+async def set_react_input(selector: str, value: str):
+    """Set React controlled input value with human-like typing."""
+    await page.evaluate(f'''
+        (async function() {{
+            const input = document.querySelector('{selector}');
+            input.focus();
+            
+            const nativeSetter = Object.getOwnPropertyDescriptor(
+                window.HTMLInputElement.prototype, 'value'
+            ).set;
+            
+            // Select all
+            input.select();
+            await new Promise(r => setTimeout(r, 50));
+            
+            // Clear
+            nativeSetter.call(input, '');
+            input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+            await new Promise(r => setTimeout(r, 50));
+            
+            // Type character by character
+            for (let char of '{value}') {{
+                const currentValue = input.value;
+                nativeSetter.call(input, currentValue + char);
+                input.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                await new Promise(r => setTimeout(r, 80));
+            }}
+            
+            input.dispatchEvent(new Event('change', {{ bubbles: true }}));
+            input.blur();
+        }})();
+    ''')
+
+print("Helpers loaded")
+
+
+# %% [3] Launch Browser
+browser = await zd.start(
+    headless=False,
+    sandbox=False,  # Required when running as root
+    user_data_dir=CONFIG["profile_dir"],
+    browser_args=[
+        "--disable-dev-shm-usage",
+        "--disable-setuid-sandbox",
+        "--disable-gpu",
+        "--disable-software-rasterizer", 
+        "--disable-gpu-compositing",
+        "--remote-debugging-port=0",  # Let Chrome pick an available port
+    ],
+)
 page = await browser.get("https://cursor.com")
-print("✓ Browser launched - navigating to cursor.com")
-
-# %% 3. WAIT FOR PAGE TO LOAD
 await page.sleep(5)
-print("✓ Page loaded")
+print(f"Browser ready: {CONFIG['profile_dir']}")
 
 
-# %% 4. CLICK SIGN IN (opens new tab)
-sign_in_link = await page.find("Sign in")
-await sign_in_link.click()
-print("✓ Clicked Sign in")
-
-# %% 5. GET NEW TAB & WAIT FOR SIGN IN PAGE
+# %% [4] Click Sign In -> New Tab
+sign_in = await page.find("Sign in")
+await sign_in.click()
 await page.sleep(3)
-page = browser.tabs[-1]  # Get the newest tab (sign-in page)
+page = browser.tabs[-1]
 await page.sleep(3)
-print(f"✓ Sign in page loaded: {page.target.url}")
+print(f"Sign in page: {page.target.url}")
 
-# %% 6. FILL EMAIL & CONTINUE
+
+# %% [5] Enter Email & Continue
+email = generate_email()
 email_input = await page.select('input[type="email"]')
-await email_input.send_keys("poam@ceto.site")
-print("✓ Email filled: poam@ceto.site")
+await email_input.send_keys(email)
+print(f"Email: {email}")
 
-continue_btn = await page.find("Continue")
-await continue_btn.click()
-print("✓ Clicked Continue")
+btn = await page.find("Continue")
+await btn.click()
+print("Clicked Continue")
 
-# %% 7. WAIT & CLICK EMAIL SIGN-IN CODE
+
+# %% [6] Select Email Code Option
 await page.sleep(5)
-email_code_btn = await page.find("Email sign-in code")
-await email_code_btn.click()
-print("✓ Clicked Email sign-in code")
-
-# %% 8. WAIT FOR CODE INPUT
+btn = await page.find("Email sign-in code")
+await btn.click()
 await page.sleep(3)
-print("✓ OTP input page loaded")
+print("Selected email code option")
 
-# %% 9. FILL OTP CODE
-otp_code = "882932"
-for i, digit in enumerate(str(otp_code)):
-    otp_input = await page.select(f'input[data-index="{i}"]')
-    await otp_input.send_keys(digit)
-    await page.sleep(0.2)
-print(f"✓ OTP filled: {otp_code}")
 
-# %% 10. WAIT FOR PHONE VERIFICATION PAGE
-await page.sleep(5)
+# %% [7] Get & Fill Email OTP
+otp = poll_email_code(email)
+await fill_otp(otp)
+print(f"Filled OTP: {otp}")
+
+
+# %% [8] Wait for Phone Page
+await page.sleep(8)
 await page.save_screenshot("cursor_phone_page.png")
-print("✓ Phone verification page loaded")
+print("Phone page loaded")
 
-# %% 11. GET PHONE NUMBER FROM HEROSMS
+
+# %% [9] Get Phone from HeroSMS
+# Debug: redefine here for easy editing
+phone_country_id = 6        # Indonesia
+phone_country_code = "62"
+phone_service = "ot"
+
 print(f"HeroSMS Balance: ${herosms.get_balance()}")
-
-# Get Philippines phone number (country=4, service="ot" for other)
-COUNTRY_ID = 4    # Philippines
-SERVICE = "ot"    # Any other service
-activation_id, phone = herosms.get_number(service=SERVICE, country=COUNTRY_ID)
-print(f"✓ Got number: +{phone} (ID: {activation_id})")
-
-# Parse phone - remove country code prefix (63 for Philippines)
-phone_local = phone[2:] if phone.startswith("63") else phone
-print(f"✓ Local number: {phone_local}")
-
-# %% 12. FILL PHONE NUMBER FORM
-# Set country code to +63 for Philippines using JavaScript (bypasses formatting)
-COUNTRY_CODE = "+63"
-await page.evaluate(f'''
-    const countryInput = document.querySelector('input[name="country_code"]');
-    countryInput.value = "{COUNTRY_CODE}";
-    countryInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-''')
-print(f"✓ Country code: {COUNTRY_CODE}")
-
-# Fill local number using JavaScript (bypasses auto-formatting)
-await page.evaluate(f'''
-    const localInput = document.querySelector('input[name="local_number"]');
-    localInput.value = "{phone_local}";
-    localInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
-''')
-print(f"✓ Local number filled: {phone_local}")
-
-# Click send verification code
-send_code_btn = await page.find("Send verification code")
-await send_code_btn.click()
-print("✓ Clicked Send verification code")
-
-# Mark ready to receive SMS
+activation_id, phone = herosms.get_number(
+    service=phone_service,
+    country=phone_country_id
+)
+phone_local = phone[len(phone_country_code):] if phone.startswith(phone_country_code) else phone
+print(f"Phone: +{phone} -> local: {phone_local}")
 herosms.mark_ready(activation_id)
-print("✓ Marked ready for SMS")
 
-# %% 13. WAIT FOR SMS CODE
-print("\nPolling for SMS code...")
-sms_code = None
-for i in range(60):  # Wait up to 5 minutes
-    status = herosms.get_status(activation_id)
-    print(f"[{i*5:3d}s] {status}")
-    
-    if status.startswith("STATUS_OK:"):
-        sms_code = status.split(":")[1]
-        print(f"\n*** SMS CODE RECEIVED: {sms_code} ***")
-        break
-    elif status == "STATUS_CANCEL":
-        print("\nActivation was cancelled")
-        break
-    
-    time.sleep(5)
 
-if not sms_code:
-    print("Timeout - no code received")
-    herosms.cancel(activation_id)
-    raise Exception("SMS code timeout")
-
-# %% 14. ENTER SMS VERIFICATION CODE
+# %% [10] Fill Phone Form (Debug: re-run this cell if it fails)
 await page.sleep(2)
-# Look for OTP input fields (similar to email OTP)
-for i, digit in enumerate(str(sms_code)):
-    try:
-        otp_input = await page.select(f'input[data-index="{i}"]')
-        await otp_input.send_keys(digit)
-        await page.sleep(0.2)
-    except:
-        # Try alternative selector
-        code_input = await page.select('input[type="tel"]')
-        await code_input.send_keys(sms_code)
-        break
-print(f"✓ SMS code filled: {sms_code}")
 
-# Complete the activation
+# Format: (xxx)xxx-xxxx
+phone_formatted = f"({phone_local[:3]}){phone_local[3:6]}-{phone_local[6:]}"
+print(f"Formatted: {phone_formatted}")
+
+# Set country code
+await set_react_input('input[name="country_code"]', phone_country_code)
+print(f"Country code: {phone_country_code}")
+await page.sleep(0.5)
+
+# Set local number
+await set_react_input('input[name="local_number"]', phone_formatted)
+print(f"Local number: {phone_formatted}")
+await page.sleep(0.5)
+
+# Debug: take screenshot to verify
+await page.save_screenshot("phone_filled.png")
+print("Phone form filled - check phone_filled.png")
+
+
+# %% [11] Send Verification Code
+btn = await page.find("Send verification code")
+await btn.click()
+print("Verification code requested")
+
+
+# %% [12] Get & Fill SMS Code
+sms_code = poll_sms_code(activation_id)
+await page.sleep(2)
+await fill_otp(sms_code, fallback='input[type="tel"]')
+print(f"Filled SMS: {sms_code}")
+
 herosms.complete(activation_id)
-print("✓ HeroSMS activation completed")
+print("HeroSMS completed")
 
-# %% 15. WAIT FOR LOGIN TO COMPLETE
-await page.sleep(5)
-await page.save_screenshot("cursor_logged_in.png")
-print("✓ Screenshot saved: cursor_logged_in.png")
 
-# %% 16. GET CURRENT COOKIES
-cookies = await browser.cookies.get_all()
-print(f"✓ Found {len(cookies)} cookies:")
-for cookie in cookies:
-    # print(f"  - {cookie.name}: {cookie.value[:50]}..." if len(cookie.value) > 50 else f"  - {cookie.name}: {cookie.value}")
-# i want WorkosCursorSessionToken
-    # Print the WorkosCursorSessionToken if present in the cookies
-    for cookie in cookies:
-        if cookie.name == "WorkosCursorSessionToken":
-            print(f"WorkosCursorSessionToken: {cookie.value}")
+# %% [13] Onboarding: Maybe Later
+await page.sleep(2)
+btn = await page.find("Maybe Later")
+await btn.click()
+print("Clicked Maybe Later")
+
+
+# %% [14] Onboarding: Skip for now
+await page.sleep(2)
+btn = await page.find("Skip for now")
+await btn.click()
+print("Clicked Skip for now")
+
+
+# %% [15] Privacy: Continue (first)
+await page.sleep(2)
+btn = await page.find("Continue")
+await btn.click()
+print("Privacy modal 1")
+
+
+# %% [16] Privacy: Continue (second)
+await page.sleep(2)
+btn = await page.find("Continue")
+await btn.click()
+print("Privacy modal 2")
+
+
+# %% [17] Refresh Page
+await page.sleep(2)
+await page.reload()
+await page.sleep(3)
+print("Page refreshed")
+
+
+# %% [18] Click Free Trial -> Get Stripe URL -> Back to Dashboard
+initial_tabs = len(browser.tabs)
+btn = await page.find("Free 7-day trial")
+await btn.click()
+
+# Wait for Stripe - could be new tab or redirect
+stripe_url = None
+for _ in range(30):
+    await page.sleep(0.3)
+    
+    # Check if new tab opened (Stripe checkout often opens in new tab)
+    if len(browser.tabs) > initial_tabs:
+        stripe_tab = browser.tabs[-1]
+        stripe_url = stripe_tab.target.url
+        if "stripe" in stripe_url or "checkout" in stripe_url:
+            print(f"Stripe URL (new tab): {stripe_url}")
+            await stripe_tab.close()
             break
-# %% 17. CLOSE BROWSER (run when done)
+    
+    # Also check current page redirect
+    current_url = page.target.url
+    if "stripe" in current_url or "checkout" in current_url:
+        stripe_url = current_url
+        print(f"Stripe URL (redirect): {stripe_url}")
+        break
+
+if not stripe_url or "stripe" not in stripe_url:
+    print(f"Warning: Not Stripe? URL: {stripe_url or page.target.url}")
+
+# Immediately go back to dashboard
+await page.get("https://cursor.com/dashboard")
+await page.sleep(2)
+
+cookies = await browser.cookies.get_all()
+session_token = next(
+    (c.value for c in cookies if c.name == "WorkosCursorSessionToken"),
+    None
+)
+
+from urllib.parse import unquote
+token_decoded = unquote(session_token) if session_token else None
+
+# Save to file
+with open("session_tokens.txt", "a") as f:
+    f.write(f"{email}\t+{phone}\t{stripe_url}\t{token_decoded}\n")
+print("Saved to session_tokens.txt")
+
+print("\n" + "=" * 60)
+print("RESULTS (each value on own line for easy copy)")
+print("=" * 60)
+print("Email:")
+print(email)
+print("\nPhone:")
+print(f"+{phone}")
+print("\nStripe:")
+print(stripe_url)
+print("\nToken:")
+print(token_decoded)
+print("=" * 60)
+
+
+# %% [20] Cleanup (run when done)
+await browser.cookies.clear()
 await browser.stop()
-print("✓ Browser closed")
+print("Browser closed")
+
+# %%
