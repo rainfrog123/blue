@@ -203,7 +203,6 @@ print(f"Filled OTP: {otp}")
 
 # %% [8] Wait for Phone Page
 await page.sleep(8)
-await page.save_screenshot("cursor_phone_page.png")
 print("Phone page loaded")
 
 
@@ -240,9 +239,7 @@ await set_react_input('input[name="local_number"]', phone_formatted)
 print(f"Local number: {phone_formatted}")
 await page.sleep(0.5)
 
-# Debug: take screenshot to verify
-await page.save_screenshot("phone_filled.png")
-print("Phone form filled - check phone_filled.png")
+print("Phone form filled")
 
 
 # %% [11] Send Verification Code
