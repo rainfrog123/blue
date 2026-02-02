@@ -1,4 +1,4 @@
-# 设置输出编码为 UTF-8
+﻿# 设置输出编码为 UTF-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -199,7 +199,10 @@ function Request-CursorInstallPathFromUser {
         Write-Host "$YELLOW⚠️  [提示]$NC 无法打开选择窗口，将使用命令行输入"
     }
     if (-not $selectedPath) {
-        Write-Host "$YELLOW⚠️  [自动模式]$NC 跳过手动输入，使用自动检测"
+        $manualInput = Read-Host "请输入 Cursor 安装目录（包含 Cursor.exe），或直接回车取消"
+        if (-not [string]::IsNullOrWhiteSpace($manualInput)) {
+            $selectedPath = $manualInput
+        }
     }
     if ($selectedPath) {
         $normalized = Normalize-CursorInstallCandidate -Path $selectedPath
@@ -1502,16 +1505,25 @@ function Modify-MachineCodeConfig {
         Write-Host "$BLUE  • 该选项会自动生成配置文件$NC"
         Write-Host ""
 
-        # 自动尝试启动Cursor生成配置文件
-        Write-Host "$BLUE🚀 [自动]$NC 自动尝试启动Cursor..."
-        return Start-CursorToGenerateConfig
+        # 提供用户选择
+        $userChoice = Read-Host "是否现在尝试启动Cursor生成配置文件？(y/n)"
+        if ($userChoice -match "^(y|yes)$") {
+            Write-Host "$BLUE🚀 [尝试]$NC 正在尝试启动Cursor..."
+            return Start-CursorToGenerateConfig
+        }
+
+        return $false
     }
 
     # 在仅修改机器码模式下也要确保进程完全关闭
     if ($Mode -eq "MODIFY_ONLY") {
         Write-Host "$BLUE🔒 [安全检查]$NC 即使在仅修改模式下，也需要确保Cursor进程完全关闭"
         if (-not (Stop-AllCursorProcesses -MaxRetries 3 -WaitSeconds 3)) {
-            Write-Host "$YELLOW⚠️  [警告]$NC 无法关闭所有Cursor进程，自动强制继续..."
+            Write-Host "$RED❌ [错误]$NC 无法关闭所有Cursor进程，修改可能失败"
+            $userChoice = Read-Host "是否强制继续？(y/n)"
+            if ($userChoice -notmatch "^(y|yes)$") {
+                return $false
+            }
         }
     }
 
@@ -1948,6 +1960,7 @@ function Test-Administrator {
 if (-not (Test-Administrator)) {
     Write-Host "$RED[错误]$NC 请以管理员身份运行此脚本"
     Write-Host "请右键点击脚本，选择'以管理员身份运行'"
+    Read-Host "按回车键退出"
     exit 1
 }
 
@@ -1990,9 +2003,28 @@ Write-Host "$YELLOW      • 执行注入破解JS代码到核心文件$NC"
 Write-Host "$YELLOW      • 这相当于当前的完整脚本行为$NC"
 Write-Host ""
 
-# 自动选择选项1（仅修改机器码）
-Write-Host "$GREEN✅ [自动选择]$NC 自动选择：仅修改机器码"
-$executeMode = "MODIFY_ONLY"
+# 获取用户选择
+do {
+    $userChoice = Read-Host "请输入选择 (1 或 2)"
+    if ($userChoice -eq "1") {
+        Write-Host "$GREEN✅ [选择]$NC 您选择了：仅修改机器码"
+        $executeMode = "MODIFY_ONLY"
+        break
+    } elseif ($userChoice -eq "2") {
+        Write-Host "$GREEN✅ [选择]$NC 您选择了：重置环境+修改机器码"
+        Write-Host "$RED⚠️  [重要警告]$NC 此操作将删除所有Cursor配置文件！"
+        $confirmReset = Read-Host "确认执行完全重置？(输入 yes 确认，其他任意键取消)"
+        if ($confirmReset -eq "yes") {
+            $executeMode = "RESET_AND_MODIFY"
+            break
+        } else {
+            Write-Host "$YELLOW👋 [取消]$NC 用户取消重置操作"
+            continue
+        }
+    } else {
+        Write-Host "$RED❌ [错误]$NC 无效选择，请输入 1 或 2"
+    }
+} while ($true)
 
 Write-Host ""
 
@@ -2032,8 +2064,15 @@ if ($executeMode -eq "MODIFY_ONLY") {
 }
 Write-Host ""
 
-# 🤔 自动确认
-Write-Host "$GREEN✅ [自动确认]$NC 自动继续执行"
+# 🤔 用户确认
+Write-Host "$GREEN🤔 [确认]$NC 请确认您已了解上述执行流程"
+$confirmation = Read-Host "是否继续执行？(输入 y 或 yes 继续，其他任意键退出)"
+if ($confirmation -notmatch "^(y|yes)$") {
+    Write-Host "$YELLOW👋 [退出]$NC 用户取消执行，脚本退出"
+    Read-Host "按回车键退出"
+    exit 0
+}
+Write-Host "$GREEN✅ [确认]$NC 用户确认继续执行"
 Write-Host ""
 
 # 获取并显示 Cursor 版本
@@ -2134,6 +2173,7 @@ function Close-CursorProcessAndSaveInfo {
                 Write-Host "$RED❌ [错误]$NC 在 $MAX_RETRIES 次尝试后仍无法关闭 $processName"
                 Get-ProcessDetails $processName
                 Write-Host "$RED💥 [错误]$NC 请手动关闭进程后重试"
+                Read-Host "按回车键退出"
                 exit 1
             }
             Write-Host "$YELLOW⏳ [等待]$NC 等待进程关闭，尝试 $retryCount/$MAX_RETRIES..."
@@ -2196,6 +2236,7 @@ if ($executeMode -eq "MODIFY_ONLY") {
         Write-Host "$BLUE  2️⃣  手动启动Cursor一次，然后重新运行脚本$NC"
         Write-Host "$BLUE  3️⃣  检查Cursor是否正确安装$NC"
         Write-Host ""
+        Read-Host "按回车键退出"
         exit 1
     }
 
@@ -2458,4 +2499,5 @@ Write-Host ""
 Write-Host "$GREEN🎉 [脚本完成]$NC 感谢使用 Cursor 机器码修改工具！"
 Write-Host "$BLUE💡 [提示]$NC 如有问题请参考公众号或重新运行脚本"
 Write-Host ""
+Read-Host "按回车键退出"
 exit 0
