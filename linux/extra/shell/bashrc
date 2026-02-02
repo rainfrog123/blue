@@ -90,6 +90,7 @@ alias strat='cd /allah/blue/freq/project/user_data/strategies'    # strategies (
 # --- Level 3: /allah/blue/linux/extra/* ---
 alias excf='cd /allah/blue/linux/extra/config'    # config (ex+cf)
 alias cu='cd /allah/blue/linux/extra/cursor'      # cursor
+alias cur='cd /allah/blue/linux/extra/cursor'     # cursor (alt)
 alias ne='cd /allah/blue/linux/extra/network'     # network
 alias nt='cd /allah/blue/linux/extra/notes'       # notes
 alias exsc='cd /allah/blue/linux/extra/scripts'   # scripts (ex+sc)
@@ -114,41 +115,44 @@ alias alicf='cd /allah/blue/linux/vps/ali/config' # ali config
 alias ec='cd /allah/blue/linux/vps/ali/ecs'       # ecs
 alias se='cd /allah/blue/linux/vps/ali/setup'     # setup
 
+# --- Level 4: /allah/blue/linux/vps/gcp/* ---
+alias gssr='cd /allah/blue/linux/vps/gcp/ssr_deploy'  # ssr_deploy
+
+# --- Level 4: /allah/blue/linux/vps/linode/* ---
+alias lm='cd /allah/blue/linux/vps/linode/manager'    # linode manager
+alias lnsc='cd /allah/blue/linux/vps/linode/scripts'  # linode scripts
+
 # --- Level 3: /allah/blue/web/apps/* ---
-alias ac='cd /allah/blue/web/apps/alt_calculator' # alt_calculator
+alias ac='cd /allah/blue/web/apps/alt_calculator'     # alt_calculator
+alias ba='cd /allah/blue/web/apps/baccarat'           # baccarat
+alias tm='cd /allah/blue/web/apps/tampermonkey'       # tampermonkey
+alias tampermonkey='cd /allah/blue/web/apps/tampermonkey'  # tampermonkey (full)
+alias ti='cd /allah/blue/web/apps/tinder'             # tinder
+alias tinder='cd /allah/blue/web/apps/tinder'         # tinder (full)
+
+# --- Level 4: /allah/blue/web/apps/baccarat/* ---
+alias baco='cd /allah/blue/web/apps/baccarat/core'    # baccarat/core
+alias bade='cd /allah/blue/web/apps/baccarat/debug'   # baccarat/debug
+alias le='cd /allah/blue/web/apps/baccarat/legacy'    # legacy
+alias bast='cd /allah/blue/web/apps/baccarat/static'  # baccarat/static
+
+# --- Level 4: /allah/blue/web/apps/tampermonkey/* ---
+alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'   # tampermonkey/backup
+
+# --- Level 4: /allah/blue/web/apps/tinder/* ---
+alias tida='cd /allah/blue/web/apps/tinder/data'      # tinder/data
+alias tisc='cd /allah/blue/web/apps/tinder/scripts'   # tinder/scripts
 
 # --- Level 3: /allah/blue/web/auto/* ---
-alias ba='cd /allah/blue/web/auto/baccarat'           # baccarat
 alias ca='cd /allah/blue/web/auto/camoufox'           # camoufox
-alias hs='cd /allah/blue/web/auto/herosms'            # herosms
 alias nd='cd /allah/blue/web/auto/nodriver'           # nodriver
 alias oc='cd /allah/blue/web/auto/octo'               # octo
 alias pr='cd /allah/blue/web/auto/patchright'         # patchright
-alias tm='cd /allah/blue/web/auto/tampermonkey'       # tampermonkey
-alias tampermonkey='cd /allah/blue/web/auto/tampermonkey'  # tampermonkey (full)
-alias ti='cd /allah/blue/web/auto/tinder'             # tinder
-alias tinder='cd /allah/blue/web/auto/tinder'         # tinder (full)
 alias zd='cd /allah/blue/web/auto/zendriver'          # zendriver
 
-# --- Level 4: /allah/blue/web/auto/baccarat/* ---
-alias baco='cd /allah/blue/web/auto/baccarat/core'    # baccarat/core
-alias bade='cd /allah/blue/web/auto/baccarat/debug'   # baccarat/debug
-alias le='cd /allah/blue/web/auto/baccarat/legacy'    # legacy
-alias bast='cd /allah/blue/web/auto/baccarat/static'  # baccarat/static
-
-# --- Level 4: /allah/blue/web/auto/tampermonkey/* ---
-alias tmba='cd /allah/blue/web/auto/tampermonkey/backup'   # tampermonkey/backup
-
-# --- Level 4: /allah/blue/web/auto/tinder/* ---
-alias tida='cd /allah/blue/web/auto/tinder/data'      # tinder/data
-alias tisc='cd /allah/blue/web/auto/tinder/scripts'   # tinder/scripts
-
-# --- Level 3: /allah/blue/web/cloud/* ---
-alias linode='cd /allah/blue/web/cloud/linode'    # linode
-
-# --- Level 4: /allah/blue/web/cloud/linode/* ---
-alias gssr='cd /allah/blue/web/cloud/linode/gcp_ssr_deploy'  # gcp_ssr_deploy
-alias lm='cd /allah/blue/web/cloud/linode/linode_manager'    # linode_manager
+# --- Level 4: /allah/blue/web/auto/zendriver/* ---
+alias hs='cd /allah/blue/web/auto/zendriver/herosms'  # herosms
+alias wo='cd /allah/blue/web/auto/zendriver/worker'   # worker
 
 # --- Level 3: /allah/blue/web/monitors/* ---
 alias hu='cd /allah/blue/web/monitors/huaxitong'  # huaxitong
