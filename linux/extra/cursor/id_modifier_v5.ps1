@@ -1,4 +1,4 @@
-# 设置输出编码为 UTF-8
+﻿# 设置输出编码为 UTF-8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
@@ -185,30 +185,8 @@ function Get-CursorInstallPathFromRegistry {
 }
 
 function Request-CursorInstallPathFromUser {
-    Write-Host "$YELLOW💡 [提示]$NC 自动检测失败，可手动选择 Cursor 安装目录（包含 Cursor.exe）"
-    $selectedPath = $null
-    try {
-        Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
-        $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = "请选择 Cursor 安装目录（包含 Cursor.exe）"
-        $dialog.ShowNewFolderButton = $false
-        if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
-            $selectedPath = $dialog.SelectedPath
-        }
-    } catch {
-        Write-Host "$YELLOW⚠️  [提示]$NC 无法打开选择窗口，将使用命令行输入"
-    }
-    if (-not $selectedPath) {
-        Write-Host "$YELLOW⚠️  [自动模式]$NC 跳过手动输入，使用自动检测"
-    }
-    if ($selectedPath) {
-        $normalized = Normalize-CursorInstallCandidate -Path $selectedPath
-        if ($normalized -and (Test-CursorInstallPath -Path $normalized)) {
-            Write-Host "$GREEN✅ [发现]$NC 手动指定安装路径: $normalized"
-            return $normalized
-        }
-        Write-Host "$RED❌ [错误]$NC 手动路径无效: $selectedPath"
-    }
+    # 自动模式：跳过手动输入，直接返回 $null
+    Write-Host "$YELLOW⚠️  [自动模式]$NC 自动检测失败，跳过手动选择"
     return $null
 }
 
@@ -1502,16 +1480,17 @@ function Modify-MachineCodeConfig {
         Write-Host "$BLUE  • 该选项会自动生成配置文件$NC"
         Write-Host ""
 
-        # 自动尝试启动Cursor生成配置文件
-        Write-Host "$BLUE🚀 [自动]$NC 自动尝试启动Cursor..."
-        return Start-CursorToGenerateConfig
+        # 自动跳过启动Cursor生成配置文件
+        Write-Host "$YELLOW⚠️  [自动跳过]$NC 自动跳过启动Cursor生成配置文件"
+        return $false
     }
 
     # 在仅修改机器码模式下也要确保进程完全关闭
     if ($Mode -eq "MODIFY_ONLY") {
         Write-Host "$BLUE🔒 [安全检查]$NC 即使在仅修改模式下，也需要确保Cursor进程完全关闭"
         if (-not (Stop-AllCursorProcesses -MaxRetries 3 -WaitSeconds 3)) {
-            Write-Host "$YELLOW⚠️  [警告]$NC 无法关闭所有Cursor进程，自动强制继续..."
+            Write-Host "$RED❌ [错误]$NC 无法关闭所有Cursor进程，修改可能失败"
+            Write-Host "$YELLOW⚠️  [自动继续]$NC 自动强制继续执行"
         }
     }
 
@@ -1990,7 +1969,7 @@ Write-Host "$YELLOW      • 执行注入破解JS代码到核心文件$NC"
 Write-Host "$YELLOW      • 这相当于当前的完整脚本行为$NC"
 Write-Host ""
 
-# 自动选择选项1（仅修改机器码）
+# 自动选择选项 1（仅修改机器码）
 Write-Host "$GREEN✅ [自动选择]$NC 自动选择：仅修改机器码"
 $executeMode = "MODIFY_ONLY"
 
@@ -2033,7 +2012,7 @@ if ($executeMode -eq "MODIFY_ONLY") {
 Write-Host ""
 
 # 🤔 自动确认
-Write-Host "$GREEN✅ [自动确认]$NC 自动继续执行"
+Write-Host "$GREEN✅ [自动确认]$NC 自动确认继续执行"
 Write-Host ""
 
 # 获取并显示 Cursor 版本
