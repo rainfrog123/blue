@@ -126,9 +126,30 @@ rm -f ~/.Octo\ Browser/localpersist.data
 
 | File | Purpose |
 |------|---------|
+| `spoof_hid.sh` | **One-go HID spoofing script (bash)** |
+| `spoof_hid.py` | **One-go HID spoofing script (python)** |
 | `ghidra_hid_analyzer.py` | Main HID analysis and documentation |
 | `ghidra_hid_analysis_script.py` | Ghidra headless script |
 | `decrypt_octo_storage.py` | Attempt to decrypt storage files |
+
+## Quick Spoof (One Command)
+
+```bash
+# Random new HID
+./spoof_hid.sh
+
+# Or with Python
+python3 spoof_hid.py
+
+# Specific HID
+./spoof_hid.sh 00000000000000000000000000000001
+
+# Restore original
+./spoof_hid.sh --restore
+
+# Show current info
+./spoof_hid.sh --info
+```
 
 ## Running Analysis
 
