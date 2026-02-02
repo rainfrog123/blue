@@ -26,3 +26,5 @@ if instances:
 
 # %% Check Image Status
 list_images("self")
+
+# %%

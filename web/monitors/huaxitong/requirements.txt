@@ -1,0 +1,2 @@
+# Huaxitong Appointment Monitor Dependencies
+requests>=2.28.0

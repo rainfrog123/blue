@@ -170,7 +170,7 @@ print("Run release_all() to stop and delete the instance")
 
 
 # %% EXECUTE DELETE
-# release_all()
+release_all()
 
 
 # %% Check All Existing Instances
