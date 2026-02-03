@@ -132,6 +132,7 @@ alias vu='cd "$BLUE_DIR/linux/vps/vultr"'         # vultr
 # --- Level 4: $BLUE_DIR/linux/vps/ali/* ---
 alias alicf='cd "$BLUE_DIR/linux/vps/ali/config"' # ali config
 alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'       # ecs
+alias ecs='cd "$BLUE_DIR/linux/vps/ali/ecs"'      # ecs (full)
 alias se='cd "$BLUE_DIR/linux/vps/ali/setup"'     # setup
 
 # --- Level 4: $BLUE_DIR/linux/vps/gcp/* ---
@@ -168,6 +169,11 @@ alias nd='cd "$BLUE_DIR/web/auto/nodriver"'           # nodriver
 alias oc='cd "$BLUE_DIR/web/auto/octo"'               # octo
 alias pr='cd "$BLUE_DIR/web/auto/patchright"'         # patchright
 alias zd='cd "$BLUE_DIR/web/auto/zendriver"'          # zendriver
+
+# --- Level 4: $BLUE_DIR/web/auto/octo/* ---
+alias oau='cd "$BLUE_DIR/web/auto/octo/automation"'   # octo/automation
+alias ohi='cd "$BLUE_DIR/web/auto/octo/hid"'          # octo/hid
+alias ossl='cd "$BLUE_DIR/web/auto/octo/ssl_pinning"' # octo/ssl_pinning
 
 # --- Level 4: $BLUE_DIR/web/auto/zendriver/* ---
 alias hs='cd "$BLUE_DIR/web/auto/zendriver/herosms"'  # herosms

@@ -113,6 +113,7 @@ alias vu='cd /allah/blue/linux/vps/vultr'         # vultr
 # --- Level 4: /allah/blue/linux/vps/ali/* ---
 alias alicf='cd /allah/blue/linux/vps/ali/config' # ali config
 alias ec='cd /allah/blue/linux/vps/ali/ecs'       # ecs
+alias ecs='cd /allah/blue/linux/vps/ali/ecs'      # ecs (full)
 alias se='cd /allah/blue/linux/vps/ali/setup'     # setup
 
 # --- Level 4: /allah/blue/linux/vps/gcp/* ---
@@ -149,6 +150,11 @@ alias nd='cd /allah/blue/web/auto/nodriver'           # nodriver
 alias oc='cd /allah/blue/web/auto/octo'               # octo
 alias pr='cd /allah/blue/web/auto/patchright'         # patchright
 alias zd='cd /allah/blue/web/auto/zendriver'          # zendriver
+
+# --- Level 4: /allah/blue/web/auto/octo/* ---
+alias oau='cd /allah/blue/web/auto/octo/automation'   # octo/automation
+alias ohi='cd /allah/blue/web/auto/octo/hid'          # octo/hid
+alias ossl='cd /allah/blue/web/auto/octo/ssl_pinning' # octo/ssl_pinning
 
 # --- Level 4: /allah/blue/web/auto/zendriver/* ---
 alias hs='cd /allah/blue/web/auto/zendriver/herosms'  # herosms

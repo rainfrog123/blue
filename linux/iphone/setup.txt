@@ -1,0 +1,21 @@
+# iPhone Frida Setup
+
+## Installed
+- Frida Server 17.6.2 (re.frida.server)
+- Installed via: ssh root@iphone
+- Source: https://github.com/frida/frida/releases/download/17.6.2/frida_17.6.2_iphoneos-arm64.deb
+
+## Status
+- Running on 0.0.0.0 (accepts all connections)
+- IP: 192.168.31.167
+
+## Usage
+First SSH into vmware (192.168.31.40):
+  ssh vmware
+
+Then from vmware, connect to iPhone:
+  frida -H 192.168.31.167 -l script.js com.app.bundle
+  frida-ps -H 192.168.31.167   # list running processes
+
+## Start Frida on 0.0.0.0 (allow remote connections)
+ssh root@iphone "launchctl unload /Library/LaunchDaemons/re.frida.server.plist 2>/dev/null; killall frida-server 2>/dev/null; sleep 1; nohup frida-server -l 0.0.0.0 > /dev/null 2>&1 & sleep 1; echo done"
