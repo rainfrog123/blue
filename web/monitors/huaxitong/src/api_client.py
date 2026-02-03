@@ -37,11 +37,10 @@ class HuaxitongAPIClient:
     def _generate_random_user_agent(self) -> str:
         """Generate a random but realistic User-Agent string."""
         app_version = random.choice(settings.APP_VERSIONS)
-        device_model = random.choice(settings.DEVICE_MODELS)
         ios_version = random.choice(settings.IOS_VERSIONS)
         scale = random.choice(settings.SCALE_VALUES)
 
-        return f"hua yi tong/{app_version} ({device_model}; iOS {ios_version}; Scale/{scale})"
+        return f"hua yi tong/{app_version} (iPhone; iOS {ios_version}; Scale/{scale})"
 
     def _generate_random_uuid(self) -> str:
         """Generate a random UUID."""

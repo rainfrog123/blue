@@ -6,17 +6,17 @@ Add or modify doctors to monitor by editing the DOCTORS list.
 
 DOCTORS = [
     {
-        "name": "唐新 (肩肘运动医学/微创)",
+        "name": "伍俊良 (整形外科/烧伤科)",
         "payload": {
             "hospitalCode": "HID0101",
             "deptCode": "",
-            "doctorId": "4028b88164b5af330164b5af33e10001",
+            "doctorId": "4028b881646e3d8701646e3d87190048",
             "channelCode": "PATIENT_IOS",
             "appCode": "HXGYAPP",
             "hospitalAreaCode": "",
             "tabAreaCode": "",
             "cardId": "",
-            "encrypt": "enKQHUmF2Yeelk1t6dArBg==",
+            "encrypt": "aI7cGAvltRxXZCwGbqfLaw==",
             "deptCategoryCode": "",
             "appointmentType": "1"
         }

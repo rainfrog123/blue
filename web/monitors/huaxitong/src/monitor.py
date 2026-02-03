@@ -142,12 +142,28 @@ class AppointmentMonitor:
         print("=" * 60)
 
     def _notify_system(self, changes: List[AppointmentEntry]):
-        """Send system notification (if available)."""
+        """Send system notification (Windows toast or Linux notify-send)."""
         try:
             doctors_list = ", ".join(set(c.doctor_name for c in changes if c.doctor_name))
-            os.system(f'notify-send "Appointment Available" "{len(changes)} new slot(s) found for {doctors_list}"')
+            message = f"{len(changes)} new slot(s) found for {doctors_list}"
+            
+            if os.name == 'nt':  # Windows
+                # Use PowerShell toast notification
+                import subprocess
+                ps_script = f'''
+                [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+                $template = [Windows.UI.Notifications.ToastTemplateType]::ToastText02
+                $xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($template)
+                $xml.GetElementsByTagName("text")[0].AppendChild($xml.CreateTextNode("Appointment Available")) | Out-Null
+                $xml.GetElementsByTagName("text")[1].AppendChild($xml.CreateTextNode("{message}")) | Out-Null
+                $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
+                [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Huaxitong Monitor").Show($toast)
+                '''
+                subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
+            else:  # Linux
+                os.system(f'notify-send "Appointment Available" "{message}"')
         except:
-            pass  # Ignore if notify-send is not available
+            pass  # Ignore if notification fails
 
     def check_once(self) -> tuple[List[AppointmentEntry], List[AppointmentEntry]]:
         """
