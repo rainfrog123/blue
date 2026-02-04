@@ -14,7 +14,8 @@ Scripts and documentation for automating OctoBrowser via Playwright and the loca
 
 | File | Purpose |
 |------|---------|
-| `octo_playwright.py` | Playwright automation script |
+| `octo_cursor.py` | **Cursor account automation** — creates accounts with email/SMS verification |
+| `octo_playwright.py` | Playwright automation script (basic example) |
 | `octo_playwright_nb.py` | Notebook-friendly version |
 | `octo_commands.sh` | Shell helpers for API (list, start, stop, create profile) |
 
@@ -63,7 +64,29 @@ octo_start <uuid>
 octo_stop <uuid>
 ```
 
-## Playwright
+## Cursor Account Automation
+
+Automated Cursor account creation with email/SMS verification:
+
+```bash
+# Run as Python script (or use as notebook with % cell markers)
+/allah/freqtrade/.venv/bin/python3 octo_cursor.py
+```
+
+Features:
+- Creates fresh OctoBrowser profile with randomized fingerprint
+- Generates email using prefixes from `hyas_prefixes.txt`
+- Polls Cloudflare Worker for email verification codes
+- Uses HeroSMS for phone verification
+- Captures Stripe checkout URL and session token
+- Saves results to `session_tokens.txt`
+
+**Dependencies:**
+- `/allah/blue/web/auto/herosms/` - HeroSMS API wrapper (shared)
+- `/allah/blue/web/auto/worker/hyas_prefixes.txt` - Email prefixes (shared)
+- Cursor email worker at `https://cursor-email-worker.jar711red.workers.dev`
+
+## Playwright (Basic Example)
 
 ```bash
 python3 octo_playwright.py
@@ -88,6 +111,11 @@ automation/
 ├── RUNNING_OCTOBROWSER.md    # VNC, root, sandbox
 ├── API_TIER_BYPASS.md        # Tier bypass (reverse engineering)
 ├── octo_commands.sh          # Shell helpers
-├── octo_playwright.py        # Playwright script
+├── octo_cursor.py            # Cursor account automation
+├── octo_playwright.py        # Playwright script (basic example)
 └── octo_playwright_nb.py     # Playwright notebook version
+
+Shared dependencies (under /allah/blue/web/auto/):
+├── herosms/herosms.py        # HeroSMS API wrapper
+└── worker/hyas_prefixes.txt  # Email prefixes for @hyas.site
 ```

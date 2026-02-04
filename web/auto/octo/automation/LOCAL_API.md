@@ -25,8 +25,12 @@ cat ~/.Octo\ Browser/local_port
 |--------|--------|----------|------|
 | List profiles | POST | `/api/v2/profiles/list` | `{}` |
 | Create profile (quick) | POST | `/api/v2/profiles/quick` | `{"title": "...", "os": "win"}` |
+| Create profile (full) | POST | `/api/v2/profiles` | See [full create](#create-profile-full) |
+| Update profile | PATCH | `/api/v2/profiles/{uuid}` | See [update](#update-profile) |
+| Clone profile | POST | `/api/v2/profiles/{uuid}/clone` | `{"amount": 1}` |
 | Start profile | POST | `/api/v2/profiles/{uuid}/start` | `{}` |
 | Stop profile | POST | `/api/v2/profiles/{uuid}/stop` | `{}` |
+| Get profile | GET | `/api/v2/profiles/{uuid}` | — |
 | Get profile view | GET | `/api/v2/profiles/{uuid}/view` | — |
 | Client themes | GET | `/api/v2/client/themes` | — |
 
@@ -143,20 +147,231 @@ curl -s -X POST http://localhost:58888/api/v2/profiles/quick \
   -d '{"title": "Test Profile", "os": "win"}'
 ```
 
-#### Get profile boilerplate
+#### Create profile (full)
 
-Returns a template for creating a profile with custom fingerprint (used for full create, not quick).
+Creates a profile with **custom fingerprint** settings. This is different from the cloud API schema.
 
 ```http
-POST /api/v2/profiles/boilerplate
+POST /api/v2/profiles
+Content-Type: application/json
+```
+
+**Required fields:**
+- `name` (string): Profile name (note: uses `name`, response returns `title`)
+- `description` (string): Description
+- `start_pages` (array): URLs to open on start
+- `bookmarks` (array): Bookmarks
+- `launch_args` (array): Chrome launch arguments
+- `logo` (string): Icon ID (e.g. `"55e228c7227946b3889f370b54be26c1"`)
+- `tags` (array): Tag strings
+- `local_cache` (bool): Enable local cache
+- `proxy` (object): Proxy config — `{"type": "direct"}` for no proxy
+- `storage_options` (object): What to sync
+- `fp` (object): Fingerprint (note: uses `fp`, not `fingerprint`)
+
+**Full example:**
+```bash
+curl -s -X POST "http://localhost:58888/api/v2/profiles" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Custom Profile",
+    "description": "Created with custom fingerprint",
+    "start_pages": [],
+    "bookmarks": [],
+    "launch_args": [],
+    "logo": "55e228c7227946b3889f370b54be26c1",
+    "tags": [],
+    "local_cache": false,
+    "proxy": {"type": "direct"},
+    "storage_options": {
+        "cookies": true,
+        "passwords": true,
+        "extensions": true,
+        "localstorage": false,
+        "history": false,
+        "bookmarks": true,
+        "serviceworkers": false
+    },
+    "fp": {
+        "os": "win",
+        "os_version": "11",
+        "os_arch": "x86",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "renderer": "NVIDIA GeForce RTX 4090",
+        "screen": "1920x1080",
+        "languages": {"type": "ip", "data": null},
+        "timezone": {"type": "ip", "data": null},
+        "geolocation": {"type": "ip", "data": null},
+        "cpu": 16,
+        "ram": 32,
+        "noise": {"webgl": true, "canvas": true, "audio": true, "client_rects": true},
+        "webrtc": {"type": "ip", "data": null},
+        "dns": "8.8.8.8",
+        "fonts": ["Arial", "Times New Roman", "Verdana", "Georgia"],
+        "media_devices": {"video_in": 1, "audio_in": 1, "audio_out": 1}
+    }
+  }'
+```
+
+**Fingerprint (`fp`) options:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `os` | string | `"win"` \| `"mac"` \| `"android"` |
+| `os_version` | string | e.g. `"10"`, `"11"` |
+| `os_arch` | string | `"x86"` \| `"x64"` |
+| `user_agent` | string | Browser user agent |
+| `renderer` | string | WebGL renderer (GPU name) |
+| `screen` | string | Resolution, e.g. `"1920x1080"` |
+| `cpu` | int | Hardware concurrency |
+| `ram` | int | Device memory (GB) |
+| `dns` | string | DNS server, e.g. `"8.8.8.8"` |
+| `fonts` | array | List of font names |
+| `languages` | object | `{"type": "ip"}` or `{"type": "manual", "data": [...]}` |
+| `timezone` | object | `{"type": "ip"}` or `{"type": "manual", "data": "America/New_York"}` |
+| `geolocation` | object | `{"type": "ip"}` or `{"type": "manual", "data": {"latitude": ..., "longitude": ..., "accuracy": ...}}` |
+| `webrtc` | object | `{"type": "ip"}` or `{"type": "disable_non_proxied_udp"}` or `{"type": "real"}` |
+| `noise` | object | `{"webgl": bool, "canvas": bool, "audio": bool, "client_rects": bool}` |
+| `media_devices` | object | `{"video_in": int, "audio_in": int, "audio_out": int}` |
+
+**Proxy options:**
+- No proxy: `{"type": "direct"}`
+- New proxy: `{"type": "new", "data": {"type": "http", "ip": "host", "port": 8080, "login": "", "password": ""}}`
+- From list: `{"type": "list", "data": "proxy_uuid"}`
+
+#### Update profile
+
+Update an existing profile with new settings.
+
+```http
+PATCH /api/v2/profiles/{profile_uuid}
+Content-Type: application/json
+```
+
+Uses the same body format as [Create profile (full)](#create-profile-full). All fields are required.
+
+**Example:**
+```bash
+curl -s -X PATCH "http://localhost:58888/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Profile Name",
+    "description": "Updated description",
+    "start_pages": [],
+    "launch_args": [],
+    "logo": "55e228c7227946b3889f370b54be26c1",
+    "tags": [],
+    "local_cache": false,
+    "proxy": {"type": "direct"},
+    "storage_options": {
+        "cookies": true, "passwords": true, "extensions": true,
+        "localstorage": false, "history": false, "bookmarks": true, "serviceworkers": false
+    },
+    "fp": {
+        "os": "win", "os_version": "11", "os_arch": "x86",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+        "renderer": "NVIDIA GeForce RTX 4090",
+        "screen": "1920x1080",
+        "languages": {"type": "ip", "data": null},
+        "timezone": {"type": "ip", "data": null},
+        "geolocation": {"type": "ip", "data": null},
+        "cpu": 16, "ram": 32,
+        "noise": {"webgl": true, "canvas": true, "audio": true, "client_rects": true},
+        "webrtc": {"type": "ip", "data": null},
+        "dns": "8.8.8.8",
+        "fonts": ["Arial", "Times New Roman"],
+        "media_devices": {"video_in": 1, "audio_in": 1, "audio_out": 1}
+    }
+  }'
+```
+
+#### Clone profile
+
+Clone an existing profile one or more times.
+
+```http
+POST /api/v2/profiles/{profile_uuid}/clone
+Content-Type: application/json
+
+{"amount": 1}
+```
+
+**Example:**
+```bash
+curl -s -X POST "http://localhost:58888/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb/clone" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 3}'
+```
+
+Returns array of created profiles.
+
+#### Get profile (full details)
+
+```http
+GET /api/v2/profiles/{profile_uuid}
+```
+
+Returns complete profile including fingerprint, tabs, extensions, storage_options.
+
+#### Get profile boilerplate
+
+Returns a template for creating a profile with custom fingerprint.
+
+```http
+POST /api/v2/profiles/boilerplate/quick
 Content-Type: application/json
 
 {
-  "os": "win"
+  "os": "win",
+  "os_arch": "x86",
+  "count": 1
 }
 ```
 
-**Parameters:** `os`: `"win"` | `"mac"` | `"android"` | `"template"`
+**Parameters:**
+- `os` (string, required): `"win"` | `"mac"` | `"android"` | `"template"`
+- `os_arch` (string): `"x86"` | `"x64"`
+- `count` (int, required): Number of boilerplates to generate
+
+**Response:** Returns array of boilerplates with random fingerprints that you can modify and import.
+
+```json
+{
+  "success": true,
+  "data": {
+    "boilerplates": [{
+      "fp": {
+        "os": "win",
+        "os_arch": "x86",
+        "os_version": "11",
+        "user_agent": "...",
+        "screen": "1536x864",
+        "languages": {"type": "ip", "data": null},
+        "timezone": {"type": "ip", "data": null},
+        "geolocation": {"type": "ip", "data": null},
+        "cpu": 8,
+        "ram": 16,
+        "renderer": "AMD Radeon(TM) Graphics",
+        "webrtc": {"type": "ip", "data": null},
+        "dns": null,
+        "fonts": ["Arial", "..."],
+        "media_devices": {"video_in": 1, "audio_out": 1, "audio_in": 1},
+        "noise": {"webgl": false, "canvas": false, "audio": false, "client_rects": false}
+      },
+      "name": "coherent-tinderbox",
+      "tags": [],
+      "proxies": [],
+      "bookmarks": [],
+      "extensions": [],
+      "description": "",
+      "start_pages": [],
+      "storage_options": {...},
+      "launch_args": [],
+      "local_cache": false
+    }]
+  }
+}
+```
 
 #### Start profile
 

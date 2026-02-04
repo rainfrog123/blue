@@ -7,7 +7,8 @@ import string
 import requests
 import zendriver as zd
 
-sys.path.insert(0, "/allah/blue/web/auto/zendriver/herosms")
+# Add herosms to path (shared under /allah/blue/web/auto/)
+sys.path.insert(0, "/allah/blue/web/auto/herosms")
 import herosms
 
 # Display config - copy Xauthority for root access
@@ -20,7 +21,7 @@ os.environ["XAUTHORITY"] = "/root/.Xauthority"
 CONFIG = {
     "profile_dir": "/tmp/cursor_chrome_profile",
     "email_domain": "@hyas.site",
-    "prefixes_file": "/allah/blue/web/auto/zendriver/worker/hyas_prefixes.txt",
+    "prefixes_file": "/allah/blue/web/auto/worker/hyas_prefixes.txt",
     "email_worker_url": "https://cursor-email-worker.jar711red.workers.dev",
     "phone_country_id": 62,      # Turkey
     "phone_country_code": "90",

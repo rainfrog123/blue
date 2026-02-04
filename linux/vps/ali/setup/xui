@@ -1,0 +1,18 @@
+wget https://raw.githubusercontent.com/mhsanaei/3x-ui/master/docker-compose.yml
+docker-compose up -d
+
+
+i want to set a shadowsocks server as this 
+
+  - {name: 'blues', type: ss, server: , port: 30303, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee}
+
+
+
+
+ip is 47.86.7.159 use this pass,
+
+keep it 30303 port. do it now . 
+
+
+docker run -d -p 30303:30303 -p 30303:30303/udp --name ss-rust --restart=always -v /etc/shadowsocks-rust:/etc/shadowsocks-rust teddysun/shadowsocks-rust
+  
