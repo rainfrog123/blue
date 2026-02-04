@@ -2,7 +2,7 @@
 
 ## Server Details
 - **Server IP**: 47.86.7.159
-- **Port**: 443
+- **Port**: 30303
 - **Method**: chacha20-ietf-poly1305
 - **Password**: bb553795-6a8f-493c-960c-12a6f2f65eee
 - **Mode**: TCP and UDP
@@ -20,7 +20,7 @@ Located at: `/etc/shadowsocks-rust/config.json`
 - name: '🇭🇰SS|HongKongA01|IPLC x3'
   type: ss
   server: 47.86.7.159
-  port: 443
+  port: 30303
   cipher: chacha20-ietf-poly1305
   password: bb553795-6a8f-493c-960c-12a6f2f65eee
 ```

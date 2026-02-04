@@ -110,6 +110,7 @@ alias strat='cd "$BLUE_DIR/freq/project/user_data/strategies"'    # strategies (
 alias excf='cd "$BLUE_DIR/linux/extra/config"'    # config (ex+cf)
 alias cu='cd "$BLUE_DIR/linux/extra/cursor"'      # cursor
 alias cur='cd "$BLUE_DIR/linux/extra/cursor"'     # cursor (alt)
+alias ip='cd "$BLUE_DIR/linux/extra/iphone"'      # iphone
 alias ne='cd "$BLUE_DIR/linux/extra/network"'     # network
 alias nt='cd "$BLUE_DIR/linux/extra/notes"'       # notes
 alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'   # scripts (ex+sc)
@@ -126,7 +127,7 @@ alias aws='cd "$BLUE_DIR/linux/vps/aws"'          # aws (full)
 alias gcvps='cd "$BLUE_DIR/linux/vps/gcp"'        # gcp (gc=git commit)
 alias gcp='cd "$BLUE_DIR/linux/vps/gcp"'          # gcp (full, override git)
 alias lnvps='cd "$BLUE_DIR/linux/vps/linode"'     # linode vps
-alias vpsc='cd "$BLUE_DIR/linux/vps/scripts"'     # vps scripts
+alias vpse='cd "$BLUE_DIR/linux/vps/setup"'       # vps setup (universal)
 alias vu='cd "$BLUE_DIR/linux/vps/vultr"'         # vultr
 
 # --- Level 4: $BLUE_DIR/linux/vps/ali/* ---
@@ -135,8 +136,8 @@ alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'       # ecs
 alias ecs='cd "$BLUE_DIR/linux/vps/ali/ecs"'      # ecs (full)
 alias se='cd "$BLUE_DIR/linux/vps/ali/setup"'     # setup
 
-# --- Level 4: $BLUE_DIR/linux/vps/gcp/* ---
-alias gssr='cd "$BLUE_DIR/linux/vps/gcp/ssr_deploy"'  # ssr_deploy
+# --- Level 4: $BLUE_DIR/linux/vps/setup/* ---
+alias ssr='cd "$BLUE_DIR/linux/vps/setup/ssr_deploy"'  # ssr_deploy
 
 # --- Level 4: $BLUE_DIR/linux/vps/linode/* ---
 alias lm='cd "$BLUE_DIR/linux/vps/linode/manager"'    # linode manager

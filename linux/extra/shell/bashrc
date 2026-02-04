@@ -91,6 +91,7 @@ alias strat='cd /allah/blue/freq/project/user_data/strategies'    # strategies (
 alias excf='cd /allah/blue/linux/extra/config'    # config (ex+cf)
 alias cu='cd /allah/blue/linux/extra/cursor'      # cursor
 alias cur='cd /allah/blue/linux/extra/cursor'     # cursor (alt)
+alias ip='cd /allah/blue/linux/extra/iphone'      # iphone
 alias ne='cd /allah/blue/linux/extra/network'     # network
 alias nt='cd /allah/blue/linux/extra/notes'       # notes
 alias exsc='cd /allah/blue/linux/extra/scripts'   # scripts (ex+sc)
@@ -107,7 +108,7 @@ alias aws='cd /allah/blue/linux/vps/aws'          # aws (full)
 alias gcvps='cd /allah/blue/linux/vps/gcp'        # gcp (gc=git commit)
 alias gcp='cd /allah/blue/linux/vps/gcp'          # gcp (full, override git)
 alias lnvps='cd /allah/blue/linux/vps/linode'     # linode vps
-alias vpsc='cd /allah/blue/linux/vps/scripts'     # vps scripts
+alias vpse='cd /allah/blue/linux/vps/setup'       # vps setup (universal)
 alias vu='cd /allah/blue/linux/vps/vultr'         # vultr
 
 # --- Level 4: /allah/blue/linux/vps/ali/* ---
@@ -116,8 +117,8 @@ alias ec='cd /allah/blue/linux/vps/ali/ecs'       # ecs
 alias ecs='cd /allah/blue/linux/vps/ali/ecs'      # ecs (full)
 alias se='cd /allah/blue/linux/vps/ali/setup'     # setup
 
-# --- Level 4: /allah/blue/linux/vps/gcp/* ---
-alias gssr='cd /allah/blue/linux/vps/gcp/ssr_deploy'  # ssr_deploy
+# --- Level 4: /allah/blue/linux/vps/setup/* ---
+alias ssr='cd /allah/blue/linux/vps/setup/ssr_deploy'  # ssr_deploy
 
 # --- Level 4: /allah/blue/linux/vps/linode/* ---
 alias lm='cd /allah/blue/linux/vps/linode/manager'    # linode manager
