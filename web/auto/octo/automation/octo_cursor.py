@@ -26,7 +26,7 @@ import herosms
 # OctoBrowser paths and config
 OCTO_APPIMAGE = "/home/vncuser/Downloads/OctoBrowser.AppImage"
 OCTO_PORT_FILE = os.path.expanduser("~/.Octo Browser/local_port")
-OCTO_DEFAULT_PORT = "58888"
+OCTO_DEFAULT_PORT = "56933"
 
 # Read port or use default
 OCTO_PORT = None

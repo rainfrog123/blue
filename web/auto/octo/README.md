@@ -115,7 +115,7 @@ tshark -i any -Y 'tls.handshake.extensions_server_name' \
 | `app.octobrowser.net` | Main API (Cloudflare) |
 | `app01.octobrowser.net` | Secondary API (AWS) |
 | `app.obiwankenode.com` | Internal API (AWS) |
-| `localhost:58888` | Local backend (uvicorn) |
+| `localhost:56933` | Local backend (uvicorn) |
 
 ### Data Locations
 

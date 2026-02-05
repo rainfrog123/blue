@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         auto-read
+// @name         TTS Auto
 // @description  Auto-clicks the Read Aloud (朗读) button after each new assistant answer
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*

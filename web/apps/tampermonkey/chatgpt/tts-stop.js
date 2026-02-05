@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         stop-read
+// @name         TTS Stop
 // @description  Stops voice playback by clicking Stop in More actions menu - Press Alt+Z to trigger
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
@@ -76,9 +76,9 @@
     // Find all copy buttons and get the last one (most recent response)
     const allCopyButtons = [...document.querySelectorAll('button[aria-label="Copy"][data-testid="copy-turn-action-button"]')];
     const lastCopyBtn = allCopyButtons.at(-1);
-    
+
     console.log('🔍 Last copy button found:', !!lastCopyBtn, `(${allCopyButtons.length} total copy buttons)`);
-    
+
     if (!lastCopyBtn) {
       console.log('❌ No copy buttons found');
       return false;
@@ -155,9 +155,9 @@
       const candidates = menu.querySelectorAll('[role="menuitem"], .__menu-item, [data-radix-collection-item]');
       console.log('🔍 Menu candidates:', candidates.length);
       candidates.forEach((el, i) => console.log(`  ${i}: "${el.textContent?.trim()}" | ${el.tagName} | ${el.getAttribute('aria-label')}`));
-      
+
       // Look for Stop by text content or aria-label
-      item = Array.from(candidates).find(el => 
+      item = Array.from(candidates).find(el =>
         el.getAttribute('aria-label')?.toLowerCase() === 'stop' ||
         el.textContent?.trim().toLowerCase() === 'stop'
       );
@@ -208,7 +208,7 @@
 
     // Visual feedback
     item.animate([
-      { outline: '2px solid #ff4d4f', outlineOffset: '2px' }, 
+      { outline: '2px solid #ff4d4f', outlineOffset: '2px' },
       { outline: 'none' }
     ], { duration: 300 });
 
@@ -244,7 +244,7 @@
   );
 
   console.log('🎹 Alt+Z listener registered');
-  
+
   // Expose function for manual testing
   window.__stopVoicePlayback = stopVoicePlayback;
   console.log('🔧 Debug: window.__stopVoicePlayback() available in console');

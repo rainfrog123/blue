@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         manually-read
+// @name         TTS Trigger
 // @description  Press Alt+S to trigger Read Aloud (朗读) for the latest assistant answer
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
@@ -91,7 +91,7 @@
     if (!menu) return false;
 
     let item = menu.querySelector('[role="menuitem"][aria-label="Read aloud"]');
-    
+
     if (!item) {
       item = menu.querySelector('[data-testid="voice-play-turn-action-button"]');
     }

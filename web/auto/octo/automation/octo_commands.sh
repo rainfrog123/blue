@@ -2,7 +2,7 @@
 # OctoBrowser Local API — shell helpers
 # See LOCAL_API.md for full reference.
 
-OCTO_PORT=$(cat ~/.Octo\ Browser/local_port 2>/dev/null || echo "58888")
+OCTO_PORT=$(cat ~/.Octo\ Browser/local_port 2>/dev/null || echo "56933")
 OCTO_BASE="http://localhost:$OCTO_PORT"
 
 # List all profiles

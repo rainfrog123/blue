@@ -24,7 +24,11 @@ Scripts and documentation for automating OctoBrowser via Playwright and the loca
 ### 1. Start OctoBrowser (VNC, as root)
 
 ```bash
-DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" /path/to/OctoBrowser.AppImage --no-sandbox
+# Option A: Use the helper script
+/allah/blue/web/auto/octo/hid/spoof_hid.sh --start
+
+# Option B: Run directly
+DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox
 ```
 
 See [RUNNING_OCTOBROWSER.md](RUNNING_OCTOBROWSER.md) for details.
@@ -32,24 +36,25 @@ See [RUNNING_OCTOBROWSER.md](RUNNING_OCTOBROWSER.md) for details.
 ### 2. Create and start a profile via API
 
 ```bash
-# Port from OctoBrowser
-PORT=$(cat ~/.Octo\ Browser/local_port)
-BASE="http://localhost:$PORT"
-
 # Create profile
-curl -s -X POST "$BASE/api/v2/profiles/quick" \
+curl -s -X POST "http://localhost:56933/api/v2/profiles/quick" \
   -H "Content-Type: application/json" \
   -d '{"title": "My Profile", "os": "win"}' | python3 -m json.tool
 
-# Start profile (use uuid from response)
-curl -s -X POST "$BASE/api/v2/profiles/<UUID>/start" \
+# List profiles
+curl -s -X POST "http://localhost:56933/api/v2/profiles/list" \
+  -H "Content-Type: application/json" \
+  -d '{}' | python3 -m json.tool
+
+# Start profile (replace UUID from create response)
+curl -s -X POST "http://localhost:56933/api/v2/profiles/YOUR_UUID_HERE/start" \
   -H "Content-Type: application/json" \
   -d '{}'
 
-# List profiles
-curl -s -X POST "$BASE/api/v2/profiles/list" \
+# Stop profile
+curl -s -X POST "http://localhost:56933/api/v2/profiles/YOUR_UUID_HERE/stop" \
   -H "Content-Type: application/json" \
-  -d '{}' | python3 -m json.tool
+  -d '{}'
 ```
 
 See [LOCAL_API.md](LOCAL_API.md) for full API reference.
@@ -57,11 +62,12 @@ See [LOCAL_API.md](LOCAL_API.md) for full API reference.
 ### 3. Shell helpers (optional)
 
 ```bash
+cd /allah/blue/web/auto/octo/automation
 source octo_commands.sh
 octo_list
 octo_create "My Profile"
-octo_start <uuid>
-octo_stop <uuid>
+octo_start YOUR_UUID_HERE
+octo_stop YOUR_UUID_HERE
 ```
 
 ## Cursor Account Automation
@@ -96,9 +102,14 @@ Requires a profile to be started (e.g. via API or GUI) with a debug port if you 
 
 ## Local API overview
 
-- **Base:** `http://localhost:{port}` — port in `~/.Octo Browser/local_port` (e.g. 58888)
+- **Base:** `http://localhost:56933`
 - **Prefix:** `/api/v2/`
 - **Key endpoints:** `POST /api/v2/profiles/list`, `POST /api/v2/profiles/quick`, `POST /api/v2/profiles/{uuid}/start`, `POST /api/v2/profiles/{uuid}/stop`
+
+```bash
+# Test if API is up
+curl -s http://localhost:56933/api/v2/client/themes | python3 -m json.tool
+```
 
 Full details: [LOCAL_API.md](LOCAL_API.md).
 

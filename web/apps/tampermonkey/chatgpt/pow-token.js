@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         helper
+// @name         Token PoW
 // @namespace    https://linux.do/u/f-droid
 // @version      1.3
 // @description  一站式ChatGPT增强工具，支持Access Token获取、服务降级检测等功能
@@ -25,7 +25,7 @@
 
 (function () {
     'use strict';
-    
+
     const currentUrl = window.location.href;
     if (!(
         currentUrl.startsWith('https://chatgpt.com/') ||
@@ -341,13 +341,16 @@
 
     if (!findChallengeElements()) {
         const originalFetch = unsafeWindow.fetch;
+        const sentinelPaths = [
+            '/backend-api/sentinel/chat-requirements/prepare',
+            '/backend-anon/sentinel/chat-requirements/prepare',
+        ];
         unsafeWindow.fetch = async function (resource, options) {
             try {
                 const response = await originalFetch(resource, options);
                 const url = typeof resource === 'string' ? resource : resource.url;
 
-                if (url.includes('/backend-api/sentinel/chat-requirements') ||
-                    url.includes('/backend-anon/sentinel/chat-requirements')) {
+                if (sentinelPaths.some((path) => url.includes(path))) {
                     const data = await response.clone().json();
                     const difficulty = data.proofofwork?.difficulty || 'N/A';
                     document.getElementById('difficulty').innerText = difficulty;

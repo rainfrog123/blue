@@ -254,7 +254,7 @@ def main():
 Examples:
   python3 decrypt_octo_storage.py
   python3 decrypt_octo_storage.py --hid "custom_machine_id_here"
-  python3 decrypt_octo_storage.py --storage-dir "/path/to/.Octo Browser"
+  python3 decrypt_octo_storage.py --storage-dir "/home/vncuser/.Octo Browser"
         """
     )
     parser.add_argument('--hid', help='Custom HID to use for decryption')

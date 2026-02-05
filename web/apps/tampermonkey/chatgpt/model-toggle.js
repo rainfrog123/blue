@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ChatGPT GPT-5.2 Model Toggle
+// @name         Model Toggle
 // @namespace    http://tampermonkey.net/
 // @version      1.0.0
 // @description  Toggle between GPT-5.2 Auto/Instant/Thinking models - Ctrl+X to switch
@@ -112,7 +112,7 @@
             debug('Step 1: Looking for dropdown button...');
             const dropdownBtn = document.querySelector('[data-testid="model-switcher-dropdown-button"]');
             debug('Dropdown button found:', !!dropdownBtn, dropdownBtn);
-            
+
             if (!dropdownBtn) {
                 debug('ERROR: Model switcher button not found!');
                 // Try to find similar elements
@@ -124,7 +124,7 @@
 
             debug('Clicking dropdown button...');
             simulateRealClick(dropdownBtn);
-            
+
             // Also try React handler
             debug('Trying React handler on dropdown...');
             tryReactHandler(dropdownBtn);
@@ -137,7 +137,7 @@
                 dropdownMenu = document.querySelector('[role="menu"]');
                 debug(`Attempt ${i + 1}: Dropdown menu found:`, !!dropdownMenu);
                 if (dropdownMenu) break;
-                
+
                 // Retry click if menu didn't open
                 if (i === 2 || i === 5) {
                     debug('Retrying click + React handler...');
@@ -145,7 +145,7 @@
                     tryReactHandler(dropdownBtn);
                 }
             }
-            
+
             if (!dropdownMenu) {
                 debug('ERROR: Dropdown never opened after all attempts');
                 isToggling = false;
@@ -168,10 +168,10 @@
                 tryReactHandler(modelOption);
                 saveState();
                 debug('SUCCESS: Switched to', targetModel.name);
-                
+
                 // Focus back on text input after a short delay
                 setTimeout(() => {
-                    const textInput = document.querySelector('#prompt-textarea') || 
+                    const textInput = document.querySelector('#prompt-textarea') ||
                                      document.querySelector('[contenteditable="true"]') ||
                                      document.querySelector('textarea');
                     if (textInput) {
@@ -186,7 +186,7 @@
                     testId: el.getAttribute('data-testid'),
                     text: el.textContent.substring(0, 50)
                 })));
-                
+
                 // If model not found, close dropdown by clicking elsewhere
                 simulateRealClick(dropdownBtn);
                 debug('ERROR: Model option not found');
@@ -209,7 +209,7 @@
         if (event.ctrlKey) {
             debug('Ctrl+key pressed:', event.key, 'code:', event.code);
         }
-        
+
         if (event.key === CONFIG.toggleKey && event.ctrlKey && !event.altKey && !event.shiftKey) {
             debug('Ctrl+X detected! Triggering toggle...');
             event.preventDefault();

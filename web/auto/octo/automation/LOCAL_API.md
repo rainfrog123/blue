@@ -4,7 +4,7 @@ Documentation for the OctoBrowser local HTTP API used for automation and profile
 
 ## Overview
 
-- **Base URL**: `http://localhost:{port}` — port is stored in `~/.Octo Browser/local_port` (default 58888)
+- **Base URL**: `http://localhost:{port}` — port is stored in `~/.Octo Browser/local_port` (default 56933)
 - **API prefix**: `/api/v2/`
 - **Content-Type**: `application/json` for request/response bodies
 - **Server**: FastAPI (uvicorn) inside OctoBrowser process
@@ -16,7 +16,7 @@ OctoBrowser must be running for the API to be available.
 ```bash
 # Read port from OctoBrowser storage
 cat ~/.Octo\ Browser/local_port
-# Example output: 58888
+# Example output: 56933
 ```
 
 ## Quick Reference
@@ -44,7 +44,7 @@ cat ~/.Octo\ Browser/local_port
 
 **Example:**
 ```bash
-curl -s http://localhost:58888/api/v2/client/themes
+curl -s http://localhost:56933/api/v2/client/themes
 # {"success":true,"data":{"system_theme":"light","user_theme":null},"error":null,"msg":null}
 ```
 
@@ -142,7 +142,7 @@ Content-Type: application/json
 
 **Example:**
 ```bash
-curl -s -X POST http://localhost:58888/api/v2/profiles/quick \
+curl -s -X POST http://localhost:56933/api/v2/profiles/quick \
   -H "Content-Type: application/json" \
   -d '{"title": "Test Profile", "os": "win"}'
 ```
@@ -171,7 +171,7 @@ Content-Type: application/json
 
 **Full example:**
 ```bash
-curl -s -X POST "http://localhost:58888/api/v2/profiles" \
+curl -s -X POST "http://localhost:56933/api/v2/profiles" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "My Custom Profile",
@@ -252,7 +252,7 @@ Uses the same body format as [Create profile (full)](#create-profile-full). All 
 
 **Example:**
 ```bash
-curl -s -X PATCH "http://localhost:58888/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb" \
+curl -s -X PATCH "http://localhost:56933/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Updated Profile Name",
@@ -298,7 +298,7 @@ Content-Type: application/json
 
 **Example:**
 ```bash
-curl -s -X POST "http://localhost:58888/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb/clone" \
+curl -s -X POST "http://localhost:56933/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb/clone" \
   -H "Content-Type: application/json" \
   -d '{"amount": 3}'
 ```
@@ -386,7 +386,7 @@ Content-Type: application/json
 
 **Example:**
 ```bash
-curl -s -X POST "http://localhost:58888/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb/start" \
+curl -s -X POST "http://localhost:56933/api/v2/profiles/61fe4cf012f446deb14443ca0d9d9ebb/start" \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -486,7 +486,7 @@ Or server error:
 
 The same server serves the OctoBrowser web UI:
 
-- **App entry**: `http://localhost:58888/new/app/start` (or `/new/app/start?v=...&client_uuid=...`)
+- **App entry**: `http://localhost:56933/new/app/start` (or `/new/app/start?v=...&client_uuid=...`)
 - The frontend uses `http://localhost:{port}/api/v2/client` with header `client-uuid` for themes and storage.
 
 ## Tier / plan restrictions
@@ -530,5 +530,5 @@ curl -s -X POST "$BASE/api/v2/profiles/list" \
 ### Check if API is up
 
 ```bash
-curl -s http://localhost:58888/api/v2/client/themes && echo " OK" || echo " Down"
+curl -s http://localhost:56933/api/v2/client/themes && echo " OK" || echo " Down"
 ```

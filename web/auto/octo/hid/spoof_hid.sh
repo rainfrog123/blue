@@ -7,6 +7,7 @@
 #   ./spoof_hid.sh              # Generate random HID
 #   ./spoof_hid.sh <32-hex>     # Set specific HID
 #   ./spoof_hid.sh --restore    # Restore original HID
+#   ./spoof_hid.sh --start      # Start OctoBrowser only
 #
 
 set -e
@@ -14,6 +15,7 @@ set -e
 MACHINE_ID_FILE="/etc/machine-id"
 BACKUP_FILE="/etc/machine-id.backup"
 OCTO_DIR="$HOME/.Octo Browser"
+OCTO_APPIMAGE="/home/vncuser/Downloads/OctoBrowser.AppImage"
 
 # Colors
 RED='\033[0;31m'
@@ -96,6 +98,10 @@ clear_octo_storage() {
             print_status "Removed: localpersist.data"
         fi
         
+        # Set local_port to 56933
+        echo "56933" > "$OCTO_DIR/local_port"
+        print_status "Set local_port to 56933"
+        
         # Optionally clear other session data
         # rm -rf "$OCTO_DIR/bcache" 2>/dev/null || true
         # rm -rf "$OCTO_DIR/webviewengine" 2>/dev/null || true
@@ -128,6 +134,36 @@ kill_octobrowser() {
     fi
 }
 
+start_octobrowser() {
+    if [ ! -f "$OCTO_APPIMAGE" ]; then
+        print_error "OctoBrowser AppImage not found at: $OCTO_APPIMAGE"
+        return 1
+    fi
+    
+    # Ensure local_port is set to 56933
+    if [ -d "$OCTO_DIR" ]; then
+        echo "56933" > "$OCTO_DIR/local_port"
+    fi
+    
+    print_status "Starting OctoBrowser..."
+    print_status "Command: DISPLAY=:1 OCTO_EXTRA_ARGS=\"--no-sandbox\" ... $OCTO_APPIMAGE --no-sandbox &"
+    
+    DISPLAY=:1 \
+        OCTO_EXTRA_ARGS="--no-sandbox" \
+        QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" \
+        "$OCTO_APPIMAGE" --no-sandbox &
+    
+    sleep 3
+    
+    if pgrep -f "OctoBrowser" > /dev/null; then
+        print_status "OctoBrowser started successfully (PID: $(pgrep -f OctoBrowser | head -1))"
+        print_status "Local API: http://localhost:56933"
+    else
+        print_error "OctoBrowser failed to start"
+        return 1
+    fi
+}
+
 show_info() {
     echo ""
     echo -e "${BLUE}Current Status:${NC}"
@@ -143,7 +179,7 @@ main() {
     print_header
     
     # Check if running as root for machine-id modification
-    if [ "$EUID" -ne 0 ] && [ "$1" != "--info" ]; then
+    if [ "$EUID" -ne 0 ] && [ "$1" != "--info" ] && [ "$1" != "--start" ] && [ "$1" != "-s" ] && [ "$1" != "-i" ]; then
         print_warning "Some operations require root. You may be prompted for sudo password."
     fi
     
@@ -157,6 +193,10 @@ main() {
             show_info
             exit 0
             ;;
+        --start|-s)
+            start_octobrowser
+            exit 0
+            ;;
         --help|-h)
             echo "Usage: $0 [OPTIONS] [HID]"
             echo ""
@@ -164,6 +204,7 @@ main() {
             echo "  (none)        Generate random HID and spoof"
             echo "  <32-hex>      Set specific HID (32 hex characters)"
             echo "  --restore,-r  Restore original HID from backup"
+            echo "  --start,-s    Start OctoBrowser (VNC, root, no-sandbox)"
             echo "  --info,-i     Show current HID information"
             echo "  --help,-h     Show this help message"
             echo ""
@@ -171,6 +212,7 @@ main() {
             echo "  $0                                    # Random HID"
             echo "  $0 00000000000000000000000000000001   # Specific HID"
             echo "  $0 --restore                          # Restore backup"
+            echo "  $0 --start                            # Start OctoBrowser"
             exit 0
             ;;
         "")
@@ -224,9 +266,23 @@ main() {
     echo "  Old HID: $(cat $BACKUP_FILE 2>/dev/null || echo 'unknown')"
     echo "  New HID: $(get_current_hid)"
     echo ""
-    echo -e "${YELLOW}Next steps:${NC}"
-    echo "  1. Start OctoBrowser"
-    echo "  2. Log in with your account (new device will be registered)"
+    
+    # Offer to start OctoBrowser
+    read -p "Start OctoBrowser now? [y/N] " -n 1 -r
+    echo ""
+    
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo ""
+        start_octobrowser
+    else
+        echo ""
+        echo -e "${YELLOW}To start OctoBrowser manually:${NC}"
+        echo "  $0 --start"
+        echo ""
+        echo -e "${YELLOW}Or run directly:${NC}"
+        echo "  DISPLAY=:1 OCTO_EXTRA_ARGS=\"--no-sandbox\" QTWEBENGINE_CHROMIUM_FLAGS=\"--no-sandbox --disable-gpu-sandbox\" $OCTO_APPIMAGE --no-sandbox"
+    fi
+    
     echo ""
     echo -e "${YELLOW}To restore original HID:${NC}"
     echo "  $0 --restore"

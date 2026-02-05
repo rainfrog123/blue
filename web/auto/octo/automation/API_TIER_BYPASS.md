@@ -4,7 +4,7 @@ A reverse engineering guide to understanding and bypassing OctoBrowser's subscri
 
 ## The Problem
 
-OctoBrowser's local automation API (`http://localhost:58888`) requires a paid subscription tier. Free/Starter plans get:
+OctoBrowser's local automation API (`http://localhost:56933`) requires a paid subscription tier. Free/Starter plans get:
 
 ```
 Error: FEATURE_IS_DISABLED_FOR_YOUR_PLAN
@@ -22,7 +22,7 @@ This guide documents how to find and potentially bypass these restrictions using
 │           OctoBrowser GUI               │
 ├─────────────────────────────────────────┤
 │         FastAPI Server (uvicorn)        │
-│         http://127.0.0.1:58888          │
+│         http://127.0.0.1:56933          │
 ├─────────────────────────────────────────┤
 │    Subscription/Feature Validation      │  ← CHECK HAPPENS HERE
 ├─────────────────────────────────────────┤
@@ -408,11 +408,11 @@ DISPLAY=:1 ./OctoBrowser_patched.AppImage --no-sandbox
 ### 7.1 Test Local API
 
 ```bash
-# Get the port (usually 58888)
+# Get the port (usually 56933)
 cat ~/.Octo\ Browser/local_port
 
 # Test API access
-curl http://localhost:58888/api/v2/automation/profiles
+curl http://localhost:56933/api/v2/automation/profiles
 
 # If successful, you'll get profile list instead of:
 # {"error": "feature_is_disabled_for_your_plan"}
