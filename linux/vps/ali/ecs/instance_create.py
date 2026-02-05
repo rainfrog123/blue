@@ -19,6 +19,9 @@ SSH_CONFIG_PATH = Path.home() / ".ssh" / "config"
 # RealVNC ViewerStore path
 VNC_VIEWER_STORE = Path.home() / "AppData" / "Roaming" / "RealVNC" / "ViewerStore"
 
+# SSH known_hosts path
+SSH_KNOWN_HOSTS_PATH = Path.home() / ".ssh" / "known_hosts"
+
 
 # %% Get VPCs
 try:
@@ -422,6 +425,51 @@ def update_vnc_config(new_ip: str, port: int = 5901):
         return False
 
 
+def clear_known_hosts(ip: str):
+    """
+    Remove entries for a specific IP from SSH known_hosts file.
+    
+    This prevents host key mismatch errors when connecting to a new instance
+    that was assigned a previously-used IP address.
+    
+    Args:
+        ip: The IP address to remove from known_hosts
+    
+    Returns:
+        True if entries were removed or file doesn't exist, False on error
+    """
+    if not SSH_KNOWN_HOSTS_PATH.exists():
+        print(f"[INFO] known_hosts not found (nothing to clear): {SSH_KNOWN_HOSTS_PATH}")
+        return True
+    
+    try:
+        content = SSH_KNOWN_HOSTS_PATH.read_text(encoding='utf-8')
+        original_lines = content.splitlines()
+        
+        # Filter out lines that start with the IP (handles IP and [IP]:port formats)
+        filtered_lines = [
+            line for line in original_lines
+            if not line.startswith(ip) and not line.startswith(f"[{ip}]")
+        ]
+        
+        removed_count = len(original_lines) - len(filtered_lines)
+        
+        if removed_count > 0:
+            new_content = '\n'.join(filtered_lines)
+            if filtered_lines:  # Add trailing newline if file not empty
+                new_content += '\n'
+            SSH_KNOWN_HOSTS_PATH.write_text(new_content, encoding='utf-8')
+            print(f"\n[OK] Cleared {removed_count} entry(ies) for {ip} from known_hosts")
+        else:
+            print(f"\n[INFO] No known_hosts entries found for {ip}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"[WARN] Failed to clear known_hosts: {e}")
+        return False
+
+
 # %% EXECUTE BUILD (Create New Instance)
 # Override image_id here, or leave None to use latest custom image
 image_id = None  # e.g. "m-j6c0nh4f9z0xvos8r3by"
@@ -441,6 +489,7 @@ if vswitch_id and security_group_id and image_id:
     if new_instance_id:
         print(f"\n[OK] Build complete! Instance ID: {new_instance_id}")
         if new_public_ip:
+            clear_known_hosts(new_public_ip)
             update_ssh_config(new_public_ip, "ali_hk")
             update_vnc_config(new_public_ip, port=5901)
     else:
