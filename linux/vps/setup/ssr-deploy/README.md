@@ -12,7 +12,7 @@ This project provides a script to enable root login on a remote server and deplo
 
 ## Files
 
-- `enable_root_and_deploy.sh`: Main deployment script
+- `deploy.sh`: Main deployment script
 - `id_rsa`: SSH private key for authentication
 - `public_key`: SSH public key
 - `known_hosts`: SSH known hosts file
