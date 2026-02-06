@@ -1,0 +1,32 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 8080,
+      "listen": "0.0.0.0",
+      "protocol": "trojan",
+      "settings": {
+        "clients": [
+          {
+            "password": "ba19c9d6-3fc0-4085-9f47-465c5d7cceef",
+            "email": "user@sg.hyas.site"
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "/x7f9k2m4p8"
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
+}

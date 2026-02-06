@@ -1,0 +1,175 @@
+# Trojan + Cloudflare Tunnel Setup
+# Location: /allah/blue/linux/vps/ali/setup/
+
+## Deployment Commands
+
+cd /allah/blue/linux/vps/ali/setup/
+docker compose up -d
+docker compose logs -f  # Check logs
+
+## Client Configuration
+
+Use these settings in your Trojan client (v2rayN, Clash, Shadowrocket, etc.):
+
+| Setting   | Value                                |
+|-----------|--------------------------------------|
+| Address   | sg.hyas.site                         |
+| Port      | 443                                  |
+| Password  | ba19c9d6-3fc0-4085-9f47-465c5d7cceef |
+| Transport | WebSocket                            |
+| WS Path   | /x7f9k2m4p8                          |
+| TLS       | Enabled                              |
+| SNI       | sg.hyas.site                         |
+
+## Trojan URL (for import)
+
+trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@sg.hyas.site:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#SG-Trojan
+
+## Management Commands
+
+# View logs
+docker compose logs -f
+
+# Restart services
+docker compose restart
+
+# Stop services
+docker compose down
+
+# Update images
+docker compose pull && docker compose up -d
+
+## Architecture
+
+Client --[HTTPS]--> Cloudflare CDN --[WebSocket]--> cloudflared container --[http://xray-trojan:8080]--> xray-trojan container
+
+## Files
+
+- docker-compose.yml  : Docker Compose configuration
+- config.json         : Xray configuration with Trojan settings
+
+---
+
+## FULL SETUP GUIDE (Reproduce This)
+
+### Prerequisites
+1. VPS with Docker installed
+2. Domain on Cloudflare (e.g., hyas.site)
+3. Cloudflare Zero Trust account (free)
+
+### Step 1: Create Cloudflare Tunnel
+
+1. Go to: https://one.dash.cloudflare.com/ → Networks → Tunnels
+2. Create a tunnel, name it (e.g., "sg-trojan")
+3. Copy the tunnel token (long base64 string starting with eyJ...)
+4. Add Public Hostname:
+   - Subdomain: sg (or any name)
+   - Domain: hyas.site (your domain)
+   - Path: * (wildcard)
+   - Service: http://xray-trojan:8080
+
+### Step 2: Create docker-compose.yml
+
+```yaml
+version: "3.8"
+
+services:
+  xray-trojan:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-trojan
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json
+    command: run -c /etc/xray/config.json
+    networks:
+      - tunnel-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token YOUR_TUNNEL_TOKEN_HERE
+    networks:
+      - tunnel-net
+    depends_on:
+      - xray-trojan
+
+networks:
+  tunnel-net:
+    driver: bridge
+```
+
+### Step 3: Create config.json
+
+Generate UUID: python3 -c "import uuid; print(uuid.uuid4())"
+Generate random path: python3 -c "import secrets; print('/' + secrets.token_hex(5))"
+
+```json
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 8080,
+      "listen": "0.0.0.0",
+      "protocol": "trojan",
+      "settings": {
+        "clients": [
+          {
+            "password": "YOUR_GENERATED_UUID",
+            "email": "user@yourdomain.com"
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "wsSettings": {
+          "path": "/YOUR_RANDOM_PATH"
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ]
+}
+```
+
+### Step 4: Deploy
+
+```bash
+cd /path/to/setup/
+docker-compose up -d
+docker-compose logs -f
+```
+
+### Step 5: Client Config (Clash format)
+
+```yaml
+- {name: 'TJ|Location|CF', type: trojan, server: YOUR_SUBDOMAIN.YOUR_DOMAIN, port: 443, password: YOUR_UUID, udp: true, sni: YOUR_SUBDOMAIN.YOUR_DOMAIN, skip-cert-verify: false, network: ws, ws-opts: {path: /YOUR_RANDOM_PATH}}
+```
+
+### Troubleshooting
+
+1. Check Xray logs: docker logs xray-trojan
+2. Check Cloudflared logs: docker logs cloudflared
+3. If "connection refused" error: ensure config.json path is correct and Xray uses `command: run -c /etc/xray/config.json`
+4. Test connection: curl -v https://YOUR_SUBDOMAIN.YOUR_DOMAIN/YOUR_PATH
+
+### Optional: Create Swap (for low memory VPS)
+
+```bash
+sudo swapoff /swapfile 2>/dev/null
+sudo rm /swapfile 2>/dev/null
+sudo fallocate -l 3G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+grep -q '/swapfile' /etc/fstab || echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+sudo sysctl vm.swappiness=90
+echo 'vm.swappiness=90' | sudo tee -a /etc/sysctl.conf
+```
