@@ -13,17 +13,21 @@ Use these settings in your Trojan client (v2rayN, Clash, Shadowrocket, etc.):
 
 | Setting   | Value                                |
 |-----------|--------------------------------------|
-| Address   | sg.hyas.site                         |
+| Address   | x.hyas.site                          |
 | Port      | 443                                  |
 | Password  | ba19c9d6-3fc0-4085-9f47-465c5d7cceef |
 | Transport | WebSocket                            |
 | WS Path   | /x7f9k2m4p8                          |
 | TLS       | Enabled                              |
-| SNI       | sg.hyas.site                         |
+| SNI       | x.hyas.site                          |
 
 ## Trojan URL (for import)
 
-trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@sg.hyas.site:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#SG-Trojan
+trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.site:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#X-Trojan
+
+## Clash (proxy node)
+
+- {name: 'TJ|X|CF', type: trojan, server: x.hyas.site, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.site, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
 
 ## Management Commands
 
@@ -60,10 +64,10 @@ Client --[HTTPS]--> Cloudflare CDN --[WebSocket]--> cloudflared container --[htt
 ### Step 1: Create Cloudflare Tunnel
 
 1. Go to: https://one.dash.cloudflare.com/ → Networks → Tunnels
-2. Create a tunnel, name it (e.g., "sg-trojan")
+2. Create a tunnel, name it (e.g., "x-trojan")
 3. Copy the tunnel token (long base64 string starting with eyJ...)
 4. Add Public Hostname:
-   - Subdomain: sg (or any name)
+   - Subdomain: x (or any name)
    - Domain: hyas.site (your domain)
    - Path: * (wildcard)
    - Service: http://xray-trojan:8080
@@ -150,7 +154,7 @@ docker-compose logs -f
 ### Step 5: Client Config (Clash format)
 
 ```yaml
-- {name: 'TJ|Location|CF', type: trojan, server: YOUR_SUBDOMAIN.YOUR_DOMAIN, port: 443, password: YOUR_UUID, udp: true, sni: YOUR_SUBDOMAIN.YOUR_DOMAIN, skip-cert-verify: false, network: ws, ws-opts: {path: /YOUR_RANDOM_PATH}}
+- {name: 'TJ|Location|CF', type: trojan, server: x.hyas.site, port: 443, password: YOUR_UUID, udp: true, sni: x.hyas.site, skip-cert-verify: false, network: ws, ws-opts: {path: /YOUR_RANDOM_PATH}}
 ```
 
 ### Troubleshooting
@@ -158,7 +162,7 @@ docker-compose logs -f
 1. Check Xray logs: docker logs xray-trojan
 2. Check Cloudflared logs: docker logs cloudflared
 3. If "connection refused" error: ensure config.json path is correct and Xray uses `command: run -c /etc/xray/config.json`
-4. Test connection: curl -v https://YOUR_SUBDOMAIN.YOUR_DOMAIN/YOUR_PATH
+4. Test connection: curl -v https://x.hyas.site/YOUR_PATH
 
 ### Optional: Create Swap (for low memory VPS)
 
