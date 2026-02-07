@@ -27,14 +27,6 @@
         return labelSpan ? labelSpan.textContent.trim() : null;
     }
 
-    function focusInputArea() {
-        const inputArea = document.querySelector('[aria-label="Enter a prompt for Gemini"]') ||
-            document.querySelector('input-area-v2 .ql-editor');
-        if (inputArea && typeof inputArea.focus === 'function') {
-            inputArea.focus();
-        }
-    }
-
     async function selectThinkingMode() {
         if (isProcessing) return;
 
@@ -52,6 +44,7 @@
             button.click();
 
             // Wait for dropdown to appear
+            
             // await new Promise(resolve => setTimeout(resolve, 300));
 
             // Find and click the Thinking option
@@ -61,7 +54,6 @@
                 if (text.includes(TARGET_MODE)) {
                     console.log(`[Gemini Auto Thinking] Found ${TARGET_MODE} option, clicking...`);
                     option.click();
-                    setTimeout(focusInputArea, 350);
                     break;
                 }
             }
@@ -74,7 +66,6 @@
                     if (text.includes(TARGET_MODE)) {
                         console.log(`[Gemini Auto Thinking] Found ${TARGET_MODE} menu item, clicking...`);
                         item.click();
-                        setTimeout(focusInputArea, 350);
                         break;
                     }
                 }
@@ -82,10 +73,7 @@
         } catch (e) {
             console.error('[Gemini Auto Thinking] Error:', e);
         } finally {
-            setTimeout(() => {
-                isProcessing = false;
-                focusInputArea();
-            }, 500);
+            setTimeout(() => { isProcessing = false; }, 500);
         }
     }
 
