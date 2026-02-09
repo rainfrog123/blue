@@ -42,15 +42,18 @@ cat /etc/machine-id
 Algorithm: Fernet (AES-128-CBC + HMAC-SHA256)
 Key Derivation: PBKDF2-HMAC-SHA256
 
-Parameters:
-  - Password: Machine HID + SECRET_KEY
-  - SECRET_KEY: "TeNtAcLeShErE___"
-  - Iterations: ~100,000-480,000
-  - Salt: Stored in encrypted file or fixed
+Parameters (from Ghidra analysis):
+  - Password: Machine HID (directly)
+  - Salt: First 16 bytes of HID (padded)
+  - Iterations: 100,000
+  - Key Length: 32 bytes
+  - SECRET_KEY: "TeNtAcLeShErE___" (found in config.pyc)
 
 File Format:
   gAAAAAB...  (Base64 encoded Fernet token)
 ```
+
+**See `../storage_decryption/` for working decryption tools and decrypted samples.**
 
 ## Ghidra Analysis Results
 
@@ -126,29 +129,41 @@ rm -f ~/.Octo\ Browser/localpersist.data
 
 | File | Purpose |
 |------|---------|
-| `spoof_hid.sh` | **One-go HID spoofing script (bash)** |
-| `spoof_hid.py` | **One-go HID spoofing script (python)** |
+| `hid_spoofer.sh` | **One-go HID spoofing script (bash)** |
+| `hid_spoofer.py` | **One-go HID spoofing script (python)** |
 | `ghidra_hid_analyzer.py` | Main HID analysis and documentation |
-| `ghidra_hid_analysis_script.py` | Ghidra headless script |
-| `decrypt_octo_storage.py` | Attempt to decrypt storage files |
+| `ghidra_hid_headless_script.py` | Ghidra headless analysis script |
+| `GHIDRA_HID_ANALYSIS_TUTORIAL.md` | Ghidra reverse engineering tutorial |
+
+### Related: Storage Decryption
+
+See `../storage_decryption/` for storage decryption tools:
+
+| File | Purpose |
+|------|---------|
+| `octo_storage_decryptor.py` | **Working decryption script** |
+| `ghidra_encryption_analyzer.py` | Ghidra script for encryption analysis |
+| `GHIDRA_DECRYPTION_GUIDE.md` | Step-by-step manual decryption guide |
+| `local.data.decrypted.json` | Decrypted session storage sample |
+| `localpersist.data.decrypted.json` | Decrypted persistent storage sample |
 
 ## Quick Spoof (One Command)
 
 ```bash
 # Random new HID
-./spoof_hid.sh
+./hid_spoofer.sh
 
 # Or with Python
-python3 spoof_hid.py
+python3 hid_spoofer.py
 
 # Specific HID
-./spoof_hid.sh 00000000000000000000000000000001
+./hid_spoofer.sh 00000000000000000000000000000001
 
 # Restore original
-./spoof_hid.sh --restore
+./hid_spoofer.sh --restore
 
 # Show current info
-./spoof_hid.sh --info
+./hid_spoofer.sh --info
 ```
 
 ## Running Analysis
@@ -170,10 +185,17 @@ DISPLAY=:1 /opt/ghidra/ghidraRun
 # Navigate to dbus_get_local_machine_id
 ```
 
-### Storage Analysis
+### Storage Decryption
 
 ```bash
-python3 decrypt_octo_storage.py --storage-dir "/home/vncuser/.Octo Browser"
+# Decrypt and display storage contents
+python3 ../storage_decryption/octo_storage_decryptor.py
+
+# With custom storage directory
+python3 ../storage_decryption/octo_storage_decryptor.py --storage-dir "/home/vncuser/.Octo Browser"
+
+# With custom HID
+python3 ../storage_decryption/octo_storage_decryptor.py --hid "your_machine_id_here"
 ```
 
 ## Python Bytecode Analysis
