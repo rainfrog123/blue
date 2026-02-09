@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 CLASH_API = "http://127.0.0.1:17650"
 SECRET = "0ce2f533-f94b-4780-af2d-33eabc291f4c"
-SELECTOR_GROUP = "🔰 节点选择"
+SELECTOR_GROUP = "GLOBAL"  # Default selector group
 
 HEADERS = {
     "Authorization": f"Bearer {SECRET}",
@@ -26,8 +26,15 @@ def get_group(name: str = SELECTOR_GROUP):
     """Get info about a specific proxy group"""
     encoded = quote(name, safe='')
     resp = requests.get(f"{CLASH_API}/proxies/{encoded}", headers=HEADERS)
+    if resp.status_code == 404:
+        raise ValueError(f"Proxy group '{name}' not found. Use get_proxies() to list available groups.")
     resp.raise_for_status()
     return resp.json()
+
+def list_groups() -> list:
+    """List all available proxy groups (type=Selector)"""
+    proxies = get_proxies()
+    return [name for name, info in proxies.items() if info.get("type") == "Selector"]
 
 def get_current_node(group: str = SELECTOR_GROUP) -> str:
     """Get currently selected node in a group"""
@@ -121,54 +128,22 @@ def switch_to_sg():
         return switch_node(nodes[0])
     return False
 
-# %% GLOBAL mode switching (for TUN mode)
-def switch_global(node_name: str) -> bool:
-    """Switch GLOBAL selector directly - use this in TUN mode"""
-    return switch_node(node_name, group="GLOBAL")
-
-def switch_global_to_selector():
-    """Set GLOBAL to use '🔰 节点选择' (respects your node choice)"""
-    return switch_global("🔰 节点选择")
-
-def switch_global_to_hk():
-    """Switch GLOBAL to first HK IPLC node"""
-    nodes = [n for n in get_hk_nodes() if "IPLC" in n]
-    if nodes:
-        return switch_global(nodes[0])
-    return False
-
-def switch_global_to_us():
-    """Switch GLOBAL to first US IPLC node"""
-    nodes = [n for n in get_us_nodes() if "IPLC" in n]
-    if nodes:
-        return switch_global(nodes[0])
-    return False
-
-def switch_global_to_jp():
-    """Switch GLOBAL to first Japan IPLC node"""
-    nodes = [n for n in get_jp_nodes() if "IPLC" in n]
-    if nodes:
-        return switch_global(nodes[0])
-    return False
-
-def switch_global_to_sg():
-    """Switch GLOBAL to first Singapore IPLC node"""
-    nodes = [n for n in get_sg_nodes() if "IPLC" in n]
-    if nodes:
-        return switch_global(nodes[0])
-    return False
+# %% Aliases for backward compatibility
+switch_global = switch_node  # GLOBAL is now the default
+switch_global_to_hk = switch_to_hk
+switch_global_to_us = switch_to_us
+switch_global_to_jp = switch_to_jp
+switch_global_to_sg = switch_to_sg
 
 # %% Status display
 def show_status():
     """Print current status"""
     version = get_version()
     current = get_current_node()
-    global_node = get_current_node("GLOBAL")
     nodes = list_nodes()
     
     print(f"Clash Version: {version.get('version', 'unknown')}")
-    print(f"GLOBAL Node: {global_node}")
-    print(f"Selector Node: {current}")
+    print(f"Current Node: {current}")
     print(f"Total Nodes: {len(nodes)}")
     print()
     
@@ -332,20 +307,20 @@ def test_and_export(output_file: str = "clash_nodes_test.json", group: str = "GL
 if __name__ == "__main__":
     show_status()
     print()
-    print("For TUN mode, use GLOBAL commands:")
-    print("  switch_global_to_hk()       - Hong Kong")
-    print("  switch_global_to_us()       - USA")
-    print("  switch_global_to_jp()       - Japan")
-    print("  switch_global_to_sg()       - Singapore")
-    print("  switch_global_to_selector() - Use '节点选择'")
-    print()
-    print("Or switch '节点选择' (when GLOBAL -> 节点选择):")
-    print("  switch_to_hk/us/jp/sg()     - Set node choice")
+    print("Quick switch:")
+    print("  switch_to_hk()    - Hong Kong")
+    print("  switch_to_us()    - USA")
+    print("  switch_to_jp()    - Japan")
+    print("  switch_to_sg()    - Singapore")
+    print("  switch_to_auto()  - Auto select")
+    print("  switch_node('name') - Specific node")
     print()
     print("Test all nodes:")
-    print("  test_and_export()           - Test & save to JSON")
+    print("  test_and_export() - Test & save to JSON")
 
 # %% Switch GLOBAL (TUN mode)
 # switch_global_to_us()
 # switch_global_to_hk()
 # switch_global("🇭🇰TJ|香港C01|NF解锁")
+# test_and_export()
+test_all_nodes()
