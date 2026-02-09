@@ -4,8 +4,8 @@ import os
 import sys
 from pathlib import Path
 
-# Add cred_loader to path
-sys.path.insert(0, str(Path(__file__).parents[4] / 'linux' / 'extra' / 'config'))
+# Add cred_loader to path (tradingview -> realtime -> tools -> project -> freq -> blue -> linux/extra)
+sys.path.insert(0, str(Path(__file__).parents[5] / "linux" / "extra"))
 from cred_loader import get_tradingview
 
 BASE_DIR = Path(__file__).parent.absolute()

@@ -4,10 +4,10 @@
 # Generates a new machine-id and clears OctoBrowser storage
 #
 # Usage:
-#   ./spoof_hid.sh              # Generate random HID
-#   ./spoof_hid.sh <32-hex>     # Set specific HID
-#   ./spoof_hid.sh --restore    # Restore original HID
-#   ./spoof_hid.sh --start      # Start OctoBrowser only
+#   ./spoof.sh              # Generate random HID
+#   ./spoof.sh <32-hex>     # Set specific HID
+#   ./spoof.sh --restore    # Restore original HID
+#   ./spoof.sh --start      # Start OctoBrowser only
 #
 
 set -e
@@ -150,7 +150,7 @@ start_octobrowser() {
     
     DISPLAY=:1 \
         OCTO_EXTRA_ARGS="--no-sandbox" \
-        QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" \
+        QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox" \
         "$OCTO_APPIMAGE" --no-sandbox &
     
     sleep 3

@@ -12,8 +12,9 @@ from typing import Optional, List, Dict, Any, Union
 from dataclasses import dataclass
 from enum import IntEnum
 
-# Add cred_loader to path
-sys.path.insert(0, "/allah/blue/linux/extra/config")
+# Add cred_loader to path (herosms -> auto -> web -> blue -> linux/extra)
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parents[3] / "linux" / "extra"))
 from cred_loader import get_hero_sms
 
 # %% Configuration

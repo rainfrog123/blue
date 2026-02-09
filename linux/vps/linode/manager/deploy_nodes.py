@@ -517,7 +517,9 @@ def display_menu(regions: Dict[str, Dict[str, list]]) -> List[str]:
 def main():
     global deployer  # Make deployer accessible to display_menu
     import sys
-    sys.path.insert(0, str(__import__('pathlib').Path(__file__).parents[4] / 'linux' / 'extra' / 'config'))
+    from pathlib import Path
+    # Add cred_loader to path (manager -> linode -> vps -> linux -> extra)
+    sys.path.insert(0, str(Path(__file__).parents[3] / "extra"))
     from cred_loader import get_linode_token
     api_token = get_linode_token(0)
     deployer = LinodeDeployer(api_token)
