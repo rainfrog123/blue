@@ -6,6 +6,8 @@
 import requests
 from urllib.parse import quote
 
+from ipqs import check_ip as ipqs_check_ip
+
 CLASH_API = "http://127.0.0.1:17650"
 SECRET = "0ce2f533-f94b-4780-af2d-33eabc291f4c"
 SELECTOR_GROUP = "GLOBAL"  # Default selector group
@@ -139,11 +141,22 @@ switch_global_to_sg = switch_to_sg
 def show_status():
     """Print current status"""
     version = get_version()
-    current = get_current_node()
-    nodes = list_nodes()
-    
     print(f"Clash Version: {version.get('version', 'unknown')}")
-    print(f"Current Node: {current}")
+    
+    # Show available selector groups
+    groups = list_groups()
+    print(f"Selector Groups: {', '.join(groups[:5])}{'...' if len(groups) > 5 else ''}")
+    
+    # Get current node
+    try:
+        current = get_current_node()
+        print(f"Current Node ({SELECTOR_GROUP}): {current}")
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("Available groups:", ", ".join(groups))
+        return
+    
+    nodes = list_nodes()
     print(f"Total Nodes: {len(nodes)}")
     print()
     
@@ -183,15 +196,9 @@ try:
 except ImportError:
     HAS_TQDM = False
 
-def get_ip_info(timeout: int = 10) -> dict | None:
-    """Get current IP info from ippure.com"""
-    try:
-        resp = requests.get("https://my.ippure.com/v1/info", timeout=timeout)
-        if resp.status_code == 200:
-            return resp.json()
-    except Exception as e:
-        return {"error": str(e)}
-    return None
+def get_ip_info(timeout: int = 15) -> dict | None:
+    """Get current IP info using IPQS (fraud score, VPN detection, etc.)"""
+    return ipqs_check_ip(timeout=timeout)
 
 def test_all_nodes(group: str = "GLOBAL", delay_between: float = 2.0, skip_non_proxy: bool = True) -> list:
     """Test all nodes and collect IP info for each"""
@@ -247,10 +254,15 @@ def test_all_nodes(group: str = "GLOBAL", delay_between: float = 2.0, skip_non_p
                 "country": ip_info.get("country"),
                 "countryCode": ip_info.get("countryCode"),
                 "city": ip_info.get("city"),
+                "region": ip_info.get("region"),
+                "isp": ip_info.get("isp"),
+                "org": ip_info.get("org"),
                 "asn": ip_info.get("asn"),
-                "asOrganization": ip_info.get("asOrganization"),
-                "isResidential": ip_info.get("isResidential"),
                 "fraudScore": ip_info.get("fraudScore"),
+                "proxy": ip_info.get("proxy"),
+                "vpn": ip_info.get("vpn"),
+                "isResidential": ip_info.get("isResidential"),
+                "connectionType": ip_info.get("connectionType"),
             })
             successful += 1
             if not HAS_TQDM:
@@ -323,4 +335,4 @@ if __name__ == "__main__":
 # switch_global_to_hk()
 # switch_global("🇭🇰TJ|香港C01|NF解锁")
 # test_and_export()
-test_all_nodes()
+# test_all_nodes()

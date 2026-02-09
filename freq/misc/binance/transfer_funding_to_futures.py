@@ -2,7 +2,9 @@
 """Transfer funds from Binance Funding account to Futures account."""
 
 import sys
-sys.path.insert(0, str(__import__('pathlib').Path(__file__).parents[3] / 'linux' / 'extra' / 'config'))
+from pathlib import Path
+# Add cred_loader to path (binance -> misc -> freq -> blue -> linux/extra)
+sys.path.insert(0, str(Path(__file__).parents[3] / "linux" / "extra"))
 
 import ccxt
 from cred_loader import get_binance

@@ -21,8 +21,8 @@ try:
 except NameError:
     _script_dir = Path.cwd()
 
-# Add credential loader to path (linux/extra/config)
-sys.path.insert(0, str(_script_dir.parent.parent.parent / "extra" / "config"))
+# Add credential loader to path (ecs -> ali -> vps -> linux -> extra)
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "extra"))
 from cred_loader import get_alibaba
 
 from alibabacloud_ecs20140526 import models as ecs_models
