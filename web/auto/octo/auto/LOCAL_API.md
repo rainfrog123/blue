@@ -30,6 +30,7 @@ cat ~/.Octo\ Browser/local_port
 | Clone profile | POST | `/api/v2/profiles/{uuid}/clone` | `{"amount": 1}` |
 | Start profile | POST | `/api/v2/profiles/{uuid}/start` | `{}` |
 | Stop profile | POST | `/api/v2/profiles/{uuid}/stop` | `{}` |
+| **One-time profile** | POST | `/api/profiles/one_time/start` | See [one-time](#one-time-profile-start-without-saving) |
 | Get profile | GET | `/api/v2/profiles/{uuid}` | — |
 | Get profile view | GET | `/api/v2/profiles/{uuid}/view` | — |
 | Client themes | GET | `/api/v2/client/themes` | — |
@@ -400,6 +401,122 @@ Content-Type: application/json
 {}
 ```
 
+#### One-time profile (start without saving)
+
+Creates and starts a temporary profile that is not saved to your profile list. Useful for automation where you don't need persistent profile data.
+
+```http
+POST /api/profiles/one_time/start
+Content-Type: application/json
+```
+
+> **Note:** This endpoint is under `/api/` not `/api/v2/`. Requires a paid plan with API access enabled. Free tier returns: `{"error":"Profile start failed","error_code":3,"message":"Upgrade to plan with enabled api"}`
+
+**Note:** If you don't specify a parameter, Octo will generate optimal values automatically. Only customize what you need.
+
+**Full example:**
+```bash
+curl -s -X POST "http://localhost:56933/api/profiles/one_time/start" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profile_data": {
+        "fingerprint": {
+            "os": "win",
+            "os_version": "11",
+            "os_arch": "x86",
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "screen": "1920x1080",
+            "languages": {"type": "ip"},
+            "timezone": {"type": "ip"},
+            "geolocation": {"type": "ip"},
+            "cpu": 4,
+            "ram": 8,
+            "noise": {
+                "webgl": true,
+                "canvas": false,
+                "audio": true,
+                "client_rects": false
+            },
+            "webrtc": {"type": "ip"},
+            "dns": "1.1.1.1",
+            "media_devices": {"video_in": 1, "audio_in": 1, "audio_out": 1}
+        },
+        "extensions": ["ewbjmajocgfcbeboaewbfgobmjsjcoja@1.0"],
+        "start_pages": ["https://fb.com"],
+        "proxy": {
+            "type": "socks5",
+            "host": "1.1.1.1",
+            "port": 5555,
+            "login": "",
+            "password": ""
+        },
+        "local_cache": true,
+        "cookies": [
+            {
+                "domain": ".google.com",
+                "expirationDate": 1639134293.313654,
+                "hostOnly": false,
+                "httpOnly": false,
+                "name": "1P_JAR",
+                "path": "/",
+                "sameSite": "no_restriction",
+                "secure": true,
+                "value": "2021-11-10-11"
+            }
+        ]
+    },
+    "headless": false,
+    "debug_port": true,
+    "flags": [],
+    "timeout": 60
+}'
+```
+
+**Minimal example (let Octo generate fingerprint):**
+```bash
+curl -s -X POST "http://localhost:56933/api/profiles/one_time/start" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "profile_data": {
+        "fingerprint": {"os": "win"}
+    },
+    "debug_port": true
+}'
+```
+
+**Parameters:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `profile_data.fingerprint` | object | Fingerprint config (only `os` required, rest auto-generated) |
+| `profile_data.extensions` | array | Extension IDs with version, e.g. `"id@1.0"` |
+| `profile_data.start_pages` | array | URLs to open on start |
+| `profile_data.proxy` | object | Proxy config: `{type, host, port, login, password}` |
+| `profile_data.local_cache` | bool | Enable local cache |
+| `profile_data.cookies` | array | Cookies to inject |
+| `headless` | bool | Run in headless mode |
+| `debug_port` | bool | Enable Chrome DevTools port |
+| `flags` | array | Chrome launch flags |
+| `timeout` | int | Start timeout in seconds |
+
+**Response:**
+```json
+{
+  "uuid": "9a906e7d45124e6fb37388633277c22f",
+  "state": "STARTED",
+  "headless": false,
+  "start_time": 1702904780,
+  "ws_endpoint": "ws://127.0.0.1:63269/devtools/browser/f7aa4e97-c300-404f-b9c7-2633db0c1515",
+  "debug_port": "63269",
+  "one_time": true
+}
+```
+
+**Key response fields:**
+- `uuid`: Temporary profile ID (for stopping)
+- `ws_endpoint`: WebSocket URL for Playwright/Puppeteer CDP connection
+- `debug_port`: Chrome DevTools port for automation
+
 #### Get profile (view)
 
 ```http
@@ -513,7 +630,7 @@ BASE="http://localhost:$PORT"
 # Create
 RES=$(curl -s -X POST "$BASE/api/v2/profiles/quick" \
   -H "Content-Type: application/json" \
-  -d '{"title": "Automation Profile", "os": "win"}')
+  -d '{"title": "Automation Profile", "os": "mac"}')
 UUID=$(echo "$RES" | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['uuid'])")
 
 # Start

@@ -5,13 +5,13 @@
 # Credential Loading
 # ============================================
 
+# Credentials file path
+$script:CredFile = "/allah/blue/cred.json"
+
 function Get-DecodoCreds {
-    $credPath = Join-Path $env:USERPROFILE "Documents\cred.json"
-    
-    if (Test-Path $credPath) {
-        return Get-Content $credPath | ConvertFrom-Json
+    if (Test-Path $script:CredFile) {
+        return Get-Content $script:CredFile | ConvertFrom-Json
     }
-    
     return $null
 }
 
@@ -37,8 +37,8 @@ function Initialize-Credentials {
 $script:ProxyHostSocks5 = "gate.decodo.com"
 $script:ProxyPortSocks5 = "7000"
 $script:ProxyHostHttps = "gate.decodo.com"
-$script:ProxyPortHttpsMin = 30001
-$script:ProxyPortHttpsMax = 50000
+$script:ProxyPortHttpsMin = 10001
+$script:ProxyPortHttpsMax = 49999
 
 # API endpoints
 $script:DecodoIpApi = "https://ip.decodo.com/json"

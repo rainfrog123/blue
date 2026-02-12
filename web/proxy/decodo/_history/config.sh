@@ -8,14 +8,17 @@
 # Credential Loading
 # ============================================
 
+# Credentials file path (relative to /allah/blue/)
+CRED_FILE="/allah/blue/cred.json"
+
 # Load credentials from environment variables or cred.json
 load_credentials() {
     # Decodo proxy credentials
     DECODO_USERNAME="${DECODO_USERNAME:-user-sp3j58curv}"
-    DECODO_PASSWORD="${DECODO_PASSWORD:-$(jq -r '.proxy.decodo.password' ~/Documents/cred.json 2>/dev/null || echo 'SET_DECODO_PASSWORD_ENV')}"
+    DECODO_PASSWORD="${DECODO_PASSWORD:-$(jq -r '.proxy.decodo.password' "$CRED_FILE" 2>/dev/null || echo 'SET_DECODO_PASSWORD_ENV')}"
     
     # IPQS API credentials
-    IPQS_API_KEY="${IPQS_API_KEY:-$(jq -r '.ipqs.default_key' ~/Documents/cred.json 2>/dev/null || echo 'SET_IPQS_API_KEY_ENV')}"
+    IPQS_API_KEY="${IPQS_API_KEY:-$(jq -r '.ipqs.default_key' "$CRED_FILE" 2>/dev/null || echo 'SET_IPQS_API_KEY_ENV')}"
     
     export DECODO_USERNAME DECODO_PASSWORD IPQS_API_KEY
 }
@@ -28,8 +31,8 @@ load_credentials() {
 PROXY_HOST_SOCKS5="gate.decodo.com"
 PROXY_PORT_SOCKS5="7000"
 PROXY_HOST_HTTPS="gate.decodo.com"
-PROXY_PORT_HTTPS_MIN="30001"
-PROXY_PORT_HTTPS_MAX="50000"
+PROXY_PORT_HTTPS_MIN="10001"
+PROXY_PORT_HTTPS_MAX="49999"
 
 # API endpoints
 DECODO_IP_API="https://ip.decodo.com/json"
