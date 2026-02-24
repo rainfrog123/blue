@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gemini Slash Focus
+// @name         Gemini Tab Focus
 // @namespace    http://tampermonkey.net/
 // @version      1.0
-// @description  Press / to instantly focus the Gemini prompt input
+// @description  Press Tab to instantly focus the Gemini prompt input
 // @author       You
 // @match        https://gemini.google.com/*
 // @grant        none
@@ -27,11 +27,11 @@
     }
 
     document.addEventListener('keydown', (e) => {
-        // Only trigger on "/" key
-        if (e.key !== '/') return;
+        // Only trigger on "Tab" key
+        if (e.key !== 'Tab') return;
 
         // Don't trigger if user is already typing in an input field
-        if (isEditableElement(document.activeElement)) return;
+        // if (isEditableElement(document.activeElement)) return;
 
         // Don't trigger with modifier keys
         if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -40,9 +40,9 @@
         if (input) {
             e.preventDefault();
             input.focus();
-            console.log('[Gemini Slash Focus] Focused prompt input');
+            console.log('[Gemini Tab Focus] Focused prompt input');
         }
     });
 
-    console.log('[Gemini Slash Focus] Script loaded - press / to focus prompt');
+    console.log('[Gemini Tab Focus] Script loaded - press Tab to focus prompt');
 })();
