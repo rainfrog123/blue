@@ -189,10 +189,10 @@ def rotate_and_terminate():
         return None
     
     # =========================================================================
-    # Step 2: Wait for snapshot
+    # Step 2: Wait for snapshot (30 min timeout for large disks)
     # =========================================================================
     print(f"\n[2/7] Waiting for snapshot to complete...")
-    if not wait_for_snapshot(new_snapshot_id):
+    if not wait_for_snapshot(new_snapshot_id, timeout=1800):
         print("[ERROR] Snapshot failed")
         return None
     print(f"  Snapshot ready: {new_snapshot_id}")
@@ -207,10 +207,10 @@ def rotate_and_terminate():
         return None
     
     # =========================================================================
-    # Step 4: Wait for image
+    # Step 4: Wait for image (30 min timeout for large disks)
     # =========================================================================
     print(f"\n[4/7] Waiting for image to be available...")
-    if not wait_for_image(new_image_id):
+    if not wait_for_image(new_image_id, timeout=1800):
         print("[ERROR] Image creation failed")
         return None
     print(f"  Image ready: {new_image_id}")
