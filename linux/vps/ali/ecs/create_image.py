@@ -1,7 +1,16 @@
-# %% Setup
-"""Create custom images from ECS instances."""
-from client import print_header
-from ecs_api import list_instances, list_images, create_image
+# %% Create Image - Snapshot Running Instance to Custom Image
+"""
+Create custom machine images from running ECS instances.
+
+Images capture the full system disk state and can be used to
+provision new instances with identical configuration.
+
+Usage:
+    Run to create an image from the first available instance.
+    Image names are auto-generated with timestamps.
+"""
+from aliyun_client import print_header
+from ecs_operations import list_instances, list_images, create_image
 
 print_header("CREATE IMAGE")
 

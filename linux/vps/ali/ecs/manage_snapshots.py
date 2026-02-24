@@ -1,12 +1,24 @@
-# %% Setup
-"""Snapshot Manager - Create, list, and delete disk snapshots."""
-from client import print_header
-from ecs_api import (
+# %% Manage Snapshots - Create, List, and Delete Disk Snapshots
+"""
+Disk snapshot management for backup and recovery.
+
+Snapshots capture point-in-time disk state and can be used to:
+- Create custom images
+- Restore disk data
+- Clone disks to new instances
+
+Usage:
+    Run interactively to list snapshots and disks.
+    Use create_snapshot() for new snapshots.
+    Use delete_all_snapshots() for cleanup.
+"""
+from aliyun_client import print_header
+from ecs_operations import (
     list_disks, list_snapshots,
     create_snapshot, delete_snapshot, delete_all_snapshots
 )
 
-print_header("SNAPSHOT MANAGER")
+print_header("MANAGE SNAPSHOTS")
 
 
 # %% List Snapshots and Disks

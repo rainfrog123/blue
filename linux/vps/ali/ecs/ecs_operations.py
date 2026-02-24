@@ -1,26 +1,32 @@
-# %% Alibaba Cloud ECS API - Shared Functions
+# %% Alibaba Cloud ECS Operations - Shared API Functions
 """
-Common ECS API operations used across scripts.
+Common ECS API operations for instance, image, snapshot, and disk management.
+
+This module provides reusable functions for interacting with Alibaba Cloud ECS.
+All functions include verbose output options and proper error handling.
+
+Categories:
+    - Instances: list_instances, get_instance
+    - Images: list_images, get_latest_image, create_image, delete_image
+    - Snapshots: list_snapshots, create_snapshot, delete_snapshot
+    - Disks: list_disks, get_system_disk
+    - Bulk: delete_all_images, delete_all_snapshots
 
 Usage:
-    from ecs_api import (
-        list_instances, get_instance,
-        list_images, get_latest_image,
-        list_snapshots, list_disks, get_system_disk,
-        create_snapshot, delete_snapshot, wait_for_snapshot,
-        create_image, create_image_from_snapshot, delete_image, wait_for_image,
-    )
+    from ecs_operations import list_instances, create_image, rotate_backup
 """
+from __future__ import annotations
+from typing import Optional, List, Any
 import time
 from datetime import datetime
-from client import ecs_client, ecs_models, REGION_ID
+from aliyun_client import ecs_client, ecs_models, REGION_ID
 
 
 # =============================================================================
 # INSTANCES
 # =============================================================================
 
-def list_instances(status: str = None, verbose: bool = True):
+def list_instances(status: Optional[str] = None, verbose: bool = True) -> List[Any]:
     """
     List ECS instances in the region.
     
@@ -69,7 +75,7 @@ def list_instances(status: str = None, verbose: bool = True):
     return instances
 
 
-def get_instance(instance_id: str = None):
+def get_instance(instance_id: Optional[str] = None) -> Optional[Any]:
     """
     Get a single instance by ID, or the first available instance.
     
@@ -97,7 +103,7 @@ def get_instance(instance_id: str = None):
 # IMAGES
 # =============================================================================
 
-def list_images(image_type: str = "self", verbose: bool = True):
+def list_images(image_type: str = "self", verbose: bool = True) -> List[Any]:
     """
     List available images.
     
@@ -146,7 +152,7 @@ def list_images(image_type: str = "self", verbose: bool = True):
     return images
 
 
-def get_latest_image(image_type: str = "self"):
+def get_latest_image(image_type: str = "self") -> Optional[Any]:
     """
     Get the most recently created image.
     
@@ -166,8 +172,12 @@ def get_latest_image(image_type: str = "self"):
     return sorted_images[0]
 
 
-def create_image(instance_id: str = None, snapshot_id: str = None, 
-                 image_name: str = None, description: str = None):
+def create_image(
+    instance_id: Optional[str] = None,
+    snapshot_id: Optional[str] = None,
+    image_name: Optional[str] = None,
+    description: Optional[str] = None,
+) -> Optional[str]:
     """
     Create a custom image from an instance or snapshot.
     
@@ -232,12 +242,16 @@ def create_image(instance_id: str = None, snapshot_id: str = None,
         return None
 
 
-def create_image_from_snapshot(snapshot_id: str, image_name: str = None, description: str = None):
+def create_image_from_snapshot(
+    snapshot_id: str,
+    image_name: Optional[str] = None,
+    description: Optional[str] = None,
+) -> Optional[str]:
     """Convenience wrapper for create_image with snapshot."""
     return create_image(snapshot_id=snapshot_id, image_name=image_name, description=description)
 
 
-def wait_for_image(image_id: str, timeout: int = 600, verbose: bool = True):
+def wait_for_image(image_id: str, timeout: int = 600, verbose: bool = True) -> bool:
     """
     Wait for an image to become available.
     
@@ -279,7 +293,7 @@ def wait_for_image(image_id: str, timeout: int = 600, verbose: bool = True):
     return False
 
 
-def delete_image(image_id: str, force: bool = False, verbose: bool = True):
+def delete_image(image_id: str, force: bool = False, verbose: bool = True) -> bool:
     """
     Delete a custom image.
     
@@ -326,7 +340,11 @@ def delete_image(image_id: str, force: bool = False, verbose: bool = True):
 # SNAPSHOTS
 # =============================================================================
 
-def list_snapshots(disk_id: str = None, instance_id: str = None, verbose: bool = True):
+def list_snapshots(
+    disk_id: Optional[str] = None,
+    instance_id: Optional[str] = None,
+    verbose: bool = True,
+) -> List[Any]:
     """
     List snapshots, optionally filtered.
     
@@ -380,8 +398,12 @@ def list_snapshots(disk_id: str = None, instance_id: str = None, verbose: bool =
     return snapshots
 
 
-def create_snapshot(disk_id: str, snapshot_name: str = None, 
-                    description: str = None, instant_access: bool = False):
+def create_snapshot(
+    disk_id: str,
+    snapshot_name: Optional[str] = None,
+    description: Optional[str] = None,
+    instant_access: bool = False,
+) -> Optional[str]:
     """
     Create a snapshot from a cloud disk.
     
@@ -430,7 +452,7 @@ def create_snapshot(disk_id: str, snapshot_name: str = None,
         return None
 
 
-def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True):
+def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True) -> bool:
     """
     Wait for a snapshot to complete.
     
@@ -473,7 +495,7 @@ def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True
     return False
 
 
-def delete_snapshot(snapshot_id: str, force: bool = False, verbose: bool = True):
+def delete_snapshot(snapshot_id: str, force: bool = False, verbose: bool = True) -> bool:
     """
     Delete a snapshot.
     
@@ -519,7 +541,11 @@ def delete_snapshot(snapshot_id: str, force: bool = False, verbose: bool = True)
 # DISKS
 # =============================================================================
 
-def list_disks(instance_id: str = None, disk_type: str = None, verbose: bool = True):
+def list_disks(
+    instance_id: Optional[str] = None,
+    disk_type: Optional[str] = None,
+    verbose: bool = True,
+) -> List[Any]:
     """
     List cloud disks, optionally filtered.
     
@@ -572,7 +598,7 @@ def list_disks(instance_id: str = None, disk_type: str = None, verbose: bool = T
     return disks
 
 
-def get_system_disk(instance_id: str):
+def get_system_disk(instance_id: str) -> Optional[Any]:
     """
     Get the system disk of an instance.
     
@@ -590,7 +616,7 @@ def get_system_disk(instance_id: str):
 # BULK OPERATIONS
 # =============================================================================
 
-def delete_all_images(keep_ids: list = None, force: bool = False):
+def delete_all_images(keep_ids: Optional[List[str]] = None, force: bool = False) -> int:
     """
     Delete all custom images except those in keep_ids.
     
@@ -628,7 +654,7 @@ def delete_all_images(keep_ids: list = None, force: bool = False):
     return deleted
 
 
-def delete_all_snapshots(keep_ids: list = None, force: bool = False):
+def delete_all_snapshots(keep_ids: Optional[List[str]] = None, force: bool = False) -> int:
     """
     Delete all snapshots except those in keep_ids.
     

@@ -1,20 +1,31 @@
-# %% Setup
+# %% Rotate Backup - Automated Snapshot and Image Rotation
 """
-ECS Backup Rotation Script
-- Creates a new snapshot from the current instance's system disk
-- Creates a new image from that snapshot
-- Deletes the old snapshot and old image
+Automated backup rotation for ECS instances.
+
+This script implements a rotation strategy that:
+1. Creates a new snapshot from the system disk
+2. Waits for snapshot completion
+3. Creates a new custom image from the snapshot
+4. Optionally deletes old snapshots and images
+
+Functions:
+    create_backup()  - Create new backup, keep existing
+    rotate_backup()  - Create new backup, delete old ones
+
+Usage:
+    Run create_backup() for safe incremental backups.
+    Run rotate_backup() to maintain single backup (saves storage cost).
 """
 from datetime import datetime
-from client import print_header
-from ecs_api import (
+from aliyun_client import print_header
+from ecs_operations import (
     get_instance, get_system_disk,
     list_snapshots, list_images,
     create_snapshot, wait_for_snapshot, delete_snapshot,
     create_image_from_snapshot, wait_for_image, delete_image
 )
 
-print_header("BACKUP ROTATION")
+print_header("ROTATE BACKUP")
 
 
 # %% Display Current State

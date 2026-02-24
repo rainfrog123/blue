@@ -1,13 +1,19 @@
-# %% [markdown]
-# # Alibaba Cloud VPS API Testing
-# Testing ECS (Elastic Compute Service) API operations
+# %% Explore API - Alibaba Cloud ECS API Testing and Discovery
+"""
+API exploration and testing utilities for Alibaba Cloud ECS.
 
-# %% Setup
-"""API testing for Alibaba Cloud ECS."""
-from client import ecs_client, ecs_models, REGION_ID, print_header
-from ecs_api import list_instances, list_images, list_disks, list_snapshots
+Use this script to:
+- List available regions and endpoints
+- Explore instance types and pricing
+- Query current resources (instances, images, disks, snapshots)
+- Test spot instance pricing
 
-print_header("API TEST")
+Useful for understanding available options before provisioning.
+"""
+from aliyun_client import ecs_client, ecs_models, REGION_ID, print_header
+from ecs_operations import list_instances, list_images, list_disks, list_snapshots
+
+print_header("EXPLORE API")
 
 
 # %% List All Regions

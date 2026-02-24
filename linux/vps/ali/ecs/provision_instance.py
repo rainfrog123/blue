@@ -1,16 +1,29 @@
-# %% Setup
-"""Create ECS instances from custom images."""
+# %% Provision Instance - Create ECS from Custom Image
+"""
+Provision new ECS instances from custom machine images.
+
+This script handles the full provisioning workflow:
+1. Discovers available VPC, VSwitch, Security Group, and Key Pairs
+2. Lists custom images and selects the latest
+3. Creates a new instance with spot pricing (optional)
+4. Updates local SSH config and VNC connections with new IP
+5. Clears old SSH known_hosts entries
+
+Usage:
+    Run interactively cell-by-cell, or execute the whole script.
+    The build_instance() function can be called with custom parameters.
+"""
 import re
 import time
 from pathlib import Path
 from datetime import datetime
-from client import (
+from aliyun_client import (
     ecs_client, ecs_models, REGION_ID, ACCESS_KEY_ID, ACCESS_KEY_SECRET,
     open_api_models, print_header, create_vpc_client
 )
-from ecs_api import list_images, get_latest_image
+from ecs_operations import list_images, get_latest_image
 
-print_header("BUILD SCRIPT")
+print_header("PROVISION INSTANCE")
 print(f"Endpoint:   ecs.{REGION_ID}.aliyuncs.com")
 
 # SSH config path

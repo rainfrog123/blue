@@ -1,10 +1,22 @@
-# %% Setup
-"""Delete ECS instances."""
-import time
-from client import ecs_client, ecs_models, REGION_ID, print_header
-from ecs_api import list_instances, list_disks
+# %% Terminate Instance - Stop and Delete ECS
+"""
+Terminate ECS instances and release associated resources.
 
-print_header("DELETE INSTANCE")
+This script provides safe instance termination:
+1. Displays instance details and attached resources
+2. Shows which disks will be auto-deleted vs retained
+3. Stops the instance gracefully (with timeout)
+4. Deletes the instance and auto-delete disks
+
+Usage:
+    Run interactively to review instance details before termination.
+    Call release_all() to execute the full stop + delete workflow.
+"""
+import time
+from aliyun_client import ecs_client, ecs_models, REGION_ID, print_header
+from ecs_operations import list_instances, list_disks
+
+print_header("TERMINATE INSTANCE")
 
 
 # %% Show Current ECS Instance

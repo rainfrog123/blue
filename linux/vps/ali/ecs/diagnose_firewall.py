@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-# %% Security Group Debugger
+# %% Diagnose Firewall - Security Group Rule Analysis
 """
-Debug security group rules to find if port 443 is blocked.
+Diagnose security group (firewall) rules for ECS instances.
+
+This tool helps troubleshoot network connectivity by:
+1. Finding the instance by public IP
+2. Listing all security group rules
+3. Checking if a specific port is allowed or blocked
+4. Providing remediation steps if blocked
 
 Usage:
-    python debug_security_group.py [instance_ip] [port]
-    
+    python diagnose_firewall.py [instance_ip] [port]
+
 Example:
-    python debug_security_group.py 47.86.7.159 443
+    python diagnose_firewall.py 47.86.7.159 443
+    python diagnose_firewall.py 47.86.7.159 22
 """
 import sys
-from client import ecs_client, ecs_models, REGION_ID, print_header
+from aliyun_client import ecs_client, ecs_models, REGION_ID, print_header
 
 def check_port_in_range(port: int, port_range: str) -> bool:
     """Check if a port is included in a port range string."""

@@ -1,10 +1,20 @@
-# %% Alibaba Cloud ECS Client - Shared Module
+# %% Alibaba Cloud ECS Client - Shared Configuration
 """
-Shared ECS client configuration.
-All scripts import from this module.
+Alibaba Cloud ECS Client Configuration.
+
+This module provides shared configuration, credentials, and client instances
+for all ECS management scripts. It handles credential loading, client
+initialization, and common utility functions.
+
+Exports:
+    ecs_client: Configured ECS API client
+    ecs_models: ECS request/response models
+    REGION_ID: Target region (cn-hongkong)
+    print_header: Formatted output helper
+    create_vpc_client: Factory for VPC client
 
 Usage:
-    from client import ecs_client, ecs_models, REGION_ID, print_header
+    from aliyun_client import ecs_client, ecs_models, REGION_ID, print_header
 """
 import sys
 from pathlib import Path
