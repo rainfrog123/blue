@@ -7,8 +7,8 @@ This script:
 2. Waits for snapshot completion
 3. Creates a custom image from the snapshot
 4. Waits for image to be available
-5. Deletes all OLD snapshots (keeps only the new one)
-6. Deletes all OLD images (keeps only the new one)
+5. Deletes all OLD images (keeps only the new one) - must be before snapshots
+6. Deletes all OLD snapshots (keeps only the new one) - now safe after images removed
 7. Stops and deletes the instance
 
 Final state: Only ONE snapshot and ONE image remain (for later rebuild).
@@ -134,8 +134,8 @@ def rotate_and_terminate():
     2. Wait for snapshot completion
     3. Create image from snapshot
     4. Wait for image availability
-    5. Delete old snapshots (keep new)
-    6. Delete old images (keep new)
+    5. Delete old images (keep new) - must be before snapshots
+    6. Delete old snapshots (keep new) - now safe after images removed
     7. Stop and delete instance
     
     Returns:
@@ -216,21 +216,9 @@ def rotate_and_terminate():
     print(f"  Image ready: {new_image_id}")
     
     # =========================================================================
-    # Step 5: Delete old snapshots
+    # Step 5: Delete old images (must be before snapshots - images reference snapshots)
     # =========================================================================
-    print(f"\n[5/7] Deleting old snapshots...")
-    for snap in old_snapshots:
-        if snap.snapshot_id != new_snapshot_id:
-            try:
-                delete_snapshot(snap.snapshot_id, force=True, verbose=False)
-                print(f"  Deleted: {snap.snapshot_id}")
-            except Exception as e:
-                print(f"  [WARN] Failed to delete {snap.snapshot_id}: {e}")
-    
-    # =========================================================================
-    # Step 6: Delete old images
-    # =========================================================================
-    print(f"\n[6/7] Deleting old images...")
+    print(f"\n[5/7] Deleting old images...")
     for img in old_images:
         if img.image_id != new_image_id:
             try:
@@ -238,6 +226,18 @@ def rotate_and_terminate():
                 print(f"  Deleted: {img.image_id}")
             except Exception as e:
                 print(f"  [WARN] Failed to delete {img.image_id}: {e}")
+    
+    # =========================================================================
+    # Step 6: Delete old snapshots (now safe - images removed)
+    # =========================================================================
+    print(f"\n[6/7] Deleting old snapshots...")
+    for snap in old_snapshots:
+        if snap.snapshot_id != new_snapshot_id:
+            try:
+                delete_snapshot(snap.snapshot_id, force=True, verbose=False)
+                print(f"  Deleted: {snap.snapshot_id}")
+            except Exception as e:
+                print(f"  [WARN] Failed to delete {snap.snapshot_id}: {e}")
     
     # =========================================================================
     # Step 7: Stop and delete instance
