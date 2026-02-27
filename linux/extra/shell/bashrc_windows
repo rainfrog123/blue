@@ -220,4 +220,11 @@ alias explorer='explorer.exe .'
 alias open='start'
 
 # === Quick cd ===
+alias az='cd "$BLUE_DIR/linux/vps/azure"'
 alias clash='cd "$HOME/.config/clash/profiles"'
+
+# === Azure VM ===
+alias de='python "$BLUE_DIR/linux/vps/azure/cli.py" deallocate'
+alias azstart='python "$BLUE_DIR/linux/vps/azure/cli.py" start'
+alias azstatus='python "$BLUE_DIR/linux/vps/azure/cli.py" status'
+
