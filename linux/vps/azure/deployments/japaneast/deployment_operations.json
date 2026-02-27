@@ -1,0 +1,70 @@
+[
+  {
+    "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052/operations/D5CC809FC6E68E1E",
+    "operationId": "D5CC809FC6E68E1E",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Running",
+      "timestamp": "2026-02-27T13:35:23.7543684Z",
+      "duration": "PT2.2433388S",
+      "trackingId": "aadf40db-15ec-4867-8bd6-acaef7c8b16e",
+      "statusCode": "Created",
+      "targetResource": {
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Compute/virtualMachines/blue",
+        "resourceType": "Microsoft.Compute/virtualMachines",
+        "resourceName": "blue"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052/operations/46CA2132661D06C4",
+    "operationId": "46CA2132661D06C4",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "timestamp": "2026-02-27T13:35:23.7543684Z",
+      "duration": "PT1.274588S",
+      "trackingId": "22a5b636-771a-4eac-88a6-8ccfb333a063",
+      "statusCode": "OK",
+      "targetResource": {
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/networkInterfaces/blue796_z1",
+        "resourceType": "Microsoft.Network/networkInterfaces",
+        "resourceName": "blue796_z1"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052/operations/3C03093846CA4838",
+    "operationId": "3C03093846CA4838",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "timestamp": "2026-02-27T13:35:11.5269625Z",
+      "duration": "PT10.2024609S",
+      "trackingId": "24be31e1-9532-402a-8e8a-7b155d890b53",
+      "statusCode": "OK",
+      "targetResource": {
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/publicIpAddresses/blue-ip",
+        "resourceType": "Microsoft.Network/publicIpAddresses",
+        "resourceName": "blue-ip"
+      }
+    }
+  },
+  {
+    "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052/operations/83587D90242FF393",
+    "operationId": "83587D90242FF393",
+    "properties": {
+      "provisioningOperation": "Create",
+      "provisioningState": "Succeeded",
+      "timestamp": "2026-02-27T13:35:11.5269625Z",
+      "duration": "PT12.1650099S",
+      "trackingId": "59e8d15a-d3d1-4b6a-80c1-261fa58e8267",
+      "statusCode": "OK",
+      "targetResource": {
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/network-interface-associated-virtual-network-20260227133502",
+        "resourceType": "Microsoft.Resources/deployments",
+        "resourceName": "network-interface-associated-virtual-network-20260227133502"
+      }
+    }
+  }
+]

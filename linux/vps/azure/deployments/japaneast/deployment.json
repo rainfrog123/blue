@@ -1,0 +1,247 @@
+{
+  "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052",
+  "name": "CreateVm-canonical.ubuntu-24_04-lts-server-20260227123052",
+  "type": "Microsoft.Resources/deployments",
+  "tags": {
+    "primaryResourceId": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourcegroups/plan/providers/Microsoft.Compute/virtualMachines/blue",
+    "marketplaceItemId": "Microsoft.VirtualMachine-ARM",
+    "provisioningHash": "SolutionProvider"
+  },
+  "properties": {
+    "templateHash": "17576096613456348528",
+    "parameters": {
+      "location": {
+        "type": "String",
+        "value": "japaneast"
+      },
+      "networkInterfaceName1": {
+        "type": "String",
+        "value": "blue796_z1"
+      },
+      "enableAcceleratedNetworking": {
+        "type": "Bool",
+        "value": true
+      },
+      "subnetId": {
+        "type": "String",
+        "value": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/virtualNetworks/vnet-japaneast/subnets/snet-japaneast-1"
+      },
+      "publicIpAddressName1": {
+        "type": "String",
+        "value": "blue-ip"
+      },
+      "publicIpAddressType": {
+        "type": "String",
+        "value": "Static"
+      },
+      "publicIpAddressSku": {
+        "type": "String",
+        "value": "Standard"
+      },
+      "pipDeleteOption": {
+        "type": "String",
+        "value": "Delete"
+      },
+      "virtualMachineName": {
+        "type": "String",
+        "value": "blue"
+      },
+      "virtualMachineName1": {
+        "type": "String",
+        "value": "blue"
+      },
+      "virtualMachineComputerName1": {
+        "type": "String",
+        "value": "blue"
+      },
+      "virtualMachineRG": {
+        "type": "String",
+        "value": "plan"
+      },
+      "osDiskType": {
+        "type": "String",
+        "value": "Premium_LRS"
+      },
+      "osDiskSizeGiB": {
+        "type": "Int",
+        "value": 256
+      },
+      "osDiskDeleteOption": {
+        "type": "String",
+        "value": "Delete"
+      },
+      "diskControllerType": {
+        "type": "String",
+        "value": "NVMe"
+      },
+      "virtualMachineSize": {
+        "type": "String",
+        "value": "Standard_D4as_v7"
+      },
+      "nicDeleteOption": {
+        "type": "String",
+        "value": "Delete"
+      },
+      "hibernationEnabled": {
+        "type": "Bool",
+        "value": false
+      },
+      "adminUsername": {
+        "type": "String",
+        "value": "azureuser"
+      },
+      "adminPublicKey": {
+        "type": "SecureString"
+      },
+      "enablePeriodicAssessment": {
+        "type": "String",
+        "value": "ImageDefault"
+      },
+      "virtualMachine1Zone": {
+        "type": "String",
+        "value": "1"
+      },
+      "vnetLocation": {
+        "type": "String",
+        "value": "japaneast"
+      },
+      "vnetExtendedLocation": {
+        "type": "Object",
+        "value": {}
+      },
+      "vnetVirtualNetworkName": {
+        "type": "String",
+        "value": "vnet-japaneast"
+      },
+      "vnetTagsByResource": {
+        "type": "Object",
+        "value": {}
+      },
+      "vnetProperties": {
+        "type": "Object",
+        "value": {
+          "subnets": [
+            {
+              "name": "snet-japaneast-1",
+              "properties": {
+                "addressPrefixes": [
+                  "172.16.0.0/24"
+                ]
+              }
+            }
+          ],
+          "addressSpace": {
+            "addressPrefixes": [
+              "172.16.0.0/16"
+            ]
+          }
+        }
+      },
+      "vnetNatGatewaysWithNewPublicIpAddress": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNatGatewaysWithoutNewPublicIpAddress": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNatGatewayPublicIpAddressesNewNames": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNetworkSecurityGroupsNew": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetResourceGroupName": {
+        "type": "String",
+        "value": "plan"
+      },
+      "vnetDeploymentName": {
+        "type": "String",
+        "value": "network-interface-associated-virtual-network-20260227133502"
+      }
+    },
+    "mode": "Incremental",
+    "debugSetting": {
+      "detailLevel": "None"
+    },
+    "provisioningState": "Running",
+    "timestamp": "2026-02-27T13:35:10.4182464Z",
+    "duration": "PT15.437922S",
+    "correlationId": "0e099848-c812-4667-a848-5a3f89b836d5",
+    "providers": [
+      {
+        "namespace": "Microsoft.Network",
+        "resourceTypes": [
+          {
+            "resourceType": "networkInterfaces",
+            "locations": [
+              "japaneast"
+            ]
+          },
+          {
+            "resourceType": "publicIpAddresses",
+            "locations": [
+              "japaneast"
+            ]
+          }
+        ]
+      },
+      {
+        "namespace": "Microsoft.Compute",
+        "resourceTypes": [
+          {
+            "resourceType": "virtualMachines",
+            "locations": [
+              "japaneast"
+            ]
+          }
+        ]
+      },
+      {
+        "namespace": "Microsoft.Resources",
+        "resourceTypes": [
+          {
+            "resourceType": "deployments",
+            "locations": [
+              null
+            ]
+          }
+        ]
+      }
+    ],
+    "dependencies": [
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/publicIpAddresses/blue-ip",
+            "resourceType": "Microsoft.Network/publicIpAddresses",
+            "resourceName": "blue-ip"
+          },
+          {
+            "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Resources/deployments/network-interface-associated-virtual-network-20260227133502",
+            "resourceType": "Microsoft.Resources/deployments",
+            "resourceName": "network-interface-associated-virtual-network-20260227133502"
+          }
+        ],
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/networkInterfaces/blue796_z1",
+        "resourceType": "Microsoft.Network/networkInterfaces",
+        "resourceName": "blue796_z1"
+      },
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Network/networkInterfaces/blue796_z1",
+            "resourceType": "Microsoft.Network/networkInterfaces",
+            "resourceName": "blue796_z1"
+          }
+        ],
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/plan/providers/Microsoft.Compute/virtualMachines/blue",
+        "resourceType": "Microsoft.Compute/virtualMachines",
+        "resourceName": "blue"
+      }
+    ],
+    "validationLevel": "Template"
+  }
+}

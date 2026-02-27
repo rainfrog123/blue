@@ -186,6 +186,7 @@ alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
 alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
 
 # === Utility ===
+alias octo='/allah/blue/web/auto/octo/hid/hid_spoofer.sh --start'
 alias bashrc='cursor /allah/blue/linux/extra/shell/bashrc'
 alias cls='clear'
 alias code='cursor'

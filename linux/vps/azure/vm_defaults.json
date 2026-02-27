@@ -1,0 +1,33 @@
+{
+  "vm_name": "blue",
+  "resource_group": "plan",
+  "location": "japaneast",
+  "zone": "1",
+  "vm_size": "Standard_D4as_v7",
+  "os_image": {
+    "publisher": "canonical",
+    "offer": "ubuntu-24_04-lts",
+    "sku": "server",
+    "version": "latest"
+  },
+  "os_disk": {
+    "size_gb": 256,
+    "type": "Premium_LRS",
+    "controller": "NVMe",
+    "delete_option": "Delete"
+  },
+  "network": {
+    "vnet_name": "vnet-japaneast",
+    "vnet_address_space": "172.16.0.0/16",
+    "subnet_name": "snet-japaneast-1",
+    "subnet_prefix": "172.16.0.0/24",
+    "accelerated_networking": true,
+    "public_ip_type": "Static",
+    "public_ip_sku": "Standard"
+  },
+  "admin": {
+    "username": "azureuser",
+    "auth_type": "ssh_key"
+  },
+  "subscription_id": "79c81b4b-ee78-49de-9cba-af5f987e6b38"
+}

@@ -1,0 +1,201 @@
+{
+  "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/singapore/providers/Microsoft.Resources/deployments/CreateVm-canonical.ubuntu-24_04-lts-server-20260227134235",
+  "name": "CreateVm-canonical.ubuntu-24_04-lts-server-20260227134235",
+  "type": "Microsoft.Resources/deployments",
+  "tags": {
+    "primaryResourceId": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourcegroups/singapore/providers/Microsoft.Compute/virtualMachines/blue",
+    "marketplaceItemId": "Microsoft.VirtualMachine-ARM",
+    "provisioningHash": "SolutionProvider"
+  },
+  "properties": {
+    "templateHash": "9048830817034502206",
+    "parameters": {
+      "location": {
+        "type": "String",
+        "value": "southeastasia"
+      },
+      "subnetId": {
+        "type": "String",
+        "value": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/singapore/providers/Microsoft.Network/virtualNetworks/vnet-southeastasia/subnets/snet-southeastasia-1"
+      },
+      "publicIpAddressName": {
+        "type": "String",
+        "value": "blue-ip"
+      },
+      "publicIpAddressType": {
+        "type": "String",
+        "value": "Static"
+      },
+      "publicIpAddressSku": {
+        "type": "String",
+        "value": "Standard"
+      },
+      "virtualMachineName": {
+        "type": "String",
+        "value": "blue"
+      },
+      "virtualMachineComputerName": {
+        "type": "String",
+        "value": "blue"
+      },
+      "virtualMachineRG": {
+        "type": "String",
+        "value": "singapore"
+      },
+      "osDiskType": {
+        "type": "String",
+        "value": "Premium_LRS"
+      },
+      "osDiskSizeGiB": {
+        "type": "Int",
+        "value": 256
+      },
+      "osDiskDeleteOption": {
+        "type": "String",
+        "value": "Delete"
+      },
+      "diskControllerType": {
+        "type": "String",
+        "value": "NVMe"
+      },
+      "virtualMachineSize": {
+        "type": "String",
+        "value": "Standard_D4as_v7"
+      },
+      "networkInterfaceName": {
+        "type": "String",
+        "value": "blue68"
+      },
+      "enableAcceleratedNetworking": {
+        "type": "Bool",
+        "value": true
+      },
+      "nicDeleteOption": {
+        "type": "String",
+        "value": "Delete"
+      },
+      "hibernationEnabled": {
+        "type": "Bool",
+        "value": false
+      },
+      "adminUsername": {
+        "type": "String",
+        "value": "azureuser"
+      },
+      "adminPublicKey": {
+        "type": "SecureString"
+      },
+      "enablePeriodicAssessment": {
+        "type": "String",
+        "value": "ImageDefault"
+      },
+      "vnetLocation": {
+        "type": "String",
+        "value": "southeastasia"
+      },
+      "vnetExtendedLocation": {
+        "type": "Object",
+        "value": {}
+      },
+      "vnetVirtualNetworkName": {
+        "type": "String",
+        "value": "vnet-southeastasia"
+      },
+      "vnetTagsByResource": {
+        "type": "Object",
+        "value": {}
+      },
+      "vnetProperties": {
+        "type": "Object",
+        "value": {
+          "subnets": [
+            {
+              "name": "snet-southeastasia-1",
+              "properties": {
+                "addressPrefixes": [
+                  "172.17.0.0/24"
+                ]
+              }
+            }
+          ],
+          "addressSpace": {
+            "addressPrefixes": [
+              "172.17.0.0/16"
+            ]
+          }
+        }
+      },
+      "vnetNatGatewaysWithNewPublicIpAddress": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNatGatewaysWithoutNewPublicIpAddress": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNatGatewayPublicIpAddressesNewNames": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetNetworkSecurityGroupsNew": {
+        "type": "Array",
+        "value": []
+      },
+      "vnetResourceGroupName": {
+        "type": "String",
+        "value": "singapore"
+      },
+      "vnetDeploymentName": {
+        "type": "String",
+        "value": "network-interface-associated-virtual-network-20260227135443"
+      }
+    },
+    "mode": "Incremental",
+    "debugSetting": {
+      "detailLevel": "None"
+    },
+    "provisioningState": "Running",
+    "timestamp": "2026-02-27T13:54:48.4727101Z",
+    "duration": "PT1.0100059S",
+    "correlationId": "f4182709-ed7c-4174-8f8d-7965b22f45e8",
+    "providers": [
+      {
+        "namespace": "Microsoft.Compute",
+        "resourceTypes": [
+          {
+            "resourceType": "virtualMachines",
+            "locations": [
+              "southeastasia"
+            ]
+          }
+        ]
+      },
+      {
+        "namespace": "Microsoft.Resources",
+        "resourceTypes": [
+          {
+            "resourceType": "deployments",
+            "locations": [
+              null
+            ]
+          }
+        ]
+      }
+    ],
+    "dependencies": [
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/singapore/providers/Microsoft.Resources/deployments/network-interface-associated-virtual-network-20260227135443",
+            "resourceType": "Microsoft.Resources/deployments",
+            "resourceName": "network-interface-associated-virtual-network-20260227135443"
+          }
+        ],
+        "id": "/subscriptions/79c81b4b-ee78-49de-9cba-af5f987e6b38/resourceGroups/singapore/providers/Microsoft.Compute/virtualMachines/blue",
+        "resourceType": "Microsoft.Compute/virtualMachines",
+        "resourceName": "blue"
+      }
+    ],
+    "validationLevel": "Template"
+  }
+}
