@@ -40,7 +40,7 @@ fi
 alias bl='cd "$BLUE_DIR"'
 
 # === DIR: Freqtrade ===
-alias ft='cd "$FREQTRADE_DIR"'
+alias ft='cd "$BLUE_DIR/ft"'
 alias ftc='cd "$FREQTRADE_DIR/freqtrade"'
 alias usdt='cd "$FREQTRADE_DIR/user_data/data/binance/futures"'
 
@@ -52,14 +52,14 @@ alias dt='cd "$DATA_DIR/ml"'
 # ============================================================
 
 # --- Level 1: $BLUE_DIR/* ---
-alias fq='cd "$BLUE_DIR/freq"'                    # freq
+alias fq='cd "$FREQTRADE_DIR"'                    # freqtrade
 alias li='cd "$BLUE_DIR/linux"'                   # linux
 alias we='cd "$BLUE_DIR/web"'                     # web
 alias web='cd "$BLUE_DIR/web"'                    # web (full)
 
-# --- Level 2: $BLUE_DIR/freq/* ---
-alias mi='cd "$BLUE_DIR/freq/misc"'               # misc
-alias pro='cd "$BLUE_DIR/freq/project"'           # project
+# --- Level 2: $BLUE_DIR/ft/* ---
+alias mi='cd "$BLUE_DIR/ft/misc"'                 # misc
+alias pro='cd "$BLUE_DIR/ft/project"'             # project
 
 # --- Level 2: $BLUE_DIR/linux/* ---
 alias ex='cd "$BLUE_DIR/linux/extra"'             # extra
@@ -74,37 +74,37 @@ alias cl='cd "$BLUE_DIR/web/cloud"'               # cloud
 alias mo='cd "$BLUE_DIR/web/monitors"'            # monitors
 alias px='cd "$BLUE_DIR/web/proxy"'               # proxy
 
-# --- Level 3: $BLUE_DIR/freq/misc/* ---
-alias bi='cd "$BLUE_DIR/freq/misc/binance"'       # binance
-alias binance='cd "$BLUE_DIR/freq/misc/binance"'  # binance (full)
-alias tv='cd "$BLUE_DIR/freq/misc/tradingview"'   # tradingview
+# --- Level 3: $BLUE_DIR/ft/misc/* ---
+alias bi='cd "$BLUE_DIR/ft/misc/binance"'         # binance
+alias binance='cd "$BLUE_DIR/ft/misc/binance"'    # binance (full)
+alias tv='cd "$BLUE_DIR/ft/misc/tradingview"'     # tradingview
 
-# --- Level 3: $BLUE_DIR/freq/project/* ---
-alias ml='cd "$BLUE_DIR/freq/project/ml_datasets"'    # ml_datasets
-alias to='cd "$BLUE_DIR/freq/project/tools"'          # tools
-alias tools='cd "$BLUE_DIR/freq/project/tools"'       # tools (full)
-alias ud='cd "$BLUE_DIR/freq/project/user_data"'      # user_data
-alias us='cd "$BLUE_DIR/freq/project/user_data"'      # user_data (alt)
-alias user='cd "$BLUE_DIR/freq/project/user_data"'    # user_data (full)
+# --- Level 3: $BLUE_DIR/ft/project/* ---
+alias ml='cd "$BLUE_DIR/ft/project/ml_datasets"'      # ml_datasets
+alias to='cd "$BLUE_DIR/ft/project/tools"'            # tools
+alias tools='cd "$BLUE_DIR/ft/project/tools"'         # tools (full)
+alias ud='cd "$BLUE_DIR/ft/project/user_data"'        # user_data
+alias us='cd "$BLUE_DIR/ft/project/user_data"'        # user_data (alt)
+alias user='cd "$BLUE_DIR/ft/project/user_data"'      # user_data (full)
 
-# --- Level 4: $BLUE_DIR/freq/project/tools/* ---
-alias cv='cd "$BLUE_DIR/freq/project/tools/converters"'   # converters
-alias hi='cd "$BLUE_DIR/freq/project/tools/historical"'   # historical
-alias re='cd "$BLUE_DIR/freq/project/tools/realtime"'     # realtime
-alias cc='cd "$BLUE_DIR/freq/project/tools/realtime/ccxt"'         # ccxt connector
-alias co='cd "$BLUE_DIR/freq/project/tools/realtime/tradingview"'  # tradingview connector
+# --- Level 4: $BLUE_DIR/ft/project/tools/* ---
+alias cv='cd "$BLUE_DIR/ft/project/tools/converters"'   # converters
+alias hi='cd "$BLUE_DIR/ft/project/tools/historical"'   # historical
+alias re='cd "$BLUE_DIR/ft/project/tools/realtime"'     # realtime
+alias cc='cd "$BLUE_DIR/ft/project/tools/realtime/ccxt"'         # ccxt connector
+alias co='cd "$BLUE_DIR/ft/project/tools/realtime/tradingview"'  # tradingview connector
 
-# --- Level 4: $BLUE_DIR/freq/project/user_data/* ---
-alias cf='cd "$BLUE_DIR/freq/project/user_data/config"'           # config
-alias conf='cd "$BLUE_DIR/freq/project/user_data/config"'         # config (alt)
-alias config='cd "$BLUE_DIR/freq/project/user_data/config"'       # config (full)
-alias hr='cd "$BLUE_DIR/freq/project/user_data/hyperopt_results"' # hyperopt_results
-alias hy='cd "$BLUE_DIR/freq/project/user_data/hyperopts"'        # hyperopts
-alias md='cd "$BLUE_DIR/freq/project/user_data/models"'           # models
-alias nb='cd "$BLUE_DIR/freq/project/user_data/notebooks"'        # notebooks
-alias sc='cd "$BLUE_DIR/freq/project/user_data/scripts"'          # scripts
-alias st='cd "$BLUE_DIR/freq/project/user_data/strategies"'       # strategies
-alias strat='cd "$BLUE_DIR/freq/project/user_data/strategies"'    # strategies (full)
+# --- Level 4: $BLUE_DIR/ft/project/user_data/* ---
+alias cf='cd "$BLUE_DIR/ft/project/user_data/config"'           # config
+alias conf='cd "$BLUE_DIR/ft/project/user_data/config"'         # config (alt)
+alias config='cd "$BLUE_DIR/ft/project/user_data/config"'       # config (full)
+alias hr='cd "$BLUE_DIR/ft/project/user_data/hyperopt_results"' # hyperopt_results
+alias hy='cd "$BLUE_DIR/ft/project/user_data/hyperopts"'        # hyperopts
+alias md='cd "$BLUE_DIR/ft/project/user_data/models"'           # models
+alias nb='cd "$BLUE_DIR/ft/project/user_data/notebooks"'        # notebooks
+alias sc='cd "$BLUE_DIR/ft/project/user_data/scripts"'          # scripts
+alias st='cd "$BLUE_DIR/ft/project/user_data/strategies"'       # strategies
+alias strat='cd "$BLUE_DIR/ft/project/user_data/strategies"'    # strategies (full)
 
 # --- Level 3: $BLUE_DIR/linux/extra/* ---
 alias excf='cd "$BLUE_DIR/linux/extra/config"'    # config (ex+cf)
@@ -212,7 +212,7 @@ alias diskspace='df -h'
 alias ipc='"$BLUE_DIR/web/proxy/decodo/ip_checker.sh"'
 alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
-alias note='cursor "$BLUE_DIR/freq/project/note"'
+alias note='cursor "$BLUE_DIR/ft/project/note"'
 alias rc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
 
 # === Windows-specific helpers ===
