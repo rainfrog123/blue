@@ -21,7 +21,7 @@ alias al='cd /allah'
 alias bl='cd /allah/blue'
 
 # === DIR: Freqtrade ===
-alias ft='cd /allah/freqtrade'
+alias ft='cd /allah/blue/ft'
 alias ftc='cd /allah/freqtrade/freqtrade'
 alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
 
@@ -33,14 +33,14 @@ alias dt='cd /allah/data/ml'
 # ============================================================
 
 # --- Level 1: /allah/blue/* ---
-alias fq='cd /allah/blue/freq'                    # freq
+alias fq='cd /allah/freqtrade'                    # freq
 alias li='cd /allah/blue/linux'                   # linux
 alias we='cd /allah/blue/web'                     # web
 alias web='cd /allah/blue/web'                    # web (full)
 
-# --- Level 2: /allah/blue/freq/* ---
-alias mi='cd /allah/blue/freq/misc'               # misc
-alias pro='cd /allah/blue/freq/project'           # project
+# --- Level 2: /allah/blue/ft/* ---
+alias mi='cd /allah/blue/ft/misc'               # misc
+alias pro='cd /allah/blue/ft/project'           # project
 
 # --- Level 2: /allah/blue/linux/* ---
 alias ex='cd /allah/blue/linux/extra'             # extra
@@ -55,37 +55,37 @@ alias cl='cd /allah/blue/web/cloud'               # cloud
 alias mo='cd /allah/blue/web/monitors'            # monitors
 alias px='cd /allah/blue/web/proxy'               # proxy
 
-# --- Level 3: /allah/blue/freq/misc/* ---
-alias bi='cd /allah/blue/freq/misc/binance'       # binance
-alias binance='cd /allah/blue/freq/misc/binance'  # binance (full)
-alias tv='cd /allah/blue/freq/misc/tradingview'   # tradingview
+# --- Level 3: /allah/blue/ft/misc/* ---
+alias bi='cd /allah/blue/ft/misc/binance'       # binance
+alias binance='cd /allah/blue/ft/misc/binance'  # binance (full)
+alias tv='cd /allah/blue/ft/misc/tradingview'   # tradingview
 
-# --- Level 3: /allah/blue/freq/project/* ---
-alias ml='cd /allah/blue/freq/project/ml_datasets'    # ml_datasets
-alias to='cd /allah/blue/freq/project/tools'          # tools
-alias tools='cd /allah/blue/freq/project/tools'       # tools (full)
-alias ud='cd /allah/blue/freq/project/user_data'      # user_data
-alias us='cd /allah/blue/freq/project/user_data'      # user_data (alt)
-alias user='cd /allah/blue/freq/project/user_data'    # user_data (full)
+# --- Level 3: /allah/blue/ft/project/* ---
+alias ml='cd /allah/blue/ft/project/ml_datasets'    # ml_datasets
+alias to='cd /allah/blue/ft/project/tools'          # tools
+alias tools='cd /allah/blue/ft/project/tools'       # tools (full)
+alias ud='cd /allah/blue/ft/project/user_data'      # user_data
+alias us='cd /allah/blue/ft/project/user_data'      # user_data (alt)
+alias user='cd /allah/blue/ft/project/user_data'    # user_data (full)
 
-# --- Level 4: /allah/blue/freq/project/tools/* ---
-alias cv='cd /allah/blue/freq/project/tools/converters'   # converters
-alias hi='cd /allah/blue/freq/project/tools/historical'   # historical
-alias re='cd /allah/blue/freq/project/tools/realtime'     # realtime
-alias cc='cd /allah/blue/freq/project/tools/realtime/ccxt'         # ccxt connector
-alias co='cd /allah/blue/freq/project/tools/realtime/tradingview'  # tradingview connector
+# --- Level 4: /allah/blue/ft/project/tools/* ---
+alias cv='cd /allah/blue/ft/project/tools/converters'   # converters
+alias hi='cd /allah/blue/ft/project/tools/historical'   # historical
+alias re='cd /allah/blue/ft/project/tools/realtime'     # realtime
+alias cc='cd /allah/blue/ft/project/tools/realtime/ccxt'         # ccxt connector
+alias co='cd /allah/blue/ft/project/tools/realtime/tradingview'  # tradingview connector
 
-# --- Level 4: /allah/blue/freq/project/user_data/* ---
-alias cf='cd /allah/blue/freq/project/user_data/config'           # config
-alias conf='cd /allah/blue/freq/project/user_data/config'         # config (alt)
-alias config='cd /allah/blue/freq/project/user_data/config'       # config (full)
-alias hr='cd /allah/blue/freq/project/user_data/hyperopt_results' # hyperopt_results
-alias hy='cd /allah/blue/freq/project/user_data/hyperopts'        # hyperopts
-alias md='cd /allah/blue/freq/project/user_data/models'           # models
-alias nb='cd /allah/blue/freq/project/user_data/notebooks'        # notebooks
-alias sc='cd /allah/blue/freq/project/user_data/scripts'          # scripts
-alias st='cd /allah/blue/freq/project/user_data/strategies'       # strategies
-alias strat='cd /allah/blue/freq/project/user_data/strategies'    # strategies (full)
+# --- Level 4: /allah/blue/ft/project/user_data/* ---
+alias cf='cd /allah/blue/ft/project/user_data/config'           # config
+alias conf='cd /allah/blue/ft/project/user_data/config'         # config (alt)
+alias config='cd /allah/blue/ft/project/user_data/config'       # config (full)
+alias hr='cd /allah/blue/ft/project/user_data/hyperopt_results' # hyperopt_results
+alias hy='cd /allah/blue/ft/project/user_data/hyperopts'        # hyperopts
+alias md='cd /allah/blue/ft/project/user_data/models'           # models
+alias nb='cd /allah/blue/ft/project/user_data/notebooks'        # notebooks
+alias sc='cd /allah/blue/ft/project/user_data/scripts'          # scripts
+alias st='cd /allah/blue/ft/project/user_data/strategies'       # strategies
+alias strat='cd /allah/blue/ft/project/user_data/strategies'    # strategies (full)
 
 # --- Level 3: /allah/blue/linux/extra/* ---
 alias excf='cd /allah/blue/linux/extra/config'    # config (ex+cf)
@@ -171,8 +171,10 @@ alias decodo='cd /allah/blue/web/proxy/decodo'    # decodo (full)
 alias ra='cd /allah/blue/web/proxy/rayobyte'      # rayobyte
 
 # === Freqtrade Commands ===
-alias ftpy='/allah/freqtrade/.venv/bin/python3'
+alias ftpy='source /allah/freqtrade/.venv/bin/activate'
 alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
+# alias python='/allah/freqtrade/.venv/bin/python'
+# alias pip='/allah/freqtrade/.venv/bin/pip'
 
 # === Git ===
 alias ga='git add'
@@ -194,6 +196,10 @@ alias diskspace='df -h'
 alias ipc="/allah/blue/web/proxy/decodo/ip_checker.sh"
 alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
-alias note='cursor /allah/blue/freq/project/note'
+alias note='cursor /allah/blue/ft/project/note'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
 
+alias az="cd /allah/blue/linux/vps/azure"
+export PATH="/allah/freqtrade/.venv/bin:$PATH"
+
+# sudo rm -f /root/.bashrc && sudo ln -sf /allah/blue/linux/extra/shell/bashrc /root/.bashrc
