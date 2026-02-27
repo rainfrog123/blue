@@ -107,6 +107,11 @@ def get_cloudflare_api_token() -> str:
     return cred.get("CLOUDFLARE_API_TOKEN", "")
 
 
+def get_azure() -> dict:
+    """Get Azure service principal credentials."""
+    return load_cred()["azure"]
+
+
 if __name__ == "__main__":
     # Test loading
     try:
