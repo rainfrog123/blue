@@ -1,41 +1,31 @@
-#!/usr/bin/env python3
-"""
-Configuration for the CCXT 5-second data collector.
-"""
+"""CCXT 5-second candle collector configuration."""
 
 import os
+import sys
 from pathlib import Path
 
-# Paths
+sys.path.insert(0, str(Path(__file__).parents[5] / "linux" / "extra"))
+from cred_loader import get_binance
+
 BASE_DIR = Path(__file__).parent.absolute()
-DATA_DIR = "/allah/data"
-LOG_DIR = os.path.join(DATA_DIR, "logs")
-
+DATA_DIR = os.path.join(BASE_DIR, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(LOG_DIR, exist_ok=True)
 
-# Database
-CANDLES_DB_PATH = os.path.join(DATA_DIR, "candles_5s.db")
+DB_PATH = os.path.join(DATA_DIR, "candles_5s.db")
+LOG_FILE = os.path.join(DATA_DIR, "collector.log")
 
-# Exchange
+_creds = get_binance()
 EXCHANGE = "binance"
 EXCHANGE_CREDENTIALS = {
-    "apiKey": "ofQzX3gGAKS777NyYIovAy1XyqLzGC2UJPMh9jqIYEfieFRy3DCkZJl15VYA2zXo",
-    "secret": "QVJpTFgHIEv74LmCT5clX8o1zAFEEqJqKpg2ePklObM1Ybv9iKNe8jvM7MRjoz07",
-    "enableRateLimit": True,
-    "options": {
-        "defaultType": "future"
-    }
+    "apiKey": _creds["api_key"],
+    "secret": _creds["api_secret"],
+    "options": {"defaultType": "future"}
 }
 
-# Symbols
 SYMBOLS = ["ETH/USDT:USDT"]
+TIMEFRAME_MS = 5000
+INITIAL_BARS = 300
+RETENTION_HOURS = 3
+PRUNE_INTERVAL = 600
 
-# Logging
 LOG_LEVEL = "INFO"
-LOG_FILE = os.path.join(LOG_DIR, "ccxt_collector.log")
-
-# Retry settings
-MAX_RECONNECT_ATTEMPTS = 5
-RECONNECT_DELAY = 5
-
