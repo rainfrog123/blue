@@ -1,5 +1,5 @@
 # HID (Hardware ID) Fingerprinting Analysis
-
+su - vncuser -c "DISPLAY=:1 /opt/octobrowser/OctoBrowser.AppImage"
 Analysis of how OctoBrowser collects and uses hardware fingerprints for machine identification.
 
 ## Summary
