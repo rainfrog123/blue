@@ -203,3 +203,5 @@ alias az="cd /allah/blue/linux/vps/azure"
 export PATH="/allah/freqtrade/.venv/bin:$PATH"
 
 # sudo rm -f /root/.bashrc && sudo ln -sf /allah/blue/linux/extra/shell/bashrc /root/.bashrc
+export DISPLAY=:1
+xauth merge /home/vncuser/.Xauthority 2>/dev/null
