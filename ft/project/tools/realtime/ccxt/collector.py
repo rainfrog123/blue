@@ -8,7 +8,7 @@ from client import CCXTClient
 from database import CandleDatabase
 from config import (
     EXCHANGE, EXCHANGE_CREDENTIALS, SYMBOLS, TIMEFRAME_MS,
-    RETENTION_HOURS, PRUNE_INTERVAL, LOG_LEVEL, LOG_FILE
+    HISTORY_MINUTES, RETENTION_HOURS, PRUNE_INTERVAL, LOG_LEVEL, LOG_FILE
 )
 
 logging.basicConfig(
@@ -21,7 +21,7 @@ log = logging.getLogger('ccxt')
 
 async def main():
     db = CandleDatabase()
-    client = CCXTClient(EXCHANGE, EXCHANGE_CREDENTIALS, SYMBOLS, TIMEFRAME_MS)
+    client = CCXTClient(EXCHANGE, EXCHANGE_CREDENTIALS, SYMBOLS, TIMEFRAME_MS, HISTORY_MINUTES)
     last_prune = datetime.now()
     candle_count = 0
     

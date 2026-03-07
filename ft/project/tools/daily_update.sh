@@ -11,8 +11,7 @@ set -e
 
 # Paths
 FREQTRADE_DIR="/allah/freqtrade"
-FREQTRADE_VENV="$FREQTRADE_DIR/.venv/bin/python3"
-TOOLS_DIR="/allah/blue/freq/project/tools"
+TOOLS_DIR="/allah/blue/ft/project/tools"
 
 echo "=== Daily Data Update ==="
 echo "Started at: $(date)"
@@ -39,19 +38,19 @@ pip install fastparquet matplotlib
 echo ""
 echo "=== Downloading Daily Trades ==="
 cd "$TOOLS_DIR"
-$FREQTRADE_VENV "$TOOLS_DIR/historical/binance_daily.py"
+python3 "$TOOLS_DIR/historical/binance_daily.py"
 
 # Convert to feather
 echo ""
 echo "=== Converting to Feather ==="
-$FREQTRADE_VENV "$TOOLS_DIR/converters/parquet_to_feather.py"
+python3 "$TOOLS_DIR/converters/parquet_to_feather.py"
 
 # Download standard OHLCV data
 echo ""
 echo "=== Downloading OHLCV Data ==="
 freqtrade download-data \
-    --userdir /allah/blue/freq/project/user_data \
-    --config /allah/blue/freq/project/user_data/config/download_proxy.json \
+    --userdir /allah/blue/ft/project/user_data \
+    --config /allah/blue/ft/project/user_data/config/download_proxy.json \
     --timerange 20251201- \
     --timeframes 1m 3m 5m 15m 30m 1h 4h \
     --datadir /allah/freqtrade/user_data/data/binance

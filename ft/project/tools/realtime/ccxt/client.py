@@ -36,12 +36,14 @@ class CCXTClient:
         exchange: str,
         credentials: dict,
         symbols: list,
-        timeframe_ms: int = 5000
+        timeframe_ms: int = 5000,
+        history_minutes: int = 10
     ):
         self.exchange_name = exchange
         self.credentials = credentials
         self.symbols = symbols
         self.timeframe_ms = timeframe_ms
+        self.history_minutes = history_minutes
         
         self._exchange: Optional[ccxtpro.Exchange] = None
         self._queue: asyncio.Queue = asyncio.Queue()
@@ -66,6 +68,94 @@ class CCXTClient:
         except Exception as e:
             logger.error(f"Exchange init failed: {e}")
             return False
+    
+    async def _fetch_historical_candles(self, symbol: str) -> list:
+        """Fetch historical trades and build 5s candles."""
+        if self.history_minutes <= 0:
+            return []
+        
+        try:
+            since_ms = int((time.time() - self.history_minutes * 60) * 1000)
+            all_trades = []
+            
+            # Fetch trades in batches (Binance limit is 1000)
+            while True:
+                trades = await self._exchange.fetch_trades(symbol, since=since_ms, limit=1000)
+                if not trades:
+                    break
+                
+                all_trades.extend(trades)
+                last_ts = trades[-1]['timestamp']
+                
+                if last_ts >= int(time.time() * 1000) - 5000:
+                    break
+                since_ms = last_ts + 1
+                
+                if len(all_trades) > 50000:
+                    break
+            
+            logger.info(f"{symbol}: fetched {len(all_trades)} historical trades")
+            
+            # Group trades by 5s boundary
+            buckets: Dict[int, list] = {}
+            for trade in all_trades:
+                price = float(trade['price'])
+                amount = float(trade['amount'])
+                if price <= 0 or amount <= 0:
+                    continue
+                
+                trade_id = str(trade['id'])
+                self._trade_ids[symbol].add(trade_id)
+                
+                ts_ms = int(trade['timestamp'])
+                boundary = self._get_boundary(ts_ms, self.timeframe_ms)
+                
+                if boundary not in buckets:
+                    buckets[boundary] = []
+                buckets[boundary].append({
+                    'price': price,
+                    'amount': amount,
+                    'timestamp_ms': ts_ms
+                })
+            
+            # Build candles from completed buckets
+            current_ms = int(time.time() * 1000)
+            current_boundary = self._get_boundary(current_ms, self.timeframe_ms)
+            candles = []
+            
+            for boundary in sorted(buckets.keys()):
+                if boundary >= current_boundary - self.timeframe_ms:
+                    # Keep incomplete candles in pending for live stream
+                    self._pending[symbol][boundary] = buckets[boundary]
+                    continue
+                
+                trades = buckets[boundary]
+                if not trades:
+                    continue
+                
+                trades.sort(key=lambda t: t['timestamp_ms'])
+                prices = [t['price'] for t in trades]
+                volumes = [t['amount'] for t in trades]
+                
+                candles.append(Candle(
+                    symbol=symbol,
+                    timestamp_ms=boundary,
+                    time=datetime.utcfromtimestamp(boundary / 1000),
+                    open=prices[0],
+                    high=max(prices),
+                    low=min(prices),
+                    close=prices[-1],
+                    volume=sum(volumes),
+                    trade_count=len(trades),
+                    is_history=True
+                ))
+            
+            logger.info(f"{symbol}: built {len(candles)} historical candles")
+            return candles
+            
+        except Exception as e:
+            logger.error(f"{symbol}: historical fetch failed: {e}")
+            return []
     
     @staticmethod
     def _get_boundary(timestamp_ms: int, interval_ms: int = 5000) -> int:
@@ -105,6 +195,12 @@ class CCXTClient:
                             sorted_ids = sorted(self._trade_ids[symbol])
                             self._trade_ids[symbol] = set(sorted_ids[-self.MAX_TRADE_IDS//2:])
                         
+                        price = float(trade['price'])
+                        amount = float(trade['amount'])
+                        
+                        if price <= 0 or amount <= 0:
+                            continue
+                        
                         ts_ms = int(trade['timestamp'])
                         boundary = self._get_boundary(ts_ms, self.timeframe_ms)
                         
@@ -112,8 +208,8 @@ class CCXTClient:
                             self._pending[symbol][boundary] = []
                         
                         self._pending[symbol][boundary].append({
-                            'price': float(trade['price']),
-                            'amount': float(trade['amount']),
+                            'price': price,
+                            'amount': amount,
                             'timestamp_ms': ts_ms
                         })
                         
@@ -168,6 +264,12 @@ class CCXTClient:
         """Stream completed 5-second candles as an async generator."""
         if not await self._init_exchange():
             return
+        
+        # Fetch and yield historical candles first
+        for symbol in self.symbols:
+            historical = await self._fetch_historical_candles(symbol)
+            for candle in historical:
+                yield candle
         
         self._running = True
         

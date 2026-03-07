@@ -4,12 +4,13 @@
 from datetime import datetime, timedelta
 from tabulate import tabulate
 from database import CandleDatabase
-from config import SYMBOLS
+from config import SYMBOLS, TIMEFRAME_MS
 
 
 class DataViewer:
     def __init__(self):
         self.db = CandleDatabase()
+        self.interval = TIMEFRAME_MS // 1000
     
     def get_recent_candles(self, symbol: str, count: int = 20) -> list:
         return self.db.get(symbol, count)
@@ -37,9 +38,33 @@ class DataViewer:
                     "FROM candles WHERE symbol=?", (symbol,)
                 ).fetchone()
                 
+                # Calculate expected vs actual candles
+                expected = 0
+                gaps = []
+                if min_ts and max_ts:
+                    expected = (max_ts - min_ts) // self.interval + 1
+                    
+                    # Find gaps
+                    all_ts = c.execute(
+                        "SELECT ts FROM candles WHERE symbol=? ORDER BY ts",
+                        (symbol,)
+                    ).fetchall()
+                    
+                    for i in range(1, len(all_ts)):
+                        diff = all_ts[i][0] - all_ts[i-1][0]
+                        if diff > self.interval:
+                            gaps.append({
+                                'from': datetime.fromtimestamp(all_ts[i-1][0]),
+                                'to': datetime.fromtimestamp(all_ts[i][0]),
+                                'missed': diff // self.interval - 1
+                            })
+                
                 return {
                     'symbol': symbol,
                     'total': total,
+                    'expected': expected,
+                    'missed': expected - total,
+                    'gaps': gaps,
                     'recent': recent,
                     'min_ts': datetime.fromtimestamp(min_ts) if min_ts else None,
                     'max_ts': datetime.fromtimestamp(max_ts) if max_ts else None,
@@ -54,24 +79,31 @@ class DataViewer:
     def show_overview(self):
         print("=== CCXT 5-Second Candle Database ===\n")
         
-        rows = []
         for symbol in SYMBOLS:
             s = self.get_stats(symbol)
-            if 'error' not in s:
-                rows.append([
-                    s['symbol'],
-                    f"{s['total']:,}",
-                    f"{s['recent']:,}",
-                    f"${s['avg_price']:.2f}" if s['avg_price'] else "N/A",
-                    f"{s['total_volume']:,.0f}" if s['total_volume'] else "N/A",
-                    s['max_ts'].strftime('%H:%M:%S') if s['max_ts'] else "N/A"
-                ])
-            else:
-                rows.append([s['symbol'], "ERROR", "N/A", "N/A", "N/A", "N/A"])
-        
-        headers = ['Symbol', 'Total', 'Last Hour', 'Avg Price', 'Volume', 'Last Update']
-        print(tabulate(rows, headers=headers, tablefmt='grid'))
-        print()
+            if 'error' in s:
+                print(f"{symbol}: ERROR - {s['error']}\n")
+                continue
+            
+            time_range = "N/A"
+            if s['min_ts'] and s['max_ts']:
+                time_range = f"{s['min_ts'].strftime('%H:%M:%S')} - {s['max_ts'].strftime('%H:%M:%S')}"
+            
+            print(f"{symbol}")
+            print(f"  Time Range: {time_range}")
+            print(f"  Candles: {s['total']:,} / {s['expected']:,} expected ({s['missed']} missed)")
+            print(f"  Last Hour: {s['recent']:,}")
+            print(f"  Avg Price: ${s['avg_price']:.2f}" if s['avg_price'] else "  Avg Price: N/A")
+            print(f"  Volume: {s['total_volume']:,.0f}" if s['total_volume'] else "  Volume: N/A")
+            
+            if s['gaps']:
+                print(f"\n  Gaps ({len(s['gaps'])}):")
+                for g in s['gaps'][-5:]:  # Show last 5 gaps
+                    print(f"    {g['from'].strftime('%H:%M:%S')} - {g['to'].strftime('%H:%M:%S')} ({g['missed']} missed)")
+                if len(s['gaps']) > 5:
+                    print(f"    ... and {len(s['gaps']) - 5} more gaps")
+            
+            print()
     
     def show_recent(self, symbol: str, count: int = 15):
         print(f"=== Last {count} Candles for {symbol} ===\n")
