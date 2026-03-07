@@ -46,9 +46,10 @@ class IPQSConfig:
 # ============================================
 
 def _load_cred_json() -> Optional[Dict[str, Any]]:
-    """Load credentials from /allah/blue/cred.json or fallback paths."""
+    """Load credentials from standard locations."""
     cred_paths = [
         Path("/allah/blue/cred.json"),
+        Path.home() / "blue" / "cred.json",
         Path.home() / "Documents" / "cred.json",
         Path.home() / ".config" / "cred.json",
     ]
@@ -116,6 +117,7 @@ def build_proxy_url(
         Proxy URL in format: https://user-{username}-...:{password}@{country}.decodo.com:{port}
     """
     import random
+    from urllib.parse import quote
     
     config = get_proxy_config()
     
@@ -136,4 +138,7 @@ def build_proxy_url(
     # Host format: {country}.decodo.com
     host = f"{country}.decodo.com" if country else "gate.decodo.com"
     
-    return f"https://{auth_string}:{config.password}@{host}:{port}"
+    # URL-encode password to handle special characters like +
+    encoded_password = quote(config.password, safe="")
+    
+    return f"https://{auth_string}:{encoded_password}@{host}:{port}"
