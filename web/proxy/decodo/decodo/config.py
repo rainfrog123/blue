@@ -117,12 +117,12 @@ def build_proxy_url(
         Proxy URL in format: https://user-{username}-...:{password}@{country}.decodo.com:{port}
     """
     import random
-    from urllib.parse import quote
     
     config = get_proxy_config()
     
     # Build username with options: user-{username}-session-{session}-sessionduration-{duration}
-    auth_parts = [f"user-{config.username}"]
+    username = config.username.removeprefix("user-")
+    auth_parts = [f"user-{username}"]
     
     if session:
         auth_parts.append(f"session-{session}")
@@ -138,7 +138,4 @@ def build_proxy_url(
     # Host format: {country}.decodo.com
     host = f"{country}.decodo.com" if country else "gate.decodo.com"
     
-    # URL-encode password to handle special characters like +
-    encoded_password = quote(config.password, safe="")
-    
-    return f"https://{auth_string}:{encoded_password}@{host}:{port}"
+    return f"https://{auth_string}:{config.password}@{host}:{port}"
