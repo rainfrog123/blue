@@ -1,0 +1,108 @@
+# Azure Marketplace Proxy Reference
+# Generated: 2026-03-08
+# Location: southeastasia (Singapore)
+
+================================================================================
+AVAILABLE PROXY IMAGES (Publisher: adeoimagingo1682623715346)
+================================================================================
+Location: southeastasia (Singapore) ✓
+
+1. SOCKS5 Public Proxy (No Auth, Simple)
+   URN: adeoimagingo1682623715346:3proxy-public-0-9-4:3proxy-public-plan1:0.9.4
+   - SOCKS5 on port 1080
+   - HTTP proxy on port 3128
+   - No authentication required
+   - Works on B1ls/B1s/B1ms (low cost)
+   - Terms: ACCEPTED ✓
+
+2. Anonymous HTTP/SOCKS5 Proxy (With Web Panel)
+   URN: adeoimagingo1682623715346:3proxy-wp-0-9-6:3proxy-wp-plan1:0.9.9
+   - SOCKS5 on port 1080
+   - HTTP proxy on port 3128
+   - Web panel for user management
+   - Username/password authentication
+   - Terms: ACCEPTED ✓
+
+3. Other Available Images:
+   - WireGuard VPN: adeoimagingo1682623715346:adeo-wireguard-1-0-2:wireguard-plan1:1.0.2
+   - Hiddify: adeoimagingo1682623715346:hiddify:hiddify-plan-1:11.0.13
+   - OpenVPN: adeoimagingo1682623715346:openvpn-ia-1-1-9:openvpn-ia-plan-1:1.1.11
+   - IKEv2 VPN: adeoimagingo1682623715346:ikev2-ia-1-1-3:ikev2-ia-plan-1:1.1.6
+   - Xray (V2Ray): adeoimagingo1682623715346:xray-offer-id-1:xray-plan-1:26.1.18
+
+================================================================================
+DEPLOYMENT COMMANDS
+================================================================================
+
+# Accept marketplace terms (already done)
+/usr/bin/az vm image terms accept --urn "adeoimagingo1682623715346:3proxy-public-0-9-4:3proxy-public-plan1:0.9.4"
+/usr/bin/az vm image terms accept --urn "adeoimagingo1682623715346:3proxy-wp-0-9-6:3proxy-wp-plan1:0.9.9"
+
+# Create resource group
+/usr/bin/az group create --name proxy-sg --location southeastasia
+
+# Deploy SOCKS5 Public Proxy (Simple, No Auth)
+/usr/bin/az vm create \
+  --resource-group proxy-sg \
+  --name socks5-proxy-sg \
+  --image "adeoimagingo1682623715346:3proxy-public-0-9-4:3proxy-public-plan1:0.9.4" \
+  --size Standard_B1s \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --public-ip-sku Standard
+
+# Deploy SOCKS5 Proxy with Web Panel (Auth Support)
+/usr/bin/az vm create \
+  --resource-group proxy-sg \
+  --name socks5-proxy-wp-sg \
+  --image "adeoimagingo1682623715346:3proxy-wp-0-9-6:3proxy-wp-plan1:0.9.9" \
+  --size Standard_B1s \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --public-ip-sku Standard
+
+# Open firewall ports
+/usr/bin/az vm open-port --resource-group proxy-sg --name socks5-proxy-sg --port 1080 --priority 1001
+/usr/bin/az vm open-port --resource-group proxy-sg --name socks5-proxy-sg --port 3128 --priority 1002
+
+# Get VM public IP
+/usr/bin/az vm show -d --resource-group proxy-sg --name socks5-proxy-sg --query publicIps -o tsv
+
+# Delete resources when done
+/usr/bin/az group delete --name proxy-sg --yes --no-wait
+
+================================================================================
+BRIGHT DATA (Residential Proxy - SaaS)
+================================================================================
+Azure Marketplace: https://azuremarketplace.microsoft.com/en/marketplace/apps/brightdataltd1699795768699.bright_data_scraping_solutions
+Type: Contact-based SaaS (not CLI deployable)
+Features:
+  - 150M+ rotating residential IPs
+  - 195 countries coverage
+  - Singapore IPs available
+  - Pay-as-you-go: $4.00/GB
+  - Monthly plans from $499/month
+
+================================================================================
+USAGE EXAMPLES
+================================================================================
+
+# Test SOCKS5 proxy
+curl --socks5 <PUBLIC_IP>:1080 http://ifconfig.me
+
+# Test HTTP proxy
+curl -x http://<PUBLIC_IP>:3128 http://ifconfig.me
+
+# Python requests with SOCKS5
+import requests
+proxies = {'http': 'socks5://<PUBLIC_IP>:1080', 'https': 'socks5://<PUBLIC_IP>:1080'}
+response = requests.get('http://ifconfig.me', proxies=proxies)
+
+================================================================================
+NOTES
+================================================================================
+- These are datacenter IPs, NOT residential IPs
+- For residential proxies, use commercial services (Bright Data, Oxylabs, etc.)
+- Singapore region code: southeastasia
+- Lowest cost VM: Standard_B1ls (~$3.80/month) or B1s (~$7.60/month)
+- The 3proxy images are free (only pay for VM compute)
