@@ -3,6 +3,7 @@ Session scanner for testing multiple proxy sessions and scoring IPs.
 """
 
 import asyncio
+import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Optional
@@ -82,7 +83,7 @@ class SessionScanner:
     
     def _test_session(self, session_num: int) -> tuple[Optional[ProxySession], Optional[str]]:
         """Test a single proxy session."""
-        session_name = f"scan{session_num}"
+        session_name = uuid.uuid4().hex[:12]
         try:
             session = self.client.get_current_ip(session_name=session_name)
             return session, None

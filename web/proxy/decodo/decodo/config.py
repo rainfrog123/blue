@@ -120,9 +120,12 @@ def build_proxy_url(
     
     config = get_proxy_config()
     
-    # Build username with options: user-{username}-session-{session}-sessionduration-{duration}
+    # Build username with options: user-{username}-country-{country}-session-{session}-sessionduration-{duration}
     username = config.username.removeprefix("user-")
     auth_parts = [f"user-{username}"]
+    
+    if country:
+        auth_parts.append(f"country-{country}")
     
     if session:
         auth_parts.append(f"session-{session}")
