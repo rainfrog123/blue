@@ -1,11 +1,13 @@
 """
-Configuration for Decodo proxy and IPQS services.
+Configuration for IPRoyal proxy and IPQS services.
 
 Loads credentials from environment variables or ~/Documents/cred.json
 """
 
 import json
 import os
+import random
+import string
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -15,7 +17,7 @@ from typing import Any, Dict, Optional
 # Constants
 # ============================================
 
-DECODO_IP_API = "https://ip.decodo.com/json"
+IP_CHECK_API = "https://api.ipify.org?format=json"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 
 
@@ -25,10 +27,9 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
 
 @dataclass
 class ProxyConfig:
-    """Decodo proxy configuration."""
-    host: str = "gate.decodo.com"
-    port_min: int = 30001
-    port_max: int = 50000
+    """IPRoyal proxy configuration."""
+    host: str = "geo.iproyal.com"
+    port: int = 11203
     username: str = ""
     password: str = ""
 
@@ -63,16 +64,16 @@ def _load_cred_json() -> Optional[Dict[str, Any]]:
 
 
 def get_proxy_config() -> ProxyConfig:
-    """Get Decodo proxy configuration with credentials."""
+    """Get IPRoyal proxy configuration with credentials."""
     creds = _load_cred_json()
     
-    username = os.environ.get("DECODO_USERNAME")
-    password = os.environ.get("DECODO_PASSWORD")
+    username = os.environ.get("IPROYAL_USERNAME")
+    password = os.environ.get("IPROYAL_PASSWORD")
     
     if not username and creds:
-        username = creds.get("proxy", {}).get("decodo", {}).get("username", "")
+        username = creds.get("proxy", {}).get("iproyal", {}).get("username", "")
     if not password and creds:
-        password = creds.get("proxy", {}).get("decodo", {}).get("password", "")
+        password = creds.get("proxy", {}).get("iproyal", {}).get("password", "")
     
     return ProxyConfig(
         username=username or "",
@@ -98,47 +99,48 @@ def get_ipqs_config() -> IPQSConfig:
 # Proxy URL Builder
 # ============================================
 
+def generate_session_id(length: int = 8) -> str:
+    """Generate a random session ID."""
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
+
+
 def build_proxy_url(
-    country: Optional[str] = None,
-    session_duration: int = 60,
+    country: str = "de",
     session: Optional[str] = None,
-    port: Optional[int] = None,
+    lifetime: str = "1h",
+    skip_isp_static: bool = True,
 ) -> str:
     """
-    Build HTTPS proxy URL with authentication.
+    Build SOCKS5 proxy URL with authentication for IPRoyal.
+    
+    IPRoyal format:
+        socks5://{username}:{password}_country-{country}_session-{session}_lifetime-{lifetime}_skipispstatic-1@geo.iproyal.com:11203
     
     Args:
-        country: Country code (e.g., "gb", "us")
-        session_duration: Session duration in minutes
-        session: Session name for sticky sessions
-        port: Specific port (random if not provided)
+        country: Country code (e.g., "de", "gb", "us")
+        session: Session ID for sticky sessions (auto-generated if None)
+        lifetime: Session lifetime (e.g., "1h", "24h", "1m" for 1 minute)
+        skip_isp_static: Skip static ISP IPs (default: True)
         
     Returns:
-        Proxy URL in format: https://user-{username}-...:{password}@{country}.decodo.com:{port}
+        Proxy URL ready to use with requests
     """
-    import random
-    
     config = get_proxy_config()
     
-    # Build username with options: user-{username}-country-{country}-session-{session}-sessionduration-{duration}
-    username = config.username.removeprefix("user-")
-    auth_parts = [f"user-{username}"]
+    if session is None:
+        session = generate_session_id()
     
-    if country:
-        auth_parts.append(f"country-{country}")
+    # Build password with options
+    password_parts = [
+        config.password,
+        f"country-{country}",
+        f"session-{session}",
+        f"lifetime-{lifetime}",
+    ]
     
-    if session:
-        auth_parts.append(f"session-{session}")
+    if skip_isp_static:
+        password_parts.append("skipispstatic-1")
     
-    auth_parts.append(f"sessionduration-{session_duration}")
+    full_password = "_".join(password_parts)
     
-    auth_string = "-".join(auth_parts)
-    
-    # Use random port if not specified
-    if port is None:
-        port = random.randint(config.port_min, config.port_max)
-    
-    # Host format: {country}.decodo.com
-    host = f"{country}.decodo.com" if country else "gate.decodo.com"
-    
-    return f"https://{auth_string}:{config.password}@{host}:{port}"
+    return f"socks5://{config.username}:{full_password}@{config.host}:{config.port}"

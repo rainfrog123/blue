@@ -2,13 +2,12 @@
 Session scanner for testing multiple proxy sessions and scoring IPs.
 """
 
-import asyncio
-import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .client import DecodoClient, ProxySession
+from .client import IPRoyalClient, ProxySession
+from .config import generate_session_id
 from .ipqs import IPQSChecker, IPQSResult
 
 
@@ -49,7 +48,7 @@ class SessionScanner:
     Scans multiple proxy sessions to find clean IPs.
     
     Example:
-        scanner = SessionScanner(country="gb", num_sessions=10)
+        scanner = SessionScanner(country="de", num_sessions=10)
         summary = scanner.scan()
         
         print(f"Found {summary.clean_ips} clean IPs")
@@ -60,32 +59,32 @@ class SessionScanner:
     
     def __init__(
         self,
-        country: str = "gb",
+        country: str = "de",
         num_sessions: int = 10,
-        session_duration: int = 60,
+        lifetime: str = "1h",
         clean_threshold: int = 50,
         max_workers: int = 10,
         timeout: int = 30,
     ):
         self.country = country
         self.num_sessions = num_sessions
-        self.session_duration = session_duration
+        self.lifetime = lifetime
         self.clean_threshold = clean_threshold
         self.max_workers = max_workers
         self.timeout = timeout
         
-        self.client = DecodoClient(
+        self.client = IPRoyalClient(
             country=country,
-            session_duration=session_duration,
+            lifetime=lifetime,
             timeout=timeout,
         )
         self.ipqs = IPQSChecker(timeout=15)
     
     def _test_session(self, session_num: int) -> tuple[Optional[ProxySession], Optional[str]]:
         """Test a single proxy session."""
-        session_name = uuid.uuid4().hex[:12]
+        session_id = generate_session_id()
         try:
-            session = self.client.get_current_ip(session_name=session_name)
+            session = self.client.get_current_ip(session_id=session_id)
             return session, None
         except Exception as e:
             return None, str(e)
@@ -110,11 +109,11 @@ class SessionScanner:
         """
         if verbose:
             print(f"{'=' * 50}")
-            print(f"Decodo Session Scanner")
+            print(f"IPRoyal Session Scanner")
             print(f"{'=' * 50}")
             print(f"Country: {self.country.upper()}")
             print(f"Sessions: {self.num_sessions}")
-            print(f"Duration: {self.session_duration} min")
+            print(f"Lifetime: {self.lifetime}")
             print(f"{'=' * 50}")
         
         # Phase 1: Collect IPs
@@ -133,23 +132,22 @@ class SessionScanner:
             }
             
             for future in as_completed(futures):
-                session_num = futures[future]
                 session, error = future.result()
                 
                 if error:
                     failures += 1
                     if verbose:
-                        print(f"  ✗ session{session_num}: {error[:50]}")
+                        print(f"  ✗ {error[:50]}")
                 elif session:
                     if session.ip in seen_ips:
                         duplicates += 1
                         if verbose:
-                            print(f"  ⚡ session{session_num}: {session.ip} (duplicate)")
+                            print(f"  ⚡ {session.session_id}: {session.ip} (duplicate)")
                     else:
                         seen_ips.add(session.ip)
                         sessions.append(session)
                         if verbose:
-                            print(f"  ✓ session{session_num}: {session.ip} ({session.city})")
+                            print(f"  ✓ {session.session_id}: {session.ip}")
         
         if verbose:
             print(f"\nUnique: {len(sessions)} | Duplicates: {duplicates} | Failures: {failures}")
@@ -186,7 +184,7 @@ class SessionScanner:
                     if error:
                         print(f"  ✗ {session.ip}: {error[:50]}")
                     elif ipqs_result:
-                        print(f"  {ipqs_result.emoji} {session.ip}: Score {ipqs_result.fraud_score} ({session.city})")
+                        print(f"  {ipqs_result.emoji} {session.ip}: Score {ipqs_result.fraud_score}")
         
         # Sort by fraud score
         results.sort(key=lambda r: r.ipqs.fraud_score if r.ipqs else 999)
@@ -202,7 +200,7 @@ class SessionScanner:
                 if result.is_clean:
                     print(f"\n{result.ipqs.emoji} Score: {result.ipqs.fraud_score}")
                     print(f"   IP: {result.session.ip}")
-                    print(f"   City: {result.session.city}")
+                    print(f"   Session: {result.session.session_id}")
                     print(f"   URL: {result.session.proxy_url}")
             
             if results and results[0].is_clean:
