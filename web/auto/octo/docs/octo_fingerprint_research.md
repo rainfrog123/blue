@@ -435,14 +435,11 @@ extensions = []
 
 ## API Port Configuration
 
-Default port: `59999` (configured in `start_octo.sh`)
+Default port: `59999` (use `cli launch` to start)
 
 ### Change Port
 
-1. Edit `/allah/blue/web/auto/octo/start_octo.sh`:
-   ```bash
-   OCTO_PORT=59999
-   ```
+1. Edit `OCTO_PORT` in `cli.py` (default: 59999)
 
 2. Or write directly to port file:
    ```bash
@@ -506,7 +503,7 @@ Config reads this dynamically - no code changes needed.
 | File | Purpose |
 |------|---------|
 | `test/test_profile_creation.py` | Test profile creation with custom titles |
-| `docs/octo_local_api.md` | Full API documentation |
+| `octo_local_api.md` | Full API documentation |
 | `octo_helpers.py` | Helper functions for profile management |
 
 ---

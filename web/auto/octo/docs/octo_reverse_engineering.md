@@ -4,39 +4,20 @@ Tools and documentation for reverse engineering OctoBrowser internals.
 
 ## Modules
 
-| Directory | Purpose |
-|-----------|---------|
-| [api_tier_bypass/](api_tier_bypass/) | Bypassing API subscription tier restrictions |
-| [hid/](hid/) | Hardware ID (HID) fingerprinting analysis and spoofing |
-| [ssl/](ssl/) | SSL/TLS certificate pinning bypass |
-| [storage_decryption/](storage_decryption/) | Local storage encryption analysis and decryption |
+| Doc | Purpose |
+|-----|---------|
+| [octo_bypasses.md](octo_bypasses.md) | API tier bypass + SSL pinning bypass |
+| [octo_hid.md](octo_hid.md) | Hardware ID (HID) fingerprinting analysis and spoofing |
+| [octo_ghidra_guides.md](octo_ghidra_guides.md) | Ghidra tutorials: HID discovery + storage decryption |
 
-## Overview
+## Reference: Architecture & Data
 
-OctoBrowser is a PyInstaller-packed Python application with:
-- **Python**: 3.12
-- **Browser Engine**: QtWebEngine (Chromium 134)
-- **SSL Library**: NSS (libnss3.so) + OpenSSL
-
-### Key Findings
-
-| Area | Discovery |
-|------|-----------|
-| **HID** | Machine ID from `/etc/machine-id` used for encryption key derivation |
-| **Encryption** | Fernet (AES-128-CBC + HMAC-SHA256) with PBKDF2 key derivation |
-| **Secret** | `"TeNtAcLeShErE___"` used in key derivation |
-| **API Tier** | Feature checks in `octo/fastapi/dependencies.pyc` |
-
-### Data Locations
-
-| Path | Purpose |
-|------|---------|
-| `~/.Octo Browser/` | Main data directory |
-| `~/.Octo Browser/local.data` | Session storage (encrypted) |
-| `~/.Octo Browser/localpersist.data` | Persistent storage (encrypted) |
-| `/tmp/_MEI*` | Runtime extraction directory |
-
-### Server Endpoints
+| Item | Value |
+|------|-------|
+| Type | PyInstaller AppImage (Linux) |
+| Python | 3.12 |
+| Browser Engine | QtWebEngine (Chromium 134) |
+| SSL Library | NSS (libnss3.so) + OpenSSL |
 
 | Domain | Purpose |
 |--------|---------|
@@ -44,6 +25,24 @@ OctoBrowser is a PyInstaller-packed Python application with:
 | `app01.octobrowser.net` | Secondary API (AWS) |
 | `app.obiwankenode.com` | Internal API (AWS) |
 | `localhost:59999` | Local backend (uvicorn) |
+
+| Path | Purpose |
+|------|---------|
+| `~/.Octo Browser/` | Main data directory |
+| `~/.Octo Browser/local_port` | Local API port |
+| `~/.Octo Browser/local.data` | Session storage (encrypted) |
+| `~/.Octo Browser/localpersist.data` | Persistent storage (encrypted) |
+| `~/.Octo Browser/logs/debug.log` | Debug logs |
+| `/tmp/_MEI*` | Runtime extraction (PyInstaller) |
+
+## Key Findings
+
+| Area | Discovery |
+|------|-----------|
+| **HID** | Machine ID from `/etc/machine-id` used for encryption key derivation |
+| **Encryption** | Fernet (AES-128-CBC + HMAC-SHA256) with PBKDF2 key derivation |
+| **Secret** | `"TeNtAcLeShErE___"` used in key derivation |
+| **API Tier** | Feature checks in `octo/fastapi/dependencies.pyc` |
 
 ## Tools
 

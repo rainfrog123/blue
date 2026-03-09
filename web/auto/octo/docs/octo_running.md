@@ -57,7 +57,7 @@ DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" QTWEBENGINE_CHROMIUM_FLAGS="--no-sandb
    curl -s http://localhost:$(cat ~/.Octo\ Browser/local_port)/api/v2/client/themes
    ```  
    Should return JSON with `"success": true`.
-3. **Profile:** Create and start a profile via API (see `LOCAL_API.md`). The profile browser window should stay open; if it closes right away, `OCTO_EXTRA_ARGS` is likely not set when starting OctoBrowser.
+3. **Profile:** Create and start a profile via API (see [octo_local_api.md](octo_local_api.md)). The profile browser window should stay open; if it closes right away, `OCTO_EXTRA_ARGS` is likely not set when starting OctoBrowser.
 
 ### Log check
 
@@ -81,7 +81,7 @@ If `--no-sandbox` is missing, ensure `OCTO_EXTRA_ARGS="--no-sandbox"` is set in 
 DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox &
 ```
 
-Wait a few seconds, then use the API (see `LOCAL_API.md`).
+Wait a few seconds, then use the API (see [octo_local_api.md](octo_local_api.md)).
 
 ## Storage and port
 

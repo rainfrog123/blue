@@ -133,17 +133,16 @@ rm -f ~/.Octo\ Browser/localpersist.data
 | `hid_spoofer.py` | **One-go HID spoofing script (python)** |
 | `ghidra_hid_analyzer.py` | Main HID analysis and documentation |
 | `ghidra_hid_headless_script.py` | Ghidra headless analysis script |
-| `GHIDRA_HID_ANALYSIS_TUTORIAL.md` | Ghidra reverse engineering tutorial |
+| [octo_ghidra_guides.md](octo_ghidra_guides.md) | Ghidra tutorials: HID discovery + storage decryption |
 
 ### Related: Storage Decryption
 
-See `../storage_decryption/` for storage decryption tools:
+See [octo_ghidra_guides.md](octo_ghidra_guides.md) for storage decryption:
 
 | File | Purpose |
 |------|---------|
 | `octo_storage_decryptor.py` | **Working decryption script** |
 | `ghidra_encryption_analyzer.py` | Ghidra script for encryption analysis |
-| `GHIDRA_DECRYPTION_GUIDE.md` | Step-by-step manual decryption guide |
 | `local.data.decrypted.json` | Decrypted session storage sample |
 | `localpersist.data.decrypted.json` | Decrypted persistent storage sample |
 
