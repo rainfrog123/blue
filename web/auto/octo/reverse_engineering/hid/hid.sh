@@ -8,7 +8,7 @@ OCTO_USER="vncuser"
 OCTO_HOME=$(eval echo "~$OCTO_USER")
 OCTO_DIR="$OCTO_HOME/.Octo Browser"
 OCTO_BIN="/opt/octobrowser/OctoBrowser.AppImage"
-OCTO_PORT=56933
+OCTO_PORT=59999
 
 # ── Output helpers ──────────────────────────────────────────────────
 R='\033[0;31m' G='\033[0;32m' Y='\033[1;33m' B='\033[0;34m' N='\033[0m'

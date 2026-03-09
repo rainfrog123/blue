@@ -49,10 +49,10 @@ See [docs/RUNNING_OCTOBROWSER.md](docs/RUNNING_OCTOBROWSER.md) for details.
 
 ```bash
 # Test API
-curl -s http://localhost:56933/api/v2/client/themes
+curl -s http://localhost:59999/api/v2/client/themes
 
 # Create profile
-curl -s -X POST "http://localhost:56933/api/v2/profiles/quick" \
+curl -s -X POST "http://localhost:59999/api/v2/profiles/quick" \
   -H "Content-Type: application/json" \
   -d '{"title": "My Profile", "os": "win"}'
 ```
@@ -97,7 +97,7 @@ cd reverse_engineering
 | `app.octobrowser.net` | Main API (Cloudflare) |
 | `app01.octobrowser.net` | Secondary API (AWS) |
 | `app.obiwankenode.com` | Internal API (AWS) |
-| `localhost:56933` | Local backend (uvicorn) |
+| `localhost:59999` | Local backend (uvicorn) |
 
 ### Data Locations
 

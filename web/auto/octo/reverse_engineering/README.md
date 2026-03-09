@@ -43,7 +43,7 @@ OctoBrowser is a PyInstaller-packed Python application with:
 | `app.octobrowser.net` | Main API (Cloudflare) |
 | `app01.octobrowser.net` | Secondary API (AWS) |
 | `app.obiwankenode.com` | Internal API (AWS) |
-| `localhost:56933` | Local backend (uvicorn) |
+| `localhost:59999` | Local backend (uvicorn) |
 
 ## Tools
 

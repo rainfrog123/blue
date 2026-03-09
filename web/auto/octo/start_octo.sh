@@ -7,7 +7,7 @@ OCTO_USER="vncuser"
 OCTO_HOME=$(eval echo "~$OCTO_USER")
 OCTO_DIR="$OCTO_HOME/.Octo Browser"
 OCTO_BIN="/opt/octobrowser/OctoBrowser.AppImage"
-OCTO_PORT=56933
+OCTO_PORT=59999
 
 G='\033[0;32m' R='\033[0;31m' Y='\033[1;33m' N='\033[0m'
 ok()  { echo -e "${G}[+]${N} $1"; }
@@ -34,3 +34,7 @@ else
     err "Failed to start"
     exit 1
 fi
+
+
+# Modifying /allah/blue/web/auto/octo/start_octo.sh to use OCTO_PORT=59999
+# Running the start script which writes the port to ~/.Octo Browser/local_port before starting OctoBrowser

@@ -14,7 +14,7 @@ How to run OctoBrowser in VNC and as root so the local API and profile browser w
 DISPLAY=:1 /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox
 ```
 
-If you are **not** root, this is often enough. The local API will be on the port shown in `~/.Octo Browser/local_port` (e.g. 56933).
+If you are **not** root, this is often enough. The local API will be on the port shown in `~/.Octo Browser/local_port` (configured as 59999).
 
 ## Running as root (e.g. in containers / VNC as root)
 
@@ -70,7 +70,7 @@ tail -50 ~/.Octo\ Browser/logs/debug.log | grep "launch args"
 You should see `--no-sandbox` in the list, e.g.:
 
 ```
-started, additional flags: [], launch args: ['--user-data-dir=...', '--octo-client-port=56933', '--no-sandbox', '--no-first-run', ...]
+started, additional flags: [], launch args: ['--user-data-dir=...', '--octo-client-port=59999', '--no-sandbox', '--no-first-run', ...]
 ```
 
 If `--no-sandbox` is missing, ensure `OCTO_EXTRA_ARGS="--no-sandbox"` is set in the environment of the process that starts the AppImage (same shell, systemd unit, or script).
@@ -86,7 +86,7 @@ Wait a few seconds, then use the API (see `LOCAL_API.md`).
 ## Storage and port
 
 - **Config/data:** `~/.Octo Browser/`
-- **Local API port:** `~/.Octo Browser/local_port` (e.g. `56933`)
+- **Local API port:** `~/.Octo Browser/local_port` (configured as `59999`)
 - **Logs:** `~/.Octo Browser/logs/debug.log`
 - **Profile browser binary:** `~/.Octo Browser/bin/Octium/{version}/Octium`
 
