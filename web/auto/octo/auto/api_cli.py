@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """
-OctoBrowser API CLI commands.
+OctoBrowser API CLI - Profile Management
 
-Profile management, status, and automation commands.
+Usage:
+    python api_cli.py status               # Check if running
+    python api_cli.py list                 # List profiles
+    python api_cli.py create "Name"        # Create profile
+    python api_cli.py start UUID           # Start profile
+    python api_cli.py stop UUID            # Stop profile
 """
 
 import json
@@ -433,63 +438,82 @@ def cmd_boilerplate(args):
 
 def register_api_commands(sub, OCTO_DEFAULT_PORT):
     """Register all API subcommands"""
-    def reg(name, *aliases, func=None, **kwargs):
-        p = sub.add_parser(name, aliases=list(aliases), **kwargs)
+    def reg(name, *aliases, func=None, help=None):
+        p = sub.add_parser(name, aliases=list(aliases), help=help)
         if func:
             p.set_defaults(func=func)
         return p
 
-    reg("status", func=cmd_status)
-    reg("version", func=cmd_version)
+    reg("status", func=cmd_status, help="Show OctoBrowser status")
+    reg("version", func=cmd_version, help="Show version info")
     
-    p = reg("list", "ls", func=cmd_list)
-    p.add_argument("--json", action="store_true")
+    p = reg("list", "ls", func=cmd_list, help="List all profiles")
+    p.add_argument("--json", action="store_true", help="Output as JSON")
     
-    p = reg("active", func=cmd_active)
-    p.add_argument("--json", action="store_true")
+    p = reg("active", func=cmd_active, help="List running profiles")
+    p.add_argument("--json", action="store_true", help="Output as JSON")
     
-    p = reg("create", "new", func=cmd_create)
-    p.add_argument("title")
-    p.add_argument("--os", choices=["android", "win", "mac"], default="android")
-    p.add_argument("--proxy")
-    p.add_argument("--tags")
-    p.add_argument("--noise", action="store_true", default=True)
-    p.add_argument("--no-noise", action="store_false", dest="noise")
-    p.add_argument("--start", action="store_true")
-    p.add_argument("--headless", action="store_true")
+    p = reg("create", "new", func=cmd_create, help="Create a new profile")
+    p.add_argument("title", help="Profile name")
+    p.add_argument("--os", choices=["android", "win", "mac"], default="android", help="OS type (default: android)")
+    p.add_argument("--proxy", help="Proxy URL (http://user:pass@host:port)")
+    p.add_argument("--tags", help="Comma-separated tags")
+    p.add_argument("--noise", action="store_true", default=True, help="Enable fingerprint noise (default)")
+    p.add_argument("--no-noise", action="store_false", dest="noise", help="Disable fingerprint noise")
+    p.add_argument("--start", action="store_true", help="Start profile after creation")
+    p.add_argument("--headless", action="store_true", help="Start in headless mode")
     
-    p = reg("start", func=cmd_start)
-    p.add_argument("uuid")
-    p.add_argument("--headless", action="store_true")
+    p = reg("start", func=cmd_start, help="Start a profile")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("--headless", action="store_true", help="Start in headless mode")
     
-    p = reg("stop", func=cmd_stop)
-    p.add_argument("uuid", nargs="?")
-    p.add_argument("--all", action="store_true")
+    p = reg("stop", func=cmd_stop, help="Stop profile(s)")
+    p.add_argument("uuid", nargs="?", help="Profile UUID (or prefix)")
+    p.add_argument("--all", action="store_true", help="Stop all running profiles")
     
-    p = reg("delete", "rm", func=cmd_delete)
-    p.add_argument("uuid")
-    p.add_argument("-f", "--force", action="store_true")
+    p = reg("delete", "rm", func=cmd_delete, help="Delete a profile")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("-f", "--force", action="store_true", help="Skip confirmation")
     
-    p = reg("purge", func=cmd_purge)
-    p.add_argument("-f", "--force", action="store_true")
+    p = reg("purge", func=cmd_purge, help="Delete ALL profiles")
+    p.add_argument("-f", "--force", action="store_true", help="Skip confirmation")
     
-    p = reg("info", "show", func=cmd_info)
-    p.add_argument("uuid")
-    p.add_argument("--json", action="store_true")
+    p = reg("info", "show", func=cmd_info, help="Show profile details")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("--json", action="store_true", help="Output as JSON")
     
-    p = reg("clone", func=cmd_clone)
-    p.add_argument("uuid")
-    p.add_argument("-n", "--count", type=int, default=1)
+    p = reg("clone", func=cmd_clone, help="Clone a profile")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("-n", "--count", type=int, default=1, help="Number of clones")
     
-    p = reg("ip", func=cmd_ip)
-    p.add_argument("uuid")
-    p.add_argument("--keep", action="store_true")
+    p = reg("ip", func=cmd_ip, help="Check IP through profile")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("--keep", action="store_true", help="Keep profile running after check")
     
-    p = reg("test", func=cmd_test)
-    p.add_argument("uuid")
-    p.add_argument("--keep", action="store_true")
+    p = reg("test", func=cmd_test, help="Test profile on PixelScan")
+    p.add_argument("uuid", help="Profile UUID (or prefix)")
+    p.add_argument("--keep", action="store_true", help="Keep profile running after test")
     
-    p = reg("boilerplate", "bp", func=cmd_boilerplate)
-    p.add_argument("--os", choices=["android", "win", "mac"], default="android")
-    p.add_argument("-n", "--count", type=int, default=1)
-    p.add_argument("--json", action="store_true")
+    p = reg("boilerplate", "bp", func=cmd_boilerplate, help="Get fingerprint boilerplate")
+    p.add_argument("--os", choices=["android", "win", "mac"], default="android", help="OS type (default: android)")
+    p.add_argument("-n", "--count", type=int, default=1, help="Number of boilerplates")
+    p.add_argument("--json", action="store_true", help="Output as JSON")
+
+
+if __name__ == "__main__":
+    import argparse
+    import sys
+    from config import OCTO_DEFAULT_PORT
+
+    parser = argparse.ArgumentParser(
+        description="OctoBrowser API CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = parser.add_subparsers(dest="command", metavar="COMMAND")
+    register_api_commands(sub, OCTO_DEFAULT_PORT)
+
+    args = parser.parse_args()
+    if not args.command:
+        parser.print_help()
+        sys.exit(0)
+    sys.exit(args.func(args))

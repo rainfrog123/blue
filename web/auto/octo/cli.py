@@ -2,23 +2,23 @@
 """
 OctoBrowser CLI - Main Entry Point
 
-Manage OctoBrowser app and profiles.
+Manage OctoBrowser app, HID spoofing, and profiles.
 
 Usage:
     python cli.py launch                   # Start OctoBrowser app
     python cli.py setup                    # One-time environment setup
-    python cli.py status                   # Check if running
-    python cli.py list                     # List profiles
-    python cli.py create "Name"            # Create profile
-    python cli.py start UUID               # Start profile
-    python cli.py stop UUID                # Stop profile
+    python cli.py hid                      # Show machine-id info
+    python cli.py hid spoof                # Spoof with random HID
+    python cli.py hid restore              # Restore original HID
 """
 
 import argparse
 import os
+import re
 import sys
 import time
 import subprocess
+import uuid
 import requests
 
 # Add auto/ for imports
@@ -113,23 +113,179 @@ def cmd_setup(args):
 
 
 # =============================================================================
+# HID (Machine-ID) Management
+# =============================================================================
+
+MACHINE_ID = "/etc/machine-id"
+MACHINE_ID_BAK = "/etc/machine-id.backup"
+
+
+def hid_get():
+    """Get current machine-id"""
+    try:
+        with open(MACHINE_ID) as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return None
+
+
+def hid_valid(hid):
+    """Check if HID is valid (32 hex chars)"""
+    return bool(hid and len(hid) == 32 and re.match(r'^[0-9a-fA-F]+$', hid))
+
+
+def hid_gen():
+    """Generate random HID"""
+    return uuid.uuid4().hex
+
+
+def cmd_hid_info(args):
+    """Show HID info"""
+    print("\nHID Status")
+    print("=" * 40)
+    print(f"  machine-id : {hid_get() or 'not found'}")
+    if os.path.exists(MACHINE_ID_BAK):
+        with open(MACHINE_ID_BAK) as f:
+            print(f"  backup     : {f.read().strip()}")
+    octo_dir = os.path.expanduser("~/.Octo Browser")
+    print(f"  octo dir   : {octo_dir}")
+    print(f"  octo bin   : {OCTO_APPIMAGE}")
+    print()
+    return 0
+
+
+def cmd_hid_spoof(args):
+    """Spoof machine-id"""
+    new_hid = args.hid if args.hid else hid_gen()
+    new_hid = new_hid.lower()
+
+    if not hid_valid(new_hid):
+        print(f"Error: Invalid HID '{new_hid}' - must be 32 hex chars")
+        return 1
+
+    old_hid = hid_get()
+    print(f"\nCurrent: {old_hid}")
+    print(f"New:     {new_hid}")
+
+    if not args.force:
+        print("\nThis will:")
+        print("  1. Backup current machine-id")
+        print("  2. Set new machine-id")
+        print("  3. Kill OctoBrowser")
+        print("  4. Clear OctoBrowser storage")
+        try:
+            if input("\nContinue? [y/N]: ").strip().lower() != "y":
+                print("Aborted.")
+                return 0
+        except EOFError:
+            return 0
+
+    # Backup
+    if not os.path.exists(MACHINE_ID_BAK):
+        subprocess.run(["sudo", "cp", MACHINE_ID, MACHINE_ID_BAK], check=True)
+        print(f"✓ Backed up to {MACHINE_ID_BAK}")
+
+    # Kill OctoBrowser
+    subprocess.run(["pkill", "-f", "OctoBrowser"], capture_output=True)
+    time.sleep(1)
+
+    # Set new HID
+    subprocess.run(f"echo '{new_hid}' | sudo tee {MACHINE_ID} > /dev/null", shell=True, check=True)
+    subprocess.run(["sudo", "chmod", "444", MACHINE_ID], check=True)
+    print(f"✓ Machine-id set: {new_hid}")
+
+    # Clear OctoBrowser storage
+    octo_dir = os.path.expanduser("~/.Octo Browser")
+    if os.path.isdir(octo_dir):
+        for f in ["local.data", "localpersist.data"]:
+            path = os.path.join(octo_dir, f)
+            if os.path.exists(path):
+                os.remove(path)
+                print(f"✓ Removed {f}")
+        port_file = os.path.join(octo_dir, "local_port")
+        with open(port_file, "w") as f:
+            f.write(OCTO_DEFAULT_PORT)
+        print(f"✓ Set local_port to {OCTO_DEFAULT_PORT}")
+
+    print(f"\n✓ Done! {old_hid} → {new_hid}")
+    print(f"\nRestore with: cli.py hid restore")
+    return 0
+
+
+def cmd_hid_restore(args):
+    """Restore original machine-id"""
+    if not os.path.exists(MACHINE_ID_BAK):
+        print(f"Error: No backup found at {MACHINE_ID_BAK}")
+        return 1
+
+    subprocess.run(["sudo", "cp", MACHINE_ID_BAK, MACHINE_ID], check=True)
+    subprocess.run(["sudo", "chmod", "444", MACHINE_ID], check=True)
+    print(f"✓ Restored: {hid_get()}")
+    print("Run 'cli.py hid clear' to wipe OctoBrowser storage")
+    return 0
+
+
+def cmd_hid_clear(args):
+    """Clear OctoBrowser storage"""
+    octo_dir = os.path.expanduser("~/.Octo Browser")
+    if not os.path.isdir(octo_dir):
+        print(f"OctoBrowser dir not found: {octo_dir}")
+        return 1
+
+    # Kill first
+    subprocess.run(["pkill", "-f", "OctoBrowser"], capture_output=True)
+    time.sleep(1)
+
+    for f in ["local.data", "localpersist.data"]:
+        path = os.path.join(octo_dir, f)
+        if os.path.exists(path):
+            os.remove(path)
+            print(f"✓ Removed {f}")
+
+    port_file = os.path.join(octo_dir, "local_port")
+    with open(port_file, "w") as f:
+        f.write(OCTO_DEFAULT_PORT)
+    print(f"✓ Set local_port to {OCTO_DEFAULT_PORT}")
+    return 0
+
+
+# =============================================================================
 # Main
 # =============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="OctoBrowser CLI")
-    sub = parser.add_subparsers(dest="command")
+    parser = argparse.ArgumentParser(
+        description="OctoBrowser CLI",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    sub = parser.add_subparsers(dest="command", metavar="COMMAND")
 
     # Launch & setup commands
-    p = sub.add_parser("launch", aliases=["start-app"])
+    p = sub.add_parser("launch", aliases=["start-app"], help="Start OctoBrowser app")
     p.add_argument("--port", default=OCTO_DEFAULT_PORT, help="Local API port")
     p.set_defaults(func=cmd_launch)
 
-    p = sub.add_parser("setup", aliases=["env-setup"])
+    p = sub.add_parser("setup", aliases=["env-setup"], help="One-time environment setup")
     p.add_argument("--no-reboot", action="store_true", help="Skip reboot prompt")
     p.add_argument("--force", action="store_true", help="Continue on errors")
     p.add_argument("-v", "--verbose", action="store_true")
     p.set_defaults(func=cmd_setup)
+
+    # HID commands
+    hid_parser = sub.add_parser("hid", help="Machine-ID management")
+    hid_sub = hid_parser.add_subparsers(dest="hid_command", metavar="ACTION")
+
+    hid_sub.add_parser("info", help="Show HID info").set_defaults(func=cmd_hid_info)
+
+    p = hid_sub.add_parser("spoof", help="Spoof machine-id")
+    p.add_argument("hid", nargs="?", help="32-char hex HID (random if omitted)")
+    p.add_argument("-f", "--force", action="store_true", help="Skip confirmation")
+    p.set_defaults(func=cmd_hid_spoof)
+
+    hid_sub.add_parser("restore", help="Restore original machine-id").set_defaults(func=cmd_hid_restore)
+    hid_sub.add_parser("clear", help="Clear OctoBrowser storage").set_defaults(func=cmd_hid_clear)
+
+    hid_parser.set_defaults(func=cmd_hid_info)
 
     # Register API commands from api_cli
     register_api_commands(sub, OCTO_DEFAULT_PORT)
