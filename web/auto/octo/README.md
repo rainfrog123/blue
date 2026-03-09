@@ -24,6 +24,7 @@ octo/
 ├── clash/                       # Proxy management
 │   ├── clash_proxy_manager.py   # Proxy manager
 │   └── ip_quality_score_checker.py
+├── start_octo.sh                # Start OctoBrowser (VNC/root)
 └── octo_environment_setup.sh    # Initial setup script
 ```
 
@@ -32,9 +33,14 @@ octo/
 ### 1. Run OctoBrowser
 
 ```bash
+./start_octo.sh
+```
+
+Or manually:
+```bash
 DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" \
   QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" \
-  /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox
+  /opt/octobrowser/OctoBrowser.AppImage --no-sandbox
 ```
 
 See [docs/RUNNING_OCTOBROWSER.md](docs/RUNNING_OCTOBROWSER.md) for details.
