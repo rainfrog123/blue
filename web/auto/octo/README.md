@@ -1,104 +1,80 @@
-# OctoBrowser Reverse Engineering
+# OctoBrowser Tools
 
-Tools and documentation for reverse engineering OctoBrowser.
+Tools and documentation for OctoBrowser automation and reverse engineering.
 
 ## Project Structure
 
 ```
 octo/
-├── README.md              # This file - project overview
-├── ssl_pinning/           # SSL/TLS certificate pinning bypass
-│   ├── README.md          # SSL bypass documentation
-│   ├── ghidra_*.py        # Ghidra analysis and patching scripts
-│   ├── frida_*.js         # Frida hooking scripts
-│   ├── patch_*.py         # Binary patching scripts
-│   └── *.sh               # Launcher scripts
-├── hid/                   # Hardware ID fingerprinting analysis
-│   ├── README.md          # HID documentation
-│   ├── ghidra_*.py        # Ghidra analysis scripts
-│   └── decrypt_*.py       # Storage decryption tools
-├── automation/            # Browser automation scripts
-│   ├── octo_playwright.py # Playwright automation
-│   └── octo_commands.sh   # Common commands
-└── setup_octo.sh          # Initial setup script
+├── README.md                    # This file - project overview
+├── docs/                        # Documentation
+│   ├── LOCAL_API.md             # Local API reference
+│   └── RUNNING_OCTOBROWSER.md   # VNC, root, sandbox setup
+├── automation/                  # Browser automation scripts
+│   ├── README.md                # Automation documentation
+│   ├── cursor_automation.py     # Cursor account automation
+│   ├── playwright_*.py          # Playwright automation scripts
+│   └── octo_shell_commands.sh   # Shell helpers
+├── reverse_engineering/         # Reverse engineering tools
+│   ├── README.md                # RE overview
+│   ├── api_tier_bypass/         # API tier restriction bypass
+│   ├── hid/                     # Hardware ID fingerprinting
+│   ├── ssl/                     # SSL/TLS certificate pinning bypass
+│   └── storage_decryption/      # Local storage encryption
+├── clash/                       # Proxy management
+│   ├── clash_proxy_manager.py   # Proxy manager
+│   └── ip_quality_score_checker.py
+└── octo_environment_setup.sh    # Initial setup script
 ```
 
 ## Quick Start
 
-### SSL Pinning Bypass
+### 1. Run OctoBrowser
 
 ```bash
-# Patch and run OctoBrowser with SSL interception
-cd ssl_pinning
-./patch_and_run_octo.sh
+DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" \
+  QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" \
+  /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox
 ```
 
-See [ssl_pinning/README.md](ssl_pinning/README.md) for full documentation.
+See [docs/RUNNING_OCTOBROWSER.md](docs/RUNNING_OCTOBROWSER.md) for details.
 
-### HID Analysis
+### 2. Use the Local API
 
 ```bash
-# Analyze HID fingerprinting
-cd hid
-python3 ghidra_hid_analyzer.py
+# Test API
+curl -s http://localhost:56933/api/v2/client/themes
 
-# View current machine HID
-cat /etc/machine-id
+# Create profile
+curl -s -X POST "http://localhost:56933/api/v2/profiles/quick" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "My Profile", "os": "win"}'
 ```
 
-See [hid/README.md](hid/README.md) for full documentation.
+See [docs/LOCAL_API.md](docs/LOCAL_API.md) for full API reference.
 
-## Tools Reference
-
-### Ghidra
+### 3. Automation
 
 ```bash
-# Location
-/opt/ghidra  # symlink to /opt/tools/ghidra_11.3.1_PUBLIC
-
-# GUI mode
-DISPLAY=:1 /opt/ghidra/ghidraRun
-
-# Headless analysis
-/opt/ghidra/support/analyzeHeadless <project_dir> <project_name> -import <binary>
+cd automation
+python3 cursor_automation.py
 ```
 
-### Mitmproxy
+See [automation/README.md](automation/README.md) for automation documentation.
+
+### 4. Reverse Engineering
 
 ```bash
-# Basic proxy
-mitmdump -p 8080
-
-# Save traffic
-mitmdump -p 8080 -w traffic.flow
-
-# Read traffic
-mitmdump -r traffic.flow --flow-detail 3
-
-# Filter domains
-mitmdump -r traffic.flow "~d octobrowser"
+cd reverse_engineering
+# See individual module READMEs for specific tools
 ```
 
-### Frida
-
-```bash
-# List processes
-frida-ps
-
-# Trace functions
-frida-trace -i "open*" <pid>
-
-# Inject script
-frida -p <pid> -l script.js
-```
-
-### Tshark
-
-```bash
-# Capture TLS SNI
-tshark -i any -Y 'tls.handshake.extensions_server_name' \
-  -T fields -e ip.dst -e tls.handshake.extensions_server_name
-```
+| Module | Purpose |
+|--------|---------|
+| [api_tier_bypass/](reverse_engineering/api_tier_bypass/) | Bypass API subscription restrictions |
+| [hid/](reverse_engineering/hid/) | HID fingerprinting and spoofing |
+| [ssl/](reverse_engineering/ssl/) | SSL pinning bypass |
+| [storage_decryption/](reverse_engineering/storage_decryption/) | Decrypt local storage |
 
 ## OctoBrowser Info
 
@@ -108,7 +84,7 @@ tshark -i any -Y 'tls.handshake.extensions_server_name' \
 - **Browser Engine**: QtWebEngine (Chromium 134)
 - **SSL Library**: NSS (libnss3.so) + OpenSSL
 
-### Discovered Endpoints
+### Endpoints
 
 | Domain | Purpose |
 |--------|---------|
@@ -124,30 +100,4 @@ tshark -i any -Y 'tls.handshake.extensions_server_name' \
 | `~/.Octo Browser/` | Main data directory |
 | `~/.Octo Browser/local.data` | Session storage (encrypted) |
 | `~/.Octo Browser/localpersist.data` | Persistent storage (encrypted) |
-| `/tmp/_MEI*` | Runtime extraction directory |
-
-## Extracted AppImage
-
-```bash
-# Extract for analysis
-cd /tmp
-python3 pyinstxtractor.py /home/vncuser/Downloads/OctoBrowser.AppImage
-
-# Key files
-/tmp/OctoBrowser.AppImage_extracted/
-├── libnss3.so              # NSS SSL library
-├── libssl.so.3             # OpenSSL
-├── libcrypto.so.3          # OpenSSL crypto
-├── libQt6WebEngineCore.so.6 # Qt browser engine (193MB)
-├── PYZ.pyz_extracted/      # Python bytecode
-│   ├── config.pyc          # Configuration with HID logic
-│   └── octo/               # Main application code
-└── main.pyc                # Entry point
-```
-
-## Notes
-
-- OctoBrowser has anti-debugging protections
-- Frida causes crashes due to integrity checks
-- Binary patching before execution is more reliable
-- HID is used for both encryption and license binding
+| `~/.Octo Browser/local_port` | Local API port |

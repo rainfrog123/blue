@@ -2,22 +2,23 @@
 
 Scripts and documentation for automating OctoBrowser via Playwright and the local API.
 
-## Documentation index
+## Documentation
 
 | Document | Purpose |
 |----------|---------|
-| [LOCAL_API.md](LOCAL_API.md) | **Local API reference** — endpoints, create/start/stop profiles, examples |
-| [RUNNING_OCTOBROWSER.md](RUNNING_OCTOBROWSER.md) | **Running OctoBrowser** — VNC, root, sandbox env vars, troubleshooting |
-| [API_TIER_BYPASS.md](API_TIER_BYPASS.md) | Reverse engineering guide to bypass API tier restrictions |
+| [LOCAL_API.md](../docs/LOCAL_API.md) | **Local API reference** — endpoints, create/start/stop profiles, examples |
+| [RUNNING_OCTOBROWSER.md](../docs/RUNNING_OCTOBROWSER.md) | **Running OctoBrowser** — VNC, root, sandbox env vars, troubleshooting |
+
+For reverse engineering (tier bypass, HID spoofing, SSL bypass), see [../reverse_engineering/](../reverse_engineering/).
 
 ## Scripts
 
 | File | Purpose |
 |------|---------|
-| `octo_cursor.py` | **Cursor account automation** — creates accounts with email/SMS verification |
-| `octo_playwright.py` | Playwright automation script (basic example) |
-| `octo_playwright_nb.py` | Notebook-friendly version |
-| `octo_commands.sh` | Shell helpers for API (list, start, stop, create profile) |
+| `cursor_automation.py` | **Cursor account automation** — creates accounts with email/SMS verification |
+| `playwright_browser_automation.py` | Playwright automation script (basic example) |
+| `playwright_notebook_automation.py` | Notebook-friendly version |
+| `octo_shell_commands.sh` | Shell helpers for API (list, start, stop, create profile) |
 
 ## Quick start
 
@@ -25,13 +26,13 @@ Scripts and documentation for automating OctoBrowser via Playwright and the loca
 
 ```bash
 # Option A: Use the helper script
-/allah/blue/web/auto/octo/hid/spoof_hid.sh --start
+/allah/blue/web/auto/octo/reverse_engineering/hid/spoof_hid.sh --start
 
 # Option B: Run directly
 DISPLAY=:1 OCTO_EXTRA_ARGS="--no-sandbox" QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox --disable-gpu-sandbox" /home/vncuser/Downloads/OctoBrowser.AppImage --no-sandbox
 ```
 
-See [RUNNING_OCTOBROWSER.md](RUNNING_OCTOBROWSER.md) for details.
+See [RUNNING_OCTOBROWSER.md](../docs/RUNNING_OCTOBROWSER.md) for details.
 
 ### 2. Create and start a profile via API
 
@@ -57,7 +58,7 @@ curl -s -X POST "http://localhost:56933/api/v2/profiles/YOUR_UUID_HERE/stop" \
   -d '{}'
 ```
 
-See [LOCAL_API.md](LOCAL_API.md) for full API reference.
+See [LOCAL_API.md](../docs/LOCAL_API.md) for full API reference.
 
 ### 3. Shell helpers (optional)
 
@@ -111,22 +112,24 @@ Requires a profile to be started (e.g. via API or GUI) with a debug port if you 
 curl -s http://localhost:56933/api/v2/client/themes | python3 -m json.tool
 ```
 
-Full details: [LOCAL_API.md](LOCAL_API.md).
+Full details: [LOCAL_API.md](../docs/LOCAL_API.md).
 
 ## Files summary
 
 ```
 automation/
-├── README.md                 # This index
-├── LOCAL_API.md              # Local API reference
-├── RUNNING_OCTOBROWSER.md    # VNC, root, sandbox
-├── API_TIER_BYPASS.md        # Tier bypass (reverse engineering)
-├── octo_commands.sh          # Shell helpers
-├── octo_cursor.py            # Cursor account automation
-├── octo_playwright.py        # Playwright script (basic example)
-└── octo_playwright_nb.py     # Playwright notebook version
+├── README.md                           # This index
+├── cursor_automation.py                # Cursor account automation
+├── playwright_browser_automation.py    # Playwright automation script
+├── playwright_notebook_automation.py   # Notebook-friendly version
+├── octo_shell_commands.sh              # Shell helpers
+└── session_tokens.txt                  # Saved tokens
+
+Related directories:
+├── ../docs/                            # Documentation (LOCAL_API.md, RUNNING_OCTOBROWSER.md)
+└── ../reverse_engineering/             # RE tools (HID, SSL, storage, tier bypass)
 
 Shared dependencies (under /allah/blue/web/auto/):
-├── herosms/herosms.py        # HeroSMS API wrapper
-└── worker/hyas_prefixes.txt  # Email prefixes for @hyas.site
+├── herosms/herosms.py                  # HeroSMS API wrapper
+└── worker/hyas_prefixes.txt            # Email prefixes for @hyas.site
 ```

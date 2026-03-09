@@ -617,7 +617,7 @@ Some endpoints or features may return:
 }
 ```
 
-See `API_TIER_BYPASS.md` for analysis and bypass options.
+See [API_TIER_BYPASS.md](../reverse_engineering/api_tier_bypass/API_TIER_BYPASS.md) for analysis and bypass options.
 
 ## Examples
 
