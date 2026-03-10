@@ -1,0 +1,9 @@
+{
+  "account_id": "5d75ad91bc621086a1908973590051c3",
+  "zone_id": "2c5bc584bd4a638c9b6a36a85dc591cb",
+  "zone_name": "hyas.site",
+  "kv_namespace_id": "b7c6dfb18dce4914bc0b93887cc83a9b",
+  "d1_database_id": "3a703fbd-0081-4863-abeb-2fab432f78b4",
+  "worker_name": "hyas-mail",
+  "worker_url": "https://hyas-mail.mao-5d7.workers.dev"
+}

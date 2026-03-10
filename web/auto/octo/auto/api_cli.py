@@ -4,10 +4,11 @@ OctoBrowser API CLI - Profile Management
 
 Usage:
     python api_cli.py status               # Check if running
-    python api_cli.py list                 # List profiles
-    python api_cli.py create "Name"        # Create profile
-    python api_cli.py start UUID           # Start profile
-    python api_cli.py stop UUID            # Stop profile
+    python api_cli.py list                  # List profiles
+    python api_cli.py templates             # List profile templates
+    python api_cli.py create "Name"         # Create profile
+    python api_cli.py start UUID            # Start profile
+    python api_cli.py stop UUID             # Stop profile
 """
 
 import json
@@ -421,6 +422,31 @@ def cmd_test(args):
     return 0
 
 
+def cmd_templates(args):
+    """List profile templates"""
+    resp = api_get("/api/v2/templates")
+    if resp.get("error"):
+        print(f"Error: {resp['error']}")
+        return 1
+    items = resp.get("data", {}).get("items", [])
+    total = resp.get("data", {}).get("total", 0)
+    if not items:
+        print("No templates found.")
+        return 0
+    if args.json:
+        print(json.dumps(items, indent=2))
+        return 0
+    print(f"\n{'Name':<20} {'OS':<10} {'Arch':<8} {'UUID'}")
+    print("-" * 70)
+    for t in items:
+        name = (t.get("name") or "Untitled")[:18]
+        os_type = t.get("os", "?")
+        arch = t.get("os_arch", "?")
+        print(f"{name:<20} {os_type:<10} {arch:<8} {t.get('uuid', '')}")
+    print(f"\nTotal: {total} template(s)")
+    return 0
+
+
 def cmd_boilerplate(args):
     """Get fingerprint boilerplate"""
     resp = api_post("/api/v2/profiles/boilerplate/quick", {"os": args.os, "os_arch": "arm" if args.os in ["mac", "android"] else "x86", "count": args.count})
@@ -494,6 +520,9 @@ def register_api_commands(sub, OCTO_DEFAULT_PORT):
     p.add_argument("uuid", help="Profile UUID (or prefix)")
     p.add_argument("--keep", action="store_true", help="Keep profile running after test")
     
+    p = reg("templates", "tpl", func=cmd_templates, help="List profile templates")
+    p.add_argument("--json", action="store_true", help="Output as JSON")
+
     p = reg("boilerplate", "bp", func=cmd_boilerplate, help="Get fingerprint boilerplate")
     p.add_argument("--os", choices=["android", "win", "mac"], default="android", help="OS type (default: android)")
     p.add_argument("-n", "--count", type=int, default=1, help="Number of boilerplates")

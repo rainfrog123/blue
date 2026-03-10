@@ -10,6 +10,7 @@
 # - Run `await debug_page()` to check state
 
 # %% [1] Initialize
+import json
 import os
 import time
 import asyncio
@@ -58,26 +59,65 @@ stripe_url = None
 session_token = None
 
 # Configuration
-PROFILE_OS = "android"  # android, win, mac
+PROFILE_OS = "mac"  # android, win, mac
+USE_PROXY = False
 PROXY_URL = "https://user-sp19qgy7m9-country-de-session-32c2d04dcd49-sessionduration-60:+26iSboeQ0wUyx4qEw@de.decodo.com:48999"
 
 print(f"Profile: {PROFILE_OS}")
-print(f"Proxy: {PROXY_URL.split('@')[1] if '@' in PROXY_URL else PROXY_URL}")
+print(f"Proxy: {'ON - ' + PROXY_URL.split('@')[1] if USE_PROXY and '@' in PROXY_URL else 'OFF'}")
 
 
 # %% [3] Create Profile
 os_arch = "arm" if PROFILE_OS in ["mac", "android"] else "x86"
 
-# Get boilerplate
-resp = api_post(
-    "/api/v2/profiles/boilerplate/quick",
-    {"os": PROFILE_OS, "os_arch": os_arch, "count": 1}
-)
-if not resp.get("success"):
-    raise RuntimeError(f"Boilerplate failed: {resp}")
+# Use template if available, else boilerplate
+templates_resp = api_get("/api/v2/templates")
+template_match = None
+if templates_resp.get("success"):
+    for t in templates_resp.get("data", {}).get("items", []):
+        if t.get("os") == PROFILE_OS and t.get("os_arch") == os_arch:
+            template_match = t
+            break
 
-bp = resp["data"]["boilerplates"][0]
-fp = bp["fp"]
+if template_match:
+    # Fetch full template data (fp may have nulls - we'll merge with boilerplate)
+    tdata = api_get(f"/api/v2/templates/{template_match['uuid']}")
+    if tdata.get("success"):
+        tdd = tdata["data"]["data"]
+        bp = {"fp": tdd["fp"], "logo": tdd["logo"],
+              "start_pages": tdd.get("start_pages", []),
+              "bookmarks": tdd.get("bookmarks", []),
+              "launch_args": tdd.get("launch_args", []),
+              "storage_options": tdd.get("storage_options", {}),
+              "description": "", "proxies": tdata["data"].get("proxies", [])}
+        print(f"  Template: {template_match.get('name')} ({template_match.get('uuid', '')[:8]}...)")
+    else:
+        template_match = None
+
+if template_match:
+    # Template fp has nulls (user_agent, screen, etc). Get boilerplate for complete fp, merge template settings.
+    bp_resp = api_post("/api/v2/profiles/boilerplate/quick", {"os": PROFILE_OS, "os_arch": os_arch, "count": 1})
+    if bp_resp.get("success"):
+        fp = bp_resp["data"]["boilerplates"][0]["fp"]
+        tfp = bp["fp"]
+        # Overlay template's non-null fp settings (noise, webrtc, languages, etc.)
+        for k, v in tfp.items():
+            if v is not None:
+                fp[k] = v
+        bp["fp"] = fp
+    else:
+        template_match = None
+
+if not template_match:
+    # Fallback: boilerplate
+    resp = api_post(
+        "/api/v2/profiles/boilerplate/quick",
+        {"os": PROFILE_OS, "os_arch": os_arch, "count": 1}
+    )
+    if not resp.get("success"):
+        raise RuntimeError(f"Boilerplate failed: {resp}")
+    bp = resp["data"]["boilerplates"][0]
+    fp = bp["fp"]
 
 print(f"\nFingerprint:")
 print(f"  OS: {fp.get('os')} v{fp.get('os_version')}")
@@ -100,20 +140,22 @@ if PROFILE_OS == "android":
     storage_opts["extensions"] = False
 
 # Proxy
-proxy_config = parse_proxy_url(PROXY_URL) if PROXY_URL else {"type": "direct"}
+proxy_config = parse_proxy_url(PROXY_URL) if USE_PROXY and PROXY_URL else {"type": "direct"}
 if proxy_config and proxy_config.get("data"):
     pd = proxy_config["data"]
     print(f"  Proxy: {pd['ip']}:{pd['port']}")
+else:
+    print(f"  Proxy: direct")
 
 # Create
 title = f"Cursor-{PROFILE_OS.title()}-{int(time.time())}"
 payload = {
     "title": title,
     "name": title,
-    "description": "",
-    "start_pages": [],
-    "bookmarks": [],
-    "launch_args": [],
+    "description": bp.get("description", ""),
+    "start_pages": bp.get("start_pages", []),
+    "bookmarks": bp.get("bookmarks", []),
+    "launch_args": bp.get("launch_args", []),
     "logo": bp.get("logo", ""),
     "tags": [],
     "fp": fp,
@@ -365,10 +407,34 @@ print(f"✓ Token: {len(token_decoded) if token_decoded else 0} chars")
 
 
 # %% [24] Save Results
-output_file = os.path.join(os.path.dirname(__file__), "..", "docs", "octo_session_tokens.txt")
+auto_dir = os.path.dirname(__file__)
+session_file = os.path.join(auto_dir, "session.json")
+info_file = os.path.join(auto_dir, "info.json")
 
-with open(output_file, "a") as f:
-    f.write(f"{email}\t+{phone}\t{stripe_url}\t{token_decoded}\n")
+# session.json: tokens only
+try:
+    with open(session_file) as f:
+        sessions = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    sessions = []
+sessions.append({"workos_session_token": token_decoded or ""})
+with open(session_file, "w") as f:
+    json.dump(sessions, f, indent=2)
+
+# info.json: complete information
+try:
+    with open(info_file) as f:
+        infos = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    infos = []
+infos.append({
+    "email": email or "",
+    "phone": f"+{phone}" if phone else "",
+    "stripe_url": stripe_url or "",
+    "workos_session_token": token_decoded or "",
+})
+with open(info_file, "w") as f:
+    json.dump(infos, f, indent=2)
 
 print(f"\n{'='*50}")
 print("RESULTS")

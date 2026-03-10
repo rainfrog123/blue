@@ -6,10 +6,10 @@
 import requests
 from urllib.parse import quote
 
-from ipqs import check_ip as ipqs_check_ip
+from .ipqs import check_ip as ipqs_check_ip
 
 CLASH_API = "http://127.0.0.1:17650"
-SECRET = "0ce2f533-f94b-4780-af2d-33eabc291f4c"
+SECRET = "abf6fe9e-04fe-4d5b-9e11-0da439136005"
 SELECTOR_GROUP = "GLOBAL"  # Default selector group
 
 HEADERS = {
@@ -284,7 +284,7 @@ def test_all_nodes(group: str = "GLOBAL", delay_between: float = 2.0, skip_non_p
     
     return results
 
-def test_and_export(output_file: str = "clash_nodes_test.json", group: str = "GLOBAL"):
+def test_and_export(output_file: str = "nodes_test.json", group: str = "GLOBAL"):
     """Test all nodes and export results to JSON"""
     print(f"Testing all nodes in {group}...")
     print(f"Started at: {datetime.now().isoformat()}")
