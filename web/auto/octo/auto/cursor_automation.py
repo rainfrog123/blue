@@ -12,16 +12,23 @@
 # %% [1] Initialize
 import json
 import os
+import sys
 import time
 import asyncio
 from urllib.parse import unquote
 from playwright.async_api import async_playwright
 
+# OTP from hyas-mail worker (otp_catcher)
+WORKER_PATH = "/allah/blue/web/auto/worker"
+if WORKER_PATH not in sys.path:
+    sys.path.insert(0, WORKER_PATH)
+from otp_catcher import get_otp
+
 from api_cli import get_api, api_get, api_post, parse_proxy_url
 from config import CONFIG, verify_paths
 from cursor_helpers import (
-    stop, generate_email, count_available_prefixes,
-    poll_email_code, poll_sms_code,
+    stop, StopSignal, generate_email, count_available_prefixes,
+    poll_sms_code,
     get_phone_number, format_phone_uk, complete_sms, cancel_sms,
     fill_otp, set_react_input
 )
@@ -281,8 +288,22 @@ await asyncio.sleep(3)
 print("✓ Email code option selected")
 
 
-# %% [11] Fill Email OTP
-otp = poll_email_code(email)
+# %% [11] Fill Email OTP (otp_catcher / hyas-mail worker)
+print(f"Polling for email code: {email}")
+print("  (Run `stop()` in another cell to break out)")
+StopSignal.reset()
+otp = None
+for i in range(60):  # 300s timeout, 5s interval
+    if StopSignal.check():
+        print("Stopped by user")
+        break
+    data = get_otp(email)
+    if data:
+        otp = data.get("otp")
+        print(f"OTP received: {otp}")
+        break
+    print(f"  [{(i + 1) * 5}s] waiting...")
+    time.sleep(5)
 
 if otp:
     await fill_otp(page, otp)
