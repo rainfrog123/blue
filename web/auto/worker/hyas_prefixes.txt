@@ -53,7 +53,7 @@ gate
 flow
 stream
 pulse
-wave
+wave # USED
 signal
 code
 hack
@@ -467,7 +467,7 @@ cosine # USED
 sine
 vector
 scalar
-tensor
+tensor # USED
 matrix
 array
 set
@@ -532,7 +532,7 @@ serial
 async
 sync
 static
-dynamic
+dynamic # USED
 mutable
 immutable
 volatile
@@ -585,7 +585,7 @@ optional
 required
 mandatory
 forbidden
-allowed
+allowed # USED
 denied
 granted
 revoked

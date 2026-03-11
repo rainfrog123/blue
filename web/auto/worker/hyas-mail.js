@@ -6,9 +6,35 @@ export default {
     const rawEmail = await new Response(message.raw).text();
     const timestamp = new Date().toISOString();
 
-    // Extract OTP - any 6-digit number (works for any language)
-    const otpMatch = rawEmail.match(/\b\d{6}\b/);
-    const otp = otpMatch ? otpMatch[0] : null;
+    // Extract OTP - look for specific patterns like "code is 123456"
+    // Try specific patterns first (most reliable)
+    let otp = null;
+    
+    // Pattern 1: "code is 123456" or "code is: 123456"
+    const codeIsMatch = rawEmail.match(/code\s+is[:\s]+(\d{6})/i);
+    if (codeIsMatch) {
+      otp = codeIsMatch[1];
+    }
+    
+    // Pattern 2: "one-time code: 123456"
+    if (!otp) {
+      const otcMatch = rawEmail.match(/one-time\s+code[:\s]+(\d{6})/i);
+      if (otcMatch) otp = otcMatch[1];
+    }
+    
+    // Pattern 3: "verification code: 123456"
+    if (!otp) {
+      const vcMatch = rawEmail.match(/verification\s+code[:\s]+(\d{6})/i);
+      if (vcMatch) otp = vcMatch[1];
+    }
+    
+    // Fallback: first 6-digit number in body after headers
+    if (!otp) {
+      const bodyStart = rawEmail.indexOf('\n\n');
+      const emailBody = bodyStart > 0 ? rawEmail.slice(bodyStart) : rawEmail;
+      const fallbackMatch = emailBody.match(/\b\d{6}\b/);
+      if (fallbackMatch) otp = fallbackMatch[0];
+    }
 
     // Save OTP to KV (key = email address, expires in 10 minutes)
     if (otp && env.OTP_KV) {
@@ -44,7 +70,7 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // GET /otp?email=xxx@hyas.site - retrieve OTP from KV
+    // GET /otp?email=xxx@hyas.site - retrieve OTP from D1 (more consistent than KV)
     if (path === "/otp" && request.method === "GET") {
       const email = url.searchParams.get("email");
       if (!email) {
@@ -54,15 +80,23 @@ export default {
         });
       }
 
-      const data = await env.OTP_KV.get(email);
-      if (!data) {
+      // Query D1 for the most recent OTP for this email (within last 10 minutes)
+      const result = await env.EMAILS_DB.prepare(
+        `SELECT otp, sender as "from", subject, received_at as timestamp 
+         FROM emails 
+         WHERE recipient = ? AND otp IS NOT NULL 
+           AND received_at > datetime('now', '-10 minutes')
+         ORDER BY id DESC LIMIT 1`
+      ).bind(email).first();
+
+      if (!result) {
         return new Response(JSON.stringify({ error: "no OTP found", email: email }), {
           status: 404,
           headers: { "Content-Type": "application/json" }
         });
       }
 
-      return new Response(data, {
+      return new Response(JSON.stringify(result), {
         headers: { "Content-Type": "application/json" }
       });
     }

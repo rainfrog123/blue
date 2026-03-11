@@ -127,9 +127,95 @@ def poll_email_code(email_addr, timeout=300, interval=5, config=None):
     
     raise TimeoutError(f"No code received in {timeout}s")
 
-# %% HeroSMS: Get Phone Number
+# %% HeroSMS: Get Active Activations
+def get_active_activations(config=None):
+    """
+    Get list of active (already purchased) phone numbers from HeroSMS.
+    Returns list of activations with: activationId, phoneNumber, activationStatus, etc.
+    """
+    cfg = config or CONFIG
+    
+    result = herosms.get_active_activations(limit=100)
+    
+    # Handle response format: {"status": "success", "data": [...], "activeActivations": {...}}
+    activations = []
+    
+    if isinstance(result, dict):
+        # Primary: use "data" field (clean list)
+        if "data" in result and isinstance(result["data"], list):
+            activations = result["data"]
+        # Fallback: activeActivations.rows
+        elif "activeActivations" in result:
+            aa = result["activeActivations"]
+            if isinstance(aa, dict) and "rows" in aa:
+                activations = aa["rows"]
+    elif isinstance(result, list):
+        activations = result
+    elif isinstance(result, str):
+        print(f"API error: {result}")
+        return []
+    
+    # Filter by service if specified (serviceCode field)
+    service = cfg.get("phone_service", "")
+    if service and activations:
+        activations = [a for a in activations if isinstance(a, dict) and a.get("serviceCode") == service]
+    
+    # Sort by activationId descending (newest first) for display
+    sorted_acts = sorted(activations, key=lambda a: int(a.get("activationId") or 0), reverse=True)
+    
+    print(f"Found {len(activations)} active activation(s)")
+    for i, a in enumerate(sorted_acts[:5]):
+        if isinstance(a, dict):
+            marker = " ← newest" if i == 0 else ""
+            print(f"  [{i}] ID: {a.get('activationId')} | +{a.get('phoneNumber')} | status={a.get('activationStatus')}{marker}")
+    
+    return activations
+
+
+# %% HeroSMS: Get Existing Phone Number
+def get_existing_phone_number(activation_index=0, config=None):
+    """
+    Get an already activated phone number from HeroSMS (no new purchase).
+    
+    Args:
+        activation_index: Which activation to use (0 = newest, 1 = second newest, etc.)
+        config: Optional config override
+    
+    Returns: (activation_id, phone, phone_local)
+    """
+    cfg = config or CONFIG
+    
+    print(f"HeroSMS Balance: ${herosms.get_balance()}")
+    
+    activations = get_active_activations(cfg)
+    if not activations:
+        raise RuntimeError("No active activations available. Run get_phone_number() to purchase one.")
+    
+    # Sort by activationId descending (newest first)
+    activations = sorted(activations, key=lambda a: int(a.get("activationId") or 0), reverse=True)
+    
+    if activation_index >= len(activations):
+        raise RuntimeError(f"Index {activation_index} out of range. Only {len(activations)} active activation(s).")
+    
+    activation = activations[activation_index]
+    
+    # Handle different field name formats (activationId vs id, phoneNumber vs phone)
+    activation_id = activation.get("activationId") or activation.get("id")
+    phone = str(activation.get("phoneNumber") or activation.get("phone") or "")
+    
+    country_code = cfg["phone_country_code"]
+    phone_local = phone[len(country_code):] if phone.startswith(country_code) else phone
+    
+    print(f"Using existing: +{phone} (ID: {activation_id})")
+    print(f"  Local: {phone_local}")
+    print(f"  Status: {activation.get('activationStatus') or activation.get('status')}")
+    
+    return activation_id, phone, phone_local
+
+
+# %% HeroSMS: Get New Phone Number
 def get_phone_number(config=None):
-    """Get a phone number from HeroSMS. Returns (activation_id, phone, phone_local)."""
+    """Get a NEW phone number from HeroSMS (purchases). Returns (activation_id, phone, phone_local)."""
     cfg = config or CONFIG
     
     print(f"HeroSMS Balance: ${herosms.get_balance()}")
@@ -154,38 +240,80 @@ def format_phone_uk(phone_local):
         return f"({phone_local[:3]}){phone_local[3:6]}-{phone_local[6:]}"
     return phone_local
 
-# %% Poll SMS Code
+# %% Poll SMS Code (sync)
 def poll_sms_code(activation_id, timeout=300, interval=5):
-    """Poll HeroSMS for SMS code. Run stop() to break."""
-    print("Polling for SMS code...")
-    print("  (Run `stop()` in another cell to break out)")
-    StopSignal.reset()
+    """Poll HeroSMS for SMS code (blocking). Press Ctrl+C to cancel."""
+    print("Polling for SMS code... (Ctrl+C to cancel)")
     
-    for i in range(timeout // interval):
-        if StopSignal.check():
-            print("Stopped by user")
-            return None
-        
-        status = herosms.get_status(activation_id)
-        print(f"[{i * interval:3d}s] {status}")
-        
-        if status.startswith("STATUS_OK:"):
-            code = status.split(":")[1]
-            print(f"SMS CODE: {code}")
-            return code
-        elif status == "STATUS_CANCEL":
-            raise Exception("SMS activation cancelled")
-        
-        time.sleep(interval)
+    try:
+        for i in range(timeout // interval):
+            status = herosms.get_status(activation_id)
+            
+            if status.startswith("STATUS_OK:"):
+                code = status.split(":")[1]
+                print(f"[{i * interval:3d}s] STATUS_OK - NEW SMS!")
+                print(f"SMS CODE: {code}")
+                return code
+            elif status.startswith("STATUS_WAIT_RETRY:"):
+                old_msg = status.split(":", 1)[1][:40]
+                print(f"[{i * interval:3d}s] Waiting for NEW SMS (old: {old_msg}...)")
+            elif status == "STATUS_CANCEL":
+                raise Exception("SMS activation cancelled")
+            else:
+                print(f"[{i * interval:3d}s] {status}")
+            
+            time.sleep(interval)
+    except KeyboardInterrupt:
+        print("\nPolling cancelled by user")
+        return None
     
     herosms.cancel(activation_id)
     raise TimeoutError(f"No SMS code in {timeout}s")
 
+
+# %% Poll SMS Code (async)
+async def poll_sms_code_async(activation_id, timeout=300, interval=5):
+    """Poll HeroSMS for SMS code (non-blocking async). Ctrl+C to cancel."""
+    import asyncio
+    print("Polling for SMS code... (Ctrl+C to cancel)")
+    
+    try:
+        for i in range(timeout // interval):
+            status = herosms.get_status(activation_id)
+            
+            if status.startswith("STATUS_OK:"):
+                code = status.split(":")[1]
+                print(f"[{i * interval:3d}s] STATUS_OK - NEW SMS!")
+                print(f"SMS CODE: {code}")
+                return code
+            elif status.startswith("STATUS_WAIT_RETRY:"):
+                old_msg = status.split(":", 1)[1][:40]
+                print(f"[{i * interval:3d}s] Waiting for NEW SMS (old: {old_msg}...)")
+            elif status == "STATUS_CANCEL":
+                raise Exception("SMS activation cancelled")
+            else:
+                print(f"[{i * interval:3d}s] {status}")
+            
+            await asyncio.sleep(interval)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        print("\nPolling cancelled")
+        return None
+    
+    herosms.cancel(activation_id)
+    raise TimeoutError(f"No SMS code in {timeout}s")
+
+# %% Resend SMS
+def resend_sms(activation_id):
+    """Request SMS resend for same activation (reuse number for another code)"""
+    result = herosms.request_resend(activation_id)
+    print(f"SMS resend requested: {result}")
+    return result
+
 # %% Complete SMS Activation
 def complete_sms(activation_id):
-    """Mark SMS activation as complete"""
+    """Mark SMS activation as complete (WARNING: number cannot be reused after this)"""
     herosms.complete(activation_id)
-    print("HeroSMS activation completed")
+    print("HeroSMS activation completed (number no longer reusable)")
 
 # %% Cancel SMS Activation
 def cancel_sms(activation_id):
@@ -196,21 +324,22 @@ def cancel_sms(activation_id):
 # %% Async: Fill OTP Inputs
 async def fill_otp(page, code: str, fallback: str = None):
     """Fill OTP inputs digit by digit"""
+    filled = False
     for i, digit in enumerate(str(code)):
-        try:
-            inp = page.locator(f'input[data-index="{i}"]')
-            if await inp.count() > 0:
-                await inp.fill(digit)
-                await asyncio.sleep(0.2)
-            else:
-                raise Exception("Input not found")
-        except:
-            if fallback:
-                inp = page.locator(fallback)
-                if await inp.count() > 0:
-                    await inp.fill(code)
-                    return
-            raise
+        inp = page.locator(f'input[data-index="{i}"]')
+        if await inp.count() > 0:
+            await inp.fill(digit)
+            await asyncio.sleep(0.2)
+            filled = True
+    
+    if not filled and fallback:
+        inp = page.locator(fallback)
+        if await inp.count() > 0:
+            await inp.fill(code)
+            filled = True
+    
+    if not filled:
+        print(f"⚠ OTP input not found, code: {code}")
 
 # %% Async: Set React Input
 async def set_react_input(page, selector: str, value: str):

@@ -32,10 +32,19 @@ WORKER_URL = CONFIG["worker_url"]
 # --- API helpers ---
 
 def get_otp(email: str) -> Optional[dict]:
-    """Get OTP from KV for a specific email. Returns None if not found or expired."""
-    resp = requests.get(f"{WORKER_URL}/otp", params={"email": email})
+    """Get OTP for a specific email. Queries D1 (strongly consistent) instead of KV (eventually consistent)."""
+    # Query D1 via /emails endpoint - much faster propagation than KV
+    resp = requests.get(f"{WORKER_URL}/emails", params={"recipient": email, "limit": 1})
     if resp.status_code == 200:
-        return resp.json()
+        emails = resp.json()
+        if emails and emails[0].get("otp"):
+            e = emails[0]
+            return {
+                "otp": e["otp"],
+                "from": e.get("sender", ""),
+                "subject": e.get("subject", ""),
+                "timestamp": e.get("received_at", "")
+            }
     return None
 
 

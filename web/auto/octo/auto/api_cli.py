@@ -12,12 +12,14 @@ Usage:
 """
 
 import json
+import os
 import re
+import subprocess
 import time
 import requests
 from urllib.parse import urlparse, unquote
 
-from config import get_octo_port
+from config import get_octo_port, OCTO_APPIMAGE
 
 API = None
 
@@ -50,6 +52,120 @@ def api_post(endpoint, data=None, timeout=10):
         return {"error": "OctoBrowser not running"}
     except Exception as e:
         return {"error": str(e)}
+
+
+# =============================================================================
+# Helper Functions (for programmatic use)
+# =============================================================================
+
+def is_running():
+    """Check if OctoBrowser API is available"""
+    resp = api_get("/api/v2/client/themes", timeout=3)
+    return resp.get("success", False)
+
+
+def start_octo_browser(timeout=60):
+    """
+    Start OctoBrowser if not already running.
+    
+    Returns:
+        True if running (or started successfully), False on failure
+    """
+    global API
+    
+    if is_running():
+        print(f"OctoBrowser already running at {get_api()}")
+        return True
+    
+    print("OctoBrowser not running. Starting...")
+    
+    if not os.path.exists(OCTO_APPIMAGE):
+        print(f"ERROR: OctoBrowser not found at {OCTO_APPIMAGE}")
+        return False
+    
+    env = os.environ.copy()
+    env["DISPLAY"] = ":1"
+    env["OCTO_EXTRA_ARGS"] = "--no-sandbox"
+    env["QTWEBENGINE_CHROMIUM_FLAGS"] = "--no-sandbox --disable-gpu-sandbox"
+    
+    subprocess.Popen(
+        [OCTO_APPIMAGE, "--no-sandbox"],
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True
+    )
+    
+    print("Waiting for OctoBrowser API...")
+    for i in range(timeout):
+        time.sleep(1)
+        
+        # Re-read port in case it changed
+        API = f"http://localhost:{get_octo_port()}"
+        
+        if is_running():
+            print(f"OctoBrowser started! API: {API}")
+            return True
+        
+        if i % 10 == 9:
+            print(f"  Still waiting... ({i+1}s)")
+    
+    print(f"ERROR: OctoBrowser failed to start within {timeout} seconds")
+    return False
+
+
+def list_profiles():
+    """List all profiles. Returns list of profile dicts."""
+    resp = api_post("/api/v2/profiles/list")
+    if resp.get("success"):
+        return resp["data"]["profiles"]
+    return []
+
+
+def start_profile(uuid, debug_port=True):
+    """
+    Start profile and return ws_endpoint for Playwright.
+    
+    Args:
+        uuid: Profile UUID
+        debug_port: True for auto-assign, or specific port number (e.g., 9222)
+    """
+    api_post("/api/profiles/stop", {"uuid": uuid}, timeout=5)
+    time.sleep(1)
+    
+    resp = api_post("/api/profiles/start", {"uuid": uuid, "debug_port": debug_port}, timeout=30)
+    
+    ws_endpoint = resp.get("ws_endpoint") or resp.get("wsEndpoint")
+    actual_port = resp.get("debug_port")
+    
+    if ws_endpoint:
+        return {"ws_endpoint": ws_endpoint, "debug_port": actual_port, "state": resp.get("state")}
+    
+    return {"error": str(resp)}
+
+
+def stop_profile(uuid):
+    """Stop a profile."""
+    return api_post("/api/profiles/stop", {"uuid": uuid}, timeout=10)
+
+
+def delete_profile(uuid, force=False):
+    """Delete a profile by UUID."""
+    api_post("/api/profiles/stop", {"uuid": uuid}, timeout=5)
+    time.sleep(1)
+    return api_post("/api/v2/profiles/delete", {"uuids": [uuid]})
+
+
+def delete_profiles(uuids):
+    """Delete multiple profiles by UUID list."""
+    if not uuids:
+        return {"success": True, "message": "No profiles to delete"}
+    
+    for uuid in uuids:
+        api_post("/api/profiles/stop", {"uuid": uuid}, timeout=5)
+    time.sleep(2)
+    
+    return api_post("/api/v2/profiles/delete", {"uuids": uuids}, timeout=30)
 
 
 def parse_proxy_url(url):
@@ -184,6 +300,115 @@ def cmd_active(args):
         print(f"{p.get('uuid', '')[:32]:<34} {p.get('state', '?'):<10} {p.get('debug_port', ''):<8} {p.get('browser_pid', '')}")
     print(f"\nActive: {len(resp)} profiles")
     return 0
+
+
+def ensure_profile_slot():
+    """Delete oldest profile if limit reached. Returns True if slot available."""
+    # Check current count vs limit by trying to get profile list
+    resp = api_post("/api/v2/profiles/list")
+    if not resp.get("success"):
+        return True  # Can't check, assume OK
+    
+    profiles = resp.get("data", {}).get("profiles", [])
+    # OctoBrowser free limit is typically 10 profiles
+    # We proactively delete if at limit
+    if len(profiles) >= 10:
+        print(f"Profile limit ({len(profiles)}/10), deleting oldest...")
+        profiles_sorted = sorted(profiles, key=lambda p: p.get("created_at", ""))
+        oldest = profiles_sorted[0]
+        oldest_uuid = oldest.get("uuid")
+        print(f"  Deleting: {oldest.get('title')} ({oldest_uuid[:8]}...)")
+        api_post("/api/profiles/stop", {"uuid": oldest_uuid}, timeout=5)
+        time.sleep(1)
+        del_resp = api_post("/api/v2/profiles/delete", {"uuids": [oldest_uuid]})
+        if del_resp.get("success"):
+            print(f"  ✓ Deleted")
+            return True
+        else:
+            print(f"  ✗ Delete failed: {del_resp}")
+            return False
+    return True
+
+
+def create_profile(title, os_type="android", proxy_url=None, noise=True, tags=None, auto_delete_oldest=True, language="en-US"):
+    """
+    Create a profile with optional auto-cleanup if limit reached.
+    
+    Args:
+        title: Profile name
+        os_type: 'android', 'win', or 'mac'
+        proxy_url: Optional proxy URL
+        noise: Enable fingerprint noise
+        tags: List of tags
+        auto_delete_oldest: Delete oldest profile if limit reached
+        language: Browser language (default: en-US for English)
+    
+    Returns:
+        dict with 'uuid' on success, or 'error' on failure
+    """
+    os_arch = "arm" if os_type in ["mac", "android"] else "x86"
+    
+    # Ensure slot available
+    if auto_delete_oldest:
+        ensure_profile_slot()
+    
+    # Get boilerplate
+    resp = api_post("/api/v2/profiles/boilerplate/quick", {"os": os_type, "os_arch": os_arch, "count": 1})
+    if not resp.get("success"):
+        return {"error": f"Boilerplate failed: {resp}"}
+    
+    bp = resp["data"]["boilerplates"][0]
+    fp = bp["fp"]
+    if fp.get("dns") is None:
+        fp["dns"] = ""
+    if noise:
+        fp["noise"] = {"webgl": True, "canvas": True, "audio": True, "client_rects": True}
+    fp["webrtc"] = {"type": "disable_non_proxied_udp", "data": None}
+    
+    # Set browser language to English
+    # Format: {"type": "manual", "data": ["en-US", "en"]} or {"type": "ip", "data": None}
+    if language:
+        fp["languages"] = {"type": "manual", "data": [language, language.split("-")[0]]}
+    
+    storage_opts = bp.get("storage_options", {})
+    if os_type == "android":
+        storage_opts["extensions"] = False
+    
+    proxy_config = parse_proxy_url(proxy_url) if proxy_url else {"type": "direct"}
+    
+    payload = {
+        "title": title, "name": title, "description": bp.get("description", ""),
+        "start_pages": bp.get("start_pages", []), "bookmarks": bp.get("bookmarks", []),
+        "launch_args": bp.get("launch_args", []), "logo": bp.get("logo", ""),
+        "tags": tags or [],
+        "fp": fp, "proxy": proxy_config, "proxies": bp.get("proxies", []),
+        "local_cache": False, "storage_options": storage_opts,
+        "extensions": [],
+    }
+    
+    resp = api_post("/api/v2/profiles", payload)
+    
+    # If failed due to limit, try deleting oldest and retry
+    if not resp.get("success") and auto_delete_oldest:
+        error_msg = str(resp.get("message", resp.get("error", "")))
+        if "limit" in error_msg.lower() or "maximum" in error_msg.lower():
+            print("Profile limit hit, deleting oldest...")
+            list_resp = api_post("/api/v2/profiles/list")
+            if list_resp.get("success"):
+                profiles = list_resp.get("data", {}).get("profiles", [])
+                if profiles:
+                    profiles_sorted = sorted(profiles, key=lambda p: p.get("created_at", ""))
+                    oldest = profiles_sorted[0]
+                    api_post("/api/profiles/stop", {"uuid": oldest["uuid"]}, timeout=5)
+                    time.sleep(1)
+                    api_post("/api/v2/profiles/delete", {"uuids": [oldest["uuid"]]})
+                    print(f"  Deleted: {oldest.get('title')}")
+                    # Retry
+                    resp = api_post("/api/v2/profiles", payload)
+    
+    if resp.get("success"):
+        return {"uuid": resp["data"]["uuid"], "fp": fp}
+    return {"error": str(resp)}
 
 
 def cmd_create(args):
