@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -102,6 +103,7 @@ import os
 os.chdir({repr(script_dir)})
 if {repr(script_dir)} not in sys.path:
     sys.path.insert(0, {repr(script_dir)})
+os.environ["AUTO_DIR"] = {repr(script_dir)}
 
 '''
     transformed = path_setup + transformed
@@ -112,9 +114,11 @@ if {repr(script_dir)} not in sys.path:
         temp_path = f.name
     
     try:
+        env = {**os.environ, "AUTO_DIR": script_dir}
         result = subprocess.run(
             [sys.executable, temp_path],
             cwd=automation_file.parent,
+            env=env,
         )
         return result.returncode
     finally:

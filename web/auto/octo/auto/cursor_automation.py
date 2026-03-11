@@ -25,6 +25,12 @@ if WORKER_PATH not in sys.path:
     sys.path.insert(0, WORKER_PATH)
 from otp_catcher import get_otp
 
+# Clash proxy manager (for switching nodes on rate limit)
+OCTO_PATH = "/allah/blue/web/auto/octo"
+if OCTO_PATH not in sys.path:
+    sys.path.insert(0, OCTO_PATH)
+from clash.proxy import get_iplc_nodes, get_current_node, switch_node as clash_switch_node
+
 from api_cli import get_api, api_get, api_post, parse_proxy_url, create_profile
 from config import CONFIG, verify_paths
 from cursor_helpers import (
@@ -33,6 +39,9 @@ from cursor_helpers import (
     resend_sms, cancel_sms,
     fill_otp, set_react_input
 )
+
+# Track proxy state for rotation
+_proxy_index = 0
 
 # === CONFIGURATION ===
 PROFILE_OS = "mac"  # android, win, mac
@@ -57,6 +66,22 @@ phone_local = None
 activation_id = None
 stripe_url = None
 session_token = None
+
+# === HUMAN-LIKE CLICK HELPER ===
+async def human_click(element, page_ref=None):
+    """Human-like click: get bounding box, move mouse, click with delay."""
+    p = page_ref or page
+    box = await element.bounding_box()
+    if box:
+        x = box["x"] + box["width"] * random.uniform(0.25, 0.75)
+        y = box["y"] + box["height"] * random.uniform(0.25, 0.75)
+        await p.mouse.move(x, y)
+        await asyncio.sleep(random.uniform(0.08, 0.2))
+        await p.mouse.down()
+        await asyncio.sleep(random.uniform(0.05, 0.12))
+        await p.mouse.up()
+    else:
+        await element.click()
 
 # === VERIFY ENVIRONMENT ===
 print("Verifying paths...")
@@ -196,7 +221,7 @@ except Exception as e:
     print(f"  Title: {await page.title()}")
     raise RuntimeError(f"Sign in button not visible: {e}")
 
-await sign_in.evaluate("el => el.click()")
+await human_click(sign_in)
 
 for _ in range(20):
     await asyncio.sleep(0.5)
@@ -218,32 +243,165 @@ if len(context.pages) > initial_tabs:
 await asyncio.sleep(2)
 
 
-# %% [9] Enter Email
+# %% [9] Enter Email (human-like)
 # Generate random unique email to avoid OTP cache conflicts
 random_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 email = f"{random_id}@hyas.site"
 
 await page.wait_for_selector('input[name="email"]', state="visible", timeout=30000)
-email_input = page.locator('input[name="email"]')
-await email_input.click()
-await email_input.fill(email)
+await asyncio.sleep(random.uniform(0.5, 1.2))
 
-await asyncio.sleep(0.5)
+email_input = page.locator('input[name="email"]')
+
+# Human-like click on input field
+box = await email_input.bounding_box()
+if box:
+    x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+    y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+    await page.mouse.click(x, y)
+else:
+    await human_click(email_input)
+
+await asyncio.sleep(random.uniform(0.2, 0.5))
+
+# Type email character by character with random delays
+for char in email:
+    await page.keyboard.type(char, delay=random.randint(30, 100))
+    
+await asyncio.sleep(random.uniform(0.8, 1.5))
+
+# Human-like click on Continue button
 btn = page.locator('button[type="submit"]').or_(
     page.get_by_role("button", name="Continue")
 )
-await btn.click()
+box = await btn.bounding_box()
+if box:
+    x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+    y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+    await page.mouse.move(x, y)
+    await asyncio.sleep(random.uniform(0.1, 0.3))
+    await page.mouse.down()
+    await asyncio.sleep(random.uniform(0.05, 0.1))
+    await page.mouse.up()
+else:
+    await human_click(btn)
 
 print(f"✓ Email: {email}")
 
 
-# %% [10] Select Email Code
-await asyncio.sleep(2)
+# %% [10] Select Email Code (human-like with pre-click behavior)
+await asyncio.sleep(random.uniform(1.5, 2.5))
+
+# Human behavior: look around the page first
+viewport = page.viewport_size
+if viewport:
+    vw, vh = viewport["width"], viewport["height"]
+    
+    # Random mouse movements as if reading/scanning the page
+    for _ in range(random.randint(2, 4)):
+        rand_x = random.randint(int(vw * 0.2), int(vw * 0.8))
+        rand_y = random.randint(int(vh * 0.2), int(vh * 0.6))
+        await page.mouse.move(rand_x, rand_y)
+        await asyncio.sleep(random.uniform(0.3, 0.8))
+    
+    # Maybe scroll slightly
+    if random.random() > 0.5:
+        await page.mouse.wheel(0, random.randint(-50, 100))
+        await asyncio.sleep(random.uniform(0.3, 0.6))
+
+# Pause as if thinking/reading options
+await asyncio.sleep(random.uniform(0.8, 1.5))
 
 btn = page.get_by_text("Email sign-in code")
 await btn.wait_for(state="visible", timeout=30000)
-await btn.click()
-await asyncio.sleep(3)
+
+# Get bounding box for target
+box = await btn.bounding_box()
+if box:
+    # Target point within the button
+    target_x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+    target_y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+    
+    # Get current mouse position (approximate from last move or center)
+    if viewport:
+        start_x = random.randint(int(vw * 0.3), int(vw * 0.7))
+        start_y = random.randint(int(vh * 0.3), int(vh * 0.5))
+    else:
+        start_x, start_y = 400, 300
+    
+    # Human-like curved mouse path (Bezier-ish with multiple points)
+    steps = random.randint(8, 15)
+    for i in range(steps):
+        t = (i + 1) / steps
+        # Add slight curve/wobble
+        wobble_x = random.uniform(-10, 10) * (1 - t)
+        wobble_y = random.uniform(-5, 5) * (1 - t)
+        curr_x = start_x + (target_x - start_x) * t + wobble_x
+        curr_y = start_y + (target_y - start_y) * t + wobble_y
+        await page.mouse.move(curr_x, curr_y)
+        await asyncio.sleep(random.uniform(0.02, 0.06))
+    
+    # Final position
+    await page.mouse.move(target_x, target_y)
+    
+    # Pause as if confirming the right button
+    await asyncio.sleep(random.uniform(0.15, 0.4))
+    
+    # Click with natural timing
+    await page.mouse.down()
+    await asyncio.sleep(random.uniform(0.06, 0.14))
+    await page.mouse.up()
+else:
+    # Fallback
+    await human_click(btn)
+
+# Check for "Can't verify human" error and retry
+MAX_HUMAN_RETRIES = 3
+for human_retry in range(MAX_HUMAN_RETRIES):
+    await asyncio.sleep(random.uniform(2.0, 3.5))
+    
+    # Check for human verification error
+    human_error = page.locator('text="Can\'t verify the user is human"').or_(
+        page.locator('text="verify the user is human"')
+    )
+    
+    if await human_error.count() > 0:
+        print(f"✗ Human verification failed (attempt {human_retry + 1}/{MAX_HUMAN_RETRIES})")
+        
+        if human_retry < MAX_HUMAN_RETRIES - 1:
+            # Wait longer before retry
+            wait_time = random.uniform(5, 10)
+            print(f"  Waiting {wait_time:.1f}s before retry...")
+            await asyncio.sleep(wait_time)
+            
+            # Do more random mouse movements to look human
+            viewport = page.viewport_size
+            if viewport:
+                vw, vh = viewport["width"], viewport["height"]
+                for _ in range(random.randint(3, 6)):
+                    rand_x = random.randint(int(vw * 0.15), int(vw * 0.85))
+                    rand_y = random.randint(int(vh * 0.15), int(vh * 0.7))
+                    await page.mouse.move(rand_x, rand_y)
+                    await asyncio.sleep(random.uniform(0.4, 1.0))
+            
+            # Re-click the email sign-in code button
+            btn = page.get_by_text("Email sign-in code")
+            if await btn.count() > 0:
+                box = await btn.bounding_box()
+                if box:
+                    x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
+                    y = box["y"] + box["height"] * random.uniform(0.3, 0.7)
+                    await page.mouse.move(x, y)
+                    await asyncio.sleep(random.uniform(0.2, 0.5))
+                    await page.mouse.down()
+                    await asyncio.sleep(random.uniform(0.06, 0.14))
+                    await page.mouse.up()
+            continue
+        else:
+            raise RuntimeError("Human verification failed after retries")
+    else:
+        # No error - success
+        break
 
 print("✓ Email code option selected")
 
@@ -299,43 +457,98 @@ await set_react_input(page, 'input[name="local_number"]', phone_formatted)
 print(f"✓ Filled: +{country_code} {phone_formatted}")
 
 
-# %% [15] Send SMS (with retry on "not available")
-MAX_PHONE_RETRIES = 5
+# %% [15] Send SMS (with retry on errors)
+MAX_RETRIES = 5
 
-for phone_attempt in range(MAX_PHONE_RETRIES):
+# Error types: phone errors vs rate limit errors
+PHONE_ERROR_KEYWORDS = ["not available", "invalid phone"]
+RATE_LIMIT_KEYWORDS = ["too many challenges", "contact your admin", "rate limit"]
+
+for attempt in range(MAX_RETRIES):
     btn = page.get_by_text("Send verification code")
-    await btn.click()
-    print(f"✓ SMS requested (attempt {phone_attempt + 1})")
+    await human_click(btn)
+    print(f"✓ SMS requested (attempt {attempt + 1})")
     
-    await asyncio.sleep(2)
+    await asyncio.sleep(3)
     
-    # Check for "phone not available" error
-    error_msg = page.locator('text="This phone number is not available."')
-    if await error_msg.count() > 0:
-        print(f"✗ Phone rejected: +{phone}")
+    # Check for error messages (red error)
+    error_container = page.locator('.ak-ErrorMessage, [data-accent-color="red"]')
+    if await error_container.count() > 0:
+        error_text = (await error_container.first.text_content() or "").lower().strip()
         
-        # Cancel current activation (refund)
-        cancel_sms(activation_id)
-        print(f"  Cancelled activation {activation_id}")
+        # Check if it's a RATE LIMIT error (change proxy)
+        is_rate_limit = any(kw in error_text for kw in RATE_LIMIT_KEYWORDS)
+        # Check if it's a PHONE error (change number)
+        is_phone_error = any(kw in error_text for kw in PHONE_ERROR_KEYWORDS)
         
-        # Get a NEW phone number (not from existing)
-        activation_id, phone, phone_local = get_phone_number()
-        print(f"✓ New phone: +{phone}")
+        if is_rate_limit:
+            print(f"✗ Rate limit hit!")
+            print(f"  Error: {error_text}")
+            
+            # Switch to next IPLC proxy node
+            iplc_nodes = get_iplc_nodes()
+            current_node = get_current_node()
+            
+            # Find next node (round-robin)
+            try:
+                current_idx = iplc_nodes.index(current_node)
+                next_idx = (current_idx + 1) % len(iplc_nodes)
+            except ValueError:
+                next_idx = 0
+            
+            next_node = iplc_nodes[next_idx]
+            clash_switch_node(next_node)
+            print(f"✓ Switched proxy: {next_node}")
+            
+            # Wait for proxy switch
+            await asyncio.sleep(3)
+            
+            # Refresh the page to use new IP
+            await page.reload()
+            await page.wait_for_load_state("load")
+            print("✓ Page refreshed with new IP")
+            
+            await asyncio.sleep(2)
+            continue
         
-        # Fill new phone
-        phone_formatted = format_phone_uk(phone_local)
-        await set_react_input(page, 'input[name="country_code"]', country_code)
-        await asyncio.sleep(0.5)
-        await set_react_input(page, 'input[name="local_number"]', phone_formatted)
-        print(f"  Filled: +{country_code} {phone_formatted}")
+        elif is_phone_error:
+            print(f"✗ Phone rejected: +{phone}")
+            print(f"  Error: {error_text}")
+            
+            # Cancel current activation (refund)
+            cancel_sms(activation_id)
+            print(f"  Cancelled activation {activation_id}")
+            
+            # Get a NEW phone number
+            activation_id, phone, phone_local = get_phone_number()
+            print(f"✓ New phone: +{phone}")
+            
+            # Fill new phone
+            phone_formatted = format_phone_uk(phone_local)
+            await set_react_input(page, 'input[name="country_code"]', country_code)
+            await asyncio.sleep(0.5)
+            await set_react_input(page, 'input[name="local_number"]', phone_formatted)
+            print(f"  Filled: +{country_code} {phone_formatted}")
+            
+            await asyncio.sleep(1)
+            continue
         
-        await asyncio.sleep(1)
-        continue
+        else:
+            # Unknown error - log and try changing phone
+            print(f"✗ Unknown error: {error_text}")
+            cancel_sms(activation_id)
+            activation_id, phone, phone_local = get_phone_number()
+            phone_formatted = format_phone_uk(phone_local)
+            await set_react_input(page, 'input[name="country_code"]', country_code)
+            await asyncio.sleep(0.5)
+            await set_react_input(page, 'input[name="local_number"]', phone_formatted)
+            print(f"✓ Trying new phone: +{phone}")
+            continue
     
     # No error - SMS sent successfully
     break
 else:
-    raise RuntimeError(f"Failed to find valid phone after {MAX_PHONE_RETRIES} attempts")
+    raise RuntimeError(f"Failed after {MAX_RETRIES} attempts")
 
 
 # %% [16] Fill SMS Code
@@ -357,14 +570,14 @@ print(f"✓ Resend requested for activation {activation_id}")
 
 await asyncio.sleep(2)
 btn = page.get_by_text("Maybe Later")
-await btn.click()
+await human_click(btn)
 print("✓ Maybe Later")
 
 
 # %% [18] Skip for now
 await asyncio.sleep(2)
 btn = page.get_by_text("Skip for now")
-await btn.click()
+await human_click(btn)
 print("✓ Skip")
 
 
@@ -374,25 +587,25 @@ await asyncio.sleep(2)
 # Turn off "Share Data" toggle if it's on
 toggle = page.locator('button[role="switch"][data-state="checked"]')
 if await toggle.count() > 0:
-    await toggle.click()
+    await human_click(toggle)
     print("✓ Share Data: OFF")
 
 btn = page.get_by_text("Continue")
-await btn.click()
+await human_click(btn)
 print("✓ Continue 1/2")
 
 
 # %% [20] Continue 2/2
 await asyncio.sleep(2)
 btn = page.get_by_text("Continue")
-await btn.click()
+await human_click(btn)
 print("✓ Continue 2/2")
 
 
 # %% [21] I'll do this later
 await asyncio.sleep(2)
 btn = page.get_by_text("I'll do this later")
-await btn.click()
+await human_click(btn)
 print("✓ I'll do this later")
 
 
@@ -443,11 +656,11 @@ print(f"✓ Token: {len(token_decoded) if token_decoded else 0} chars")
 
 
 # %% [25] Save Results
-auto_dir = os.path.dirname(__file__)
+auto_dir = os.environ.get("AUTO_DIR") or os.path.dirname(os.path.abspath(__file__))
 session_file = os.path.join(auto_dir, "session.json")
 info_file = os.path.join(auto_dir, "info.json")
 
-# session.json: tokens only
+# session.json: append new token after existing accounts
 try:
     with open(session_file) as f:
         sessions = json.load(f)
@@ -457,7 +670,7 @@ sessions.append({"workos_session_token": token_decoded or ""})
 with open(session_file, "w") as f:
     json.dump(sessions, f, indent=2)
 
-# info.json: complete information
+# info.json: append new account after existing
 try:
     with open(info_file) as f:
         infos = json.load(f)
