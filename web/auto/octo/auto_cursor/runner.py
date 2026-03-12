@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Run cursor_automation.py in a loop until it fails.
+Run automation.py in a loop until it fails.
 
 Usage:
-    python run_loop.py           # Run forever until error
-    python run_loop.py --max 10  # Run max 10 times  
-    python run_loop.py --delay 5 # Wait 5s between runs
+    python runner.py           # Run forever until error
+    python runner.py --max 10  # Run max 10 times  
+    python runner.py --delay 5 # Wait 5s between runs
 """
 
 import argparse
@@ -132,7 +132,7 @@ def main():
     parser.add_argument("--transform-only", action="store_true", help="Just print transformed code")
     args = parser.parse_args()
     
-    automation_file = Path(__file__).parent / "cursor_automation.py"
+    automation_file = Path(__file__).parent / "automation.py"
     if not automation_file.exists():
         print(f"[!] File not found: {automation_file}")
         sys.exit(1)

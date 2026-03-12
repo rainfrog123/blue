@@ -31,9 +31,9 @@ if OCTO_PATH not in sys.path:
     sys.path.insert(0, OCTO_PATH)
 from clash.proxy import get_iplc_nodes, get_current_node, switch_node as clash_switch_node
 
-from api_cli import get_api, api_get, api_post, parse_proxy_url, create_profile
+from api_client import get_api, api_get, api_post, parse_proxy_url, create_profile
 from config import CONFIG, verify_paths
-from cursor_helpers import (
+from helpers import (
     poll_sms_code_async, get_active_activations,
     get_phone_number, get_existing_phone_number, format_phone_uk,
     resend_sms, cancel_sms,
@@ -657,10 +657,10 @@ print(f"✓ Token: {len(token_decoded) if token_decoded else 0} chars")
 
 # %% [25] Save Results
 auto_dir = os.environ.get("AUTO_DIR") or os.path.dirname(os.path.abspath(__file__))
-session_file = os.path.join(auto_dir, "session.json")
+session_file = os.path.join(auto_dir, "sessions.json")
 info_file = os.path.join(auto_dir, "info.json")
 
-# session.json: append new token after existing accounts
+# sessions.json: append new token after existing accounts
 try:
     with open(session_file) as f:
         sessions = json.load(f)

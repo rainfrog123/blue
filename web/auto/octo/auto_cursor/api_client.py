@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-OctoBrowser API CLI - Profile Management
+OctoBrowser API Client - Profile Management
 
 Usage:
-    python api_cli.py status               # Check if running
-    python api_cli.py list                  # List profiles
-    python api_cli.py templates             # List profile templates
-    python api_cli.py create "Name"         # Create profile
-    python api_cli.py start UUID            # Start profile
-    python api_cli.py stop UUID             # Stop profile
+    python api_client.py status            # Check if running
+    python api_client.py list              # List profiles
+    python api_client.py templates         # List profile templates
+    python api_client.py create "Name"     # Create profile
+    python api_client.py start UUID        # Start profile
+    python api_client.py stop UUID         # Stop profile
 """
 
 import json
