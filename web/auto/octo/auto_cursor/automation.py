@@ -616,28 +616,31 @@ print("✓ I'll do this later")
 # print(f"✓ Refreshed: {page.url}")
 
 
-# %% [23] Get Stripe URL (commented out)
-# initial_pages = len(context.pages)
-# 
-# btn = page.get_by_text("Free 7-day trial")
-# await btn.click()
-# 
-# stripe_url = None
-# for _ in range(30):
-#     await asyncio.sleep(0.3)
-#     
-#     if len(context.pages) > initial_pages:
-#         stripe_tab = context.pages[-1]
-#         stripe_url = stripe_tab.url
-#         if "stripe" in stripe_url:
-#             print(f"✓ Stripe: {stripe_url}")
-#             await stripe_tab.close()
-#             break
-#     
-#     if "stripe" in page.url:
-#         stripe_url = page.url
-#         print(f"✓ Stripe: {stripe_url}")
-#         break
+# %% [23] Get Stripe URL
+initial_pages = len(context.pages)
+
+btn = page.get_by_text("Free 7-day trial")
+await human_click(btn)
+
+stripe_url = None
+for _ in range(30):
+    await asyncio.sleep(0.5)
+    
+    if len(context.pages) > initial_pages:
+        stripe_tab = context.pages[-1]
+        stripe_url = stripe_tab.url
+        if "stripe" in stripe_url or "checkout" in stripe_url:
+            print(f"✓ Stripe: {stripe_url}")
+            break
+    
+    if "stripe" in page.url or "checkout" in page.url:
+        stripe_url = page.url
+        print(f"✓ Stripe: {stripe_url}")
+        break
+
+if not stripe_url:
+    print("? No Stripe URL detected")
+    await debug_page()
 
 
 # %% [24] Extract Token

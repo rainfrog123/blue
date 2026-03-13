@@ -1,6 +1,6 @@
 [
   {
-    "email": "cn2tkzv54ean@hyas.site",
+    "email": "taikol2@ceto.site",
     "phone": "+447706855085",
     "stripe_url": "",
     "workos_session_token": "user_01KKF738ZZ5XYY4VKGZCS4A18R::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGNzM4Wlo1WFlZNFZLR1pDUzRBMThSIiwidGltZSI6IjE3NzMyNTg2NzUiLCJyYW5kb21uZXNzIjoiYzQzODEyMzEtODg4Zi00ODk1IiwiZXhwIjoxNzc4NDQyNjc1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRjc4NFRFUlhZODJNQ1JGUlpTWVlFWCJ9.MX0Dv89YpzuBOM9xe3KIDGw-apZdoX3R1UN3qotlXRY",
@@ -8,10 +8,11 @@
     "activation_id": "161052784",
     "created_at": "2026-03-11T19:59:13Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "already_trial"
   },
   {
-    "email": "4czpf2vt5qja@hyas.site",
+    "email": "cn2tkzv54ean@hyas.site",
     "phone": "+447706855085",
     "stripe_url": "",
     "workos_session_token": "user_01KKF7S8F0A4ST7BNJG5HZ6TSG::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGN1M4RjBBNFNUN0JOSkc1SFo2VFNHIiwidGltZSI6IjE3NzMyNTkyODkiLCJyYW5kb21uZXNzIjoiZjk4OWY2YTQtYzMxNS00ZTRjIiwiZXhwIjoxNzc4NDQzMjg5LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRjdUVzg4VDQwWUsyWks0S1g3TVc2WSJ9.aacNLp78SurtdkmdQzwwKmpFt8j-qh2-rAmpnb_uQPQ",
@@ -19,105 +20,151 @@
     "activation_id": "161052784",
     "created_at": "2026-03-11T20:04:40Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "already_trial"
   },
   {
-    "email": "gr9tcp02gif0@hyas.site",
+    "email": "4czpf2vt5qja@hyas.site",
     "phone": "+447706865356",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1mfpydkbVJ3LnnYsNwYiC86Aylj6A0eFAFXbiPoQmcb6H0dmL94t5aQwD#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKF8HQAJA2VY5AQF8HTMW5YD::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGOEhRQUpBMlZZNUFRRjhIVE1XNVlEIiwidGltZSI6IjE3NzMyNjAwODUiLCJyYW5kb21uZXNzIjoiNTRiYWQ1ZmItM2M4MS00ZTg4IiwiZXhwIjoxNzc4NDQ0MDg1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRjhLNTc0ODVIS0FDWFpUVEhWTlNGWSJ9.83Q_0zyVGi2ShsTnHYE0UiZMhJMA9bus0kRpTez9CEA",
     "profile_uuid": "dfb33510e8c4441fbe9335de1b229311",
     "activation_id": "161100558",
     "created_at": "2026-03-11T20:14:59Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "7fiy9w1axiip@hyas.site",
+    "email": "gr9tcp02gif0@hyas.site",
     "phone": "+447706865356",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1o7yZS0LBx8gAi6sq8YAIb0QdCcaeKscUObMbV0hbPSuKw8D8snjDdbjW#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKF8N1RQ80XCESVW04X171HQ::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGOE4xUlE4MFhDRVNWVzA0WDE3MUhRIiwidGltZSI6IjE3NzMyNjAxODYiLCJyYW5kb21uZXNzIjoiMzczNDQ3MGItYzUyYS00ZTZhIiwiZXhwIjoxNzc4NDQ0MTg2LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRjhQN1QwUEJOUDVZSFFSU01LSENZMiJ9.Jc6mLER3SuxM6nvJGq3OaLcXjYilUr17MG6fTQnrGVg",
     "profile_uuid": "e43ce07134e54dc5b98093f4b3be1f1d",
     "activation_id": "161100558",
     "created_at": "2026-03-11T20:16:41Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "947hg1qvgzsv@hyas.site",
+    "email": "7fiy9w1axiip@hyas.site",
     "phone": "+447502070322",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1NXVz186PU4oSw1us7sqoQKc2mZF9T17IbTXtNJeelzEKW1c08gkH6HwO#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFE27DMFFWK2Z5BYTJN5QK2::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRTI3RE1GRldLMlo1QllUSk41UUsyIiwidGltZSI6IjE3NzMyNjU4NzMiLCJyYW5kb21uZXNzIjoiMzI0Zjc0MjItOWRjNS00MWYzIiwiZXhwIjoxNzc4NDQ5ODczLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkUzU0hRRVg0SEQ1WTBLMlBNNVFSUSJ9.7E1PuEo1QvskpFWRB9-FuRMHI0uaATrXHcsSiGD-DPw",
     "profile_uuid": "4bae7a6102fa4fe18c0adb69f1e8c717",
     "activation_id": "161277935",
     "created_at": "2026-03-11T21:51:30Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "9lzboy0qmivz@hyas.site",
+    "email": "bgo477ulkjmx@hyas.site",
     "phone": "+447502070322",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1bJP9LDsxfLzkmHyOAUKIYQXoxMsZejWcq6JRHzvoFznYo12sdyOIYeaN#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFE60RMN5C5RC4WBCAEA9TT::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRTYwUk1ONUM1UkM0V0JDQUVBOVRUIiwidGltZSI6IjE3NzMyNjYwMDMiLCJyYW5kb21uZXNzIjoiMGNhMmY1YWEtZTc5Yy00ZWE0IiwiZXhwIjoxNzc4NDUwMDAzLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkU3Uk5OUUU2MFc0MjNTWlZZUDRLMCJ9.-jMqbRbutg4L4-q1H-jACABLNRUmXzYpSsc8VNu3C7g",
     "profile_uuid": "1d29ee334a194e84b25ce828a3689881",
     "activation_id": "161277935",
     "created_at": "2026-03-11T21:53:40Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "v6h78frtgsn3@hyas.site",
+    "email": "oqapmfbwbnbq@hyas.site",
     "phone": "+447348207574",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1v0elfCIvKOLURda6ypuQB9Bke8HIvx7K2IY0qzBktm4Ug0rxZfdBPAWl#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFE9XE2M1C7KJJM6R751V06::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRTlYRTJNMUM3S0pKTTZSNzUxVjA2IiwidGltZSI6IjE3NzMyNjYxNDAiLCJyYW5kb21uZXNzIjoiYzhhMTA4OTMtYzlmYy00YjM5IiwiZXhwIjoxNzc4NDUwMTQwLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVCWUYxUFNDTTZCNUpLWFpaVDYzMSJ9.vztw3AVcSSIOIoOXPlmdc-Q-4zVEwnJZ1TOSQLuq7GQ",
     "profile_uuid": "f1ef67fa97d44a5183a081dde437473c",
     "activation_id": 161306048,
     "created_at": "2026-03-11T21:55:57Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "qh7qgzrxk59c@hyas.site",
+    "email": "947hg1qvgzsv@hyas.site",
     "phone": "+447348207574",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1YyrNSqXaQrJqYBfUeo5utiNPoo5xRsI9gLSae4yNdC99rfGlxZWaTBgd#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFEE2WJ31K9RA3ANXAY4KQC::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRUUyV0ozMUs5UkEzQU5YQVk0S1FDIiwidGltZSI6IjE3NzMyNjYyNjEiLCJyYW5kb21uZXNzIjoiM2QzMWQwNDEtNTc4NS00MGZkIiwiZXhwIjoxNzc4NDUwMjYxLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVGTUhIOUJXWlJXNjlSSE0wMFdCQyJ9.gY4D-yzUIS8aycPloeVNft0FDXgPH-1QnURgkXaf6WM",
     "profile_uuid": "6b45f9e538424247962fd3fae7e47e40",
     "activation_id": "161306048",
     "created_at": "2026-03-11T21:57:57Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "l5zamcuaxvy8@hyas.site",
+    "email": "9lzboy0qmivz@hyas.site",
     "phone": "+447348207574",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a1oabWWNsu8e8FTQc8aebQFR9jWFqzMikJxjZ9dsHQrQWYPsabJOJEvBJs#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFEHRJQZ3QDX0KS09QG8KR2::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRUhSSlFaM1FEWDBLUzA5UUc4S1IyIiwidGltZSI6IjE3NzMyNjYzODIiLCJyYW5kb21uZXNzIjoiM2VkMzU4ZWUtYzNiMS00NzQ2IiwiZXhwIjoxNzc4NDUwMzgyLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVLQUZWSE40ME5ZMThFUFdEMUhTUSJ9.48Ro8OHmnuVXA3Yh1oDbIoCx4UQ-JgEtlWAfV1yUMo4",
     "profile_uuid": "aa45a08c6ba249ef886a2486a5222a89",
     "activation_id": "161306048",
     "created_at": "2026-03-11T21:59:58Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "4hjmc0gyu6lc@hyas.site",
+    "email": "v6h78frtgsn3@hyas.site",
     "phone": "+447771954169",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a14bXzZGeO2KfIWbzEqX9NiiV1V9Us2NXOkEhYsjJXNvBiMXPJkaUFGBoJ#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFENESSAYEM0BCCV09GCVSV::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRU5FU1NBWUVNMEJDQ1YwOUdDVlNWIiwidGltZSI6IjE3NzMyNjY1MDciLCJyYW5kb21uZXNzIjoiZGVhZjk1ZjUtMmMzMS00MDE5IiwiZXhwIjoxNzc4NDUwNTA3LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVRNTJGUk45QjRENENUMUhEWU1TSiJ9.anFVymQ5rl-yrNv6pYkFlEfVd_zgYbroItTTBR8FwPw",
     "profile_uuid": "5c9e548b8382440f9fa2d24e1c256447",
     "activation_id": 161321237,
     "created_at": "2026-03-11T22:02:02Z",
     "profile_os": "mac",
-    "proxy_used": null
+    "proxy_used": null,
+    "trial_status": "can_trial"
   },
   {
-    "email": "7yxctsdofdjy@hyas.site",
+    "email": "qh7qgzrxk59c@hyas.site",
     "phone": "+447771954169",
-    "stripe_url": "",
+    "stripe_url": "https://checkout.stripe.com/c/pay/cs_live_a18BKduSaVzXJ08W7QTKGT5N2ZTGRBHzdVwLZ2UW5pWvKTBmodh34anrnY#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2R1bE5gfCc%2FJ3VuWmlsc2BaMDRJZzBJf0cxUV9SfVZMQlAxSWZkV3xzUTB9UjRMcj1fNkA0bEp1cEZnaUdJakltanQ2fVRrcTdQM3ZXNW5jdzNyclFhSWFURnxuY39La3IyMj1VZEoyazc1NXF2V2hTYDI3JyknY3dqaFZgd3Ngdyc%2FcXdwYCknZ2RmbmJ3anBrYUZqaWp3Jz8nJjU1NTU1NScpJ2lkfGpwcVF8dWAnPyd2bGtiaWBabHFgaCcpJ2BrZGdpYFVpZGZgbWppYWB3dic%2FcXdwYHgl",
     "workos_session_token": "user_01KKFESWMPFBZ8PAC895PD9QK5::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRVNXTVBGQlo4UEFDODk1UEQ5UUs1IiwidGltZSI6IjE3NzMyNjY2NTUiLCJyYW5kb21uZXNzIjoiYjQwYWI3NTUtNGI5OC00ODg4IiwiZXhwIjoxNzc4NDUwNjU1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVWTTE1WjFCUFlBMUZLS0tURzhXMCJ9.CVFKd55zKodR4rcdX8OVx8BbnAcL21kfV5KbdAWu9Ik",
     "profile_uuid": "2ca1f719711a4216b8294ff606f0d470",
     "activation_id": "161321237",
     "created_at": "2026-03-11T22:04:32Z",
     "profile_os": "mac",
+    "proxy_used": null,
+    "trial_status": "can_trial"
+  },
+  {
+    "email": "l5zamcuaxvy8@hyas.site",
+    "phone": "",
+    "stripe_url": "",
+    "trial_status": "already_trial",
+    "workos_session_token": "user_01KKFEHRJQZ3QDX0KS09QG8KR2::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRUhSSlFaM1FEWDBLUzA5UUc4S1IyIiwidGltZSI6IjE3NzMyNjYzODIiLCJyYW5kb21uZXNzIjoiM2VkMzU4ZWUtYzNiMS00NzQ2IiwiZXhwIjoxNzc4NDUwMzgyLCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVLQUZWSE40ME5ZMThFUFdEMUhTUSJ9.48Ro8OHmnuVXA3Yh1oDbIoCx4UQ-JgEtlWAfV1yUMo4",
+    "profile_uuid": "",
+    "activation_id": "",
+    "created_at": "2026-03-12T19:22:55Z",
+    "profile_os": "",
+    "proxy_used": null
+  },
+  {
+    "email": "4hjmc0gyu6lc@hyas.site",
+    "phone": "",
+    "stripe_url": "",
+    "trial_status": "already_trial",
+    "workos_session_token": "user_01KKFENESSAYEM0BCCV09GCVSV::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRU5FU1NBWUVNMEJDQ1YwOUdDVlNWIiwidGltZSI6IjE3NzMyNjY1MDciLCJyYW5kb21uZXNzIjoiZGVhZjk1ZjUtMmMzMS00MDE5IiwiZXhwIjoxNzc4NDUwNTA3LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVRNTJGUk45QjRENENUMUhEWU1TSiJ9.anFVymQ5rl-yrNv6pYkFlEfVd_zgYbroItTTBR8FwPw",
+    "profile_uuid": "",
+    "activation_id": "",
+    "created_at": "2026-03-12T19:23:34Z",
+    "profile_os": "",
+    "proxy_used": null
+  },
+  {
+    "email": "7yxctsdofdjy@hyas.site",
+    "phone": "",
+    "stripe_url": "",
+    "trial_status": "already_trial",
+    "workos_session_token": "user_01KKFESWMPFBZ8PAC895PD9QK5::eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhdXRoMHx1c2VyXzAxS0tGRVNXTVBGQlo4UEFDODk1UEQ5UUs1IiwidGltZSI6IjE3NzMyNjY2NTUiLCJyYW5kb21uZXNzIjoiYjQwYWI3NTUtNGI5OC00ODg4IiwiZXhwIjoxNzc4NDUwNjU1LCJpc3MiOiJodHRwczovL2F1dGhlbnRpY2F0aW9uLmN1cnNvci5zaCIsInNjb3BlIjoib3BlbmlkIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJhdWQiOiJodHRwczovL2N1cnNvci5jb20iLCJ0eXBlIjoid2ViIiwid29ya29zU2Vzc2lvbklkIjoic2Vzc2lvbl8wMUtLRkVWTTE1WjFCUFlBMUZLS0tURzhXMCJ9.CVFKd55zKodR4rcdX8OVx8BbnAcL21kfV5KbdAWu9Ik",
+    "profile_uuid": "",
+    "activation_id": "",
+    "created_at": "2026-03-12T19:24:10Z",
+    "profile_os": "",
     "proxy_used": null
   }
 ]

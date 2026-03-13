@@ -176,8 +176,8 @@ title = f"Dashboard-{PROFILE_OS.title()}-{int(time.time())}"
 result = create_profile(
     title=title,
     os_type=PROFILE_OS,
-    proxy_url=None,
-    noise=True,
+    proxy_url="socks5://100.116.72.20:7890",
+    noise=False,
     auto_delete_oldest=True
 )
 

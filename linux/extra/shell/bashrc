@@ -127,6 +127,7 @@ alias lnsc='cd /allah/blue/linux/vps/linode/scripts'  # linode scripts
 # --- Level 3: /allah/blue/web/apps/* ---
 alias ac='cd /allah/blue/web/apps/alt_calculator'     # alt_calculator
 alias ba='cd /allah/blue/web/apps/baccarat'           # baccarat
+alias ta='cd /allah/blue/web/apps/tampermonkey'       # tampermonkey (alt)
 alias tm='cd /allah/blue/web/apps/tampermonkey'       # tampermonkey
 alias tampermonkey='cd /allah/blue/web/apps/tampermonkey'  # tampermonkey (full)
 alias ti='cd /allah/blue/web/apps/tinder'             # tinder
