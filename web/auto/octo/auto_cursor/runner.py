@@ -142,29 +142,53 @@ def main():
         print(transform_jupyter_to_async(code))
         return
     
+    # Exit code 2 = rate limit/SMS fail, should retry with new profile
+    RETRY_EXIT_CODE = 2
+    
     count = 0
+    success_count = 0
+    fail_count = 0
+    total_start = time.time()
+    
     while True:
         count += 1
         print(f"\n{'='*60}")
         print(f"  RUN #{count}")
         print(f"{'='*60}\n")
         
+        run_start = time.time()
+        
         try:
             exit_code = run_automation(automation_file)
             
-            if exit_code != 0:
-                print(f"\n[!] Run #{count} failed with exit code {exit_code}")
-                break
+            run_elapsed = time.time() - run_start
+            run_mins = int(run_elapsed // 60)
+            run_secs = int(run_elapsed % 60)
+            
+            if exit_code == 0:
+                success_count += 1
+                print(f"\n[✓] Run #{count} completed in {run_mins}m {run_secs}s")
+                print(f"    (success: {success_count}, failed: {fail_count})")
+            elif exit_code == RETRY_EXIT_CODE:
+                fail_count += 1
+                print(f"\n[!] Run #{count} needs retry (exit code {exit_code}) - took {run_mins}m {run_secs}s")
+                print(f"    (success: {success_count}, failed: {fail_count})")
+                print("    → Retrying with new profile...")
+                # Continue to next run
+            else:
+                fail_count += 1
+                print(f"\n[!] Run #{count} failed with exit code {exit_code} - took {run_mins}m {run_secs}s")
+                print(f"    (success: {success_count}, failed: {fail_count})")
+                break  # Stop on other errors
                 
         except KeyboardInterrupt:
             print(f"\n[!] Interrupted by user after {count} runs")
             break
         except Exception as e:
+            fail_count += 1
             print(f"\n[!] Run #{count} crashed: {e}")
             traceback.print_exc()
-            break
-        
-        print(f"\n[✓] Run #{count} completed")
+            break  # Stop on crashes
         
         if args.max and count >= args.max:
             print(f"\n[✓] Reached max runs ({args.max})")
@@ -177,7 +201,11 @@ def main():
             print(f"\n[!] Interrupted during delay")
             break
     
-    print(f"\n[DONE] Total runs: {count}")
+    total_elapsed = time.time() - total_start
+    total_mins = int(total_elapsed // 60)
+    total_secs = int(total_elapsed % 60)
+    print(f"\n[DONE] Total runs: {count} (success: {success_count}, failed: {fail_count})")
+    print(f"       Total time: {total_mins}m {total_secs}s")
 
 
 if __name__ == "__main__":

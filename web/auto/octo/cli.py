@@ -21,14 +21,14 @@ import subprocess
 import uuid
 import requests
 
-# Add auto/ for imports
+# Add auto_cursor/ for imports
 _octo_dir = os.path.dirname(os.path.abspath(__file__))
-_auto_dir = os.path.join(_octo_dir, "auto")
-if _auto_dir not in sys.path:
-    sys.path.insert(0, _auto_dir)
+_auto_cursor_dir = os.path.join(_octo_dir, "auto_cursor")
+if _auto_cursor_dir not in sys.path:
+    sys.path.insert(0, _auto_cursor_dir)
 
 from config import OCTO_APPIMAGE, OCTO_DEFAULT_PORT
-from api_cli import register_api_commands
+from api_client import register_api_commands
 
 
 # =============================================================================

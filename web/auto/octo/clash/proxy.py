@@ -5,11 +5,26 @@
 # %% Configuration
 import requests
 from urllib.parse import quote
+import yaml
+from pathlib import Path
 
 from .ipqs import check_ip as ipqs_check_ip
 
-CLASH_API = "http://127.0.0.1:17650"
-SECRET = "abf6fe9e-04fe-4d5b-9e11-0da439136005"
+# Read config from Clash Nyanpasu
+_CLASH_CONFIG = Path.home() / ".config/clash-nyanpasu/clash-config.yaml"
+
+def _load_clash_config():
+    """Load Clash API settings from config file"""
+    try:
+        with open(_CLASH_CONFIG) as f:
+            cfg = yaml.safe_load(f)
+        controller = cfg.get("external-controller", "127.0.0.1:9090")
+        secret = cfg.get("secret", "")
+        return f"http://{controller}", secret
+    except Exception:
+        return "http://127.0.0.1:9090", ""
+
+CLASH_API, SECRET = _load_clash_config()
 SELECTOR_GROUP = "GLOBAL"  # Default selector group
 
 HEADERS = {

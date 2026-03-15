@@ -35,7 +35,7 @@ from api_client import get_api, api_get, api_post, parse_proxy_url, create_profi
 from config import CONFIG, verify_paths
 from helpers import (
     poll_sms_code_async, get_active_activations,
-    get_phone_number, get_existing_phone_number, format_phone_uk,
+    get_phone_number, get_existing_phone_number, format_phone,
     resend_sms, cancel_sms,
     fill_otp, set_react_input
 )
@@ -248,10 +248,9 @@ await asyncio.sleep(2)
 random_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 email = f"{random_id}@hyas.site"
 
-await page.wait_for_selector('input[name="email"]', state="visible", timeout=30000)
-await asyncio.sleep(random.uniform(0.5, 1.2))
-
 email_input = page.locator('input[name="email"]')
+await email_input.wait_for(state="visible", timeout=30000)
+await asyncio.sleep(random.uniform(0.5, 1.2))
 
 # Human-like click on input field
 box = await email_input.bounding_box()
@@ -274,6 +273,7 @@ await asyncio.sleep(random.uniform(0.8, 1.5))
 btn = page.locator('button[type="submit"]').or_(
     page.get_by_role("button", name="Continue")
 )
+await btn.wait_for(state="visible", timeout=10000)
 box = await btn.bounding_box()
 if box:
     x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
@@ -387,6 +387,7 @@ for human_retry in range(MAX_HUMAN_RETRIES):
             # Re-click the email sign-in code button
             btn = page.get_by_text("Email sign-in code")
             if await btn.count() > 0:
+                await btn.wait_for(state="visible", timeout=5000)
                 box = await btn.bounding_box()
                 if box:
                     x = box["x"] + box["width"] * random.uniform(0.3, 0.7)
@@ -437,9 +438,11 @@ if activations:
 
 
 # %% [13] Get Phone Number
-if USE_EXISTING_PHONE:
+if USE_EXISTING_PHONE and activations:
     activation_id, phone, phone_local = get_existing_phone_number(PHONE_ACTIVATION_INDEX)
 else:
+    if USE_EXISTING_PHONE:
+        print("  No existing activations, purchasing new number...")
     activation_id, phone, phone_local = get_phone_number()
 print(f"✓ Phone: +{phone}")
 
@@ -447,8 +450,8 @@ print(f"✓ Phone: +{phone}")
 # %% [14] Fill Phone
 await asyncio.sleep(2)
 
-phone_formatted = format_phone_uk(phone_local)
 country_code = CONFIG["phone_country_code"]
+phone_formatted = format_phone(phone_local, country_code)
 
 await set_react_input(page, 'input[name="country_code"]', country_code)
 await asyncio.sleep(0.5)
@@ -466,6 +469,7 @@ RATE_LIMIT_KEYWORDS = ["too many challenges", "contact your admin", "rate limit"
 
 for attempt in range(MAX_RETRIES):
     btn = page.get_by_text("Send verification code")
+    await btn.wait_for(state="visible", timeout=10000)
     await human_click(btn)
     print(f"✓ SMS requested (attempt {attempt + 1})")
     
@@ -485,7 +489,7 @@ for attempt in range(MAX_RETRIES):
             print(f"✗ Rate limit hit!")
             print(f"  Error: {error_text}")
             
-            # Switch to next IPLC proxy node
+            # Switch to next IPLC proxy node for next run
             iplc_nodes = get_iplc_nodes()
             current_node = get_current_node()
             
@@ -498,18 +502,11 @@ for attempt in range(MAX_RETRIES):
             
             next_node = iplc_nodes[next_idx]
             clash_switch_node(next_node)
-            print(f"✓ Switched proxy: {next_node}")
+            print(f"✓ Switched proxy for next run: {next_node}")
             
-            # Wait for proxy switch
-            await asyncio.sleep(3)
-            
-            # Refresh the page to use new IP
-            await page.reload()
-            await page.wait_for_load_state("load")
-            print("✓ Page refreshed with new IP")
-            
-            await asyncio.sleep(2)
-            continue
+            # Abort this run with special exit code - runner will start a new profile
+            print("→ Exiting with code 2 (rate limit) - runner will retry")
+            sys.exit(2)
         
         elif is_phone_error:
             print(f"✗ Phone rejected: +{phone}")
@@ -524,7 +521,7 @@ for attempt in range(MAX_RETRIES):
             print(f"✓ New phone: +{phone}")
             
             # Fill new phone
-            phone_formatted = format_phone_uk(phone_local)
+            phone_formatted = format_phone(phone_local, country_code)
             await set_react_input(page, 'input[name="country_code"]', country_code)
             await asyncio.sleep(0.5)
             await set_react_input(page, 'input[name="local_number"]', phone_formatted)
@@ -538,7 +535,7 @@ for attempt in range(MAX_RETRIES):
             print(f"✗ Unknown error: {error_text}")
             cancel_sms(activation_id)
             activation_id, phone, phone_local = get_phone_number()
-            phone_formatted = format_phone_uk(phone_local)
+            phone_formatted = format_phone(phone_local, country_code)
             await set_react_input(page, 'input[name="country_code"]', country_code)
             await asyncio.sleep(0.5)
             await set_react_input(page, 'input[name="local_number"]', phone_formatted)
@@ -552,7 +549,18 @@ else:
 
 
 # %% [16] Fill SMS Code
-sms_code = await poll_sms_code_async(activation_id)
+try:
+    sms_code = await poll_sms_code_async(activation_id, timeout=60)
+except (Exception, TimeoutError) as e:
+    # SMS cancelled or timeout - cancel activation, get new number, restart
+    print(f"✗ SMS failed: {e}")
+    cancel_sms(activation_id)
+    print(f"  Cancelled activation {activation_id}")
+    # Issue new number for next run
+    new_activation_id, new_phone, _ = get_phone_number()
+    print(f"✓ New number ready for next run: +{new_phone} (ID: {new_activation_id})")
+    print("→ Exiting with code 2 (SMS failed) - runner will retry")
+    sys.exit(2)
 
 if sms_code:
     await asyncio.sleep(2)
@@ -560,7 +568,15 @@ if sms_code:
     print(f"✓ SMS: {sms_code}")
     print(f"  (Number kept for reuse - run resend_sms({activation_id}) for new code)")
 else:
-    print("Timeout - no SMS received.")
+    # No SMS received (returned None) - cancel, get new number, restart
+    print("✗ Timeout - no SMS received")
+    cancel_sms(activation_id)
+    print(f"  Cancelled activation {activation_id}")
+    # Issue new number for next run
+    new_activation_id, new_phone, _ = get_phone_number()
+    print(f"✓ New number ready for next run: +{new_phone} (ID: {new_activation_id})")
+    print("→ Exiting with code 2 (SMS timeout) - runner will retry")
+    sys.exit(2)
 
 
 # %% [17] Maybe Later (resend: run from here)
@@ -568,8 +584,13 @@ else:
 resend_sms(activation_id)
 print(f"✓ Resend requested for activation {activation_id}")
 
-await asyncio.sleep(2)
+# Wait for page to fully load after SMS verification
+await asyncio.sleep(3)
+await page.wait_for_load_state("load", timeout=15000)
+print(f"  Page ready: {page.url}")
+
 btn = page.get_by_text("Maybe Later")
+await btn.wait_for(state="visible", timeout=10000)
 await human_click(btn)
 print("✓ Maybe Later")
 
@@ -577,27 +598,35 @@ print("✓ Maybe Later")
 # %% [18] Skip for now
 await asyncio.sleep(2)
 btn = page.get_by_text("Skip for now")
+await btn.wait_for(state="visible", timeout=10000)
 await human_click(btn)
 print("✓ Skip")
 
 
 # %% [19] Continue 1/2 (disable Share Data)
-await asyncio.sleep(2)
+await asyncio.sleep(3)
 
 # Turn off "Share Data" toggle if it's on
 toggle = page.locator('button[role="switch"][data-state="checked"]')
 if await toggle.count() > 0:
+    await toggle.wait_for(state="visible", timeout=10000)
     await human_click(toggle)
     print("✓ Share Data: OFF")
+    await asyncio.sleep(1)
 
-btn = page.get_by_text("Continue")
+# Wait for Continue button to be ready before clicking
+btn = page.get_by_role("button", name="Continue")
+await btn.wait_for(state="visible", timeout=10000)
+await asyncio.sleep(1)
 await human_click(btn)
 print("✓ Continue 1/2")
 
 
 # %% [20] Continue 2/2
-await asyncio.sleep(2)
-btn = page.get_by_text("Continue")
+await asyncio.sleep(3)
+btn = page.get_by_role("button", name="Continue")
+await btn.wait_for(state="visible", timeout=10000)
+await asyncio.sleep(1)
 await human_click(btn)
 print("✓ Continue 2/2")
 
@@ -605,6 +634,7 @@ print("✓ Continue 2/2")
 # %% [21] I'll do this later
 await asyncio.sleep(2)
 btn = page.get_by_text("I'll do this later")
+await btn.wait_for(state="visible", timeout=10000)
 await human_click(btn)
 print("✓ I'll do this later")
 
@@ -620,6 +650,7 @@ print("✓ I'll do this later")
 initial_pages = len(context.pages)
 
 btn = page.get_by_text("Free 7-day trial")
+await btn.wait_for(state="visible", timeout=10000)
 await human_click(btn)
 
 stripe_url = None

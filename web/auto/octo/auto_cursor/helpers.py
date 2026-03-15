@@ -240,6 +240,21 @@ def format_phone_uk(phone_local):
         return f"({phone_local[:3]}){phone_local[3:6]}-{phone_local[6:]}"
     return phone_local
 
+def format_phone_ph(phone_local):
+    """Format Philippines phone number for input field"""
+    # PH numbers: 9XX XXX XXXX (10 digits)
+    if len(phone_local) >= 10:
+        return f"({phone_local[:3]}){phone_local[3:6]}-{phone_local[6:]}"
+    return phone_local
+
+def format_phone(phone_local, country_code="63"):
+    """Format phone number based on country"""
+    if country_code == "44":
+        return format_phone_uk(phone_local)
+    elif country_code == "63":
+        return format_phone_ph(phone_local)
+    return phone_local
+
 # %% Poll SMS Code (sync)
 def poll_sms_code(activation_id, timeout=300, interval=5):
     """Poll HeroSMS for SMS code (blocking). Press Ctrl+C to cancel."""

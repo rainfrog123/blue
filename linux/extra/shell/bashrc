@@ -156,6 +156,7 @@ alias zd='cd /allah/blue/web/auto/zendriver'          # zendriver
 # --- Level 4: /allah/blue/web/auto/octo/* ---
 alias oau='cd /allah/blue/web/auto/octo/automation'   # octo/automation
 alias ohi='cd /allah/blue/web/auto/octo/hid'          # octo/hid
+alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'  # octo/reverse_engineering/hid
 alias ossl='cd /allah/blue/web/auto/octo/ssl_pinning' # octo/ssl_pinning
 
 # --- Level 4: /allah/blue/web/auto/zendriver/* ---
@@ -207,3 +208,4 @@ export PATH="/allah/freqtrade/.venv/bin:$PATH"
 export DISPLAY=:1
 xauth merge /home/vncuser/.Xauthority 2>/dev/null
 alias azure="/usr/bin/az"
+. "$HOME/.cargo/env"
