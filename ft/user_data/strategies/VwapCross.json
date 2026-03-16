@@ -1,0 +1,30 @@
+{
+  "strategy_name": "VwapCross",
+  "params": {
+    "roi": {
+      "0": 1
+    },
+    "stoploss": {
+      "stoploss": -0.003
+    },
+    "trailing": {
+      "trailing_stop": false,
+      "trailing_stop_positive": null,
+      "trailing_stop_positive_offset": 0.0,
+      "trailing_only_offset_is_reached": false
+    },
+    "max_open_trades": {
+      "max_open_trades": Infinity
+    },
+    "buy": {
+      "vwap_period": 324
+    },
+    "sell": {
+      "max_bars": 218,
+      "sl_pct": 0.0017,
+      "tp_pct": 0.0024
+    }
+  },
+  "ft_stratparam_v": 1,
+  "export_time": "2026-03-16 02:42:38.475507+00:00"
+}

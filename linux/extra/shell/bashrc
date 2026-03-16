@@ -1,211 +1,226 @@
-# === PROMPT ===
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                              BASHRC CONFIG                                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# sudo rm -f /root/.bashrc && sudo ln -sf /allah/blue/linux/extra/shell/bashrc /root/.bashrc
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMPT
+# ─────────────────────────────────────────────────────────────────────────────
 if [ -n "$CURSOR_AGENT" ]; then
-  PS1='$ '
+    PS1='$ '
 else
-  PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] 🚀🚀🚀  $ "
+    PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] 🚀🚀🚀  $ "
 fi
 
-# === SHELL ===
+# ─────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT
+# ─────────────────────────────────────────────────────────────────────────────
 export EDITOR='cursor'
+export DISPLAY=:1
+
+export PATH="/allah/freqtrade/.venv/bin:$PATH"
+export PATH="$HOME/development/flutter/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
+. "$HOME/.cargo/env"
+xauth merge /home/vncuser/.Xauthority 2>/dev/null
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HISTORY
+# ─────────────────────────────────────────────────────────────────────────────
 HISTSIZE=10000
 HISTFILESIZE=20000
 HISTCONTROL=ignoreboth:erasedups
 
-# === ENV ===
-export DISPLAY=:10
-export PATH="$HOME/development/flutter/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIRECTORY ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# === DIR: Core ===
+# ─────────────────────────────────────────────────────────────────────────────
+# Core
+# ─────────────────────────────────────────────────────────────────────────────
 alias al='cd /allah'
 alias bl='cd /allah/blue'
+alias dt='cd /allah/data/ml'
 
-# === DIR: Freqtrade ===
+# ─────────────────────────────────────────────────────────────────────────────
+# /allah/blue/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias li='cd /allah/blue/linux'
+alias we='cd /allah/blue/web'
+alias web='cd /allah/blue/web'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Freqtrade: /allah/freqtrade & /allah/blue/ft
+# ─────────────────────────────────────────────────────────────────────────────
+alias fq='cd /allah/freqtrade'
 alias ft='cd /allah/blue/ft'
 alias ftc='cd /allah/freqtrade/freqtrade'
 alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
 
-# === DIR: Data ===
-alias dt='cd /allah/data/ml'
+# ft/*
+alias bi='cd /allah/blue/ft/binance'
+alias ind='cd /allah/blue/ft/indicators'
+alias ml='cd /allah/blue/ft/ml'
+alias to='cd /allah/blue/ft/tools'
+alias ud='cd /allah/blue/ft/user_data'
 
-# ============================================================
-# === BLUE DIRECTORY ALIASES (auto-generated, 2-char rule) ===
-# ============================================================
+# ft/tools/*
+alias cv='cd /allah/blue/ft/tools/converters'
+alias hi='cd /allah/blue/ft/tools/historical'
+alias re='cd /allah/blue/ft/tools/realtime'
+alias cc='cd /allah/blue/ft/tools/realtime/ccxt'
+alias rtv='cd /allah/blue/ft/tools/realtime/tradingview'
 
-# --- Level 1: /allah/blue/* ---
-alias fq='cd /allah/freqtrade'                    # freq
-alias li='cd /allah/blue/linux'                   # linux
-alias we='cd /allah/blue/web'                     # web
-alias web='cd /allah/blue/web'                    # web (full)
+# ft/user_data/*
+alias cf='cd /allah/blue/ft/user_data/config'
+alias hr='cd /allah/blue/ft/user_data/hyperopt_results'
+alias hy='cd /allah/blue/ft/user_data/hyperopts'
+alias md='cd /allah/blue/ft/user_data/models'
+alias nb='cd /allah/blue/ft/user_data/notebooks'
+alias sc='cd /allah/blue/ft/user_data/scripts'
+alias st='cd /allah/blue/ft/user_data/strategies'
 
-# --- Level 2: /allah/blue/ft/* ---
-alias mi='cd /allah/blue/ft/misc'               # misc
-alias pro='cd /allah/blue/ft/project'           # project
+# ─────────────────────────────────────────────────────────────────────────────
+# Linux: /allah/blue/linux
+# ─────────────────────────────────────────────────────────────────────────────
+# linux/*
+alias ex='cd /allah/blue/linux/extra'
+alias extra='cd /allah/blue/linux/extra'
+alias vp='cd /allah/blue/linux/vps'
+alias vps='cd /allah/blue/linux/vps'
 
-# --- Level 2: /allah/blue/linux/* ---
-alias ex='cd /allah/blue/linux/extra'             # extra
-alias extra='cd /allah/blue/linux/extra'          # extra (full)
-alias vp='cd /allah/blue/linux/vps'               # vps
-alias vps='cd /allah/blue/linux/vps'              # vps (full)
+# linux/extra/*
+alias excf='cd /allah/blue/linux/extra/config'
+alias cu='cd /allah/blue/linux/extra/cursor'
+alias cur='cd /allah/blue/linux/extra/cursor'
+alias ip='cd /allah/blue/linux/extra/iphone'
+alias ne='cd /allah/blue/linux/extra/network'
+alias nt='cd /allah/blue/linux/extra/notes'
+alias exsc='cd /allah/blue/linux/extra/scripts'
+alias sh='cd /allah/blue/linux/extra/shell'
 
-# --- Level 2: /allah/blue/web/* ---
-alias ap='cd /allah/blue/web/apps'                # apps
-alias au='cd /allah/blue/web/auto'                # auto
-alias cl='cd /allah/blue/web/cloud'               # cloud
-alias mo='cd /allah/blue/web/monitors'            # monitors
-alias px='cd /allah/blue/web/proxy'               # proxy
+# linux/extra/scripts/*
+alias exli='cd /allah/blue/linux/extra/scripts/linode'
+alias ut='cd /allah/blue/linux/extra/scripts/utilities'
 
-# --- Level 3: /allah/blue/ft/misc/* ---
-alias bi='cd /allah/blue/ft/misc/binance'       # binance
-alias binance='cd /allah/blue/ft/misc/binance'  # binance (full)
-alias tv='cd /allah/blue/ft/misc/tradingview'   # tradingview
+# linux/vps/*
+alias ali='cd /allah/blue/linux/vps/ali'
+alias aw='cd /allah/blue/linux/vps/aws'
+alias aws='cd /allah/blue/linux/vps/aws'
+alias az='cd /allah/blue/linux/vps/azure'
+alias gcvps='cd /allah/blue/linux/vps/gcp'
+alias gcp='cd /allah/blue/linux/vps/gcp'
+alias lnvps='cd /allah/blue/linux/vps/linode'
+alias vpse='cd /allah/blue/linux/vps/setup'
+alias vu='cd /allah/blue/linux/vps/vultr'
 
-# --- Level 3: /allah/blue/ft/project/* ---
-alias ml='cd /allah/blue/ft/project/ml_datasets'    # ml_datasets
-alias to='cd /allah/blue/ft/project/tools'          # tools
-alias tools='cd /allah/blue/ft/project/tools'       # tools (full)
-alias ud='cd /allah/blue/ft/project/user_data'      # user_data
-alias us='cd /allah/blue/ft/project/user_data'      # user_data (alt)
-alias user='cd /allah/blue/ft/project/user_data'    # user_data (full)
+# linux/vps/ali/*
+alias alicf='cd /allah/blue/linux/vps/ali/config'
+alias ec='cd /allah/blue/linux/vps/ali/ecs'
+alias ecs='cd /allah/blue/linux/vps/ali/ecs'
+alias se='cd /allah/blue/linux/vps/ali/setup'
 
-# --- Level 4: /allah/blue/ft/project/tools/* ---
-alias cv='cd /allah/blue/ft/project/tools/converters'   # converters
-alias hi='cd /allah/blue/ft/project/tools/historical'   # historical
-alias re='cd /allah/blue/ft/project/tools/realtime'     # realtime
-alias cc='cd /allah/blue/ft/project/tools/realtime/ccxt'         # ccxt connector
-alias co='cd /allah/blue/ft/project/tools/realtime/tradingview'  # tradingview connector
+# linux/vps/setup/*
+alias ssr='cd /allah/blue/linux/vps/setup/ssr_deploy'
 
-# --- Level 4: /allah/blue/ft/project/user_data/* ---
-alias cf='cd /allah/blue/ft/project/user_data/config'           # config
-alias conf='cd /allah/blue/ft/project/user_data/config'         # config (alt)
-alias config='cd /allah/blue/ft/project/user_data/config'       # config (full)
-alias hr='cd /allah/blue/ft/project/user_data/hyperopt_results' # hyperopt_results
-alias hy='cd /allah/blue/ft/project/user_data/hyperopts'        # hyperopts
-alias md='cd /allah/blue/ft/project/user_data/models'           # models
-alias nb='cd /allah/blue/ft/project/user_data/notebooks'        # notebooks
-alias sc='cd /allah/blue/ft/project/user_data/scripts'          # scripts
-alias st='cd /allah/blue/ft/project/user_data/strategies'       # strategies
-alias strat='cd /allah/blue/ft/project/user_data/strategies'    # strategies (full)
+# linux/vps/linode/*
+alias lm='cd /allah/blue/linux/vps/linode/manager'
+alias lnsc='cd /allah/blue/linux/vps/linode/scripts'
 
-# --- Level 3: /allah/blue/linux/extra/* ---
-alias excf='cd /allah/blue/linux/extra/config'    # config (ex+cf)
-alias cu='cd /allah/blue/linux/extra/cursor'      # cursor
-alias cur='cd /allah/blue/linux/extra/cursor'     # cursor (alt)
-alias ip='cd /allah/blue/linux/extra/iphone'      # iphone
-alias ne='cd /allah/blue/linux/extra/network'     # network
-alias nt='cd /allah/blue/linux/extra/notes'       # notes
-alias exsc='cd /allah/blue/linux/extra/scripts'   # scripts (ex+sc)
-alias sh='cd /allah/blue/linux/extra/shell'       # shell
+# ─────────────────────────────────────────────────────────────────────────────
+# Web: /allah/blue/web
+# ─────────────────────────────────────────────────────────────────────────────
+# web/*
+alias ap='cd /allah/blue/web/apps'
+alias au='cd /allah/blue/web/auto'
+alias cl='cd /allah/blue/web/cloud'
+alias mo='cd /allah/blue/web/monitors'
+alias px='cd /allah/blue/web/proxy'
 
-# --- Level 4: /allah/blue/linux/extra/scripts/* ---
-alias exli='cd /allah/blue/linux/extra/scripts/linode'     # scripts/linode
-alias ut='cd /allah/blue/linux/extra/scripts/utilities'    # utilities
+# web/apps/*
+alias ac='cd /allah/blue/web/apps/alt_calculator'
+alias ba='cd /allah/blue/web/apps/baccarat'
+alias tm='cd /allah/blue/web/apps/tampermonkey'
+alias tampermonkey='cd /allah/blue/web/apps/tampermonkey'
+alias ti='cd /allah/blue/web/apps/tinder'
+alias tinder='cd /allah/blue/web/apps/tinder'
 
-# --- Level 3: /allah/blue/linux/vps/* ---
-alias ali='cd /allah/blue/linux/vps/ali'          # ali (3 chars, al=allah)
-alias aw='cd /allah/blue/linux/vps/aws'           # aws
-alias aws='cd /allah/blue/linux/vps/aws'          # aws (full)
-alias gcvps='cd /allah/blue/linux/vps/gcp'        # gcp (gc=git commit)
-alias gcp='cd /allah/blue/linux/vps/gcp'          # gcp (full, override git)
-alias lnvps='cd /allah/blue/linux/vps/linode'     # linode vps
-alias vpse='cd /allah/blue/linux/vps/setup'       # vps setup (universal)
-alias vu='cd /allah/blue/linux/vps/vultr'         # vultr
+# web/apps/baccarat/*
+alias baco='cd /allah/blue/web/apps/baccarat/core'
+alias bade='cd /allah/blue/web/apps/baccarat/debug'
+alias le='cd /allah/blue/web/apps/baccarat/legacy'
+alias bast='cd /allah/blue/web/apps/baccarat/static'
 
-# --- Level 4: /allah/blue/linux/vps/ali/* ---
-alias alicf='cd /allah/blue/linux/vps/ali/config' # ali config
-alias ec='cd /allah/blue/linux/vps/ali/ecs'       # ecs
-alias ecs='cd /allah/blue/linux/vps/ali/ecs'      # ecs (full)
-alias se='cd /allah/blue/linux/vps/ali/setup'     # setup
+# web/apps/tampermonkey/*
+alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'
 
-# --- Level 4: /allah/blue/linux/vps/setup/* ---
-alias ssr='cd /allah/blue/linux/vps/setup/ssr_deploy'  # ssr_deploy
+# web/apps/tinder/*
+alias tida='cd /allah/blue/web/apps/tinder/data'
+alias tisc='cd /allah/blue/web/apps/tinder/scripts'
 
-# --- Level 4: /allah/blue/linux/vps/linode/* ---
-alias lm='cd /allah/blue/linux/vps/linode/manager'    # linode manager
-alias lnsc='cd /allah/blue/linux/vps/linode/scripts'  # linode scripts
+# web/auto/*
+alias ca='cd /allah/blue/web/auto/camoufox'
+alias nd='cd /allah/blue/web/auto/nodriver'
+alias oc='cd /allah/blue/web/auto/octo'
+alias pr='cd /allah/blue/web/auto/patchright'
+alias zd='cd /allah/blue/web/auto/zendriver'
 
-# --- Level 3: /allah/blue/web/apps/* ---
-alias ac='cd /allah/blue/web/apps/alt_calculator'     # alt_calculator
-alias ba='cd /allah/blue/web/apps/baccarat'           # baccarat
-alias ta='cd /allah/blue/web/apps/tampermonkey'       # tampermonkey (alt)
-alias tm='cd /allah/blue/web/apps/tampermonkey'       # tampermonkey
-alias tampermonkey='cd /allah/blue/web/apps/tampermonkey'  # tampermonkey (full)
-alias ti='cd /allah/blue/web/apps/tinder'             # tinder
-alias tinder='cd /allah/blue/web/apps/tinder'         # tinder (full)
+# web/auto/octo/*
+alias oau='cd /allah/blue/web/auto/octo/automation'
+alias ohi='cd /allah/blue/web/auto/octo/hid'
+alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'
+alias ossl='cd /allah/blue/web/auto/octo/ssl_pinning'
 
-# --- Level 4: /allah/blue/web/apps/baccarat/* ---
-alias baco='cd /allah/blue/web/apps/baccarat/core'    # baccarat/core
-alias bade='cd /allah/blue/web/apps/baccarat/debug'   # baccarat/debug
-alias le='cd /allah/blue/web/apps/baccarat/legacy'    # legacy
-alias bast='cd /allah/blue/web/apps/baccarat/static'  # baccarat/static
+# web/auto/zendriver/*
+alias hs='cd /allah/blue/web/auto/zendriver/herosms'
+alias wo='cd /allah/blue/web/auto/zendriver/worker'
 
-# --- Level 4: /allah/blue/web/apps/tampermonkey/* ---
-alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'   # tampermonkey/backup
+# web/monitors/*
+alias hu='cd /allah/blue/web/monitors/huaxitong'
+alias hx='cd /allah/blue/web/monitors/hxkq'
 
-# --- Level 4: /allah/blue/web/apps/tinder/* ---
-alias tida='cd /allah/blue/web/apps/tinder/data'      # tinder/data
-alias tisc='cd /allah/blue/web/apps/tinder/scripts'   # tinder/scripts
+# web/proxy/*
+alias de='cd /allah/blue/web/proxy/decodo'
+alias decodo='cd /allah/blue/web/proxy/decodo'
+alias ra='cd /allah/blue/web/proxy/rayobyte'
 
-# --- Level 3: /allah/blue/web/auto/* ---
-alias ca='cd /allah/blue/web/auto/camoufox'           # camoufox
-alias nd='cd /allah/blue/web/auto/nodriver'           # nodriver
-alias oc='cd /allah/blue/web/auto/octo'               # octo
-alias pr='cd /allah/blue/web/auto/patchright'         # patchright
-alias zd='cd /allah/blue/web/auto/zendriver'          # zendriver
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# --- Level 4: /allah/blue/web/auto/octo/* ---
-alias oau='cd /allah/blue/web/auto/octo/automation'   # octo/automation
-alias ohi='cd /allah/blue/web/auto/octo/hid'          # octo/hid
-alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'  # octo/reverse_engineering/hid
-alias ossl='cd /allah/blue/web/auto/octo/ssl_pinning' # octo/ssl_pinning
-
-# --- Level 4: /allah/blue/web/auto/zendriver/* ---
-alias hs='cd /allah/blue/web/auto/zendriver/herosms'  # herosms
-alias wo='cd /allah/blue/web/auto/zendriver/worker'   # worker
-
-# --- Level 3: /allah/blue/web/monitors/* ---
-alias hu='cd /allah/blue/web/monitors/huaxitong'  # huaxitong
-alias hx='cd /allah/blue/web/monitors/hxkq'       # hxkq
-
-# --- Level 3: /allah/blue/web/proxy/* ---
-alias de='cd /allah/blue/web/proxy/decodo'        # decodo
-alias decodo='cd /allah/blue/web/proxy/decodo'    # decodo (full)
-alias ra='cd /allah/blue/web/proxy/rayobyte'      # rayobyte
-
-# === Freqtrade Commands ===
-alias ftpy='source /allah/freqtrade/.venv/bin/activate'
-alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
-# alias python='/allah/freqtrade/.venv/bin/python'
-# alias pip='/allah/freqtrade/.venv/bin/pip'
-
-# === Git ===
+# ─────────────────────────────────────────────────────────────────────────────
+# Git
+# ─────────────────────────────────────────────────────────────────────────────
 alias ga='git add'
 alias gc='git commit -m'
 alias gl='git pull'
 alias gp='git push'
 alias gs='git status'
 
-# === TensorBoard ===
+# ─────────────────────────────────────────────────────────────────────────────
+# Freqtrade
+# ─────────────────────────────────────────────────────────────────────────────
+alias ftpy='source /allah/freqtrade/.venv/bin/activate'
+alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TensorBoard
+# ─────────────────────────────────────────────────────────────────────────────
 alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
 alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
 
-# === Utility ===
-alias octo='/allah/blue/web/auto/octo/hid/hid_spoofer.sh --start'
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
+alias azure='/usr/bin/az'
 alias bashrc='cursor /allah/blue/linux/extra/shell/bashrc'
 alias cls='clear'
 alias code='cursor'
 alias diskspace='df -h'
-alias ipc="/allah/blue/web/proxy/decodo/ip_checker.sh"
+alias ipc='/allah/blue/web/proxy/decodo/ip_checker.sh'
 alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
-alias note='cursor /allah/blue/ft/project/note'
+alias note='cursor /allah/blue/ft/note'
+alias octo='/allah/blue/web/auto/octo/hid/hid_spoofer.sh --start'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
-
-alias az="cd /allah/blue/linux/vps/azure"
-export PATH="/allah/freqtrade/.venv/bin:$PATH"
-
-# sudo rm -f /root/.bashrc && sudo ln -sf /allah/blue/linux/extra/shell/bashrc /root/.bashrc
-export DISPLAY=:1
-xauth merge /home/vncuser/.Xauthority 2>/dev/null
-alias azure="/usr/bin/az"
-. "$HOME/.cargo/env"
