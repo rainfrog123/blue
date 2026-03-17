@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import logging
 import argparse
 import sys
+from pathlib import Path
 from getpass import getpass
 import subprocess
 import statistics
@@ -16,6 +17,9 @@ import random
 import string
 import datetime
 import paramiko
+
+sys.path.insert(0, str(Path(__file__).parents[3] / "extra"))
+from cred_loader import get_linode_token
 
 # Configure logging
 logging.basicConfig(
@@ -782,7 +786,7 @@ def main():
     args = parser.parse_args()
 
     # Get API token
-    api_token = args.token or "19756de4a2fcc796663de2eb65efececb9cfec81e853103d174ec202bdd5e2a6"
+    api_token = args.token or get_linode_token()
 
     # Get proxy if provided
     proxy = args.proxy

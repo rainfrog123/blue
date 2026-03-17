@@ -3,18 +3,16 @@
 
 import sys
 from pathlib import Path
-# Add cred_loader to path (binance -> misc -> freq -> blue -> linux/extra)
+
 sys.path.insert(0, str(Path(__file__).parents[3] / "linux" / "extra"))
 
 import ccxt
 from cred_loader import get_binance
 
-# Load Binance API credentials from secure file
 _binance = get_binance()
 API_KEY = _binance["api_key"]
 API_SECRET = _binance["api_secret"]
 
-# Transfer settings
 CURRENCY = "USDT"
 AMOUNT = 0.01
 FROM_ACCOUNT = "funding"
@@ -22,7 +20,6 @@ TO_ACCOUNT = "future"
 
 
 def main():
-    # Initialize Binance
     binance = ccxt.binance({
         'apiKey': API_KEY,
         'secret': API_SECRET,
@@ -30,7 +27,6 @@ def main():
 
     print(f"Transferring {AMOUNT} {CURRENCY} from {FROM_ACCOUNT} to {TO_ACCOUNT}...")
 
-    # Check balances before transfer
     try:
         funding_balance = binance.fetch_balance({'type': 'funding'})
         futures_balance = binance.fetch_balance({'type': 'future'})
@@ -44,7 +40,6 @@ def main():
     except Exception as e:
         print(f"Warning: Could not fetch balances: {e}")
 
-    # Perform the transfer
     try:
         result = binance.transfer(
             code=CURRENCY,
@@ -62,7 +57,6 @@ def main():
     except Exception as e:
         print(f"\n❌ Error: {e}")
 
-    # Check balances after transfer
     try:
         funding_balance = binance.fetch_balance({'type': 'funding'})
         futures_balance = binance.fetch_balance({'type': 'future'})
@@ -79,4 +73,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

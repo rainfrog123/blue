@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # Constants
 DEFAULT_EXCHANGE = "binance"
 DEFAULT_TIMEFRAME = "5s"
-BASE_DATA_DIR = Path("/allah/stuff/freq/project_2/user_data/data")
+BASE_DATA_DIR = Path("/allah/blue/ft/user_data/data")
 
 class CustomCandleLoader:
     """Class to load and display custom candles from parquet files."""

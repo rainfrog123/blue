@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Set paths
 SCRIPTS_DIR = Path(__file__).parent
+DATA_SCRIPTS_DIR = SCRIPTS_DIR / "data"
 PYTHON_INTERPRETER = "/allah/freqtrade/.venv/bin/python3"
 
 def run_command(cmd, description):
@@ -79,7 +80,7 @@ def main():
         pairs_arg = " ".join([f"--pairs {pair}" for pair in args.pairs])
         fetch_cmd = [
             PYTHON_INTERPRETER,
-            str(SCRIPTS_DIR / "fetch_binance_trades.py"),
+            str(DATA_SCRIPTS_DIR / "fetch_binance_trades.py"),
             f"--days {args.days}"
         ]
         fetch_cmd.extend(pairs_arg.split())
@@ -93,7 +94,7 @@ def main():
     for pair in args.pairs:
         load_cmd = [
             PYTHON_INTERPRETER,
-            str(SCRIPTS_DIR / "load_custom_candles.py"),
+            str(DATA_SCRIPTS_DIR / "load_custom_candles.py"),
             f"--pair {pair}"
         ]
         

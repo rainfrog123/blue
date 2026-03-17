@@ -3,7 +3,7 @@
 // @name:en            Simple-Caixin
 // @namespace          http://www.caixin.com/
 // @version            0.8.20250312
-// @description        清理页面无用元素（水印、分享按钮、导航栏、评论栏、网站地图等），调整板式，专注阅读
+// @description        清理页面无用元素（水印、分享按钮、导航栏、评论栏、网站地图等），调整板式，启用复制和右键菜单，专注阅读
 // @description:en     A script which removed some unuseful elements on caixin.com
 // @author             EAK8T6Z
 // @match              *://*.caixin.com/*
@@ -260,7 +260,8 @@
         .sitenav, .vioce-box-cons, .icon_key, .subhead, .pip, .function01, .morelink,
         .greenBg, .redBg, .cx-wx-hb-tips, .conri, .f_ri, .fenghui_code, .comment,
         .hot_word_v2, .bottom_tong_ad, .copyright, .navBottom, .multimedia,
-        .share_list, .renewals, .wifi-tips, .adsame-banner-box {
+        .share_list, .renewals, .wifi-tips, .adsame-banner-box,
+        .nav_pro_menu, .nav_pro_icon {
             display: none !important;
         }
 
@@ -273,10 +274,26 @@
     // 应用语音相关样式
     updateStyles();
 
+    // 启用复制和右键菜单
+    function enableCopyAndContextMenu() {
+        const enableFunction = (e) => {
+            e.stopPropagation();
+            return true;
+        };
+        document.addEventListener('copy', enableFunction, true);
+        document.addEventListener('contextmenu', enableFunction, true);
+        document.addEventListener('selectstart', enableFunction, true);
+        document.addEventListener('mousedown', enableFunction, true);
+    }
+
     // 等待 DOM 加载完成后添加按钮
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createToggleButton);
+        document.addEventListener('DOMContentLoaded', () => {
+            createToggleButton();
+            enableCopyAndContextMenu();
+        });
     } else {
         createToggleButton();
+        enableCopyAndContextMenu();
     }
 })();

@@ -25,15 +25,14 @@ import sys
 import time
 import json
 from dataclasses import dataclass, field
-from decimal import Decimal
 from typing import Optional
 from datetime import datetime
 from pathlib import Path
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Configuration - ETHUSDT Perpetual Futures
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Data directory for output files
+DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
 # Binance USDT-M Futures API
 BASE_URL = "https://fapi.binance.com"
@@ -44,10 +43,6 @@ DEFAULT_SYMBOL = "ETHUSDT"
 # Sampling rate (seconds between API calls)
 SAMPLE_INTERVAL = 0.2
 
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Data Structures
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @dataclass
 class RPILevel:
@@ -95,10 +90,6 @@ class AnalysisSession:
         return self.rpi_count / self.samples * 100 if self.samples > 0 else 0
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Global State
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 running = True
 session: Optional[AnalysisSession] = None
 
@@ -109,10 +100,6 @@ def signal_handler(sig, frame):
     print("\n\n⏹️  Stopping analysis... generating report...\n")
     running = False
 
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# API Fetching
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async def fetch_both_books(http: aiohttp.ClientSession, symbol: str) -> tuple[dict, dict]:
     """Fetch standard and RPI order books simultaneously"""
@@ -143,7 +130,6 @@ def analyze_books(std: dict, rpi: dict) -> Optional[RPIEvent]:
     hidden_bids = []
     hidden_asks = []
     
-    # Find hidden bid liquidity
     for p, q in rpi_bids.items():
         diff = q - std_bids.get(p, 0)
         if diff > 0:
@@ -154,7 +140,6 @@ def analyze_books(std: dict, rpi: dict) -> Optional[RPIEvent]:
                 distance_bps=distance_bps, is_at_best=(p == best_bid), side='bid'
             ))
     
-    # Find hidden ask liquidity
     for p, q in rpi_asks.items():
         diff = q - std_asks.get(p, 0)
         if diff > 0:
@@ -170,7 +155,7 @@ def analyze_books(std: dict, rpi: dict) -> Optional[RPIEvent]:
     
     return RPIEvent(
         timestamp=time.time(),
-        elapsed=0,  # Set by caller
+        elapsed=0,
         best_bid=best_bid,
         best_ask=best_ask,
         spread_bps=spread_bps,
@@ -181,13 +166,9 @@ def analyze_books(std: dict, rpi: dict) -> Optional[RPIEvent]:
     )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Display Functions
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 def print_header(symbol: str):
     """Print startup header"""
-    print("\033[2J\033[H")  # Clear screen
+    print("\033[2J\033[H")
     print("╔═══════════════════════════════════════════════════════════════════════════════╗")
     print("║         🔬 RPI DEPTH ANALYZER - BINANCE USDT-M PERPETUAL FUTURES              ║")
     print("╠═══════════════════════════════════════════════════════════════════════════════╣")
@@ -204,12 +185,10 @@ def print_rpi_event(event: RPIEvent, session: AnalysisSession):
     """Print a single RPI detection event"""
     print(f"🟢 {event.elapsed:6.1f}s | RPI DETECTED | Samples: {session.samples} | RPI Rate: {session.rpi_rate:.1f}%")
     
-    # Show top bids
     for h in sorted(event.hidden_bids, key=lambda x: -x.price)[:3]:
         at_best = "⭐ BEST" if h.is_at_best else f"{h.distance_bps:+.1f}bps"
         print(f"     BID @ {h.price:>10.2f} | {h.quantity:>10.4f} | ${h.notional:>10,.2f} | {at_best}")
     
-    # Show top asks
     for h in sorted(event.hidden_asks, key=lambda x: x.price)[:3]:
         at_best = "⭐ BEST" if h.is_at_best else f"{h.distance_bps:+.1f}bps"
         print(f"     ASK @ {h.price:>10.2f} | {h.quantity:>10.4f} | ${h.notional:>10,.2f} | {at_best}")
@@ -236,7 +215,6 @@ def generate_report(session: AnalysisSession) -> str:
     report.append("━" * 80)
     report.append("")
     
-    # Basic Stats
     report.append("┌────────────────────────────────────────────────────────────────────────────────┐")
     report.append("│                              SESSION STATISTICS                               │")
     report.append("├────────────────────────────────────────────────────────────────────────────────┤")
@@ -253,7 +231,6 @@ def generate_report(session: AnalysisSession) -> str:
     report.append("")
     
     if session.rpi_count > 0:
-        # Aggregate all hidden levels
         all_bids = session.all_hidden_bids
         all_asks = session.all_hidden_asks
         
@@ -275,7 +252,6 @@ def generate_report(session: AnalysisSession) -> str:
         avg_bid_dist = sum(h.distance_bps for h in away_bids) / len(away_bids) if away_bids else 0
         avg_ask_dist = sum(h.distance_bps for h in away_asks) / len(away_asks) if away_asks else 0
         
-        # Size Analysis
         report.append("┌────────────────────────────────────────────────────────────────────────────────┐")
         report.append("│                              RPI SIZE ANALYSIS                                │")
         report.append("├────────────────────────────────────────────────────────────────────────────────┤")
@@ -287,7 +263,6 @@ def generate_report(session: AnalysisSession) -> str:
         report.append("└────────────────────────────────────────────────────────────────────────────────┘")
         report.append("")
         
-        # Position Analysis
         report.append("┌────────────────────────────────────────────────────────────────────────────────┐")
         report.append("│                           RPI POSITION ANALYSIS                               │")
         report.append("├────────────────────────────────────────────────────────────────────────────────┤")
@@ -305,7 +280,6 @@ def generate_report(session: AnalysisSession) -> str:
         report.append("└────────────────────────────────────────────────────────────────────────────────┘")
         report.append("")
         
-        # Edge Quantification
         report.append("┌────────────────────────────────────────────────────────────────────────────────┐")
         report.append("│                          🎯 EDGE QUANTIFICATION                               │")
         report.append("├────────────────────────────────────────────────────────────────────────────────┤")
@@ -319,8 +293,7 @@ def generate_report(session: AnalysisSession) -> str:
         report.append(f"│  Effective Edge:       {effective_edge:>+10.3f} bps (probability-weighted)                │")
         report.append("│                                                                                │")
         
-        # Daily savings estimate
-        daily_volume = 100  # ETH
+        daily_volume = 100
         avg_price = session.rpi_events[-1].best_ask if session.rpi_events else 2940
         daily_notional = daily_volume * avg_price
         daily_savings = daily_notional * effective_edge / 10000
@@ -332,7 +305,6 @@ def generate_report(session: AnalysisSession) -> str:
         report.append("└────────────────────────────────────────────────────────────────────────────────┘")
         report.append("")
         
-        # Top RPI Events
         if session.rpi_events:
             top_events = sorted(session.rpi_events, 
                               key=lambda e: e.total_hidden_bid + e.total_hidden_ask, 
@@ -347,7 +319,6 @@ def generate_report(session: AnalysisSession) -> str:
             report.append("└────────────────────────────────────────────────────────────────────────────────┘")
             report.append("")
     
-    # Conclusion
     report.append("┌────────────────────────────────────────────────────────────────────────────────┐")
     report.append("│                              💡 CONCLUSIONS                                   │")
     report.append("├────────────────────────────────────────────────────────────────────────────────┤")
@@ -375,15 +346,13 @@ def generate_report(session: AnalysisSession) -> str:
 
 
 def save_report(session: AnalysisSession, report: str):
-    """Save report to files"""
+    """Save report to files in data directory"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
-    # Save text report
-    report_file = Path(f"rpi_report_{session.symbol}_{timestamp}.txt")
+    report_file = DATA_DIR / f"rpi_report_{session.symbol}_{timestamp}.txt"
     report_file.write_text(report)
     print(f"📄 Report saved to: {report_file}")
     
-    # Save JSON data
     json_data = {
         "symbol": session.symbol,
         "start_time": datetime.fromtimestamp(session.start_time).isoformat(),
@@ -409,14 +378,10 @@ def save_report(session: AnalysisSession, report: str):
         ]
     }
     
-    json_file = Path(f"rpi_data_{session.symbol}_{timestamp}.json")
+    json_file = DATA_DIR / f"rpi_data_{session.symbol}_{timestamp}.json"
     json_file.write_text(json.dumps(json_data, indent=2))
     print(f"📁 Data saved to: {json_file}")
 
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Main Loop
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 async def run_analysis(symbol: str):
     """Main analysis loop"""
@@ -445,7 +410,6 @@ async def run_analysis(symbol: str):
                     session.all_hidden_asks.extend(event.hidden_asks)
                     print_rpi_event(event, session)
                 else:
-                    # Periodic status update every 2 seconds
                     if time.time() - last_status > 2:
                         print_status(session)
                         last_status = time.time()
@@ -457,12 +421,10 @@ async def run_analysis(symbol: str):
             
             await asyncio.sleep(SAMPLE_INTERVAL)
     
-    # Generate and display report
     print("\n" * 2)
     report = generate_report(session)
     print(report)
     
-    # Save files
     save_report(session, report)
 
 
@@ -481,14 +443,13 @@ def main():
     args = parser.parse_args()
     SAMPLE_INTERVAL = args.interval
     
-    # Setup signal handler for graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
     try:
         asyncio.run(run_analysis(args.symbol))
     except KeyboardInterrupt:
-        pass  # Already handled by signal_handler
+        pass
 
 
 if __name__ == "__main__":

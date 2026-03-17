@@ -143,11 +143,56 @@ export default {
       });
     }
 
+    // POST /send - send email via Cloudflare Email Routing
+    if (path === "/send" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const { from, to, subject, text, html } = body;
+
+        if (!from || !to || !subject || (!text && !html)) {
+          return new Response(JSON.stringify({ 
+            error: "Missing required fields: from, to, subject, and text or html" 
+          }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
+        if (!env.SEND_EMAIL) {
+          return new Response(JSON.stringify({ 
+            error: "Email sending not configured. Add send_email binding to wrangler.toml" 
+          }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
+        const contentType = html ? "text/html" : "text/plain";
+        const content = html || text;
+        
+        const msg = new EmailMessage(from, to, 
+          `Subject: ${subject}\r\nContent-Type: ${contentType}; charset=utf-8\r\n\r\n${content}`
+        );
+        
+        await env.SEND_EMAIL.send(msg);
+        
+        return new Response(JSON.stringify({ success: true, message: "Email sent" }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+    }
+
     return new Response(JSON.stringify({
       endpoints: [
         "GET /otp?email=xxx@hyas.site - get OTP for email",
         "GET /emails?limit=10&recipient=xxx - list emails",
-        "GET /emails/:id - get single email"
+        "GET /emails/:id - get single email",
+        "POST /send - send email (json: from, to, subject, text/html)"
       ]
     }), {
       headers: { "Content-Type": "application/json" }

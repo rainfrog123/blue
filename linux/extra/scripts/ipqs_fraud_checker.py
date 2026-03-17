@@ -1,7 +1,12 @@
+import sys
+from pathlib import Path
+
 import requests
 
-# Define the IPQS API URL and API key
-api_key = "740F92cS9nqqV41L0u7jfbSepB3dff08"
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from cred_loader import get_ipqs
+
+api_key = get_ipqs()
 url_template = f"https://ipqualityscore.com/api/json/ip/{api_key}/{{}}"
 
 # List of IP addresses to test

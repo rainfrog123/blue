@@ -1455,7 +1455,7 @@ print("💾 CELL 21: Save & Load Models")
 print("=" * 70)
 
 import os
-model_dir = '/allah/blue/freq/project/ml_datasets/saved_models'
+model_dir = '/allah/blue/ft/ml/outputs'
 os.makedirs(model_dir, exist_ok=True)
 
 # Save the best model

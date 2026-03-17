@@ -112,6 +112,11 @@ def get_azure() -> dict:
     return load_cred()["azure"]
 
 
+def get_resend() -> dict:
+    """Get Resend email API credentials."""
+    return load_cred()["resend"]
+
+
 if __name__ == "__main__":
     # Test loading
     try:

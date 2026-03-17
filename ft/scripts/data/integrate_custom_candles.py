@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 # Constants
 DEFAULT_EXCHANGE = "binance"
 DEFAULT_TIMEFRAME = "5s"
-BASE_DATA_DIR = Path("/allah/stuff/freq/project_2/user_data/data")
-CONFIG_FILE = Path("/allah/stuff/freq/project_2/custom_config.json")
+BASE_DATA_DIR = Path("/allah/blue/ft/user_data/data")
+CONFIG_FILE = Path("/allah/blue/ft/user_data/config/backtest.json")
 
 
 class CustomCandleIntegrator:
@@ -450,7 +450,7 @@ def main():
     
     # Create strategy if requested
     if args.create_strategy:
-        strategy_dir = Path('/allah/stuff/freq/project_2/user_data/strategies')
+        strategy_dir = Path('/allah/blue/ft/user_data/strategies')
         strategy_dir.mkdir(parents=True, exist_ok=True)
         strategy_path = strategy_dir / f"{args.strategy}.py"
         integrator.create_sample_strategy(strategy_path)

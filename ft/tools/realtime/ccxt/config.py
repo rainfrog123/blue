@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parents[5] / "linux" / "extra"))
+sys.path.insert(0, str(Path(__file__).parents[4] / "linux" / "extra"))
 from cred_loader import get_binance
 
 BASE_DIR = Path(__file__).parent.absolute()

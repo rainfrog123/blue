@@ -27,8 +27,8 @@ logger = logging.getLogger(__name__)
 # Constants
 TIMEFRAME = "5s"
 EXCHANGE_NAME = "binance"
-BASE_DATA_DIR = Path("/allah/stuff/freq/project_2/user_data/data")
-TEMP_DIR = Path("/allah/stuff/freq/project_2/user_data/data/temp")
+BASE_DATA_DIR = Path("/allah/blue/ft/user_data/data")
+TEMP_DIR = Path("/allah/blue/ft/user_data/data/temp")
 
 # Ensure directories exist
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
