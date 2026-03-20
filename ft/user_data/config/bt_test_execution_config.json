@@ -1,5 +1,6 @@
 {
-    "strategy": "TestExecution",
+    "recursive_strategy_search": true,
+    "strategy": "bt_TestExecution",
     "max_open_trades": 1,
     "stake_currency": "USDT",
     "stake_amount": "unlimited",

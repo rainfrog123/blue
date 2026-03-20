@@ -1,5 +1,6 @@
 {
     "$schema": "https://schema.freqtrade.io/schema.json",
+    "recursive_strategy_search": true,
     "trading_mode": "futures",
     "margin_mode": "isolated",
     "max_open_trades": 5,

@@ -35,7 +35,7 @@ class TemaReversal2R(IStrategy):
     process_only_new_candles = True
     
     # ROI and stoploss (overridden by custom logic)
-    minimal_roi = {"0": 0.06, "10": 0.03, "30": 0}
+    minimal_roi = {"0": 100}  # Disabled - using custom TP/SL
     stoploss = -0.03
     trailing_stop = False
     use_custom_stoploss = True

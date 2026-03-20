@@ -1,0 +1,6 @@
+# Binance Perpetual Connector Configuration
+# This file should be copied to: /allah/hummingbot/conf/connectors/binance_perpetual.yml
+
+connector: binance_perpetual
+binance_perpetual_api_key: ofQzX3gGAKS777NyYIovAy1XyqLzGC2UJPMh9jqIYEfieFRy3DCkZJl15VYA2zXo
+binance_perpetual_api_secret: QVJpTFgHIEv74LmCT5clX8o1zAFEEqJqKpg2ePklObM1Ybv9iKNe8jvM7MRjoz07
