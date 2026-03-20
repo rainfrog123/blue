@@ -69,12 +69,19 @@
             width: 100% !important;
         }
 
-        /* Expand the primary column to full screen */
+        /* Expand the primary column to full width */
         [data-testid="primaryColumn"] {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
             border: none !important;
+        }
+
+        /* Override Twitter's internal width constraints on nested containers */
+        [data-testid="primaryColumn"] > div > div,
+        [data-testid="primaryColumn"] > div > div > div,
+        [data-testid="primaryColumn"] section > div > div {
+            max-width: 100% !important;
         }
 
         /* Force all parent containers to be full width */
@@ -106,6 +113,18 @@
         [data-testid="cellInnerDiv"] {
             max-width: 100% !important;
             width: 100% !important;
+        }
+
+        /* Expand the tweet text content area */
+        [data-testid="tweetText"] {
+            max-width: 100% !important;
+        }
+
+        /* Make media (images/videos) in tweets wider */
+        [data-testid="tweetPhoto"],
+        [data-testid="videoPlayer"],
+        [data-testid="card.wrapper"] {
+            max-width: 100% !important;
         }
 
         /* Timeline container full width */
