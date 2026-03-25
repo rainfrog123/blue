@@ -52,6 +52,58 @@
         document.head.appendChild(style);
     }
 
+    const inspirationalQuotes = [
+        "The only limit is your imagination.",
+        "Dream big, start small, act now.",
+        "Every moment is a fresh beginning.",
+        "Be the energy you want to attract.",
+        "Stars can't shine without darkness.",
+        "Your potential is endless.",
+        "Create the life you can't wait to wake up to.",
+        "The best time to start is now.",
+        "Believe you can and you're halfway there.",
+        "Make today ridiculously amazing.",
+        "You are capable of extraordinary things.",
+        "Let your light shine so bright it inspires others.",
+        "The universe is conspiring in your favor.",
+        "You were born to do remarkable things.",
+        "Your story is still being written.",
+        "What feels impossible today will be your warm-up tomorrow.",
+        "You are exactly where you need to be.",
+        "Trust the magic of new beginnings.",
+        "You carry galaxies within you.",
+        "Today is full of endless possibilities.",
+        "Your presence makes the world more beautiful.",
+        "The best is yet to come.",
+        "You are a work of art in progress.",
+        "Let curiosity lead the way.",
+        "You have survived 100% of your worst days.",
+        "Embrace the glorious mess that you are.",
+        "You are the author of your own story.",
+        "Breathe. You've got this.",
+        "Small steps still move you forward.",
+        "You are braver than you believe.",
+        "The sun will rise and we will try again.",
+        "You are someone's reason to smile.",
+        "Dare to be different. Dare to be you.",
+        "Your dreams are valid.",
+        "You are made of stardust and infinite potential.",
+        "Every day is a chance to begin again.",
+        "You light up the world just by being in it.",
+        "Wherever you go, go with all your heart.",
+        "You are worthy of all the good things coming your way.",
+        "The world needs your unique magic."
+    ];
+
+    function replaceDisclaimer() {
+        const disclaimer = document.querySelector('hallucination-disclaimer p');
+        if (disclaimer && !disclaimer.dataset.tmInspired) {
+            disclaimer.dataset.tmInspired = 'true';
+            const quote = inspirationalQuotes[Math.floor(Math.random() * inspirationalQuotes.length)];
+            disclaimer.textContent = quote;
+        }
+    }
+
     function getSidenav() {
         return document.querySelector('bard-sidenav');
     }
@@ -104,6 +156,7 @@
                 updateVisibility();
             }
             createToggleButton();
+            replaceDisclaimer();
         });
 
         observer.observe(document.body, {
@@ -116,9 +169,11 @@
         console.log('[Gemini Hide Sidenav] Script loaded');
         addStyles();
         createToggleButton();
+        replaceDisclaimer();
         setupObserver();
         setTimeout(updateVisibility, 500);
         setTimeout(updateVisibility, 1500);
+        setTimeout(replaceDisclaimer, 500);
     }
 
     if (document.readyState === 'complete') {

@@ -56,7 +56,7 @@
         [data-testid="tweetTextarea_0_label"] {
             display: none !important;
         }
-        
+
         /* Hide the composer box container */
         [data-testid="primaryColumn"] > div > div:first-child > div:nth-child(3) {
             display: none !important;
@@ -86,7 +86,9 @@
 
         /* Force all parent containers to be full width */
         #react-root > div,
-        #react-root > div > div {
+        #react-root > div > div,
+        #react-root > div > div > div,
+        #react-root > div > div > div > div {
             max-width: 100% !important;
             width: 100% !important;
         }
@@ -95,7 +97,22 @@
         main[role="main"] > div {
             max-width: 100% !important;
             width: 100% !important;
-            justify-content: center !important;
+            justify-content: flex-start !important;
+        }
+
+        /* Override all max-width on common Twitter container classes */
+        main[role="main"] div[class*="r-"] {
+            max-width: 100% !important;
+        }
+
+        /* Force primaryColumn parent wrappers to full width */
+        [data-testid="primaryColumn"],
+        [data-testid="primaryColumn"] > div,
+        [data-testid="primaryColumn"] > div > div,
+        [data-testid="primaryColumn"] > div > div > div,
+        [data-testid="primaryColumn"] > div > div > div > div {
+            max-width: 100% !important;
+            width: 100% !important;
         }
 
         /* Make timeline section fill available space */
@@ -127,10 +144,53 @@
             max-width: 100% !important;
         }
 
-        /* Timeline container full width */
+        /* Timeline container full width - home, profile, and individual pages */
         [aria-label="Timeline: Your Home Timeline"],
         [aria-label="Timeline: Trending now"],
+        [aria-label^="Timeline:"],
+        [aria-label="Section details"],
+        [data-testid="tweet"] [data-testid="User-Name"],
         section[role="region"] > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Individual tweet/status page - expand conversation thread */
+        [aria-label^="Timeline: Conversation"],
+        [data-testid="tweet-reply"],
+        [data-testid="inline-reply"] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Profile page - expand user profile header and all components */
+        [data-testid="UserProfileHeader_Items"],
+        [data-testid="UserDescription"],
+        [data-testid="UserName"],
+        [data-testid="UserAvatar-Container-unknown"],
+        [data-testid="placementTracking"],
+        [data-testid="userActions"] {
+            max-width: 100% !important;
+        }
+
+        /* Profile header banner - full width */
+        [href$="/header_photo"],
+        [href$="/header_photo"] > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Profile timeline section - full width */
+        [aria-label$="'s posts"],
+        [aria-label$="'s posts"] > div,
+        section[aria-labelledby] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Timeline virtualized container */
+        [aria-label^="Timeline:"] > div[style*="position: relative"],
+        div[style*="min-height"][style*="position: relative"] {
             max-width: 100% !important;
             width: 100% !important;
         }

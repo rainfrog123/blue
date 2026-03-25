@@ -224,3 +224,4 @@ alias myip='curl -s http://ipinfo.io/ip'
 alias note='cursor /allah/blue/ft/note'
 alias octo='/allah/blue/web/auto/octo/hid/hid_spoofer.sh --start'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
+alias cl="cd /allah/blue/linux/extra/network"

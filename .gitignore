@@ -13,9 +13,11 @@ last_result.json
 
 # ML datasets
 *.feather
+*.npy
 # Ignore everything in freq/project/ml_datasets except .py files
 freq/project/ml_datasets/*
 !freq/project/ml_datasets/*.py
+ft/ml/processed/
 
 # Freqtrade user data
 user_data/backtest_results/
