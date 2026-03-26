@@ -1,4 +1,4 @@
-# test=============================================================================
+# =============================================================================
 # DNS Configuration
 # =============================================================================
 dns:
@@ -77,6 +77,19 @@ proxies:
   - name: ali_sg_tj
     type: trojan
     server: 162.159.62.17
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.site
+
+  - name: ali_jp_tj
+    type: trojan
+    server: 108.162.198.20
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -281,6 +294,7 @@ proxy-groups:
     proxies:
       - DIRECT
       - ali_sg_tj
+      - ali_jp_tj
       - ali_sg
       - azure_sg
       - 🇭🇰SS|HongKongB01|IPLC x3
@@ -289,10 +303,10 @@ proxy-groups:
       - 🇭🇰V2|HongKongD01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
       - 🇹🇼SS|TaiwanD01|IPLC x3
-      - 🇯🇵SS|JapanB01|IPLC x3
-      - 🇯🇵SS|JapanD01|IPLC x3
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3
+      - 🇯🇵SS|JapanB01|IPLC x3
+      - 🇯🇵SS|JapanD01|IPLC x3
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
       - 🇺🇸SS|UnitedStatesD01|IPLC x3
       - 🇹🇭SS|ThailandB01|IPLC x3
@@ -314,11 +328,11 @@ proxy-groups:
       - 🎠Trojan
       - ☁️ Cloudflare CF Nodes
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -347,12 +361,11 @@ proxy-groups:
       - ali_sg_tj
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3
-      - 🇺🇸SS|UnitedStatesB01|IPLC x3
       - 🇺🇸SS|UnitedStatesD01|IPLC x3
       - 🇸🇬TJ|Singapore C01|Netflix
       - 🇺🇸TJ|UnitedStates C01|Netflix
 
-  - name: 📺 Youtube Nodes
+  - name: 📺 YouTube Nodes
     type: select
     proxies:
       - 🚀 Node Selection
@@ -378,11 +391,11 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
+      - 🇸🇬CF|SIN01|32MB/s
       - 🇯🇵CF|NRT01|40MB/s
       - 🇯🇵CF|NRT02|38MB/s
       - 🇯🇵CF|NRT03|36MB/s
       - 🇯🇵CF|NRT04|34MB/s
-      - 🇸🇬CF|SIN01|32MB/s
       - 🇯🇵CF|NRT05|31MB/s
       - 🇯🇵CF|NRT06|29MB/s
       - ali_sg_tj
@@ -431,11 +444,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🍁 Other Regions
       - DIRECT
@@ -457,11 +470,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -475,11 +488,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -493,11 +506,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -511,11 +524,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -529,11 +542,11 @@ proxy-groups:
       - ⚡️IPLC/IEPL
       - 🎠Trojan
       - 🇭🇰 Hong Kong Nodes
+      - 🇸🇬 Singapore Nodes
       - 🇯🇵 Japan Nodes
       - 🇰🇷 Korea Nodes
       - 🇺🇸 United States Nodes
       - 🇮🇩 Indonesia Nodes
-      - 🇸🇬 Singapore Nodes
       - 🇪🇺 Europe Nodes
       - 🇹🇼 Taiwan Nodes
       - 🍁 Other Regions
@@ -630,10 +643,10 @@ proxy-groups:
       - 🇭🇰V2|HongKongD01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
       - 🇹🇼SS|TaiwanD01|IPLC x3
-      - 🇯🇵SS|JapanB01|IPLC x3
-      - 🇯🇵SS|JapanD01|IPLC x3
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3
+      - 🇯🇵SS|JapanB01|IPLC x3
+      - 🇯🇵SS|JapanD01|IPLC x3
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
       - 🇺🇸SS|UnitedStatesD01|IPLC x3
       - 🇹🇭SS|ThailandB01|IPLC x3
@@ -884,6 +897,10 @@ rules:
   - DOMAIN-KEYWORD,stripe,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,oracle,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,workos,🖥️ Cursor Website Nodes
+
+  # ---------------------------------------------------------------------------
+  # 🇺🇸 United States Nodes (IP-based)
+  # ---------------------------------------------------------------------------
   - SRC-IP-CIDR,100.125.223.72/32,🇺🇸 United States Nodes
 
   # ---------------------------------------------------------------------------
@@ -922,11 +939,11 @@ rules:
   - DOMAIN-KEYWORD,stake,🎰 Stake Nodes
 
   # ---------------------------------------------------------------------------
-  # 📺 Youtube Nodes
+  # 📺 YouTube Nodes
   # ---------------------------------------------------------------------------
-  - DOMAIN-KEYWORD,googlevideo,📺 Youtube Nodes
-  - DOMAIN-KEYWORD,instagram,📺 Youtube Nodes
-  - DOMAIN-KEYWORD,youtube,📺 Youtube Nodes
+  - DOMAIN-KEYWORD,googlevideo,📺 YouTube Nodes
+  - DOMAIN-KEYWORD,instagram,📺 YouTube Nodes
+  - DOMAIN-KEYWORD,youtube,📺 YouTube Nodes
 
   # ---------------------------------------------------------------------------
   # 🌏 Regional Nodes
@@ -1016,3 +1033,4 @@ rules:
 # 162.159.58.141    4     4     0.00    120.84       34.66        SIN
 # 162.159.39.133    4     4     0.00    86.01        33.13        NRT
 # 162.159.45.14     4     4     0.00    85.88        23.86        NRT
+

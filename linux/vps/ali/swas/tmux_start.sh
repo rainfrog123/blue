@@ -2,7 +2,7 @@
 # Launch SWAS auto-reboot in tmux session
 # Usage: ./tmux_start.sh
 
-SESSION="reboot_swas"
+SESSION="ali_swas"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Kill existing session if any
