@@ -109,22 +109,39 @@ print_success "Shadowsocks-rust running on port 12033"
 print_info "Method: chacha20-ietf-poly1305 | Mode: tcp_and_udp"
 
 # ============================================================================
-# TCP BBR CONGESTION CONTROL
+# TCP BBR & NETWORK OPTIMIZATION
 # ============================================================================
-print_header "TCP BBR OPTIMIZATION"
+print_header "TCP BBR & NETWORK OPTIMIZATION"
 
 print_step "Loading BBR kernel module..."
-sudo touch /etc/sysctl.conf
 sudo modprobe tcp_bbr
 
-print_step "Configuring BBR settings..."
-echo "net.core.default_qdisc = fq" | sudo tee -a /etc/sysctl.conf > /dev/null
-echo "net.ipv4.tcp_congestion_control = bbr" | sudo tee -a /etc/sysctl.conf > /dev/null
+print_step "Configuring network optimizations..."
+sudo tee /etc/sysctl.d/99-network-tuning.conf > /dev/null <<EOF
+# BBR congestion control
+net.core.default_qdisc = fq
+net.ipv4.tcp_congestion_control = bbr
+
+# Disable slow start after idle
+net.ipv4.tcp_slow_start_after_idle = 0
+
+# Increase network buffer sizes (16MB max)
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+
+# TCP buffer auto-tuning (min, default, max)
+net.ipv4.tcp_rmem = 4096 1048576 16777216
+net.ipv4.tcp_wmem = 4096 1048576 16777216
+
+# TCP Fast Open (both directions)
+net.ipv4.tcp_fastopen = 3
+EOF
 
 print_step "Applying sysctl settings..."
-sudo sysctl -p
+sudo sysctl --system
 
-print_success "BBR congestion control enabled"
+print_success "BBR and network optimizations enabled"
+print_info "Buffer sizes: 16MB max | TCP Fast Open: bidirectional"
 
 # ============================================================================
 # GIT REPOSITORY SETUP
