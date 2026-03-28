@@ -1,5 +1,5 @@
 # =============================================================================
-# DNS Configuration
+# DNS Configuration (commented out)
 # =============================================================================
 dns:
   enable: true
@@ -76,7 +76,8 @@ proxies:
   # ---------------------------------------------------------------------------
   - name: ali_sg_tj
     type: trojan
-    server: 162.159.62.17
+    # server: 162.159.62.17
+    server: 172.64.158.247
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -86,10 +87,12 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.site
+    udp: true
 
   - name: ali_jp_tj
     type: trojan
-    server: 108.162.198.20
+    server: 162.159.44.32 
+    # server: 108.162.198.20
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -99,6 +102,7 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.site
+    udp: true
 
   - name: ali_sg
     type: ss
@@ -106,13 +110,7 @@ proxies:
     port: 12033
     cipher: chacha20-ietf-poly1305
     password: bxsnucrgk6hfish
-
-  - name: azure_sg
-    type: ss
-    server: 52.230.97.159
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: bxsnucrgk6hfish
+    udp: true
 
   # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
@@ -260,27 +258,27 @@ proxies:
   # ---------------------------------------------------------------------------
   # Premium Trojan Nodes (Netflix/IDC)
   # ---------------------------------------------------------------------------
-  - {name: "🇭🇰TJ|HongKong C01|Direct", type: trojan, server: c94c96697608feb0b19460dbdf975869.node.tro.cac.cab, port: 43116, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇭🇰TJ|HongKong C01|Netflix", type: trojan, server: 8314c498f559cec0dc0de67df35440fb.node.tro.cac.cab, port: 48556, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇹🇼TJ|Taiwan C01|Netflix", type: trojan, server: 0d3f63bc4ea7a9562109c4e17fe2df80.node.tro.cac.cab, port: 42993, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tw.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇸🇬TJ|Singapore C01|Netflix", type: trojan, server: dd88c0acc756e1a9fac7f71acbd7c776.node.tro.cac.cab, port: 40161, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: sg.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇯🇵TJ|Japan C01|Netflix", type: trojan, server: c04987e0a9a07ee38475e57247889903.node.tro.cac.cab, port: 44867, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: jp.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇺🇸TJ|UnitedStates C01|Netflix", type: trojan, server: 583866b637c924a0c084a4a9d215cadc.node.tro.cac.cab, port: 45813, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: us.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇹🇭TJ|Thailand C01|IDC", type: trojan, server: f9bbc22364a6b092adbd547cd8dca149.node.tro.cac.cab, port: 44922, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: th.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇮🇩TJ|Indonesia C01|IDC", type: trojan, server: 474dbb21709659c8ff30a59717071df2.node.tro.cac.cab, port: 48108, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: id.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇷🇺TJ|Russia C01|IDC", type: trojan, server: c63aa080058da8d5d6a3cf6eb5613e81.node.tro.cac.cab, port: 45803, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ru.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇰🇷TJ|Korea C01|IDC", type: trojan, server: 74dcb39f46baa2d9650713fbe4a0e2aa.node.tro.cac.cab, port: 42312, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kr.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇬🇧TJ|UK C01|IDC", type: trojan, server: dc0b54ad3d3de0e2bb722afda6af04b0.node.tro.cac.cab, port: 41760, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gb.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇩🇪TJ|Germany C01|IDC", type: trojan, server: b556d7246704f54cfd10fb230666da70.node.tro.cac.cab, port: 42322, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇫🇷TJ|France C01|IDC", type: trojan, server: 631e433f1a7cef9f6bbdad0a1d5d4794.node.tro.cac.cab, port: 45545, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇲🇾TJ|Malaysia C01|IDC", type: trojan, server: 89e7001c4210234ef08c98e316cbef24.node.tro.cac.cab, port: 46359, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: my.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇵🇭TJ|Philippines C01|IDC", type: trojan, server: 7ab345a28485819195f36c9669956289.node.tro.cac.cab, port: 40515, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ph.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇨🇦TJ|Canada C01|IDC", type: trojan, server: be645cda0e1d8bbef318ba385e7c4ae9.node.tro.cac.cab, port: 41134, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ca.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇦🇺TJ|Australia C01|IDC", type: trojan, server: 41d1fe730288ddbde7f22e7dd0f1ed4c.node.tro.cac.cab, port: 48000, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: au.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇮🇳TJ|India C01|IDC", type: trojan, server: 0ba0e7cbbfc42b8cccda1202a982d5fd.node.tro.cac.cab, port: 45509, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: in.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇹🇷TJ|Turkey C01|IDC", type: trojan, server: 8ef889b7a00496cd2c3ec8ce34c06019.node.tro.cac.cab, port: 44462, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tr.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇦🇷TJ|Argentina C01|IDC", type: trojan, server: fd24f780f5af50e4dda8d7e484f7649d.node.tro.cac.cab, port: 47352, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ar.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: "🇧🇷TJ|Brazil C01|IDC", type: trojan, server: 85f3efa9970bdf25e1a2323ed83971c9.node.tro.cac.cab, port: 45852, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: br.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇭🇰TJ|HongKong C01|Direct", type: trojan, server: 0fc979998b0bf506cc7a23ab6399cde4.node.tro.cac.cab, port: 46261, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇭🇰TJ|HongKong C01|Netflix", type: trojan, server: 4dff50415152978a0eec7c7b6fc170d1.node.tro.cac.cab, port: 47972, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇹🇼TJ|Taiwan C01|Netflix", type: trojan, server: 97b270ccb80e9bcd44ad034a75e34244.node.tro.cac.cab, port: 48223, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tw.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇸🇬TJ|Singapore C01|Netflix", type: trojan, server: f1f8215141690db6d86a2337eb740e92.node.tro.cac.cab, port: 48470, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: sg.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇯🇵TJ|Japan C01|Netflix", type: trojan, server: fe4902c710a2c62d53abe14c4dd1e42b.node.tro.cac.cab, port: 45498, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: jp.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇺🇸TJ|UnitedStates C01|Netflix", type: trojan, server: c9bf25069be9a65b4555220e1838c3ff.node.tro.cac.cab, port: 44545, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: us.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇹🇭TJ|Thailand C01|IDC", type: trojan, server: 0f29191c9aed24df0d635aa5c0b486ba.node.tro.cac.cab, port: 41033, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: th.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇮🇩TJ|Indonesia C01|IDC", type: trojan, server: 00d0c7e983627b559d532b367bf56275.node.tro.cac.cab, port: 42958, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: id.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇷🇺TJ|Russia C01|IDC", type: trojan, server: 4d41577069d6666e45258b7532abae33.node.tro.cac.cab, port: 43653, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ru.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇰🇷TJ|Korea C01|IDC", type: trojan, server: 817e92ce42bab1777b25acd778b81897.node.tro.cac.cab, port: 46299, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kr.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇬🇧TJ|UK C01|IDC", type: trojan, server: 0628ea7cb0954bbe4c93b5fcd1c8d54a.node.tro.cac.cab, port: 44971, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gb.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇩🇪TJ|Germany C01|IDC", type: trojan, server: 651e04423b4f928df4278557692803e8.node.tro.cac.cab, port: 45544, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇫🇷TJ|France C01|IDC", type: trojan, server: 9fd52c9685cc2b2dbc813dce990f3abf.node.tro.cac.cab, port: 48423, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇲🇾TJ|Malaysia C01|IDC", type: trojan, server: c4932d4024ec1fbec5ca131acacdb86b.node.tro.cac.cab, port: 40028, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: my.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇵🇭TJ|Philippines C01|IDC", type: trojan, server: d90177679fc74d7673ebee3ea480bc7e.node.tro.cac.cab, port: 48162, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ph.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇨🇦TJ|Canada C01|IDC", type: trojan, server: 91f49d8a2a78b6665cac86d2afbc70b0.node.tro.cac.cab, port: 46860, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ca.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇦🇺TJ|Australia C01|IDC", type: trojan, server: 47d3b91d577ec6ffee507f1fd5cec356.node.tro.cac.cab, port: 40248, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: au.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇮🇳TJ|India C01|IDC", type: trojan, server: 4b4c3c44276ab23baa3c2001ac427111.node.tro.cac.cab, port: 44956, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: in.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇹🇷TJ|Turkey C01|IDC", type: trojan, server: 8b842e73b7d48333c617fcfbc112e93d.node.tro.cac.cab, port: 42200, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tr.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇦🇷TJ|Argentina C01|IDC", type: trojan, server: 5120961c556caab73ef57f70f0988fb4.node.tro.cac.cab, port: 42424, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ar.01.naiun.bilibili.com, skip-cert-verify: true}
+  - {name: "🇧🇷TJ|Brazil C01|IDC", type: trojan, server: 5271e23bb7215c3f45fbe105811fd842.node.tro.cac.cab, port: 49427, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: br.01.naiun.bilibili.com, skip-cert-verify: true}
 
 # =============================================================================
 # Proxy Groups
@@ -296,7 +294,6 @@ proxy-groups:
       - ali_sg_tj
       - ali_jp_tj
       - ali_sg
-      - azure_sg
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇭🇰SS|HongKongD01|IPLC x3
       - 🇭🇰V2|HongKongB01|IPLC x3
@@ -383,6 +380,8 @@ proxy-groups:
       - 🇺🇸SS|UnitedStatesD01|IPLC x3
       - 🇹🇭SS|ThailandB01|IPLC x3
       - 🇹🇭SS|ThailandD01|IPLC x3
+      - 🇲🇴SS|MacauB01|IPLC x3
+      - 🇲🇴SS|MacauD01|IPLC x3
       - 🇭🇰TJ|HongKong C01|Netflix
       - 🇸🇬TJ|Singapore C01|Netflix
       - 🇯🇵TJ|Japan C01|Netflix
@@ -928,6 +927,11 @@ rules:
   - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
 
   # ---------------------------------------------------------------------------
+  # 🎮 Gaming Process Rules
+  # ---------------------------------------------------------------------------
+  - PROCESS-NAME,com.riotgames.league.teamfighttactics,🚀 Node Selection
+
+  # ---------------------------------------------------------------------------
   # 🎰 Stake Nodes
   # ---------------------------------------------------------------------------
   - DOMAIN-KEYWORD,cidbopixq,🎰 Stake Nodes
@@ -948,6 +952,8 @@ rules:
   # ---------------------------------------------------------------------------
   # 🌏 Regional Nodes
   # ---------------------------------------------------------------------------
+  # 🇹🇼 Taiwan
+  - DOMAIN-KEYWORD,certipedia,🇹🇼 Taiwan Nodes
   # 🇯🇵 Japan
   - DOMAIN-KEYWORD,bybit,🇯🇵 Japan Nodes
   - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
@@ -969,6 +975,7 @@ rules:
   - DOMAIN-KEYWORD,ipqualityscore,DIRECT
   - IP-CIDR,101.124.19.122/32,DIRECT,no-resolve
   - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
+  - PROCESS-NAME,cfst.exe,DIRECT
 
   # ---------------------------------------------------------------------------
   # 🚫 Reject Rules
