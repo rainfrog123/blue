@@ -76,8 +76,8 @@ proxies:
   # ---------------------------------------------------------------------------
   - name: ali_sg_tj
     type: trojan
-    # server: 162.159.62.17
-    server: 172.64.158.247
+    # server: 172.64.158.247
+    server: 162.159.25.200
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -115,14 +115,15 @@ proxies:
   # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
   # ---------------------------------------------------------------------------
-  # 108.162.198.20   88ms  40.59MB/s NRT | 162.159.45.174  85ms 38.98MB/s NRT
-  # 172.64.53.225    85ms  36.77MB/s NRT | 162.159.38.181  86ms 34.21MB/s NRT
-  # 162.159.62.17   121ms  32.34MB/s SIN | 162.159.39.145  84ms 31.09MB/s NRT
-  # 172.64.52.126    87ms  29.79MB/s NRT
+  # 162.159.39.30    87ms  50.56MB/s NRT | 162.159.25.200 123ms 45.18MB/s SIN
+  # 172.64.52.237    88ms  44.60MB/s NRT | 162.159.33.45  122ms 39.51MB/s SIN
+  # 172.64.40.7     123ms  33.40MB/s SIN | 162.159.45.165  87ms 33.26MB/s NRT
+  # 162.159.24.96   122ms  28.96MB/s SIN | 162.159.38.201  84ms 24.50MB/s NRT
+  # 108.162.198.65   88ms  14.95MB/s NRT
   # ---------------------------------------------------------------------------
-  - name: "🇯🇵CF|NRT01|40MB/s"
+  - name: "🇯🇵CF|NRT01|50MB/s"
     type: trojan
-    server: 108.162.198.20
+    server: 162.159.39.30
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -133,9 +134,9 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇯🇵CF|NRT02|38MB/s"
+  - name: "🇸🇬CF|SIN01|45MB/s"
     type: trojan
-    server: 162.159.45.174
+    server: 162.159.25.200
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -146,9 +147,9 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇯🇵CF|NRT03|36MB/s"
+  - name: "🇯🇵CF|NRT02|44MB/s"
     type: trojan
-    server: 172.64.53.225
+    server: 172.64.52.237
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -159,9 +160,9 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇯🇵CF|NRT04|34MB/s"
+  - name: "🇸🇬CF|SIN02|39MB/s"
     type: trojan
-    server: 162.159.38.181
+    server: 162.159.33.45
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -172,9 +173,9 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇸🇬CF|SIN01|32MB/s"
+  - name: "🇸🇬CF|SIN03|33MB/s"
     type: trojan
-    server: 162.159.62.17
+    server: 172.64.40.7
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -185,9 +186,9 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇯🇵CF|NRT05|31MB/s"
+  - name: "🇯🇵CF|NRT03|33MB/s"
     type: trojan
-    server: 162.159.39.145
+    server: 162.159.45.165
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -198,9 +199,35 @@ proxies:
       headers:
         Host: x.hyas.site
 
-  - name: "🇯🇵CF|NRT06|29MB/s"
+  - name: "🇸🇬CF|SIN04|28MB/s"
     type: trojan
-    server: 172.64.52.126
+    server: 162.159.24.96
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.site
+
+  - name: "🇯🇵CF|NRT04|24MB/s"
+    type: trojan
+    server: 162.159.38.201
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.site
+
+  - name: "🇯🇵CF|NRT05|14MB/s"
+    type: trojan
+    server: 108.162.198.65
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -390,13 +417,15 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
-      - 🇸🇬CF|SIN01|32MB/s
-      - 🇯🇵CF|NRT01|40MB/s
-      - 🇯🇵CF|NRT02|38MB/s
-      - 🇯🇵CF|NRT03|36MB/s
-      - 🇯🇵CF|NRT04|34MB/s
-      - 🇯🇵CF|NRT05|31MB/s
-      - 🇯🇵CF|NRT06|29MB/s
+      - 🇯🇵CF|NRT01|50MB/s
+      - 🇸🇬CF|SIN01|45MB/s
+      - 🇯🇵CF|NRT02|44MB/s
+      - 🇸🇬CF|SIN02|39MB/s
+      - 🇸🇬CF|SIN03|33MB/s
+      - 🇯🇵CF|NRT03|33MB/s
+      - 🇸🇬CF|SIN04|28MB/s
+      - 🇯🇵CF|NRT04|24MB/s
+      - 🇯🇵CF|NRT05|14MB/s
       - ali_sg_tj
 
   - name: 🖥️ Cursor Website Nodes
@@ -1023,21 +1052,14 @@ rules:
 # Reference: Cloudflare IP Test Results
 # =============================================================================
 # IP Address        Sent  Recv  Loss    Latency(ms)  Speed(MB/s)  Region
-# 108.162.198.20    4     4     0.00    88.51        40.59        NRT
-# 162.159.45.174    4     4     0.00    85.42        38.98        NRT
-# 172.64.53.225     4     4     0.00    85.40        36.77        NRT
-# 162.159.38.181    4     4     0.00    85.90        34.21        NRT
-# 162.159.62.17     4     4     0.00    120.90       32.34        SIN
-# 162.159.39.145    4     4     0.00    84.42        31.09        NRT
-# 172.64.52.126     4     4     0.00    86.79        29.79        NRT
-#
-# XIU2/CloudflareSpeedTest v2.3.4 - 2026-03-12
-# IP Address        Sent  Recv  Loss    Latency(ms)  Speed(MB/s)  Region
-# 172.64.53.216     4     4     0.00    108.01       40.49        NRT
-# 162.159.38.128    4     4     0.00    86.01        36.75        NRT
-# 162.159.44.115    4     4     0.00    90.91        34.81        NRT
-# 108.162.198.202   4     4     0.00    86.78        34.76        NRT
-# 162.159.58.141    4     4     0.00    120.84       34.66        SIN
-# 162.159.39.133    4     4     0.00    86.01        33.13        NRT
-# 162.159.45.14     4     4     0.00    85.88        23.86        NRT
+# 162.159.39.30     4     4     0.00    87.05        50.56        NRT
+# 162.159.25.200    4     4     0.00    122.63       45.18        SIN
+# 172.64.52.237     4     4     0.00    88.10        44.60        NRT
+# 162.159.33.45     4     4     0.00    122.01       39.51        SIN
+# 172.64.40.7       4     4     0.00    122.60       33.40        SIN
+# 162.159.45.165    4     4     0.00    86.98        33.26        NRT
+# 162.159.24.96     4     4     0.00    122.02       28.96        SIN
+# 162.159.38.201    4     4     0.00    84.46        24.50        NRT
+# 108.162.198.65    4     4     0.00    88.23        14.95        NRT
+# 104.29.128.0      4     3     0.25    251.55       0.00         N/A
 
