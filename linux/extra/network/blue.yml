@@ -945,6 +945,7 @@ rules:
   # 🇺🇸 United States
   - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
+  - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,links.com,🇺🇸 United States Nodes
 
   # ---------------------------------------------------------------------------
