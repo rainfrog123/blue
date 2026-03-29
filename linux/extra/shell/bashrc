@@ -59,8 +59,7 @@ alias ftc='cd /allah/freqtrade/freqtrade'
 alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
 
 # ft/*
-alias bi='cd /allah/blue/ft/binance'
-alias ind='cd /allah/blue/ft/indicators'
+alias bi='cd /allah/blue/ft/tools/binance'
 alias ml='cd /allah/blue/ft/ml'
 alias to='cd /allah/blue/ft/tools'
 alias ud='cd /allah/blue/ft/user_data'
@@ -76,9 +75,7 @@ alias rtv='cd /allah/blue/ft/tools/realtime/tradingview'
 alias cf='cd /allah/blue/ft/user_data/config'
 alias hr='cd /allah/blue/ft/user_data/hyperopt_results'
 alias hy='cd /allah/blue/ft/user_data/hyperopts'
-alias md='cd /allah/blue/ft/user_data/models'
 alias nb='cd /allah/blue/ft/user_data/notebooks'
-alias sc='cd /allah/blue/ft/user_data/scripts'
 alias st='cd /allah/blue/ft/user_data/strategies'
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -100,10 +97,6 @@ alias nt='cd /allah/blue/linux/extra/notes'
 alias exsc='cd /allah/blue/linux/extra/scripts'
 alias sh='cd /allah/blue/linux/extra/shell'
 
-# linux/extra/scripts/*
-alias exli='cd /allah/blue/linux/extra/scripts/linode'
-alias ut='cd /allah/blue/linux/extra/scripts/utilities'
-
 # linux/vps/*
 alias ali='cd /allah/blue/linux/vps/ali'
 alias aw='cd /allah/blue/linux/vps/aws'
@@ -122,7 +115,7 @@ alias ecs='cd /allah/blue/linux/vps/ali/ecs'
 alias se='cd /allah/blue/linux/vps/ali/setup'
 
 # linux/vps/setup/*
-alias ssr='cd /allah/blue/linux/vps/setup/ssr_deploy'
+alias ssr='cd /allah/blue/linux/vps/setup/ssr-deploy'
 
 # linux/vps/linode/*
 alias lm='cd /allah/blue/linux/vps/linode/manager'
@@ -134,23 +127,17 @@ alias lnsc='cd /allah/blue/linux/vps/linode/scripts'
 # web/*
 alias ap='cd /allah/blue/web/apps'
 alias au='cd /allah/blue/web/auto'
-alias cl='cd /allah/blue/web/cloud'
+alias cl='cd /allah/blue/linux/extra/network'
 alias mo='cd /allah/blue/web/monitors'
 alias px='cd /allah/blue/web/proxy'
 
 # web/apps/*
-alias ac='cd /allah/blue/web/apps/alt_calculator'
-alias ba='cd /allah/blue/web/apps/baccarat'
+alias ac='cd /allah/blue/web/apps/alt'
+alias ba='cd /allah/blue/web/apps/stake/baccarat'
+alias bj='cd /allah/blue/web/apps/stake/blackjack'
+alias sk='cd /allah/blue/web/apps/stake'
 alias tm='cd /allah/blue/web/apps/tampermonkey'
-alias tampermonkey='cd /allah/blue/web/apps/tampermonkey'
 alias ti='cd /allah/blue/web/apps/tinder'
-alias tinder='cd /allah/blue/web/apps/tinder'
-
-# web/apps/baccarat/*
-alias baco='cd /allah/blue/web/apps/baccarat/core'
-alias bade='cd /allah/blue/web/apps/baccarat/debug'
-alias le='cd /allah/blue/web/apps/baccarat/legacy'
-alias bast='cd /allah/blue/web/apps/baccarat/static'
 
 # web/apps/tampermonkey/*
 alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'
@@ -160,21 +147,13 @@ alias tida='cd /allah/blue/web/apps/tinder/data'
 alias tisc='cd /allah/blue/web/apps/tinder/scripts'
 
 # web/auto/*
-alias ca='cd /allah/blue/web/auto/camoufox'
-alias nd='cd /allah/blue/web/auto/nodriver'
+alias hs='cd /allah/blue/web/auto/herosms'
 alias oc='cd /allah/blue/web/auto/octo'
-alias pr='cd /allah/blue/web/auto/patchright'
-alias zd='cd /allah/blue/web/auto/zendriver'
+alias wo='cd /allah/blue/web/auto/worker'
 
 # web/auto/octo/*
-alias oau='cd /allah/blue/web/auto/octo/automation'
-alias ohi='cd /allah/blue/web/auto/octo/hid'
 alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'
-alias ossl='cd /allah/blue/web/auto/octo/ssl_pinning'
-
-# web/auto/zendriver/*
-alias hs='cd /allah/blue/web/auto/zendriver/herosms'
-alias wo='cd /allah/blue/web/auto/zendriver/worker'
+alias ossl='cd /allah/blue/web/auto/octo/reverse_engineering/ssl'
 
 # web/monitors/*
 alias hu='cd /allah/blue/web/monitors/huaxitong'
@@ -218,10 +197,7 @@ alias bashrc='cursor /allah/blue/linux/extra/shell/bashrc'
 alias cls='clear'
 alias code='cursor'
 alias diskspace='df -h'
-alias ipc='/allah/blue/web/proxy/decodo/ip_checker.sh'
 alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
-alias note='cursor /allah/blue/ft/note'
-alias octo='/allah/blue/web/auto/octo/hid/hid_spoofer.sh --start'
+alias note='cursor /allah/blue/ft/notes'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
-alias cl="cd /allah/blue/linux/extra/network"
