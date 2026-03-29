@@ -1,5 +1,5 @@
 # =============================================================================
-# DNS Configuration (Encrypted DNS - ISP interception resistant)
+# DNS Configuration (commented out)
 # =============================================================================
 dns:
   enable: true
@@ -27,27 +27,28 @@ dns:
     - "*.msftconnecttest.com"
     - "WORKGROUP"
 
-  # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
+  # Default DNS (bootstrap - must be plain IP, for resolving DoH domains)
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
 
-  # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
+  # Primary DNS (domestic China - fast, no GFW issues)
   nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-    - tls://dns.alidns.com:853
+    - 223.5.5.5
+    - 223.6.6.6
+    - 119.29.29.29
 
-  # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
+  # Fallback DNS (domestic China - same as nameserver since we use fake-ip)
+  # With fake-ip mode, actual foreign DNS resolution happens through proxy
   fallback:
-    - https://1.1.1.1/dns-query
-    - https://dns.google/dns-query
-    - https://cloudflare-dns.com/dns-query
+    - 223.5.5.5
+    - 223.6.6.6
+    - 119.29.29.29
 
-  # DNS for proxy servers (DoH - protects proxy hostname resolution)
+  # DNS for proxy servers (resolves proxy server hostnames)
   proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
+    - 223.5.5.5
+    - 119.29.29.29
 
   # Fallback filter - route China IPs to nameserver, others to fallback
   fallback-filter:
