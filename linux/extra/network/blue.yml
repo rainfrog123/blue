@@ -286,14 +286,7 @@ proxy-groups:
       - ali_sg_tj
       - ali_jp_tj
       - ali_sg
-      # CF Nodes
-      - ali_jp_tj_2
-      - ali_jp_tj_3
-      - ali_jp_tj_4
-      - ali_sg_tj_2
-      - ali_jp_tj_5
-      - ali_jp_tj_6
-      # IPLC (one per region)
+      - ☁️ Cloudflare CF Nodes
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
       - 🇸🇬SS|SingaporeB01|IPLC x3
@@ -301,7 +294,6 @@ proxy-groups:
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
       - 🇹🇭SS|ThailandB01|IPLC x3
       - 🇲🇴SS|MacauB01|IPLC x3
-      # TJ Nodes
       - 🇭🇰TJ|HongKong C01|Netflix
       - 🇸🇬TJ|Singapore C01|Netflix
       - 🇯🇵TJ|Japan C01|Netflix
