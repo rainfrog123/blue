@@ -1,70 +1,70 @@
 # =============================================================================
 # DNS Configuration (Encrypted DNS - ISP interception resistant)
 # =============================================================================
-dns:
-  enable: true
-  listen: 0.0.0.0:53
-  ipv6: false
-  use-hosts: true
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  fake-ip-filter:
-    - "*.lan"
-    - "*.local"
-    - "*.localhost"
-    - "localhost.ptlogin2.qq.com"
-    - "+.ntp.org"
-    - "ntp.org"
-    - "+.stun.*.*"
-    - "+.stun.*.*.*"
-    - "+.stun.*.*.*.*"
-    - "+.stun.*.*.*.*.*"
-    - "*.nintendo.net"
-    - "+.stun.playstation.net"
-    - "xbox.*.*.microsoft.com"
-    - "*.*.xboxlive.com"
-    - "*.msftncsi.com"
-    - "*.msftconnecttest.com"
-    - "WORKGROUP"
-
-  # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
-  default-nameserver:
-    - 223.5.5.5
-    - 119.29.29.29
-
-  # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
-  nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-    - tls://dns.alidns.com:853
-
-  # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
-  fallback:
-    - https://1.1.1.1/dns-query
-    - https://dns.google/dns-query
-    - https://cloudflare-dns.com/dns-query
-
-  # DNS for proxy servers (DoH - protects proxy hostname resolution)
-  proxy-server-nameserver:
-    - https://dns.alidns.com/dns-query
-    - https://doh.pub/dns-query
-
-  # Fallback filter - route China IPs to nameserver, others to fallback
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
-    ipcidr:
-      - 240.0.0.0/4
-      - 0.0.0.0/32
-      - 127.0.0.1/32
-    domain:
-      - "+.google.com"
-      - "+.facebook.com"
-      - "+.youtube.com"
-      - "+.twitter.com"
-      - "+.github.com"
-      - "+.googleapis.com"
-      - "+.gstatic.com"
+# dns:
+#   enable: true
+#   listen: 0.0.0.0:53
+#   ipv6: false
+#   use-hosts: true
+#   enhanced-mode: fake-ip
+#   fake-ip-range: 198.18.0.1/16
+#   fake-ip-filter:
+#     - "*.lan"
+#     - "*.local"
+#     - "*.localhost"
+#     - "localhost.ptlogin2.qq.com"
+#     - "+.ntp.org"
+#     - "ntp.org"
+#     - "+.stun.*.*"
+#     - "+.stun.*.*.*"
+#     - "+.stun.*.*.*.*"
+#     - "+.stun.*.*.*.*.*"
+#     - "*.nintendo.net"
+#     - "+.stun.playstation.net"
+#     - "xbox.*.*.microsoft.com"
+#     - "*.*.xboxlive.com"
+#     - "*.msftncsi.com"
+#     - "*.msftconnecttest.com"
+#     - "WORKGROUP"
+#
+#   # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
+#   default-nameserver:
+#     - 223.5.5.5
+#     - 119.29.29.29
+#
+#   # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
+#   nameserver:
+#     - https://dns.alidns.com/dns-query
+#     - https://doh.pub/dns-query
+#     - tls://dns.alidns.com:853
+#
+#   # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
+#   fallback:
+#     - https://1.1.1.1/dns-query
+#     - https://dns.google/dns-query
+#     - https://cloudflare-dns.com/dns-query
+#
+#   # DNS for proxy servers (DoH - protects proxy hostname resolution)
+#   proxy-server-nameserver:
+#     - https://dns.alidns.com/dns-query
+#     - https://doh.pub/dns-query
+#
+#   # Fallback filter - route China IPs to nameserver, others to fallback
+#   fallback-filter:
+#     geoip: true
+#     geoip-code: CN
+#     ipcidr:
+#       - 240.0.0.0/4
+#       - 0.0.0.0/32
+#       - 127.0.0.1/32
+#     domain:
+#       - "+.google.com"
+#       - "+.facebook.com"
+#       - "+.youtube.com"
+#       - "+.twitter.com"
+#       - "+.github.com"
+#       - "+.googleapis.com"
+#       - "+.gstatic.com"
 
 # =============================================================================
 # Proxies
