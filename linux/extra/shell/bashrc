@@ -42,6 +42,7 @@ HISTCONTROL=ignoreboth:erasedups
 alias al='cd /allah'
 alias bl='cd /allah/blue'
 alias fq='cd /allah/freqtrade'
+alias me='cd /media'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # /allah/blue/* (top level)
