@@ -37,41 +37,45 @@ HISTCONTROL=ignoreboth:erasedups
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Core
+# Root
 # ─────────────────────────────────────────────────────────────────────────────
 alias al='cd /allah'
 alias bl='cd /allah/blue'
-alias dt='cd /allah/data/ml'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /allah/blue/*
+# /allah/blue/* (top level)
 # ─────────────────────────────────────────────────────────────────────────────
+alias ft='cd /allah/blue/ft'
 alias li='cd /allah/blue/linux'
 alias we='cd /allah/blue/web'
-alias web='cd /allah/blue/web'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Freqtrade: /allah/freqtrade & /allah/blue/ft
+# /allah/blue/ft/*
 # ─────────────────────────────────────────────────────────────────────────────
-alias fq='cd /allah/freqtrade'
-alias ft='cd /allah/blue/ft'
-alias ftc='cd /allah/freqtrade/freqtrade'
-alias usdt='cd /allah/freqtrade/user_data/data/binance/futures'
-
-# ft/*
-alias bi='cd /allah/blue/ft/tools/binance'
+alias hb='cd /allah/blue/ft/hummingbot'
 alias ml='cd /allah/blue/ft/ml'
+alias ftn='cd /allah/blue/ft/notes'
+alias rs='cd /allah/blue/ft/research'
+alias ftsc='cd /allah/blue/ft/scripts'
 alias to='cd /allah/blue/ft/tools'
 alias ud='cd /allah/blue/ft/user_data'
 
-# ft/tools/*
+# /allah/blue/ft/research/*
+alias exec='cd /allah/blue/ft/research/execution'
+alias lag='cd /allah/blue/ft/research/lead_lag'
+alias mm='cd /allah/blue/ft/research/market_making'
+alias mr='cd /allah/blue/ft/research/mean_reversion'
+alias ofi='cd /allah/blue/ft/research/ofi'
+
+# /allah/blue/ft/tools/*
+alias bi='cd /allah/blue/ft/tools/binance'
 alias cv='cd /allah/blue/ft/tools/converters'
 alias hi='cd /allah/blue/ft/tools/historical'
 alias re='cd /allah/blue/ft/tools/realtime'
 alias cc='cd /allah/blue/ft/tools/realtime/ccxt'
 alias rtv='cd /allah/blue/ft/tools/realtime/tradingview'
 
-# ft/user_data/*
+# /allah/blue/ft/user_data/*
 alias cf='cd /allah/blue/ft/user_data/config'
 alias hr='cd /allah/blue/ft/user_data/hyperopt_results'
 alias hy='cd /allah/blue/ft/user_data/hyperopts'
@@ -79,89 +83,85 @@ alias nb='cd /allah/blue/ft/user_data/notebooks'
 alias st='cd /allah/blue/ft/user_data/strategies'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Linux: /allah/blue/linux
+# /allah/blue/linux/*
 # ─────────────────────────────────────────────────────────────────────────────
-# linux/*
 alias ex='cd /allah/blue/linux/extra'
-alias extra='cd /allah/blue/linux/extra'
 alias vp='cd /allah/blue/linux/vps'
-alias vps='cd /allah/blue/linux/vps'
 
-# linux/extra/*
+# /allah/blue/linux/extra/*
 alias excf='cd /allah/blue/linux/extra/config'
 alias cu='cd /allah/blue/linux/extra/cursor'
-alias cur='cd /allah/blue/linux/extra/cursor'
 alias ip='cd /allah/blue/linux/extra/iphone'
 alias ne='cd /allah/blue/linux/extra/network'
 alias nt='cd /allah/blue/linux/extra/notes'
 alias exsc='cd /allah/blue/linux/extra/scripts'
 alias sh='cd /allah/blue/linux/extra/shell'
 
-# linux/vps/*
+# /allah/blue/linux/vps/*
 alias ali='cd /allah/blue/linux/vps/ali'
 alias aw='cd /allah/blue/linux/vps/aws'
-alias aws='cd /allah/blue/linux/vps/aws'
 alias az='cd /allah/blue/linux/vps/azure'
-alias gcvps='cd /allah/blue/linux/vps/gcp'
+alias digi='cd /allah/blue/linux/vps/digi'
 alias gcp='cd /allah/blue/linux/vps/gcp'
-alias lnvps='cd /allah/blue/linux/vps/linode'
+alias ln='cd /allah/blue/linux/vps/linode'
 alias vpse='cd /allah/blue/linux/vps/setup'
 alias vu='cd /allah/blue/linux/vps/vultr'
 
-# linux/vps/ali/*
+# /allah/blue/linux/vps/ali/*
 alias alicf='cd /allah/blue/linux/vps/ali/config'
 alias ec='cd /allah/blue/linux/vps/ali/ecs'
-alias ecs='cd /allah/blue/linux/vps/ali/ecs'
-alias se='cd /allah/blue/linux/vps/ali/setup'
+alias alise='cd /allah/blue/linux/vps/ali/setup'
 
-# linux/vps/setup/*
-alias ssr='cd /allah/blue/linux/vps/setup/ssr-deploy'
-
-# linux/vps/linode/*
+# /allah/blue/linux/vps/linode/*
 alias lm='cd /allah/blue/linux/vps/linode/manager'
 alias lnsc='cd /allah/blue/linux/vps/linode/scripts'
 
+# /allah/blue/linux/vps/setup/*
+alias ssr='cd /allah/blue/linux/vps/setup/ssr-deploy'
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Web: /allah/blue/web
+# /allah/blue/web/*
 # ─────────────────────────────────────────────────────────────────────────────
-# web/*
 alias ap='cd /allah/blue/web/apps'
 alias au='cd /allah/blue/web/auto'
-alias cl='cd /allah/blue/linux/extra/network'
 alias mo='cd /allah/blue/web/monitors'
 alias px='cd /allah/blue/web/proxy'
 
-# web/apps/*
+# /allah/blue/web/apps/*
 alias ac='cd /allah/blue/web/apps/alt'
-alias ba='cd /allah/blue/web/apps/stake/baccarat'
-alias bj='cd /allah/blue/web/apps/stake/blackjack'
 alias sk='cd /allah/blue/web/apps/stake'
 alias tm='cd /allah/blue/web/apps/tampermonkey'
 alias ti='cd /allah/blue/web/apps/tinder'
 
-# web/apps/tampermonkey/*
+# /allah/blue/web/apps/stake/*
+alias ba='cd /allah/blue/web/apps/stake/baccarat'
+alias bj='cd /allah/blue/web/apps/stake/blackjack'
+
+# /allah/blue/web/apps/tampermonkey/*
 alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'
 
-# web/apps/tinder/*
+# /allah/blue/web/apps/tinder/*
 alias tida='cd /allah/blue/web/apps/tinder/data'
 alias tisc='cd /allah/blue/web/apps/tinder/scripts'
 
-# web/auto/*
+# /allah/blue/web/auto/*
+alias dom='cd /allah/blue/web/auto/domain'
+alias drv='cd /allah/blue/web/auto/drivers'
 alias hs='cd /allah/blue/web/auto/herosms'
 alias oc='cd /allah/blue/web/auto/octo'
 alias wo='cd /allah/blue/web/auto/worker'
 
-# web/auto/octo/*
+# /allah/blue/web/auto/octo/*
 alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'
 alias ossl='cd /allah/blue/web/auto/octo/reverse_engineering/ssl'
 
-# web/monitors/*
+# /allah/blue/web/monitors/*
 alias hu='cd /allah/blue/web/monitors/huaxitong'
 alias hx='cd /allah/blue/web/monitors/hxkq'
 
-# web/proxy/*
+# /allah/blue/web/proxy/*
 alias de='cd /allah/blue/web/proxy/decodo'
-alias decodo='cd /allah/blue/web/proxy/decodo'
+alias ipr='cd /allah/blue/web/proxy/iproyal'
 alias ra='cd /allah/blue/web/proxy/rayobyte'
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -177,17 +177,6 @@ alias gl='git pull'
 alias gp='git push'
 alias gs='git status'
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Freqtrade
-# ─────────────────────────────────────────────────────────────────────────────
-alias ftpy='source /allah/freqtrade/.venv/bin/activate'
-alias ftrun='/allah/freqtrade/.venv/bin/python3 /allah/freqtrade/freqtrade/main.py'
-
-# ─────────────────────────────────────────────────────────────────────────────
-# TensorBoard
-# ─────────────────────────────────────────────────────────────────────────────
-alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
-alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilities

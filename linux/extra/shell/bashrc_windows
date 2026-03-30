@@ -2,10 +2,8 @@
 # Adapted from Linux bashrc for Git Bash on Windows
 # To use: Add to your ~/.bashrc: source "$HOME/blue/linux/extra/shell/bashrc_windows"
 
-# === BASE PATHS ===
+# === BASE PATH ===
 BLUE_DIR="$HOME/blue"
-FREQTRADE_DIR="$HOME/Documents/freqtrade"  # Adjust if different
-DATA_DIR="$HOME/Documents/data"            # Adjust if different
 
 # === PROMPT ===
 if [ -n "$CURSOR_AGENT" ]; then
@@ -36,143 +34,153 @@ if [ -d "$HOME/.local/bin" ]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# === DIR: Core ===
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIRECTORY ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Root
+# ─────────────────────────────────────────────────────────────────────────────
 alias bl='cd "$BLUE_DIR"'
 
-# === DIR: Freqtrade ===
+# ─────────────────────────────────────────────────────────────────────────────
+# $BLUE_DIR/* (top level)
+# ─────────────────────────────────────────────────────────────────────────────
 alias ft='cd "$BLUE_DIR/ft"'
-alias ftc='cd "$FREQTRADE_DIR/freqtrade"'
-alias usdt='cd "$FREQTRADE_DIR/user_data/data/binance/futures"'
+alias li='cd "$BLUE_DIR/linux"'
+alias we='cd "$BLUE_DIR/web"'
 
-# === DIR: Data ===
-alias dt='cd "$DATA_DIR/ml"'
+# ─────────────────────────────────────────────────────────────────────────────
+# $BLUE_DIR/ft/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias hb='cd "$BLUE_DIR/ft/hummingbot"'
+alias ml='cd "$BLUE_DIR/ft/ml"'
+alias ftn='cd "$BLUE_DIR/ft/notes"'
+alias rs='cd "$BLUE_DIR/ft/research"'
+alias ftsc='cd "$BLUE_DIR/ft/scripts"'
+alias to='cd "$BLUE_DIR/ft/tools"'
+alias ud='cd "$BLUE_DIR/ft/user_data"'
 
-# ============================================================
-# === BLUE DIRECTORY ALIASES (auto-generated, 2-char rule) ===
-# ============================================================
+# $BLUE_DIR/ft/research/*
+alias exec='cd "$BLUE_DIR/ft/research/execution"'
+alias lag='cd "$BLUE_DIR/ft/research/lead_lag"'
+alias mm='cd "$BLUE_DIR/ft/research/market_making"'
+alias mr='cd "$BLUE_DIR/ft/research/mean_reversion"'
+alias ofi='cd "$BLUE_DIR/ft/research/ofi"'
 
-# --- Level 1: $BLUE_DIR/* ---
-alias fq='cd "$FREQTRADE_DIR"'                    # freqtrade
-alias li='cd "$BLUE_DIR/linux"'                   # linux
-alias we='cd "$BLUE_DIR/web"'                     # web
-alias web='cd "$BLUE_DIR/web"'                    # web (full)
+# $BLUE_DIR/ft/tools/*
+alias bi='cd "$BLUE_DIR/ft/tools/binance"'
+alias cv='cd "$BLUE_DIR/ft/tools/converters"'
+alias hi='cd "$BLUE_DIR/ft/tools/historical"'
+alias re='cd "$BLUE_DIR/ft/tools/realtime"'
+alias cc='cd "$BLUE_DIR/ft/tools/realtime/ccxt"'
+alias rtv='cd "$BLUE_DIR/ft/tools/realtime/tradingview"'
 
-# --- Level 2: $BLUE_DIR/ft/* ---
-alias bi='cd "$BLUE_DIR/ft/tools/binance"'        # binance (in tools)
-alias ml='cd "$BLUE_DIR/ft/ml"'                   # ml
-alias to='cd "$BLUE_DIR/ft/tools"'                # tools
-alias ud='cd "$BLUE_DIR/ft/user_data"'            # user_data
+# $BLUE_DIR/ft/user_data/*
+alias cf='cd "$BLUE_DIR/ft/user_data/config"'
+alias hr='cd "$BLUE_DIR/ft/user_data/hyperopt_results"'
+alias hy='cd "$BLUE_DIR/ft/user_data/hyperopts"'
+alias nb='cd "$BLUE_DIR/ft/user_data/notebooks"'
+alias st='cd "$BLUE_DIR/ft/user_data/strategies"'
 
-# --- Level 2: $BLUE_DIR/linux/* ---
-alias ex='cd "$BLUE_DIR/linux/extra"'             # extra
-alias extra='cd "$BLUE_DIR/linux/extra"'          # extra (full)
-alias vp='cd "$BLUE_DIR/linux/vps"'               # vps
-alias vps='cd "$BLUE_DIR/linux/vps"'              # vps (full)
+# ─────────────────────────────────────────────────────────────────────────────
+# $BLUE_DIR/linux/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias ex='cd "$BLUE_DIR/linux/extra"'
+alias vp='cd "$BLUE_DIR/linux/vps"'
 
-# --- Level 2: $BLUE_DIR/web/* ---
-alias ap='cd "$BLUE_DIR/web/apps"'                # apps
-alias au='cd "$BLUE_DIR/web/auto"'                # auto
-alias cl='cd "$BLUE_DIR/linux/extra/network"'     # network (from Linux bashrc)
-alias mo='cd "$BLUE_DIR/web/monitors"'            # monitors
-alias px='cd "$BLUE_DIR/web/proxy"'               # proxy
+# $BLUE_DIR/linux/extra/*
+alias excf='cd "$BLUE_DIR/linux/extra/config"'
+alias cu='cd "$BLUE_DIR/linux/extra/cursor"'
+alias ip='cd "$BLUE_DIR/linux/extra/iphone"'
+alias ne='cd "$BLUE_DIR/linux/extra/network"'
+alias nt='cd "$BLUE_DIR/linux/extra/notes"'
+alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'
+alias sh='cd "$BLUE_DIR/linux/extra/shell"'
 
-# --- Level 3: $BLUE_DIR/ft/tools/* ---
-alias cv='cd "$BLUE_DIR/ft/tools/converters"'         # converters
-alias hi='cd "$BLUE_DIR/ft/tools/historical"'         # historical
-alias re='cd "$BLUE_DIR/ft/tools/realtime"'           # realtime
-alias cc='cd "$BLUE_DIR/ft/tools/realtime/ccxt"'      # ccxt
-alias rtv='cd "$BLUE_DIR/ft/tools/realtime/tradingview"'  # tradingview
+# $BLUE_DIR/linux/vps/*
+alias ali='cd "$BLUE_DIR/linux/vps/ali"'
+alias aw='cd "$BLUE_DIR/linux/vps/aws"'
+alias az='cd "$BLUE_DIR/linux/vps/azure"'
+alias digi='cd "$BLUE_DIR/linux/vps/digi"'
+alias gcp='cd "$BLUE_DIR/linux/vps/gcp"'
+alias ln='cd "$BLUE_DIR/linux/vps/linode"'
+alias vpse='cd "$BLUE_DIR/linux/vps/setup"'
+alias vu='cd "$BLUE_DIR/linux/vps/vultr"'
 
-# --- Level 3: $BLUE_DIR/ft/user_data/* ---
-alias cf='cd "$BLUE_DIR/ft/user_data/config"'         # config
-alias hr='cd "$BLUE_DIR/ft/user_data/hyperopt_results"'   # hyperopt_results
-alias hy='cd "$BLUE_DIR/ft/user_data/hyperopts"'      # hyperopts
-alias nb='cd "$BLUE_DIR/ft/user_data/notebooks"'      # notebooks
-alias st='cd "$BLUE_DIR/ft/user_data/strategies"'     # strategies
+# $BLUE_DIR/linux/vps/ali/*
+alias alicf='cd "$BLUE_DIR/linux/vps/ali/config"'
+alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'
+alias alise='cd "$BLUE_DIR/linux/vps/ali/setup"'
 
-# --- Level 3: $BLUE_DIR/linux/extra/* ---
-alias excf='cd "$BLUE_DIR/linux/extra/config"'    # config (ex+cf)
-alias cu='cd "$BLUE_DIR/linux/extra/cursor"'      # cursor
-alias cur='cd "$BLUE_DIR/linux/extra/cursor"'     # cursor (alt)
-alias ip='cd "$BLUE_DIR/linux/extra/iphone"'      # iphone
-alias ne='cd "$BLUE_DIR/linux/extra/network"'     # network
-alias nt='cd "$BLUE_DIR/linux/extra/notes"'       # notes
-alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'   # scripts (ex+sc)
-alias sh='cd "$BLUE_DIR/linux/extra/shell"'       # shell
+# $BLUE_DIR/linux/vps/linode/*
+alias lm='cd "$BLUE_DIR/linux/vps/linode/manager"'
+alias lnsc='cd "$BLUE_DIR/linux/vps/linode/scripts"'
 
+# $BLUE_DIR/linux/vps/setup/*
+alias ssr='cd "$BLUE_DIR/linux/vps/setup/ssr-deploy"'
 
-# --- Level 3: $BLUE_DIR/linux/vps/* ---
-alias ali='cd "$BLUE_DIR/linux/vps/ali"'          # ali (3 chars, al=allah)
-alias aw='cd "$BLUE_DIR/linux/vps/aws"'           # aws
-alias aws='cd "$BLUE_DIR/linux/vps/aws"'          # aws (full)
-alias gcvps='cd "$BLUE_DIR/linux/vps/gcp"'        # gcp (gc=git commit)
-alias gcp='cd "$BLUE_DIR/linux/vps/gcp"'          # gcp (full, override git)
-alias lnvps='cd "$BLUE_DIR/linux/vps/linode"'     # linode vps
-alias vpse='cd "$BLUE_DIR/linux/vps/setup"'       # vps setup (universal)
-alias vu='cd "$BLUE_DIR/linux/vps/vultr"'         # vultr
+# ─────────────────────────────────────────────────────────────────────────────
+# $BLUE_DIR/web/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias ap='cd "$BLUE_DIR/web/apps"'
+alias au='cd "$BLUE_DIR/web/auto"'
+alias mo='cd "$BLUE_DIR/web/monitors"'
+alias px='cd "$BLUE_DIR/web/proxy"'
 
-# --- Level 4: $BLUE_DIR/linux/vps/ali/* ---
-alias alicf='cd "$BLUE_DIR/linux/vps/ali/config"' # ali config
-alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'       # ecs
-alias ecs='cd "$BLUE_DIR/linux/vps/ali/ecs"'      # ecs (full)
-alias se='cd "$BLUE_DIR/linux/vps/ali/setup"'     # setup
+# $BLUE_DIR/web/apps/*
+alias ac='cd "$BLUE_DIR/web/apps/alt"'
+alias sk='cd "$BLUE_DIR/web/apps/stake"'
+alias tm='cd "$BLUE_DIR/web/apps/tampermonkey"'
+alias ti='cd "$BLUE_DIR/web/apps/tinder"'
 
-# --- Level 4: $BLUE_DIR/linux/vps/setup/* ---
-alias ssr='cd "$BLUE_DIR/linux/vps/setup/ssr-deploy"'  # ssr-deploy
+# $BLUE_DIR/web/apps/stake/*
+alias ba='cd "$BLUE_DIR/web/apps/stake/baccarat"'
+alias bj='cd "$BLUE_DIR/web/apps/stake/blackjack"'
 
-# --- Level 4: $BLUE_DIR/linux/vps/linode/* ---
-alias lm='cd "$BLUE_DIR/linux/vps/linode/manager"'    # linode manager
-alias lnsc='cd "$BLUE_DIR/linux/vps/linode/scripts"'  # linode scripts
+# $BLUE_DIR/web/apps/tampermonkey/*
+alias tmba='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'
 
-# --- Level 3: $BLUE_DIR/web/apps/* ---
-alias ac='cd "$BLUE_DIR/web/apps/alt"'                # alt
-alias ba='cd "$BLUE_DIR/web/apps/stake/baccarat"'     # stake/baccarat
-alias bj='cd "$BLUE_DIR/web/apps/stake/blackjack"'    # stake/blackjack
-alias sk='cd "$BLUE_DIR/web/apps/stake"'              # stake
-alias tm='cd "$BLUE_DIR/web/apps/tampermonkey"'       # tampermonkey
-alias ti='cd "$BLUE_DIR/web/apps/tinder"'             # tinder
+# $BLUE_DIR/web/apps/tinder/*
+alias tida='cd "$BLUE_DIR/web/apps/tinder/data"'
+alias tisc='cd "$BLUE_DIR/web/apps/tinder/scripts"'
 
-# --- Level 4: $BLUE_DIR/web/apps/tampermonkey/* ---
-alias tmba='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'   # tampermonkey/backup
+# $BLUE_DIR/web/auto/*
+alias dom='cd "$BLUE_DIR/web/auto/domain"'
+alias drv='cd "$BLUE_DIR/web/auto/drivers"'
+alias hs='cd "$BLUE_DIR/web/auto/herosms"'
+alias oc='cd "$BLUE_DIR/web/auto/octo"'
+alias wo='cd "$BLUE_DIR/web/auto/worker"'
 
-# --- Level 4: $BLUE_DIR/web/apps/tinder/* ---
-alias tida='cd "$BLUE_DIR/web/apps/tinder/data"'      # tinder/data
-alias tisc='cd "$BLUE_DIR/web/apps/tinder/scripts"'   # tinder/scripts
+# $BLUE_DIR/web/auto/octo/*
+alias hid='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/hid"'
+alias ossl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"'
 
-# --- Level 3: $BLUE_DIR/web/auto/* ---
-alias hs='cd "$BLUE_DIR/web/auto/herosms"'            # herosms
-alias oc='cd "$BLUE_DIR/web/auto/octo"'               # octo
-alias wo='cd "$BLUE_DIR/web/auto/worker"'             # worker
+# $BLUE_DIR/web/monitors/*
+alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'
+alias hx='cd "$BLUE_DIR/web/monitors/hxkq"'
 
-# --- Level 4: $BLUE_DIR/web/auto/octo/* ---
-alias hid='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/hid"'  # reverse_engineering/hid
-alias ossl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"' # reverse_engineering/ssl
+# $BLUE_DIR/web/proxy/*
+alias de='cd "$BLUE_DIR/web/proxy/decodo"'
+alias ipr='cd "$BLUE_DIR/web/proxy/iproyal"'
+alias ra='cd "$BLUE_DIR/web/proxy/rayobyte"'
 
-# --- Level 3: $BLUE_DIR/web/monitors/* ---
-alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'  # huaxitong
-alias hx='cd "$BLUE_DIR/web/monitors/hxkq"'       # hxkq
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# --- Level 3: $BLUE_DIR/web/proxy/* ---
-alias de='cd "$BLUE_DIR/web/proxy/decodo"'        # decodo
-alias decodo='cd "$BLUE_DIR/web/proxy/decodo"'    # decodo (full)
-alias ra='cd "$BLUE_DIR/web/proxy/rayobyte"'      # rayobyte
-
-# === Freqtrade Commands ===
-alias ftpy='"$FREQTRADE_DIR/.venv/Scripts/python.exe"'
-alias ftrun='"$FREQTRADE_DIR/.venv/Scripts/python.exe" "$FREQTRADE_DIR/freqtrade/main.py"'
-
-# === Git ===
+# ─────────────────────────────────────────────────────────────────────────────
+# Git
+# ─────────────────────────────────────────────────────────────────────────────
 alias ga='git add'
 alias gc='git commit -m'
 alias gl='git pull'
 alias gp='git push'
 alias gs='git status'
 
-# === TensorBoard ===
-alias cdtb='cd "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
-alias tb='tensorboard --logdir "$(find . -type d -name "tensorboard" | sort | tail -n 1)"'
-
-# === Utility ===
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
 alias bashrc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
 alias cls='clear'
 alias code='cursor'
@@ -182,16 +190,15 @@ alias myip='curl -s http://ipinfo.io/ip'
 alias note='cursor "$BLUE_DIR/ft/notes"'
 alias rc='cursor "$BLUE_DIR/linux/extra/shell/bashrc_windows"'
 
-# === Windows-specific helpers ===
-alias azure='az'
+# ─────────────────────────────────────────────────────────────────────────────
+# Windows-specific
+# ─────────────────────────────────────────────────────────────────────────────
+alias azure='/usr/bin/az'
 alias explorer='explorer.exe .'
 alias open='start'
-
-# === Quick cd ===
-alias az='cd "$BLUE_DIR/linux/vps/azure"'
 alias clash='cd "$HOME/.config/clash/profiles"'
 
-# === Azure VM ===
+# Azure VM
 alias azde='python "$BLUE_DIR/linux/vps/azure/cli.py" deallocate'
 alias azstart='python "$BLUE_DIR/linux/vps/azure/cli.py" start'
 alias azstatus='python "$BLUE_DIR/linux/vps/azure/cli.py" status'
