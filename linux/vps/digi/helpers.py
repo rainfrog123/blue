@@ -216,3 +216,96 @@ def reboot(droplet_id: int) -> dict:
 
 def shutdown(droplet_id: int) -> dict:
     return droplet_action(droplet_id, "shutdown")
+
+
+# --- Snapshots ---
+
+def list_snapshots() -> list:
+    """List all snapshots."""
+    return api_get("snapshots?resource_type=droplet")["snapshots"]
+
+
+def get_snapshot(snapshot_id: int) -> dict:
+    """Get snapshot by ID."""
+    return api_get(f"snapshots/{snapshot_id}")["snapshot"]
+
+
+def delete_snapshot(snapshot_id: int) -> bool:
+    """Delete a snapshot."""
+    return api_delete(f"snapshots/{snapshot_id}")
+
+
+def create_snapshot(droplet_id: int, name: str) -> dict:
+    """Create snapshot of droplet (droplet must be off for best results)."""
+    return droplet_action(droplet_id, "snapshot", name=name)
+
+
+def wait_for_action(droplet_id: int, action_id: int, timeout: int = 300) -> dict:
+    """Wait for an action to complete."""
+    start = time.time()
+    while time.time() - start < timeout:
+        resp = api_get(f"droplets/{droplet_id}/actions/{action_id}")
+        action = resp["action"]
+        if action["status"] == "completed":
+            return action
+        if action["status"] == "errored":
+            raise Exception(f"Action {action_id} failed")
+        print(f"  Action status: {action['status']}...")
+        time.sleep(5)
+    raise TimeoutError(f"Action {action_id} did not complete within {timeout}s")
+
+
+def snapshot_and_delete(droplet_id: int, snapshot_name: str = None) -> dict:
+    """Snapshot droplet then delete it. Returns snapshot info."""
+    droplet = get_droplet(droplet_id)
+    if snapshot_name is None:
+        snapshot_name = f"{droplet['name']}-snapshot"
+    
+    # Power off first for clean snapshot
+    if droplet["status"] == "active":
+        print("Powering off droplet...")
+        shutdown(droplet_id)
+        time.sleep(10)
+        # Wait for power off
+        for _ in range(30):
+            d = get_droplet(droplet_id)
+            if d["status"] == "off":
+                break
+            time.sleep(5)
+    
+    # Create snapshot
+    print(f"Creating snapshot '{snapshot_name}'...")
+    action = create_snapshot(droplet_id, snapshot_name)
+    wait_for_action(droplet_id, action["id"], timeout=600)
+    
+    # Find the snapshot
+    for snap in list_snapshots():
+        if snap["name"] == snapshot_name:
+            snapshot = snap
+            break
+    else:
+        raise Exception("Snapshot not found after creation")
+    
+    # Delete droplet
+    print("Deleting droplet...")
+    delete_droplet(droplet_id)
+    
+    return snapshot
+
+
+def restore_from_snapshot(snapshot_id: int, name: str, region: str = None, 
+                          size: str = "s-1vcpu-512mb-10gb", ssh_keys: list = None) -> dict:
+    """Create new droplet from snapshot."""
+    snapshot = get_snapshot(snapshot_id)
+    if region is None:
+        region = snapshot["regions"][0] if snapshot["regions"] else "sgp1"
+    
+    return create_droplet(
+        name=name,
+        region=region,
+        size=size,
+        image=snapshot_id,
+        ssh_keys=ssh_keys,
+        ipv6=True,
+        monitoring=True,
+    )

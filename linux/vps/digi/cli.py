@@ -28,13 +28,19 @@ def cmd_create(args):
     print(f"  Size: {args.size}")
     print(f"  Image: {args.image}")
     
-    # Handle SSH key
+    # Handle SSH keys - use all registered keys by default
     ssh_key_ids = []
     if args.ssh_key:
         print(f"  SSH Key: registering...")
         key = helpers.find_or_create_ssh_key("cli-key", args.ssh_key)
         ssh_key_ids.append(key["id"])
         print(f"  SSH Key ID: {key['id']} ({key['name']})")
+    else:
+        # Use all registered SSH keys
+        keys = helpers.list_ssh_keys()
+        if keys:
+            ssh_key_ids = [k["id"] for k in keys]
+            print(f"  SSH Keys: {len(ssh_key_ids)} keys ({', '.join(k['name'] for k in keys)})")
     
     # Create droplet
     droplet = helpers.create_droplet(
@@ -146,6 +152,91 @@ def cmd_keys(args):
         print(f"{k['id']:<12} {k['name']:<20} {k['fingerprint']}")
 
 
+def cmd_snapshots(args):
+    """List snapshots."""
+    snapshots = helpers.list_snapshots()
+    if not snapshots:
+        print("No snapshots found")
+        return
+    print(f"{'ID':<12} {'Name':<25} {'Size':<10} {'Region':<10} {'Created'}")
+    print("-" * 80)
+    for s in snapshots:
+        size_gb = s["size_gigabytes"]
+        regions = ",".join(s["regions"][:2])
+        created = s["created_at"][:10]
+        print(f"{s['id']:<12} {s['name']:<25} {size_gb}GB{'':<6} {regions:<10} {created}")
+
+
+def cmd_save(args):
+    """Snapshot droplet and delete it (saves cost)."""
+    droplet_id = args.id
+    droplet = helpers.get_droplet(droplet_id)
+    ip = helpers.get_droplet_ip(droplet) or "N/A"
+    
+    snapshot_name = args.name or f"{droplet['name']}-snap"
+    
+    if not args.yes:
+        print(f"This will:")
+        print(f"  1. Snapshot droplet {droplet['name']} ({ip})")
+        print(f"  2. DELETE the droplet (stops billing)")
+        print(f"\nSnapshot name: {snapshot_name}")
+        confirm = input("Type 'yes' to confirm: ")
+        if confirm.lower() != "yes":
+            print("Cancelled")
+            return
+    
+    snapshot = helpers.snapshot_and_delete(droplet_id, snapshot_name)
+    
+    print(f"\n{'='*50}")
+    print(f"Done! Droplet saved and deleted.")
+    print(f"  Snapshot ID: {snapshot['id']}")
+    print(f"  Snapshot Name: {snapshot['name']}")
+    print(f"  Size: {snapshot['size_gigabytes']}GB (~${snapshot['size_gigabytes'] * 0.06:.2f}/mo)")
+    print(f"\nTo restore: python cli.py restore {snapshot['id']} <name>")
+    print(f"{'='*50}")
+
+
+def cmd_restore(args):
+    """Restore droplet from snapshot."""
+    snapshot_id = args.snapshot_id
+    name = args.name
+    
+    snapshot = helpers.get_snapshot(snapshot_id)
+    print(f"Restoring from snapshot: {snapshot['name']}")
+    print(f"  New droplet name: {name}")
+    print(f"  Region: {args.region}")
+    print(f"  Size: {args.size}")
+    
+    # Get SSH key
+    ssh_keys = None
+    keys = helpers.list_ssh_keys()
+    if keys:
+        ssh_keys = [k["id"] for k in keys]
+        print(f"  SSH Keys: {len(ssh_keys)} keys")
+    
+    droplet = helpers.restore_from_snapshot(
+        snapshot_id=snapshot_id,
+        name=name,
+        region=args.region,
+        size=args.size,
+        ssh_keys=ssh_keys,
+    )
+    
+    print(f"\nDroplet created! ID: {droplet['id']}")
+    print("Waiting for droplet to become active...")
+    
+    droplet = helpers.wait_for_droplet(droplet["id"])
+    ip = helpers.get_droplet_ip(droplet)
+    
+    print(f"\n{'='*50}")
+    print(f"Droplet restored!")
+    print(f"  ID: {droplet['id']}")
+    print(f"  Name: {droplet['name']}")
+    print(f"  IP: {ip}")
+    print(f"\nSSH: ssh root@{ip}")
+    print(f"{'='*50}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="DigitalOcean CLI")
     subparsers = parser.add_subparsers(dest="command", help="Commands")
@@ -185,6 +276,23 @@ def main():
     # keys
     subparsers.add_parser("keys", help="List SSH keys")
     
+    # snapshots
+    subparsers.add_parser("snapshots", help="List snapshots")
+    subparsers.add_parser("snaps", help="List snapshots (alias)")
+    
+    # save (snapshot + delete)
+    p_save = subparsers.add_parser("save", help="Snapshot droplet and delete it (saves cost)")
+    p_save.add_argument("id", type=int, help="Droplet ID")
+    p_save.add_argument("-n", "--name", help="Snapshot name")
+    p_save.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
+    
+    # restore
+    p_restore = subparsers.add_parser("restore", help="Restore droplet from snapshot")
+    p_restore.add_argument("snapshot_id", type=int, help="Snapshot ID")
+    p_restore.add_argument("name", help="New droplet name")
+    p_restore.add_argument("-r", "--region", default="sgp1", help="Region (default: sgp1)")
+    p_restore.add_argument("-s", "--size", default="s-1vcpu-512mb-10gb", help="Size slug")
+    
     args = parser.parse_args()
     
     if args.command in ("list", "ls"):
@@ -203,6 +311,12 @@ def main():
         cmd_sizes(args)
     elif args.command == "keys":
         cmd_keys(args)
+    elif args.command in ("snapshots", "snaps"):
+        cmd_snapshots(args)
+    elif args.command == "save":
+        cmd_save(args)
+    elif args.command == "restore":
+        cmd_restore(args)
     else:
         parser.print_help()
 
