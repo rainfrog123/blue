@@ -111,6 +111,14 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
+  - name: digi_sg
+    type: ss
+    server: 188.166.252.16
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
   # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
   # ---------------------------------------------------------------------------
@@ -285,6 +293,7 @@ proxy-groups:
       - ali_sg_tj
       - ali_jp_tj
       - ali_sg
+      - digi_sg
       - ☁️ Cloudflare CF Nodes
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
