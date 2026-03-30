@@ -19,9 +19,9 @@ from aliyun_client import ecs_client, ecs_models, REGION_ID, print_header, creat
 from ecs_operations import (
     list_instances, get_instance,
     list_images, get_latest_image, create_image, delete_image, delete_all_images,
-    list_snapshots, create_snapshot, wait_for_snapshot, delete_snapshot, delete_all_snapshots,
+    list_snapshots, create_snapshot, delete_snapshot, delete_all_snapshots,
     list_disks, get_system_disk,
-    create_image_from_snapshot, wait_for_image,
+    wait_for_image,
 )
 
 
@@ -343,60 +343,41 @@ def rotate_and_terminate():
         print("[ERROR] No instance found")
         return None
     
-    disk = get_system_disk(instance.instance_id)
-    if not disk:
-        print("[ERROR] No system disk found")
-        return None
-    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     print(f"Instance: {instance.instance_name} ({instance.instance_id})")
-    print(f"Disk: {disk.disk_id} ({disk.size} GB)")
     
     old_snapshots = list_snapshots(verbose=False)
     old_images = list_images("self", verbose=False)
     
-    # Step 1: Create snapshot
-    print(f"\n[1/5] Creating snapshot...")
-    snap_id = create_snapshot(disk.disk_id, f"backup_{timestamp}")
-    if not snap_id:
-        return None
-    
-    # Step 2: Wait for snapshot
-    print(f"\n[2/5] Waiting for snapshot...")
-    if not wait_for_snapshot(snap_id, timeout=1800):
-        return None
-    
-    # Step 3: Create image
-    print(f"\n[3/5] Creating image...")
-    img_id = create_image_from_snapshot(snap_id, f"backup_{timestamp}")
+    # Step 1: Create image directly from instance
+    print(f"\n[1/3] Creating image from instance...")
+    img_id = create_image(instance_id=instance.instance_id, image_name=f"backup_{timestamp}")
     if not img_id:
         return None
     
-    # Step 4: Wait for image
-    print(f"\n[4/5] Waiting for image...")
+    # Step 2: Wait for image
+    print(f"\n[2/3] Waiting for image...")
     if not wait_for_image(img_id, timeout=1800):
         return None
     
-    # Step 5: Cleanup old resources
-    print(f"\n[5/5] Cleaning up...")
+    # Step 3: Cleanup old resources
+    print(f"\n[3/3] Cleaning up...")
     for img in old_images:
         if img.image_id != img_id:
             delete_image(img.image_id, force=True, verbose=False)
             print(f"  Deleted image: {img.image_id}")
     
     for snap in old_snapshots:
-        if snap.snapshot_id != snap_id:
-            delete_snapshot(snap.snapshot_id, force=True, verbose=False)
-            print(f"  Deleted snapshot: {snap.snapshot_id}")
+        delete_snapshot(snap.snapshot_id, force=True, verbose=False)
+        print(f"  Deleted snapshot: {snap.snapshot_id}")
     
     # Terminate instance
     print(f"\nTerminating instance...")
     terminate_instance(instance.instance_id, force=True)
     
     print(f"\n[OK] Rotate complete")
-    print(f"  New snapshot: {snap_id}")
     print(f"  New image: {img_id}")
-    return {"snapshot_id": snap_id, "image_id": img_id}
+    return {"image_id": img_id}
 
 
 # =============================================================================

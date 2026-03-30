@@ -258,15 +258,17 @@ def wait_for_image(image_id: str, timeout: int = 600, verbose: bool = True) -> b
     Args:
         image_id: The image ID to wait for
         timeout: Maximum wait time in seconds
-        verbose: Print progress
+        verbose: Print progress bar
     
     Returns:
         True if available, False if failed/timeout
     """
     if verbose:
-        print(f"  Waiting for image {image_id}...")
+        print(f"  Image: {image_id}")
     
     start_time = time.time()
+    spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    spin_idx = 0
     
     while time.time() - start_time < timeout:
         request = ecs_models.DescribeImagesRequest(
@@ -278,17 +280,32 @@ def wait_for_image(image_id: str, timeout: int = 600, verbose: bool = True) -> b
         if response.body and response.body.images and response.body.images.image:
             img = response.body.images.image[0]
             status = img.status
+            progress = getattr(img, 'progress', None) or ""
+            elapsed = int(time.time() - start_time)
+            
             if verbose:
-                print(f"    Status: {status}")
+                if progress and progress != "100%":
+                    pct = int(progress.rstrip('%'))
+                    _print_progress_bar(pct, 100, prefix="  Progress:", suffix=f"{status} ({elapsed}s)")
+                else:
+                    print(f"\r  {spinner[spin_idx]} {status}... ({elapsed}s)   ", end="", flush=True)
+                    spin_idx = (spin_idx + 1) % len(spinner)
             
             if status == "Available":
+                if verbose:
+                    _print_progress_bar(100, 100, prefix="  Progress:", suffix="done")
+                    print()
                 return True
             elif status == "CreateFailed":
+                if verbose:
+                    print()
                 print(f"  [ERROR] Image creation failed")
                 return False
         
-        time.sleep(10)
+        time.sleep(5)
     
+    if verbose:
+        print()
     print(f"  [ERROR] Timeout waiting for image")
     return False
 
@@ -452,6 +469,14 @@ def create_snapshot(
         return None
 
 
+def _print_progress_bar(current: int, total: int, prefix: str = "", suffix: str = "", width: int = 30):
+    """Print a progress bar to stdout (overwrites current line)."""
+    percent = current / total if total > 0 else 0
+    filled = int(width * percent)
+    bar = "█" * filled + "░" * (width - filled)
+    print(f"\r{prefix} [{bar}] {current:3d}% {suffix}", end="", flush=True)
+
+
 def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True) -> bool:
     """
     Wait for a snapshot to complete.
@@ -459,15 +484,16 @@ def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True
     Args:
         snapshot_id: The snapshot ID to wait for
         timeout: Maximum wait time in seconds
-        verbose: Print progress
+        verbose: Print progress bar
     
     Returns:
         True if completed, False if failed/timeout
     """
     if verbose:
-        print(f"  Waiting for snapshot {snapshot_id}...")
+        print(f"  Snapshot: {snapshot_id}")
     
     start_time = time.time()
+    last_progress = -1
     
     while time.time() - start_time < timeout:
         request = ecs_models.DescribeSnapshotsRequest(
@@ -479,18 +505,28 @@ def wait_for_snapshot(snapshot_id: str, timeout: int = 600, verbose: bool = True
         if response.body and response.body.snapshots and response.body.snapshots.snapshot:
             snap = response.body.snapshots.snapshot[0]
             status = snap.status
-            progress = snap.progress
-            if verbose:
-                print(f"    Status: {status}, Progress: {progress}")
+            progress_str = snap.progress or "0%"
+            progress = int(progress_str.rstrip('%'))
+            
+            if verbose and progress != last_progress:
+                _print_progress_bar(progress, 100, prefix="  Progress:", suffix=status)
+                last_progress = progress
             
             if status == "accomplished":
+                if verbose:
+                    _print_progress_bar(100, 100, prefix="  Progress:", suffix="done")
+                    print()
                 return True
             elif status == "failed":
+                if verbose:
+                    print()
                 print(f"  [ERROR] Snapshot failed")
                 return False
         
-        time.sleep(10)
+        time.sleep(5)
     
+    if verbose:
+        print()
     print(f"  [ERROR] Timeout waiting for snapshot")
     return False
 
