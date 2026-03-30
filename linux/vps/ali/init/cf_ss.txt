@@ -1,11 +1,12 @@
 # Trojan + Cloudflare Tunnel Setup
-# Location: /allah/blue/linux/vps/ali/setup/
+# Location: /allah/blue/linux/vps/ali/init/
+# Zone: hyas.space (separate from hyas.site for multi-tunnel support)
 
 ## Deployment Commands
 
-cd /allah/blue/linux/vps/ali/setup/
-docker compose up -d
-docker compose logs -f  # Check logs
+cd /allah/blue/linux/vps/ali/init/
+docker-compose up -d
+docker-compose logs -f  # Check logs
 
 ## Client Configuration
 
@@ -13,21 +14,37 @@ Use these settings in your Trojan client (v2rayN, Clash, Shadowrocket, etc.):
 
 | Setting   | Value                                |
 |-----------|--------------------------------------|
-| Address   | x.hyas.site                          |
+| Address   | x.hyas.space                         |
 | Port      | 443                                  |
 | Password  | ba19c9d6-3fc0-4085-9f47-465c5d7cceef |
 | Transport | WebSocket                            |
 | WS Path   | /x7f9k2m4p8                          |
 | TLS       | Enabled                              |
-| SNI       | x.hyas.site                          |
+| SNI       | x.hyas.space                         |
 
 ## Trojan URL (for import)
 
-trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.site:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#X-Trojan
+trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.space:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#Ali-Trojan
 
-## Clash (proxy node)
+## Clash (Basic)
 
-- {name: 'TJ|X|CF', type: trojan, server: x.hyas.site, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.site, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
+- {name: 'TJ|Ali|CF', type: trojan, server: x.hyas.space, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.space, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
+
+## Clash (With Preferred IP - China Optimized)
+
+- name: 'TJ|Ali|CF|优选'
+  type: trojan
+  server: 162.159.25.200
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  udp: true
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
 
 ## Management Commands
 

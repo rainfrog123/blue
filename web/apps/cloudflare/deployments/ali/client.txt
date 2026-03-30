@@ -1,0 +1,90 @@
+# Relay Configuration: digi (Ali VPS)
+# Zone: hyas.space
+# Created: 2026-03-30
+
+## Connection Details
+| Setting     | Value                                  |
+|-------------|----------------------------------------|
+| Hostname    | x.hyas.space                           |
+| Port        | 443                                    |
+| Password    | ba19c9d6-3fc0-4085-9f47-465c5d7cceef   |
+| WS Path     | /x7f9k2m4p8                            |
+| Tunnel ID   | c9fc96f2-a367-4b91-bf18-b74c085325f4   |
+| Hostname ID | c74e4900-4b7b-4d43-8975-18392a1db610   |
+
+## Trojan URL
+trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.space:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#digi
+
+## Clash (Basic)
+- {name: 'TJ|Ali|CF', type: trojan, server: x.hyas.space, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.space, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
+
+## Clash (With Preferred IP - China Optimized)
+- name: 'TJ|Ali|CF|优选'
+  type: trojan
+  server: 162.159.25.200
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  udp: true
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
+
+## Multiple Preferred IP Variants
+- name: ali_space_tj_nrt1
+  type: trojan
+  server: 162.159.38.214
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
+  udp: true
+
+- name: ali_space_tj_nrt2
+  type: trojan
+  server: 162.159.44.106
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
+  udp: true
+
+- name: ali_space_tj_sin
+  type: trojan
+  server: 162.159.34.174
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
+  udp: true
+
+## VPS Deployment
+cd /allah/blue/web/apps/cloudflare/deployments/digi
+# Or on VPS: cd /path/to/deployment
+docker-compose up -d
+docker-compose logs -f
+
+## Teardown (if needed)
+./cli.py setup teardown \
+    --tunnel-id c9fc96f2-a367-4b91-bf18-b74c085325f4 \
+    --hostname-id c74e4900-4b7b-4d43-8975-18392a1db610 \
+    --dns-record-id 4673e5acdc1077caab109a0b288e46bd \
+    --zone-id 14a1737c5a43cdff29c09a606c162316

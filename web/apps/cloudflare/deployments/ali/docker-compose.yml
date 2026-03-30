@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  xray-trojan:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-trojan
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json
+    command: run -c /etc/xray/config.json
+    networks:
+      - tunnel-net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token eyJhIjoiNWQ3NWFkOTFiYzYyMTA4NmExOTA4OTczNTkwMDUxYzMiLCJ0IjoiYzlmYzk2ZjItYTM2Ny00YjkxLWJmMTgtYjc0YzA4NTMyNWY0IiwicyI6ImMvZktQUHlQaWNDZjdDOFdzVGNicHhhbWhNcGlod1JhUTliTksrMjVuWkU9In0=
+    networks:
+      - tunnel-net
+    depends_on:
+      - xray-trojan
+
+networks:
+  tunnel-net:
+    driver: bridge

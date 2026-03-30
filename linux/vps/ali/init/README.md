@@ -134,21 +134,64 @@ docker logs xray-trojan    # Check Xray logs
 docker logs cloudflared    # Check Cloudflared logs
 ```
 
-## Current Instance
+## Current Instance (hyas.space zone)
 
 | Setting   | Value                                  |
 |-----------|----------------------------------------|
-| Address   | `x.hyas.site`                          |
+| Address   | `x.hyas.space`                         |
 | Port      | `443`                                  |
 | Password  | `ba19c9d6-3fc0-4085-9f47-465c5d7cceef` |
 | WS Path   | `/x7f9k2m4p8`                          |
+| Tunnel ID | `c9fc96f2-a367-4b91-bf18-b74c085325f4` |
 
 **Trojan URL:**
 ```
-trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.site:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#X-Trojan
+trojan://ba19c9d6-3fc0-4085-9f47-465c5d7cceef@x.hyas.space:443?security=tls&type=ws&path=%2Fx7f9k2m4p8#Ali-Trojan
 ```
 
-**Clash:**
+**Clash (Basic):**
 ```yaml
-- {name: 'TJ|X|CF', type: trojan, server: x.hyas.site, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.site, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
+- {name: 'TJ|Ali|CF', type: trojan, server: x.hyas.space, port: 443, password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef, udp: true, sni: x.hyas.space, skip-cert-verify: false, network: ws, ws-opts: {path: /x7f9k2m4p8}}
+```
+
+**Clash (With Preferred IP for China):**
+```yaml
+- name: 'TJ|Ali|CF|优选'
+  type: trojan
+  server: 162.159.25.200
+  port: 443
+  password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  udp: true
+  sni: x.hyas.space
+  skip-cert-verify: false
+  network: ws
+  ws-opts:
+    path: /x7f9k2m4p8
+    headers:
+      Host: x.hyas.space
+```
+
+## API Setup Commands (Reference)
+
+```bash
+# These commands were used to create this setup via CLI
+cd /allah/blue/web/apps/cloudflare
+
+# 1. Create tunnel
+./cli.py tunnel create digi
+
+# 2. Create DNS CNAME
+./cli.py tunnel route-dns c9fc96f2-a367-4b91-bf18-b74c085325f4 x.hyas.space --zone-id 14a1737c5a43cdff29c09a606c162316
+
+# 3. Set fallback origin
+./cli.py fallback set x.hyas.space --zone-id 14a1737c5a43cdff29c09a606c162316
+
+# 4. Create custom hostname
+./cli.py hostname add x.hyas.space --zone-id 14a1737c5a43cdff29c09a606c162316
+
+# 5. Configure tunnel ingress
+./cli.py tunnel config set c9fc96f2-a367-4b91-bf18-b74c085325f4 --hostname x.hyas.space --service http://xray-trojan:8080
+
+# 6. Get install token
+./cli.py tunnel token c9fc96f2-a367-4b91-bf18-b74c085325f4
 ```

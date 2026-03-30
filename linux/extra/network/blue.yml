@@ -51,17 +51,33 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
-  - name: digi_tj
+  - name: digi_sg_tj
     type: trojan
-    server: x.hyas.space
+    server: 162.159.25.200
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    udp: true
     sni: x.hyas.space
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
+  - name: digi_jp_tj
+    type: trojan
+    server: 162.159.44.32
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
   # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
@@ -84,6 +100,20 @@ proxies:
         Host: x.hyas.site
     udp: true
 
+  - name: digi_jp_tj_2
+    type: trojan
+    server: 162.159.38.214
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
   - name: ali_jp_tj_3
     type: trojan
     server: 162.159.44.106
@@ -96,6 +126,20 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.site
+    udp: true
+
+  - name: digi_jp_tj_3
+    type: trojan
+    server: 162.159.44.106
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
     udp: true
 
   - name: ali_jp_tj_4
@@ -112,6 +156,20 @@ proxies:
         Host: x.hyas.site
     udp: true
 
+  - name: digi_jp_tj_4
+    type: trojan
+    server: 172.64.53.139
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
   - name: ali_sg_tj_2
     type: trojan
     server: 162.159.34.174
@@ -124,6 +182,20 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.site
+    udp: true
+
+  - name: digi_sg_tj_2
+    type: trojan
+    server: 162.159.34.174
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
     udp: true
 
   - name: ali_jp_tj_5
@@ -140,6 +212,20 @@ proxies:
         Host: x.hyas.site
     udp: true
 
+  - name: digi_jp_tj_5
+    type: trojan
+    server: 162.159.45.111
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
   - name: ali_jp_tj_6
     type: trojan
     server: 162.159.39.162
@@ -152,6 +238,20 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.site
+    udp: true
+
+  - name: digi_jp_tj_6
+    type: trojan
+    server: 162.159.39.162
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
     udp: true
 
   # ---------------------------------------------------------------------------
@@ -236,9 +336,10 @@ proxy-groups:
       - DIRECT
       - ali_sg_tj
       - ali_jp_tj
+      - digi_sg_tj
+      - digi_jp_tj
       - ali_sg
       - digi_sg
-      - digi_tj
       - ☁️ Cloudflare CF Nodes
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
@@ -328,12 +429,21 @@ proxy-groups:
     type: select
     proxies:
       - ali_jp_tj_2
+      - digi_jp_tj_2
       - ali_jp_tj_3
+      - digi_jp_tj_3
       - ali_jp_tj_4
+      - digi_jp_tj_4
       - ali_sg_tj_2
+      - digi_sg_tj_2
       - ali_jp_tj_5
+      - digi_jp_tj_5
       - ali_jp_tj_6
+      - digi_jp_tj_6
       - ali_sg_tj
+      - digi_sg_tj
+      - ali_jp_tj
+      - digi_jp_tj
 
   - name: 🖥️ Cursor Website Nodes
     type: select

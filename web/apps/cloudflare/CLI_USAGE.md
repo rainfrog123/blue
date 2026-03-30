@@ -202,6 +202,24 @@ Fallback order:
     --dns-record-id <dns-record-id>
 ```
 
+### One-Click Deploy (Recommended)
+
+```bash
+# Deploy new relay with auto-generated VPS files
+./deploy.py --name myrelay --hostname x.hyas.space --zone hyas.space
+
+# Custom output directory
+./deploy.py --name myrelay --hostname x.hyas.space --zone hyas.space --output /path/to/vps
+
+# Available zones: hyas.site, hyas.space
+```
+
+This creates:
+- Cloudflare tunnel + DNS + fallback + custom hostname
+- `deployments/<name>/docker-compose.yml` - Ready for VPS
+- `deployments/<name>/config.json` - Xray config
+- `deployments/<name>/client.txt` - Client configs (Clash, Trojan URL)
+
 ### Account
 
 ```bash
