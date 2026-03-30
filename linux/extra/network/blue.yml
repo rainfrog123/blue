@@ -405,6 +405,28 @@ proxy-groups:
   # ---------------------------------------------------------------------------
   # Special Purpose Groups
   # ---------------------------------------------------------------------------
+  - name: ☁️ Cloudflare CF Nodes
+    type: select
+    proxies:
+      - ali_nrt_2
+      - do_nrt_2
+      - ali_nrt_3
+      - do_nrt_3
+      - ali_nrt_4
+      - do_nrt_4
+      - ali_sin_2
+      - do_sin_2
+      - ali_sin_3
+      - do_sin_3
+      - ali_sin_4
+      - do_sin_4
+      - ali_sin_5
+      - do_sin_5
+      - ali_sin
+      - do_sin
+      - ali_nrt
+      - do_nrt
+
   - name: 🤖 AI / IDE Nodes
     type: select
     proxies:
@@ -447,28 +469,6 @@ proxy-groups:
       - 🇸🇬TJ|Singapore C01|Netflix
       - 🇯🇵TJ|Japan C01|Netflix
       - 🇺🇸TJ|UnitedStates C01|Netflix
-
-  - name: ☁️ Cloudflare CF Nodes
-    type: select
-    proxies:
-      - ali_nrt_2
-      - do_nrt_2
-      - ali_nrt_3
-      - do_nrt_3
-      - ali_nrt_4
-      - do_nrt_4
-      - ali_sin_2
-      - do_sin_2
-      - ali_sin_3
-      - do_sin_3
-      - ali_sin_4
-      - do_sin_4
-      - ali_sin_5
-      - do_sin_5
-      - ali_sin
-      - do_sin
-      - ali_nrt
-      - do_nrt
 
   - name: 🖥️ Cursor Website Nodes
     type: select
@@ -1104,70 +1104,70 @@ rules:
 # 172.64.48.237     4     4     0.00    89.48        30.25        SIN
 
 # =============================================================================
-# DNS Configuration (Encrypted DNS - ISP interception resistant)
+# DNS Configuration (Plain UDP DNS - fast)
 # =============================================================================
-# dns:
-#   enable: true
-#   listen: 0.0.0.0:53
-#   ipv6: false
-#   use-hosts: true
-#   enhanced-mode: fake-ip
-#   fake-ip-range: 198.18.0.1/16
-#   fake-ip-filter:
-#     - "*.lan"
-#     - "*.local"
-#     - "*.localhost"
-#     - "localhost.ptlogin2.qq.com"
-#     - "+.ntp.org"
-#     - "ntp.org"
-#     - "+.stun.*.*"
-#     - "+.stun.*.*.*"
-#     - "+.stun.*.*.*.*"
-#     - "+.stun.*.*.*.*.*"
-#     - "*.nintendo.net"
-#     - "+.stun.playstation.net"
-#     - "xbox.*.*.microsoft.com"
-#     - "*.*.xboxlive.com"
-#     - "*.msftncsi.com"
-#     - "*.msftconnecttest.com"
-#     - "WORKGROUP"
-#
-#   # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
-#   default-nameserver:
-#     - 223.5.5.5
-#     - 119.29.29.29
-#
-#   # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
-#   nameserver:
-#     - https://dns.alidns.com/dns-query
-#     - https://doh.pub/dns-query
-#     - tls://dns.alidns.com:853
-#
-#   # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
-#   fallback:
-#     - https://1.1.1.1/dns-query
-#     - https://dns.google/dns-query
-#     - https://cloudflare-dns.com/dns-query
-#
-#   # DNS for proxy servers (DoH - protects proxy hostname resolution)
-#   proxy-server-nameserver:
-#     - https://dns.alidns.com/dns-query
-#     - https://doh.pub/dns-query
-#
-#   # Fallback filter - route China IPs to nameserver, others to fallback
-#   fallback-filter:
-#     geoip: true
-#     geoip-code: CN
-#     ipcidr:
-#       - 240.0.0.0/4
-#       - 0.0.0.0/32
-#       - 127.0.0.1/32
-#     domain:
-#       - "+.google.com"
-#       - "+.facebook.com"
-#       - "+.youtube.com"
-#       - "+.twitter.com"
-#       - "+.github.com"
-#       - "+.googleapis.com"
-#       - "+.gstatic.com"
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  ipv6: false
+  use-hosts: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "*.localhost"
+    - "localhost.ptlogin2.qq.com"
+    - "+.ntp.org"
+    - "ntp.org"
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.stun.*.*.*.*"
+    - "+.stun.*.*.*.*.*"
+    - "*.nintendo.net"
+    - "+.stun.playstation.net"
+    - "xbox.*.*.microsoft.com"
+    - "*.*.xboxlive.com"
+    - "*.msftncsi.com"
+    - "*.msftconnecttest.com"
+    - "WORKGROUP"
+
+  # Bootstrap DNS
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  # Primary DNS (China - Alibaba & Tencent)
+  nameserver:
+    - 223.5.5.5
+    - 223.6.6.6
+    - 119.29.29.29
+
+  # Fallback DNS (foreign - for GFW-blocked domains, goes through proxy)
+  fallback:
+    - 1.1.1.1
+    - 8.8.8.8
+    - 8.8.4.4
+
+  # DNS for proxy servers
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  # Fallback filter - route China IPs to nameserver, others to fallback
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+    ipcidr:
+      - 240.0.0.0/4
+      - 0.0.0.0/32
+      - 127.0.0.1/32
+    domain:
+      - "+.google.com"
+      - "+.facebook.com"
+      - "+.youtube.com"
+      - "+.twitter.com"
+      - "+.github.com"
+      - "+.googleapis.com"
+      - "+.gstatic.com"
 
