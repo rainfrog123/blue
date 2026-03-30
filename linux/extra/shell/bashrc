@@ -88,6 +88,7 @@ alias st='cd /allah/blue/ft/user_data/strategies'
 # ─────────────────────────────────────────────────────────────────────────────
 alias ext='cd /allah/blue/linux/extra'
 alias vp='cd /allah/blue/linux/vps'
+alias vps='cd /allah/blue/linux/vps'
 
 # /allah/blue/linux/extra/*
 alias excf='cd /allah/blue/linux/extra/config'
@@ -101,7 +102,7 @@ alias shl='cd /allah/blue/linux/extra/shell'
 # /allah/blue/linux/vps/*
 alias ali='cd /allah/blue/linux/vps/ali'
 alias aw='cd /allah/blue/linux/vps/aws'
-alias az='cd /allah/blue/linux/vps/azure'
+alias azu='cd /allah/blue/linux/vps/azure'
 alias digi='cd /allah/blue/linux/vps/digi'
 alias gcp='cd /allah/blue/linux/vps/gcp'
 alias lno='cd /allah/blue/linux/vps/linode'
@@ -111,6 +112,7 @@ alias vu='cd /allah/blue/linux/vps/vultr'
 # /allah/blue/linux/vps/ali/*
 alias alicf='cd /allah/blue/linux/vps/ali/config'
 alias ec='cd /allah/blue/linux/vps/ali/ecs'
+alias ecs='cd /allah/blue/linux/vps/ali/ecs'
 alias alise='cd /allah/blue/linux/vps/ali/setup'
 
 # /allah/blue/linux/vps/linode/*
@@ -150,6 +152,7 @@ alias dom='cd /allah/blue/web/auto/domain'
 alias drv='cd /allah/blue/web/auto/drivers'
 alias hs='cd /allah/blue/web/auto/herosms'
 alias oc='cd /allah/blue/web/auto/octo'
+alias cf='cd /allah/blue/web/apps/cloudflare'
 alias wo='cd /allah/blue/web/auto/worker'
 
 # /allah/blue/web/auto/octo/*
@@ -182,7 +185,6 @@ alias gs='git status'
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilities
 # ─────────────────────────────────────────────────────────────────────────────
-alias azure='/usr/bin/az'
 alias bashrc='cursor /allah/blue/linux/extra/shell/bashrc'
 alias cls='clear'
 alias code='cursor'

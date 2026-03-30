@@ -1,72 +1,4 @@
 # =============================================================================
-# DNS Configuration (Encrypted DNS - ISP interception resistant)
-# =============================================================================
-# dns:
-#   enable: true
-#   listen: 0.0.0.0:53
-#   ipv6: false
-#   use-hosts: true
-#   enhanced-mode: fake-ip
-#   fake-ip-range: 198.18.0.1/16
-#   fake-ip-filter:
-#     - "*.lan"
-#     - "*.local"
-#     - "*.localhost"
-#     - "localhost.ptlogin2.qq.com"
-#     - "+.ntp.org"
-#     - "ntp.org"
-#     - "+.stun.*.*"
-#     - "+.stun.*.*.*"
-#     - "+.stun.*.*.*.*"
-#     - "+.stun.*.*.*.*.*"
-#     - "*.nintendo.net"
-#     - "+.stun.playstation.net"
-#     - "xbox.*.*.microsoft.com"
-#     - "*.*.xboxlive.com"
-#     - "*.msftncsi.com"
-#     - "*.msftconnecttest.com"
-#     - "WORKGROUP"
-#
-#   # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
-#   default-nameserver:
-#     - 223.5.5.5
-#     - 119.29.29.29
-#
-#   # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
-#   nameserver:
-#     - https://dns.alidns.com/dns-query
-#     - https://doh.pub/dns-query
-#     - tls://dns.alidns.com:853
-#
-#   # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
-#   fallback:
-#     - https://1.1.1.1/dns-query
-#     - https://dns.google/dns-query
-#     - https://cloudflare-dns.com/dns-query
-#
-#   # DNS for proxy servers (DoH - protects proxy hostname resolution)
-#   proxy-server-nameserver:
-#     - https://dns.alidns.com/dns-query
-#     - https://doh.pub/dns-query
-#
-#   # Fallback filter - route China IPs to nameserver, others to fallback
-#   fallback-filter:
-#     geoip: true
-#     geoip-code: CN
-#     ipcidr:
-#       - 240.0.0.0/4
-#       - 0.0.0.0/32
-#       - 127.0.0.1/32
-#     domain:
-#       - "+.google.com"
-#       - "+.facebook.com"
-#       - "+.youtube.com"
-#       - "+.twitter.com"
-#       - "+.github.com"
-#       - "+.googleapis.com"
-#       - "+.gstatic.com"
-
-# =============================================================================
 # Proxies
 # =============================================================================
 proxies:
@@ -118,6 +50,18 @@ proxies:
     cipher: chacha20-ietf-poly1305
     password: bxsnucrgk6hfish
     udp: true
+
+  - name: digi_tj
+    type: trojan
+    server: x.hyas.space
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    udp: true
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
 
   # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
@@ -294,6 +238,7 @@ proxy-groups:
       - ali_jp_tj
       - ali_sg
       - digi_sg
+      - digi_tj
       - ☁️ Cloudflare CF Nodes
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
@@ -1021,4 +966,72 @@ rules:
 # 162.159.34.174    4     4     0.00    85.48        43.51        SIN
 # 162.159.45.111    4     4     0.00    85.09        39.00        NRT
 # 162.159.39.162    4     4     0.00    88.21        9.12         NRT
+
+# =============================================================================
+# DNS Configuration (Encrypted DNS - ISP interception resistant)
+# =============================================================================
+# dns:
+#   enable: true
+#   listen: 0.0.0.0:53
+#   ipv6: false
+#   use-hosts: true
+#   enhanced-mode: fake-ip
+#   fake-ip-range: 198.18.0.1/16
+#   fake-ip-filter:
+#     - "*.lan"
+#     - "*.local"
+#     - "*.localhost"
+#     - "localhost.ptlogin2.qq.com"
+#     - "+.ntp.org"
+#     - "ntp.org"
+#     - "+.stun.*.*"
+#     - "+.stun.*.*.*"
+#     - "+.stun.*.*.*.*"
+#     - "+.stun.*.*.*.*.*"
+#     - "*.nintendo.net"
+#     - "+.stun.playstation.net"
+#     - "xbox.*.*.microsoft.com"
+#     - "*.*.xboxlive.com"
+#     - "*.msftncsi.com"
+#     - "*.msftconnecttest.com"
+#     - "WORKGROUP"
+#
+#   # Bootstrap DNS (must be plain IP - for resolving DoH/DoT server domains)
+#   default-nameserver:
+#     - 223.5.5.5
+#     - 119.29.29.29
+#
+#   # Primary DNS (DoH/DoT - encrypted, ISP cannot intercept)
+#   nameserver:
+#     - https://dns.alidns.com/dns-query
+#     - https://doh.pub/dns-query
+#     - tls://dns.alidns.com:853
+#
+#   # Fallback DNS (foreign DoH - for GFW-blocked domains, goes through proxy)
+#   fallback:
+#     - https://1.1.1.1/dns-query
+#     - https://dns.google/dns-query
+#     - https://cloudflare-dns.com/dns-query
+#
+#   # DNS for proxy servers (DoH - protects proxy hostname resolution)
+#   proxy-server-nameserver:
+#     - https://dns.alidns.com/dns-query
+#     - https://doh.pub/dns-query
+#
+#   # Fallback filter - route China IPs to nameserver, others to fallback
+#   fallback-filter:
+#     geoip: true
+#     geoip-code: CN
+#     ipcidr:
+#       - 240.0.0.0/4
+#       - 0.0.0.0/32
+#       - 127.0.0.1/32
+#     domain:
+#       - "+.google.com"
+#       - "+.facebook.com"
+#       - "+.youtube.com"
+#       - "+.twitter.com"
+#       - "+.github.com"
+#       - "+.googleapis.com"
+#       - "+.gstatic.com"
 
