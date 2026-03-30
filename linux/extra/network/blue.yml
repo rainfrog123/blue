@@ -404,22 +404,16 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
+      - ☁️ Cloudflare CF Nodes
       - ali_sg_tj
       - ali_sg
       - 🇭🇰SS|HongKongB01|IPLC x3
-      - 🇭🇰SS|HongKongD01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
-      - 🇹🇼SS|TaiwanD01|IPLC x3
       - 🇸🇬SS|SingaporeB01|IPLC x3
-      - 🇸🇬SS|SingaporeD01|IPLC x3
       - 🇯🇵SS|JapanB01|IPLC x3
-      - 🇯🇵SS|JapanD01|IPLC x3
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
-      - 🇺🇸SS|UnitedStatesD01|IPLC x3
       - 🇹🇭SS|ThailandB01|IPLC x3
-      - 🇹🇭SS|ThailandD01|IPLC x3
       - 🇲🇴SS|MacauB01|IPLC x3
-      - 🇲🇴SS|MacauD01|IPLC x3
       - 🇭🇰TJ|HongKong C01|Netflix
       - 🇸🇬TJ|Singapore C01|Netflix
       - 🇯🇵TJ|Japan C01|Netflix
