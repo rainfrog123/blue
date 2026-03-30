@@ -62,7 +62,7 @@ alias to='cd "$BLUE_DIR/ft/tools"'
 alias ud='cd "$BLUE_DIR/ft/user_data"'
 
 # $BLUE_DIR/ft/research/*
-alias exec='cd "$BLUE_DIR/ft/research/execution"'
+alias exn='cd "$BLUE_DIR/ft/research/execution"'
 alias lag='cd "$BLUE_DIR/ft/research/lead_lag"'
 alias mm='cd "$BLUE_DIR/ft/research/market_making"'
 alias mr='cd "$BLUE_DIR/ft/research/mean_reversion"'
@@ -73,7 +73,7 @@ alias bi='cd "$BLUE_DIR/ft/tools/binance"'
 alias cv='cd "$BLUE_DIR/ft/tools/converters"'
 alias hi='cd "$BLUE_DIR/ft/tools/historical"'
 alias re='cd "$BLUE_DIR/ft/tools/realtime"'
-alias cc='cd "$BLUE_DIR/ft/tools/realtime/ccxt"'
+alias ccxt='cd "$BLUE_DIR/ft/tools/realtime/ccxt"'
 alias rtv='cd "$BLUE_DIR/ft/tools/realtime/tradingview"'
 
 # $BLUE_DIR/ft/user_data/*
@@ -86,17 +86,17 @@ alias st='cd "$BLUE_DIR/ft/user_data/strategies"'
 # ─────────────────────────────────────────────────────────────────────────────
 # $BLUE_DIR/linux/*
 # ─────────────────────────────────────────────────────────────────────────────
-alias ex='cd "$BLUE_DIR/linux/extra"'
+alias ext='cd "$BLUE_DIR/linux/extra"'
 alias vp='cd "$BLUE_DIR/linux/vps"'
 
 # $BLUE_DIR/linux/extra/*
 alias excf='cd "$BLUE_DIR/linux/extra/config"'
 alias cu='cd "$BLUE_DIR/linux/extra/cursor"'
-alias ip='cd "$BLUE_DIR/linux/extra/iphone"'
+alias iph='cd "$BLUE_DIR/linux/extra/iphone"'
 alias ne='cd "$BLUE_DIR/linux/extra/network"'
 alias nt='cd "$BLUE_DIR/linux/extra/notes"'
 alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'
-alias sh='cd "$BLUE_DIR/linux/extra/shell"'
+alias shl='cd "$BLUE_DIR/linux/extra/shell"'
 
 # $BLUE_DIR/linux/vps/*
 alias ali='cd "$BLUE_DIR/linux/vps/ali"'
@@ -104,7 +104,7 @@ alias aw='cd "$BLUE_DIR/linux/vps/aws"'
 alias az='cd "$BLUE_DIR/linux/vps/azure"'
 alias digi='cd "$BLUE_DIR/linux/vps/digi"'
 alias gcp='cd "$BLUE_DIR/linux/vps/gcp"'
-alias ln='cd "$BLUE_DIR/linux/vps/linode"'
+alias lno='cd "$BLUE_DIR/linux/vps/linode"'
 alias vpse='cd "$BLUE_DIR/linux/vps/setup"'
 alias vu='cd "$BLUE_DIR/linux/vps/vultr"'
 
