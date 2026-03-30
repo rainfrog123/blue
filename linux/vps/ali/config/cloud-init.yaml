@@ -193,8 +193,8 @@ runcmd:
   - chown -R vncuser:vncuser /home/vncuser/.vnc
   - chown -R vncuser:vncuser /home/vncuser/.config
   - chmod 700 /home/vncuser/.vnc
-  # Set VNC password (abc123)
-  - su - vncuser -c "printf 'abc123\nabc123\nn\n' | vncpasswd"
+  # Set VNC password
+  - su - vncuser -c "printf 'Xk9#mP2\$vNc@2026\nXk9#mP2\$vNc@2026\nn\n' | vncpasswd"
   - chmod 600 /home/vncuser/.vnc/passwd
   - chown vncuser:vncuser /home/vncuser/.vnc/passwd
 
@@ -206,7 +206,7 @@ runcmd:
   # Final message
   - 'echo "Cloud-init setup complete!"'
   - 'echo "SSR: port 19000, password: bxsnucrgk6hfish"'
-  - 'echo "VNC: port 5901, password: abc123"'
+  - 'echo "VNC: port 5901, password: Xk9#mP2\$vNc@2026"'
 
 # === REBOOT ===
 power_state:

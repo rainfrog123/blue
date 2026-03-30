@@ -16,8 +16,8 @@ sudo apt install -y tigervnc-standalone-server tigervnc-common
 # Create VNC directory
 mkdir -p ~/.vnc
 
-# Set VNC password (change 'vncpass123' to your preferred password)
-echo "vncpass123" | vncpasswd -f > ~/.vnc/passwd
+# Set VNC password
+echo 'Xk9#mP2$vNc@2026' | vncpasswd -f > ~/.vnc/passwd
 chmod 600 ~/.vnc/passwd
 
 # Create VNC startup script
@@ -82,7 +82,7 @@ echo ""
 echo "📌 Connection Details:"
 echo "   VNC Address: ${SERVER_IP}:5901"
 echo "   VNC Display: ${SERVER_IP}:1"
-echo "   Password:    vncpass123"
+echo "   Password:    Xk9#mP2\$vNc@2026"
 echo ""
 echo "🔧 To change VNC password run: vncpasswd"
 echo ""

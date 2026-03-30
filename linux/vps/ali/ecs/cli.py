@@ -433,7 +433,7 @@ def cmd_provision(args):
     if public_ip and args.update_ssh:
         clear_known_hosts(public_ip)
         update_ssh_config(public_ip, args.ssh_host)
-        update_vnc_config(public_ip)
+        update_vnc_config(public_ip, name=args.ssh_host)
 
 
 def cmd_terminate(args):
@@ -584,35 +584,76 @@ def clear_known_hosts(ip: str):
         pass
 
 
-def update_vnc_config(new_ip: str, port: int = 5901):
-    """Update RealVNC Viewer saved connection with new IP."""
+VNC_PASSWORD = "Xk9#mP2$vNc@2026"
+VNC_USERNAME = "vncuser"
+
+
+def update_vnc_config(new_ip: str, port: int = 5901, name: str = "ali_hk"):
+    """Create/update VNC connection for Remmina (Linux) or RealVNC (Windows)."""
     import re
+    import base64
+    
+    # Try Remmina (Linux)
+    remmina_dir = Path.home() / ".local" / "share" / "remmina"
+    if remmina_dir.exists() or not (Path.home() / "AppData").exists():
+        remmina_dir.mkdir(parents=True, exist_ok=True)
+        remmina_file = remmina_dir / f"{name}.remmina"
+        
+        # Remmina uses base64 for password (not secure, but that's how it works)
+        encoded_pass = base64.b64encode(VNC_PASSWORD.encode()).decode()
+        
+        content = f"""[remmina]
+name={name}
+group=
+server={new_ip}:{port}
+protocol=VNC
+username={VNC_USERNAME}
+password={encoded_pass}
+colordepth=24
+quality=2
+viewmode=1
+window_maximize=1
+"""
+        remmina_file.write_text(content, encoding='utf-8')
+        print(f"[OK] Remmina connection created: {remmina_file}")
+        print(f"     VNC: {new_ip}:{port}")
+        print(f"     User: {VNC_USERNAME}")
+        print(f"     Pass: {VNC_PASSWORD}")
+        return True
+    
+    # Try RealVNC (Windows)
     vnc_store = Path.home() / "AppData" / "Roaming" / "RealVNC" / "ViewerStore"
+    if vnc_store.exists():
+        try:
+            vnc_files = list(vnc_store.glob("*.vnc"))
+            if not vnc_files:
+                print("[WARN] No saved VNC connections found")
+                print(f"[INFO] Connect manually: {new_ip}:{port}")
+                print(f"       User: {VNC_USERNAME}, Pass: {VNC_PASSWORD}")
+                return False
+            
+            updated = 0
+            for vnc_file in vnc_files:
+                content = vnc_file.read_text(encoding='utf-8')
+                if "Host=" in content:
+                    new_content = re.sub(r'Host=[\d\.]+:\d+', f'Host={new_ip}:{port}', content)
+                    if new_content != content:
+                        vnc_file.write_text(new_content, encoding='utf-8')
+                        print(f"[OK] VNC updated: {vnc_file.name} -> {new_ip}:{port}")
+                        updated += 1
+            
+            if updated:
+                print(f"     User: {VNC_USERNAME}, Pass: {VNC_PASSWORD}")
+            return updated > 0
+        except Exception as e:
+            print(f"[WARN] Failed to update VNC config: {e}")
     
-    if not vnc_store.exists():
-        print(f"[WARN] VNC ViewerStore not found: {vnc_store}")
-        return False
-    
-    try:
-        vnc_files = list(vnc_store.glob("*.vnc"))
-        if not vnc_files:
-            print("[WARN] No saved VNC connections found")
-            return False
-        
-        updated = 0
-        for vnc_file in vnc_files:
-            content = vnc_file.read_text(encoding='utf-8')
-            if "Host=" in content:
-                new_content = re.sub(r'Host=[\d\.]+:\d+', f'Host={new_ip}:{port}', content)
-                if new_content != content:
-                    vnc_file.write_text(new_content, encoding='utf-8')
-                    print(f"[OK] VNC updated: {vnc_file.name} -> {new_ip}:{port}")
-                    updated += 1
-        
-        return updated > 0
-    except Exception as e:
-        print(f"[WARN] Failed to update VNC config: {e}")
-        return False
+    # Fallback: just print connection info
+    print(f"[INFO] VNC connection details:")
+    print(f"       Address: {new_ip}:{port}")
+    print(f"       User: {VNC_USERNAME}")
+    print(f"       Pass: {VNC_PASSWORD}")
+    return False
 
 
 # =============================================================================
