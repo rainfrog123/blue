@@ -7,6 +7,77 @@ import sys
 import helpers
 
 
+def cmd_status(args):
+    """Comprehensive status check - account, droplets, and billing."""
+    print("=" * 70)
+    print("DigitalOcean Status")
+    print("=" * 70)
+    
+    # Account info
+    account = helpers.get_account()
+    print(f"\n[Account]")
+    print(f"  Email: {account['email']}")
+    print(f"  Status: {account['status']}")
+    print(f"  Droplet Limit: {account['droplet_limit']}")
+    
+    # Balance
+    balance = helpers.get_balance()
+    print(f"\n[Billing]")
+    print(f"  Month-to-date Usage: ${balance['month_to_date_usage']}")
+    print(f"  Account Balance: ${balance['account_balance']}")
+    
+    # Droplets with pricing
+    droplets = helpers.list_droplets()
+    sizes = helpers.list_sizes(available_only=False)
+    size_map = {s['slug']: s for s in sizes}
+    
+    print(f"\n[Droplets] ({len(droplets)} active)")
+    print("-" * 70)
+    
+    if droplets:
+        total_monthly = 0
+        for d in droplets:
+            ip = helpers.get_droplet_ip(d) or "N/A"
+            size_info = size_map.get(d['size_slug'], {})
+            price = size_info.get('price_monthly', 0)
+            total_monthly += price
+            vcpus = size_info.get('vcpus', d.get('vcpus', '?'))
+            memory_gb = size_info.get('memory', d.get('memory', 0)) / 1024
+            disk = size_info.get('disk', d.get('disk', '?'))
+            
+            print(f"  {d['name']}")
+            print(f"    IP: {ip} | Region: {d['region']['slug']} | Status: {d['status']}")
+            print(f"    Size: {d['size_slug']}")
+            print(f"    Specs: {vcpus} vCPU | {memory_gb:.0f}GB RAM | {disk}GB disk")
+            print(f"    Cost: ${price}/month (${size_info.get('price_hourly', 0)}/hour)")
+            print()
+        
+        print(f"  Total Monthly Cost: ${total_monthly}/month")
+    else:
+        print("  No droplets running")
+    
+    print("=" * 70)
+
+
+def cmd_account(args):
+    """Show account info."""
+    account = helpers.get_account()
+    print(f"Email: {account['email']}")
+    print(f"Status: {account['status']}")
+    print(f"Droplet Limit: {account['droplet_limit']}")
+    print(f"Floating IP Limit: {account.get('floating_ip_limit', 'N/A')}")
+    print(f"Email Verified: {account['email_verified']}")
+    print(f"UUID: {account['uuid']}")
+
+
+def cmd_balance(args):
+    """Show account balance and billing info."""
+    balance = helpers.get_balance()
+    print(f"Month-to-date Usage: ${balance['month_to_date_usage']}")
+    print(f"Account Balance: ${balance['account_balance']}")
+    print(f"Generated At: {balance['generated_at']}")
+
+
 def cmd_list(args):
     """List all droplets."""
     droplets = helpers.list_droplets()
@@ -134,10 +205,20 @@ def cmd_regions(args):
 def cmd_sizes(args):
     """List available sizes."""
     sizes = helpers.list_sizes()
-    print(f"{'Slug':<25} {'vCPU':<6} {'RAM':<8} {'Disk':<8} {'$/mo'}")
-    print("-" * 60)
-    for s in sizes[:20]:
-        print(f"{s['slug']:<25} {s['vcpus']:<6} {s['memory']:<8} {s['disk']:<8} ${s['price_monthly']}")
+    
+    # Sort by price
+    sizes.sort(key=lambda x: x['price_monthly'], reverse=args.desc)
+    
+    print(f"{'Slug':<35} {'vCPU':>5} {'RAM':>8} {'Disk':>8} {'Transfer':>10} {'Price':>10}")
+    print("-" * 85)
+    
+    limit = args.all and len(sizes) or 20
+    for s in sizes[:limit]:
+        ram_gb = s['memory'] / 1024
+        print(f"{s['slug']:<35} {s['vcpus']:>5} {ram_gb:>6.0f}GB {s['disk']:>6}GB {s['transfer']:>8.0f}TB  ${s['price_monthly']:>6}/mo")
+    
+    if not args.all and len(sizes) > 20:
+        print(f"\n  ... {len(sizes) - 20} more sizes (use --all to show all)")
 
 
 def cmd_keys(args):
@@ -241,6 +322,17 @@ def main():
     parser = argparse.ArgumentParser(description="DigitalOcean CLI")
     subparsers = parser.add_subparsers(dest="command", help="Commands")
     
+    # status (comprehensive check)
+    subparsers.add_parser("status", help="Comprehensive status check")
+    subparsers.add_parser("st", help="Status (alias)")
+    
+    # account
+    subparsers.add_parser("account", help="Show account info")
+    
+    # balance
+    subparsers.add_parser("balance", help="Show billing/balance info")
+    subparsers.add_parser("billing", help="Show billing/balance (alias)")
+    
     # list
     subparsers.add_parser("list", help="List droplets")
     subparsers.add_parser("ls", help="List droplets (alias)")
@@ -271,7 +363,9 @@ def main():
     subparsers.add_parser("regions", help="List regions")
     
     # sizes
-    subparsers.add_parser("sizes", help="List sizes")
+    p_sizes = subparsers.add_parser("sizes", help="List sizes")
+    p_sizes.add_argument("-a", "--all", action="store_true", help="Show all sizes")
+    p_sizes.add_argument("-d", "--desc", action="store_true", help="Sort by price descending (largest first)")
     
     # keys
     subparsers.add_parser("keys", help="List SSH keys")
@@ -295,7 +389,13 @@ def main():
     
     args = parser.parse_args()
     
-    if args.command in ("list", "ls"):
+    if args.command in ("status", "st"):
+        cmd_status(args)
+    elif args.command == "account":
+        cmd_account(args)
+    elif args.command in ("balance", "billing"):
+        cmd_balance(args)
+    elif args.command in ("list", "ls"):
         cmd_list(args)
     elif args.command == "create":
         cmd_create(args)
