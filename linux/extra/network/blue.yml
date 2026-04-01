@@ -1033,7 +1033,6 @@ rules:
   - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
   - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
   # 🇺🇸 United States
-  - DOMAIN-SUFFIX,apple.com,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
