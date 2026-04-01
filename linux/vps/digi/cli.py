@@ -318,6 +318,76 @@ def cmd_restore(args):
     print(f"{'='*50}")
 
 
+# --- Reserved IP Commands ---
+
+def cmd_ips(args):
+    """List reserved IPs."""
+    ips = helpers.list_reserved_ips()
+    if not ips:
+        print("No reserved IPs found")
+        return
+    
+    print(f"{'IP Address':<18} {'Region':<8} {'Droplet':<25} {'Droplet ID'}")
+    print("-" * 70)
+    for ip in ips:
+        addr = ip["ip"]
+        region = ip["region"]["slug"]
+        droplet = ip.get("droplet")
+        if droplet:
+            droplet_name = droplet.get("name", "unknown")
+            droplet_id = droplet["id"]
+        else:
+            droplet_name = "(unassigned)"
+            droplet_id = "-"
+        print(f"{addr:<18} {region:<8} {droplet_name:<25} {droplet_id}")
+
+
+def cmd_ip_create(args):
+    """Create a reserved IP."""
+    if args.droplet:
+        print(f"Creating reserved IP for droplet {args.droplet}...")
+        ip = helpers.create_reserved_ip(droplet_id=args.droplet)
+    else:
+        print(f"Creating reserved IP in region {args.region}...")
+        ip = helpers.create_reserved_ip(region=args.region)
+    
+    print(f"\n{'='*50}")
+    print(f"Reserved IP created!")
+    print(f"  IP: {ip['ip']}")
+    print(f"  Region: {ip['region']['slug']}")
+    if ip.get("droplet"):
+        print(f"  Assigned to: {ip['droplet']['name']} (ID: {ip['droplet']['id']})")
+    print(f"\nCost: $5/month (free if assigned to a droplet)")
+    print(f"{'='*50}")
+
+
+def cmd_ip_assign(args):
+    """Assign reserved IP to droplet."""
+    print(f"Assigning {args.ip} to droplet {args.droplet_id}...")
+    helpers.assign_reserved_ip(args.ip, args.droplet_id)
+    print(f"Reserved IP {args.ip} assigned to droplet {args.droplet_id}")
+
+
+def cmd_ip_unassign(args):
+    """Unassign reserved IP from droplet."""
+    print(f"Unassigning {args.ip}...")
+    helpers.unassign_reserved_ip(args.ip)
+    print(f"Reserved IP {args.ip} unassigned")
+
+
+def cmd_ip_delete(args):
+    """Delete a reserved IP."""
+    if not args.yes:
+        print(f"Delete reserved IP {args.ip}?")
+        confirm = input("Type 'yes' to confirm: ")
+        if confirm.lower() != "yes":
+            print("Cancelled")
+            return
+    
+    helpers.delete_reserved_ip(args.ip)
+    print(f"Reserved IP {args.ip} deleted")
+
+
 def main():
     parser = argparse.ArgumentParser(description="DigitalOcean CLI")
     subparsers = parser.add_subparsers(dest="command", help="Commands")
@@ -387,6 +457,30 @@ def main():
     p_restore.add_argument("-r", "--region", default="sgp1", help="Region (default: sgp1)")
     p_restore.add_argument("-s", "--size", default="s-1vcpu-512mb-10gb", help="Size slug")
     
+    # --- Reserved IP commands ---
+    
+    # ips (list)
+    subparsers.add_parser("ips", help="List reserved IPs")
+    
+    # ip-create
+    p_ip_create = subparsers.add_parser("ip-create", help="Create a reserved IP")
+    p_ip_create.add_argument("-r", "--region", default="sgp1", help="Region (default: sgp1)")
+    p_ip_create.add_argument("-d", "--droplet", type=int, help="Droplet ID to assign to")
+    
+    # ip-assign
+    p_ip_assign = subparsers.add_parser("ip-assign", help="Assign reserved IP to droplet")
+    p_ip_assign.add_argument("ip", help="Reserved IP address")
+    p_ip_assign.add_argument("droplet_id", type=int, help="Droplet ID")
+    
+    # ip-unassign
+    p_ip_unassign = subparsers.add_parser("ip-unassign", help="Unassign reserved IP")
+    p_ip_unassign.add_argument("ip", help="Reserved IP address")
+    
+    # ip-delete
+    p_ip_delete = subparsers.add_parser("ip-delete", help="Delete a reserved IP")
+    p_ip_delete.add_argument("ip", help="Reserved IP address")
+    p_ip_delete.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
+    
     args = parser.parse_args()
     
     if args.command in ("status", "st"):
@@ -417,6 +511,16 @@ def main():
         cmd_save(args)
     elif args.command == "restore":
         cmd_restore(args)
+    elif args.command == "ips":
+        cmd_ips(args)
+    elif args.command == "ip-create":
+        cmd_ip_create(args)
+    elif args.command == "ip-assign":
+        cmd_ip_assign(args)
+    elif args.command == "ip-unassign":
+        cmd_ip_unassign(args)
+    elif args.command == "ip-delete":
+        cmd_ip_delete(args)
     else:
         parser.print_help()
 

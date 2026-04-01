@@ -309,3 +309,43 @@ def restore_from_snapshot(snapshot_id: int, name: str, region: str = None,
         ipv6=True,
         monitoring=True,
     )
+
+
+# --- Reserved IPs (formerly Floating IPs) ---
+
+def list_reserved_ips() -> list:
+    """List all reserved IPs."""
+    return api_get("reserved_ips")["reserved_ips"]
+
+
+def get_reserved_ip(ip: str) -> dict:
+    """Get reserved IP by address."""
+    return api_get(f"reserved_ips/{ip}")["reserved_ip"]
+
+
+def create_reserved_ip(region: str = None, droplet_id: int = None) -> dict:
+    """Create a new reserved IP. Either region or droplet_id must be provided."""
+    if droplet_id:
+        data = {"droplet_id": droplet_id}
+    elif region:
+        data = {"region": region}
+    else:
+        raise ValueError("Either region or droplet_id must be provided")
+    return api_post("reserved_ips", data)["reserved_ip"]
+
+
+def delete_reserved_ip(ip: str) -> bool:
+    """Delete a reserved IP."""
+    return api_delete(f"reserved_ips/{ip}")
+
+
+def assign_reserved_ip(ip: str, droplet_id: int) -> dict:
+    """Assign reserved IP to a droplet."""
+    data = {"type": "assign", "droplet_id": droplet_id}
+    return api_post(f"reserved_ips/{ip}/actions", data)["action"]
+
+
+def unassign_reserved_ip(ip: str) -> dict:
+    """Unassign reserved IP from its droplet."""
+    data = {"type": "unassign"}
+    return api_post(f"reserved_ips/{ip}/actions", data)["action"]
