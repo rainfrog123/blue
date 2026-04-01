@@ -5,52 +5,6 @@ proxies:
   # ---------------------------------------------------------------------------
   # Personal Servers
   # ---------------------------------------------------------------------------
-  - name: ali_sg_trojan
-    type: trojan
-    # server: 172.64.158.247
-    server: 162.159.25.200
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.site
-    udp: true
-
-  - name: ali_jp_trojan
-    type: trojan
-    server: 162.159.44.32 
-    # server: 108.162.198.20
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.site
-    udp: true
-
-  - name: ali_sg
-    type: ss
-    server: 8.222.182.157
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: bxsnucrgk6hfish
-    udp: true
-
-  - name: do_sg
-    type: ss
-    server: 188.166.252.16
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: bxsnucrgk6hfish
-    udp: true
-
   - name: do_sg_trojan
     type: trojan
     server: 162.159.25.200
@@ -79,17 +33,18 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  # ---------------------------------------------------------------------------
-  # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
-  # ---------------------------------------------------------------------------
-  # 104.18.40.253    91ms  40.78MB/s SIN | 108.162.198.16  89ms 40.39MB/s NRT
-  # 162.159.39.91    85ms  38.46MB/s NRT | 104.18.46.34    86ms 35.86MB/s SIN
-  # 162.159.45.251   83ms  35.35MB/s NRT | 162.159.26.63   89ms 34.15MB/s SIN
-  # 172.64.48.237    89ms  30.25MB/s SIN |
-  # ---------------------------------------------------------------------------
-  - name: ali_jp_trojan_2
+  - name: do_sg
+    type: ss
+    server: 188.166.252.16
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
+  - name: ali_sg_trojan
     type: trojan
-    server: 108.162.198.16
+    # server: 172.64.158.247
+    server: 162.159.25.200
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -101,6 +56,37 @@ proxies:
         Host: x.hyas.site
     udp: true
 
+  - name: ali_jp_trojan
+    type: trojan
+    server: 162.159.44.32
+    # server: 108.162.198.20
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.site
+    udp: true
+
+  - name: ali_sg
+    type: ss
+    server: 8.222.182.157
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
+  # ---------------------------------------------------------------------------
+  # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
+  # ---------------------------------------------------------------------------
+  # 104.18.40.253    91ms  40.78MB/s SIN | 108.162.198.16  89ms 40.39MB/s NRT
+  # 162.159.39.91    85ms  38.46MB/s NRT | 104.18.46.34    86ms 35.86MB/s SIN
+  # 162.159.45.251   83ms  35.35MB/s NRT | 162.159.26.63   89ms 34.15MB/s SIN
+  # 172.64.48.237    89ms  30.25MB/s SIN |
+  # ---------------------------------------------------------------------------
   - name: do_jp_trojan_2
     type: trojan
     server: 108.162.198.16
@@ -115,9 +101,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_jp_trojan_3
+  - name: ali_jp_trojan_2
     type: trojan
-    server: 162.159.39.91
+    server: 108.162.198.16
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -143,9 +129,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_jp_trojan_4
+  - name: ali_jp_trojan_3
     type: trojan
-    server: 162.159.45.251
+    server: 162.159.39.91
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -171,9 +157,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_sg_trojan_2
+  - name: ali_jp_trojan_4
     type: trojan
-    server: 104.18.40.253
+    server: 162.159.45.251
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -199,9 +185,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_sg_trojan_3
+  - name: ali_sg_trojan_2
     type: trojan
-    server: 104.18.46.34
+    server: 104.18.40.253
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -227,9 +213,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_sg_trojan_4
+  - name: ali_sg_trojan_3
     type: trojan
-    server: 162.159.26.63
+    server: 104.18.46.34
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -255,9 +241,9 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: ali_sg_trojan_5
+  - name: ali_sg_trojan_4
     type: trojan
-    server: 172.64.48.237
+    server: 162.159.26.63
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.site
@@ -281,6 +267,20 @@ proxies:
       path: /x7f9k2m4p8
       headers:
         Host: x.hyas.space
+    udp: true
+
+  - name: ali_sg_trojan_5
+    type: trojan
+    server: 172.64.48.237
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.site
     udp: true
 
   # ---------------------------------------------------------------------------
@@ -363,12 +363,12 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
-      - ali_sg_trojan
-      - ali_jp_trojan
       - do_sg_trojan
       - do_jp_trojan
-      - ali_sg
       - do_sg
+      - ali_sg_trojan
+      - ali_jp_trojan
+      - ali_sg
       - ☁️ Cloudflare CF Nodes
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
@@ -408,30 +408,30 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
-      - ali_jp_trojan_2
-      - do_jp_trojan_2
-      - ali_jp_trojan_3
-      - do_jp_trojan_3
-      - ali_jp_trojan_4
-      - do_jp_trojan_4
-      - ali_sg_trojan_2
+      - do_sg_trojan
+      - do_jp_trojan
       - do_sg_trojan_2
-      - ali_sg_trojan_3
+      - do_jp_trojan_2
       - do_sg_trojan_3
-      - ali_sg_trojan_4
+      - do_jp_trojan_3
       - do_sg_trojan_4
-      - ali_sg_trojan_5
+      - do_jp_trojan_4
       - do_sg_trojan_5
       - ali_sg_trojan
-      - do_sg_trojan
       - ali_jp_trojan
-      - do_jp_trojan
+      - ali_sg_trojan_2
+      - ali_jp_trojan_2
+      - ali_sg_trojan_3
+      - ali_jp_trojan_3
+      - ali_sg_trojan_4
+      - ali_jp_trojan_4
+      - ali_sg_trojan_5
 
   - name: 🤖 AI / IDE Nodes
     type: select
     proxies:
       - 🚀 Node Selection
-      - ali_sg_trojan
+      - do_sg_trojan
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
@@ -444,7 +444,7 @@ proxy-groups:
     proxies:
       - 🇺🇸SS|UnitedStatesB01|IPLC x3
       - 🚀 Node Selection
-      - ali_sg_trojan
+      - do_sg_trojan
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3
       - 🇺🇸SS|UnitedStatesD01|IPLC x3
@@ -456,8 +456,8 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - ☁️ Cloudflare CF Nodes
-      - ali_sg_trojan
-      - ali_sg
+      - do_sg_trojan
+      - do_sg
       - 🇭🇰SS|HongKongB01|IPLC x3
       - 🇹🇼SS|TaiwanB01|IPLC x3
       - 🇸🇬SS|SingaporeB01|IPLC x3
