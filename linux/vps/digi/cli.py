@@ -248,6 +248,28 @@ def cmd_snapshots(args):
         print(f"{s['id']:<12} {s['name']:<25} {size_gb}GB{'':<6} {regions:<10} {created}")
 
 
+def cmd_snapshot(args):
+    """Create a snapshot of the droplet (keeps droplet running)."""
+    droplet_id = args.id
+    droplet = helpers.get_droplet(droplet_id)
+    ip = helpers.get_droplet_ip(droplet) or "N/A"
+    
+    snapshot_name = args.name or f"{droplet['name']}-snap"
+    
+    print(f"Creating snapshot of {droplet['name']} ({ip})...")
+    print(f"Snapshot name: {snapshot_name}")
+    
+    snapshot = helpers.create_snapshot(droplet_id, snapshot_name)
+    
+    print(f"\n{'='*50}")
+    print(f"Snapshot created!")
+    print(f"  Snapshot ID: {snapshot['id']}")
+    print(f"  Snapshot Name: {snapshot_name}")
+    print(f"  Cost: ~$0.06/GB/month")
+    print(f"\nTo restore: python cli.py restore {snapshot['id']} <name>")
+    print(f"{'='*50}")
+
+
 def cmd_save(args):
     """Snapshot droplet and delete it (saves cost)."""
     droplet_id = args.id
@@ -444,6 +466,11 @@ def main():
     subparsers.add_parser("snapshots", help="List snapshots")
     subparsers.add_parser("snaps", help="List snapshots (alias)")
     
+    # snapshot (keep droplet)
+    p_snapshot = subparsers.add_parser("snapshot", help="Create snapshot (keeps droplet running)")
+    p_snapshot.add_argument("id", type=int, help="Droplet ID")
+    p_snapshot.add_argument("-n", "--name", help="Snapshot name")
+    
     # save (snapshot + delete)
     p_save = subparsers.add_parser("save", help="Snapshot droplet and delete it (saves cost)")
     p_save.add_argument("id", type=int, help="Droplet ID")
@@ -507,6 +534,8 @@ def main():
         cmd_keys(args)
     elif args.command in ("snapshots", "snaps"):
         cmd_snapshots(args)
+    elif args.command == "snapshot":
+        cmd_snapshot(args)
     elif args.command == "save":
         cmd_save(args)
     elif args.command == "restore":

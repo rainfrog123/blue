@@ -38,6 +38,16 @@ print_info() {
 }
 
 # ============================================================================
+# HOSTNAME
+# ============================================================================
+print_header "HOSTNAME CONFIGURATION"
+
+print_step "Setting hostname to 'blue'..."
+hostnamectl set-hostname blue
+
+print_success "Hostname set to: $(hostname)"
+
+# ============================================================================
 # SYSTEM UPDATE
 # ============================================================================
 print_header "SYSTEM UPDATE & UPGRADE"
@@ -225,22 +235,6 @@ ln -sf /allah/blue/linux/extra/shell/bashrc /root/.bashrc
 print_success "Custom bashrc linked"
 
 # ============================================================================
-# FIREWALL (UFW) - Optional for DO
-# ============================================================================
-print_header "FIREWALL CONFIGURATION"
-
-print_step "Configuring UFW firewall..."
-ufw --force reset
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow 22/tcp      # SSH
-ufw allow 12033/tcp   # Shadowsocks
-ufw allow 12033/udp   # Shadowsocks UDP
-ufw --force enable
-
-print_success "UFW enabled: SSH(22), Shadowsocks(12033)"
-
-# ============================================================================
 # COMPLETE
 # ============================================================================
 print_header "SETUP COMPLETE"
@@ -251,12 +245,11 @@ echo ""
 print_info "DigitalOcean Premium Intel (4 vCPU, 8GB RAM, 240GB)"
 print_info ""
 print_info "Summary:"
-print_info "  • Hostname: $(hostname)"
+print_info "  • Hostname: blue"
 print_info "  • Shadowsocks: port 12033 (chacha20-ietf-poly1305)"
 print_info "  • TCP BBR: enabled"
 print_info "  • SSH: root login enabled, password auth disabled"
 print_info "  • Repository: /allah/blue"
-print_info "  • Firewall: UFW enabled"
 echo ""
 echo -e "${YELLOW}System will reboot in 5 seconds...${NC}"
 sleep 5
