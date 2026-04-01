@@ -947,6 +947,7 @@ rules:
   # ---------------------------------------------------------------------------
   - DOMAIN,ouo.io,🔑 Manual Selection
   - DOMAIN-SUFFIX,amd.com,🔑 Manual Selection
+  - DOMAIN-KEYWORD,doudou520,🔑 Manual Selection
   - DOMAIN-SUFFIX,connectivitycheck.gstatic.com,🔑 Manual Selection
   - DOMAIN-SUFFIX,linux.do,🔑 Manual Selection
   - DOMAIN-SUFFIX,microsoft.com,🔑 Manual Selection
@@ -1044,7 +1045,6 @@ rules:
   - DOMAIN-SUFFIX,showmyip.com,DIRECT
   - DOMAIN-KEYWORD,aws-latency-test,DIRECT
   - DOMAIN-KEYWORD,bendibao,DIRECT
-  - DOMAIN-KEYWORD,doudou520,DIRECT
   - DOMAIN-KEYWORD,ipqualityscore,DIRECT
   - IP-CIDR,101.124.19.122/32,DIRECT,no-resolve
   - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
