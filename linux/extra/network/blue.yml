@@ -80,6 +80,36 @@ proxies:
     udp: true
 
   # ---------------------------------------------------------------------------
+  # DIGI VPS - VLESS with WARP Outbound (Clean IP)
+  # ---------------------------------------------------------------------------
+  - name: do_sg_reality
+    type: vless
+    server: 188.166.252.16
+    port: 443
+    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.microsoft.com
+    reality-opts:
+      public-key: w7QKHjzAPCl6_V_HlezcQGCe4dkntvOo3JGpc-7tZQo
+      short-id: 32eedaf295ce60a8
+    client-fingerprint: chrome
+
+  - name: do_sg_vless_warp
+    type: vless
+    server: r.hyas.space
+    port: 443
+    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+    network: ws
+    tls: true
+    udp: true
+    servername: r.hyas.space
+    ws-opts:
+      path: /vless-warp
+
+  # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
   # ---------------------------------------------------------------------------
   # 104.18.40.253    91ms  40.78MB/s SIN | 108.162.198.16  89ms 40.39MB/s NRT
@@ -363,6 +393,8 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
+      - do_sg_reality
+      - do_sg_vless_warp
       - do_sg_trojan
       - do_jp_trojan
       - do_sg
@@ -408,6 +440,8 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
+      - do_sg_reality
+      - do_sg_vless_warp
       - do_sg_trojan
       - do_jp_trojan
       - do_sg_trojan_2
@@ -431,6 +465,8 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
+      - do_sg_reality
+      - do_sg_vless_warp
       - do_sg_trojan
       - 🇸🇬SS|SingaporeB01|IPLC x3
       - 🇸🇬SS|SingaporeD01|IPLC x3

@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  xray-reality:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-reality
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json:ro
+    command: run -c /etc/xray/config.json
+    ports:
+      - "443:443"
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - init_tunnel-net
+
+networks:
+  init_tunnel-net:
+    external: true
