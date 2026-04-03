@@ -455,6 +455,7 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - ☁️ Cloudflare CF Nodes
+      - 🌐 Naiyun
       - 🇸🇬do_singapore_tj
       - 🇸🇬do_singapore
       - 🇭🇰ny_hongkong_ss_b
