@@ -4,14 +4,21 @@
 CLI for managing Alibaba Cloud SWAS (轻量应用服务器) instances.
 
 Usage:
-    python cli.py info              # Show instance details
-    python cli.py start             # Start instance
-    python cli.py stop              # Stop instance
-    python cli.py reboot            # Reboot instance
-    python cli.py snapshots         # List snapshots
-    python cli.py snapshot create   # Create snapshot
-    python cli.py disks             # List disks
-    python cli.py firewall          # List firewall rules
+    python cli.py info                              # Show instance details
+    python cli.py start                             # Start instance
+    python cli.py stop                              # Stop instance
+    python cli.py reboot                            # Reboot instance
+    python cli.py snapshots                         # List snapshots
+    python cli.py snapshot create                   # Create snapshot
+    python cli.py snapshot create --name "backup"   # Create named snapshot
+    python cli.py snapshot delete --id <snap_id>    # Delete snapshot
+    python cli.py images                            # List available OS images
+    python cli.py image                             # List custom images
+    python cli.py image create                      # Create image directly from instance
+    python cli.py image create --snapshot-id <id>   # Create image from snapshot
+    python cli.py image delete --id <image_id>      # Delete custom image
+    python cli.py disks                             # List disks
+    python cli.py firewall                          # List firewall rules
 """
 import sys
 from pathlib import Path
@@ -177,6 +184,80 @@ def delete_snapshot(snapshot_id: str):
     return resp
 
 
+# %% Image Operations
+def list_images():
+    """List available system images (OS templates)."""
+    print_header("Available Images")
+    req = swas_models.ListImagesRequest(region_id=REGION_ID)
+    resp = client.list_images(req)
+    for img in resp.body.images:
+        print(f"ID:       {img.image_id}")
+        print(f"Name:     {img.image_name}")
+        print(f"Type:     {img.image_type}")
+        print(f"Platform: {img.platform}")
+        print("-" * 40)
+    return resp.body.images
+
+
+def list_custom_images():
+    """List custom images created by user."""
+    print_header("Custom Images")
+    req = swas_models.ListCustomImagesRequest(region_id=REGION_ID)
+    resp = client.list_custom_images(req)
+    if not resp.body.custom_images:
+        print("No custom images found.")
+        return []
+    for img in resp.body.custom_images:
+        print(f"ID:          {img.image_id}")
+        print(f"Name:        {img.name}")
+        print(f"Status:      {img.status}")
+        print(f"Description: {img.description or '-'}")
+        print(f"Created:     {img.creation_time}")
+        print(f"Region:      {img.region_id}")
+        print("-" * 40)
+    return resp.body.custom_images
+
+
+def create_custom_image(instance_id: str = None, snapshot_id: str = None, name: str = None, description: str = ""):
+    """Create a custom image from instance or snapshot."""
+    print_header("Creating Custom Image")
+    if name is None:
+        from datetime import datetime
+        name = f"image-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    
+    req = swas_models.CreateCustomImageRequest(
+        region_id=REGION_ID,
+        image_name=name,
+        description=description
+    )
+    
+    if instance_id:
+        req.instance_id = instance_id
+        print(f"Creating from instance: {instance_id[:12]}...")
+    elif snapshot_id:
+        req.system_snapshot_id = snapshot_id
+        print(f"Creating from snapshot: {snapshot_id}")
+    else:
+        req.instance_id = INSTANCE_ID
+        print(f"Creating from default instance: {INSTANCE_ID[:12]}...")
+    
+    resp = client.create_custom_image(req)
+    print(f"Custom image created: {resp.body.image_id}")
+    return resp
+
+
+def delete_custom_image(image_id: str):
+    """Delete a custom image."""
+    print_header("Deleting Custom Image")
+    req = swas_models.DeleteCustomImageRequest(
+        region_id=REGION_ID,
+        image_id=image_id
+    )
+    resp = client.delete_custom_image(req)
+    print(f"Custom image deleted: {image_id}")
+    return resp
+
+
 # %% Disk Operations
 def list_disks(instance_id: str = INSTANCE_ID):
     """List disks for the instance."""
@@ -251,10 +332,13 @@ def main():
     parser = argparse.ArgumentParser(description="SWAS CLI - 轻量应用服务器")
     parser.add_argument("command", nargs="?", default="info",
                         choices=["info", "list", "start", "stop", "reboot",
-                                 "snapshots", "snapshot", "disks", "firewall", "run"])
+                                 "snapshots", "snapshot", "disks", "firewall", "run",
+                                 "images", "image"])
     parser.add_argument("subcommand", nargs="?", help="Subcommand (e.g., create, delete)")
-    parser.add_argument("--name", "-n", help="Name for snapshot")
-    parser.add_argument("--id", help="Snapshot ID for deletion")
+    parser.add_argument("--name", "-n", help="Name for snapshot/image")
+    parser.add_argument("--id", help="Snapshot/Image ID for deletion or image creation")
+    parser.add_argument("--snapshot-id", help="Snapshot ID for creating custom image")
+    parser.add_argument("--desc", "-d", help="Description for custom image")
     parser.add_argument("--port", "-p", help="Port for firewall rule")
     parser.add_argument("--cmd", "-c", help="Command to run")
     args = parser.parse_args()
@@ -287,6 +371,21 @@ def main():
             list_firewall_rules()
     elif args.command == "run" and args.cmd:
         run_command(args.cmd)
+    elif args.command == "images":
+        list_images()
+    elif args.command == "image":
+        if args.subcommand == "list":
+            list_custom_images()
+        elif args.subcommand == "create":
+            create_custom_image(
+                snapshot_id=args.snapshot_id,
+                name=args.name,
+                description=args.desc or ""
+            )
+        elif args.subcommand == "delete" and args.id:
+            delete_custom_image(args.id)
+        else:
+            list_custom_images()
     else:
         parser.print_help()
 
