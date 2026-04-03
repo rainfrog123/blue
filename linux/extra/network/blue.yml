@@ -376,8 +376,8 @@ proxy-groups:
   - name: 🚀 Node Selection
     type: select
     proxies:
-      - 🅰️ Ali Nodes
       - DIRECT
+      - 🅰️ Ali Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - 📺 YouTube Nodes
@@ -418,6 +418,36 @@ proxy-groups:
       - 🇸🇬do_singapore_vless_warp
       - 🇸🇬do_singapore_tj
       - 🇯🇵do_japan_tj
+      - 🇸🇬do_singapore_tj_2
+
+  - name: 🅰️ Ali Nodes
+    type: select
+    proxies:
+      - 🇸🇬ali_singapore_tj
+      - 🇯🇵ali_japan_tj
+      - 🇸🇬ali_singapore
+      - 🇯🇵ali_japan_tj_2
+      - 🇯🇵ali_japan_tj_3
+      - 🇯🇵ali_japan_tj_4
+      - 🇯🇵ali_japan_tj_5
+      - 🇯🇵ali_japan_tj_6
+      - 🇯🇵ali_japan_tj_7
+      - 🇸🇬ali_singapore_tj_2
+
+  - name: 🌊 Digital Ocean Nodes
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_tj
+      - 🇯🇵do_japan_tj
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
       - 🇸🇬do_singapore_tj_2
 
   - name: 📺 YouTube Nodes
@@ -543,36 +573,6 @@ proxy-groups:
       - 🇺🇸ny_usa_netflix
       - 🇬🇧ny_uk
       - 🇩🇪ny_germany
-
-  - name: 🅰️ Ali Nodes
-    type: select
-    proxies:
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore
-      - 🇯🇵ali_japan_tj_2
-      - 🇯🇵ali_japan_tj_3
-      - 🇯🇵ali_japan_tj_4
-      - 🇯🇵ali_japan_tj_5
-      - 🇯🇵ali_japan_tj_6
-      - 🇯🇵ali_japan_tj_7
-      - 🇸🇬ali_singapore_tj_2
-
-  - name: 🌊 Digital Ocean Nodes
-    type: select
-    proxies:
-      - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇸🇬do_singapore_tj_2
 
   - name: 🎰 Stake Nodes
     type: select
