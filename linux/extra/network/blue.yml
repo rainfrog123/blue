@@ -415,36 +415,6 @@ proxy-groups:
       # - 🍁 Other Regions
 
   # Special Purpose Groups
-  - name: 🅰️ Ali Nodes
-    type: select
-    proxies:
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore
-      - 🇯🇵ali_japan_tj_2
-      - 🇯🇵ali_japan_tj_3
-      - 🇯🇵ali_japan_tj_4
-      - 🇯🇵ali_japan_tj_5
-      - 🇯🇵ali_japan_tj_6
-      - 🇯🇵ali_japan_tj_7
-      - 🇸🇬ali_singapore_tj_2
-
-  - name: 🌊 Digital Ocean Nodes
-    type: select
-    proxies:
-      - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇸🇬do_singapore_tj_2
-
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
@@ -468,6 +438,25 @@ proxy-groups:
       - 🇸🇬do_singapore_tj
       - 🇯🇵do_japan_tj
       - 🇸🇬do_singapore_tj_2
+
+  - name: 📺 YouTube Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - ☁️ Cloudflare CF Nodes
+      - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore
+      - 🇭🇰ny_hongkong_ss_b
+      - 🇹🇼ny_taiwan_ss_b
+      - 🇸🇬ny_singapore_ss_b
+      - 🇯🇵ny_japan_ss_b
+      - 🇺🇸ny_usa_ss_b
+      - 🇹🇭ny_thailand_ss_b
+      - 🇲🇴ny_macau_ss_b
+      - 🇭🇰ny_hongkong_netflix
+      - 🇸🇬ny_singapore_netflix
+      - 🇯🇵ny_japan_netflix
+      - 🇺🇸ny_usa_netflix
 
   # Naiyun Subscription Group
   - name: 🌐 Naiyun
@@ -560,25 +549,6 @@ proxy-groups:
       - 🇸🇬ny_singapore_netflix
       - 🇺🇸ny_usa_netflix
 
-  - name: 📺 YouTube Nodes
-    type: select
-    proxies:
-      - 🚀 Node Selection
-      - ☁️ Cloudflare CF Nodes
-      - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore
-      - 🇭🇰ny_hongkong_ss_b
-      - 🇹🇼ny_taiwan_ss_b
-      - 🇸🇬ny_singapore_ss_b
-      - 🇯🇵ny_japan_ss_b
-      - 🇺🇸ny_usa_ss_b
-      - 🇹🇭ny_thailand_ss_b
-      - 🇲🇴ny_macau_ss_b
-      - 🇭🇰ny_hongkong_netflix
-      - 🇸🇬ny_singapore_netflix
-      - 🇯🇵ny_japan_netflix
-      - 🇺🇸ny_usa_netflix
-
   - name: 🖥️ Cursor Website Nodes
     type: select
     proxies:
@@ -592,6 +562,36 @@ proxy-groups:
       - 🇺🇸ny_usa_netflix
       - 🇬🇧ny_uk
       - 🇩🇪ny_germany
+
+  - name: 🅰️ Ali Nodes
+    type: select
+    proxies:
+      - 🇸🇬ali_singapore_tj
+      - 🇯🇵ali_japan_tj
+      - 🇸🇬ali_singapore
+      - 🇯🇵ali_japan_tj_2
+      - 🇯🇵ali_japan_tj_3
+      - 🇯🇵ali_japan_tj_4
+      - 🇯🇵ali_japan_tj_5
+      - 🇯🇵ali_japan_tj_6
+      - 🇯🇵ali_japan_tj_7
+      - 🇸🇬ali_singapore_tj_2
+
+  - name: 🌊 Digital Ocean Nodes
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_tj
+      - 🇯🇵do_japan_tj
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
+      - 🇸🇬do_singapore_tj_2
 
   - name: 🎰 Stake Nodes
     type: select
