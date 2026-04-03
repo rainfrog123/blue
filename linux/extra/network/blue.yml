@@ -1,10 +1,6 @@
-# =============================================================================
 # Proxies
-# =============================================================================
 proxies:
-  # ---------------------------------------------------------------------------
   # Personal Servers (ali nodes first, then do nodes)
-  # ---------------------------------------------------------------------------
   - name: 🇸🇬ali_singapore_tj
     type: trojan
     # server: 172.64.158.247
@@ -79,9 +75,7 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
-  # ---------------------------------------------------------------------------
   # DIGI VPS - VLESS with WARP Outbound (Clean IP)
-  # ---------------------------------------------------------------------------
   - name: 🇸🇬do_singapore_reality
     type: vless
     server: 188.166.252.16
@@ -109,9 +103,7 @@ proxies:
     ws-opts:
       path: /vless-warp
 
-  # ---------------------------------------------------------------------------
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed (ali first)
-  # ---------------------------------------------------------------------------
   # IP Address        Latency  Speed(MB/s)  Region
   # 162.159.44.134    85ms     49.60        NRT
   # 162.159.38.224    82ms     38.60        NRT
@@ -120,7 +112,6 @@ proxies:
   # 108.162.198.67    92ms     34.96        NRT
   # 162.159.39.117    88ms     34.33        NRT
   # 162.159.26.232    88ms     33.01        SIN
-  # ---------------------------------------------------------------------------
   - name: 🇯🇵ali_japan_tj_2
     type: trojan
     server: 162.159.44.134
@@ -317,9 +308,7 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  # ---------------------------------------------------------------------------
   # Naiyun Subscription Nodes (with naiyun_ prefix)
-  # ---------------------------------------------------------------------------
   # Trojan Netflix/Direct Nodes
   - {name: 🇭🇰naiyun_hongkong_direct, type: trojan, server: 01e73d7e2372b7343607806764cbc3ae.node.tro.cac.cab, port: 47264, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.naiun.bilibili.com, skip-cert-verify: true}
   - {name: 🇭🇰naiyun_hongkong_netflix, type: trojan, server: d79bce6d16ef52f0accf0502895a2fe8.node.tro.cac.cab, port: 45681, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.01.naiun.bilibili.com, skip-cert-verify: true}
@@ -381,13 +370,9 @@ proxies:
   - {name: 🇩🇪naiyun_germany, type: trojan, server: 55bd1bc76b28889bbb1f488bda0c7543.node.tro.cac.cab, port: 41487, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
   - {name: 🇫🇷naiyun_france, type: trojan, server: 7c65a7b364333e1b895d181d0f11f1f0.node.tro.cac.cab, port: 40479, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
 
-# =============================================================================
 # Proxy Groups
-# =============================================================================
 proxy-groups:
-   # ---------------------------------------------------------------------------
   # Primary Selection Groups
-  # ---------------------------------------------------------------------------
   - name: 🚀 Node Selection
     type: select
     proxies:
@@ -429,9 +414,7 @@ proxy-groups:
       # - 🇹🇼 Taiwan Nodes
       # - 🍁 Other Regions
 
-  # ---------------------------------------------------------------------------
   # Special Purpose Groups
-  # ---------------------------------------------------------------------------
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
@@ -455,6 +438,71 @@ proxy-groups:
       - 🇸🇬do_singapore_tj
       - 🇯🇵do_japan_tj
       - 🇸🇬do_singapore_tj_2
+
+  # Naiyun Subscription Group
+  - name: 🌐 Naiyun
+    type: select
+    proxies:
+      # Netflix/Direct Trojan
+      - 🇭🇰naiyun_hongkong_direct
+      - 🇭🇰naiyun_hongkong_netflix
+      - 🇹🇼naiyun_taiwan_netflix
+      - 🇸🇬naiyun_singapore_netflix
+      - 🇯🇵naiyun_japan_netflix
+      - 🇺🇸naiyun_usa_netflix
+      - 🇹🇭naiyun_thailand_netflix
+      - 🇷🇺naiyun_russia
+      # IPLC Shadowsocks
+      - 🇭🇰naiyun_hongkong_ss_b
+      - 🇭🇰naiyun_hongkong_ss_d
+      - 🇹🇼naiyun_taiwan_ss_b
+      - 🇹🇼naiyun_taiwan_ss_d
+      - 🇸🇬naiyun_singapore_ss_b
+      - 🇸🇬naiyun_singapore_ss_d
+      - 🇯🇵naiyun_japan_ss_b
+      - 🇯🇵naiyun_japan_ss_d
+      - 🇺🇸naiyun_usa_ss_b
+      - 🇺🇸naiyun_usa_ss_d
+      - 🇹🇭naiyun_thailand_ss_b
+      - 🇹🇭naiyun_thailand_ss_d
+      - 🇲🇴naiyun_macau_ss_b
+      - 🇲🇴naiyun_macau_ss_d
+      # IPLC VMess
+      - 🇭🇰naiyun_hongkong_vmess_b
+      - 🇭🇰naiyun_hongkong_vmess_d
+      # IDC Trojan
+      - 🇰🇷naiyun_korea
+      - 🇬🇧naiyun_uk
+      - 🇲🇾naiyun_malaysia
+      - 🇵🇭naiyun_philippines
+      - 🇨🇦naiyun_canada
+      - 🇦🇷naiyun_argentina
+      - 🇮🇳naiyun_india
+      - 🇲🇽naiyun_mexico
+      - 🇦🇺naiyun_australia
+      - 🇹🇷naiyun_turkey
+      - 🇳🇬naiyun_nigeria
+      - 🇻🇳naiyun_vietnam
+      - 🇧🇷naiyun_brazil
+      - 🇿🇦naiyun_southafrica
+      - 🇦🇪naiyun_uae
+      - 🇲🇲naiyun_myanmar
+      - 🇺🇦naiyun_ukraine
+      - 🇵🇰naiyun_pakistan
+      - 🇳🇿naiyun_newzealand
+      - 🇮🇱naiyun_israel
+      - 🇰🇿naiyun_kazakhstan
+      - 🇮🇩naiyun_indonesia
+      - 🇬🇱naiyun_greenland
+      - 🇮🇹naiyun_italy
+      - 🇪🇬naiyun_egypt
+      - 🇵🇪naiyun_peru
+      - 🇮🇸naiyun_iceland
+      - 🇬🇭naiyun_ghana
+      - 🇦🇿naiyun_azerbaijan
+      - 🇨🇭naiyun_switzerland
+      - 🇩🇪naiyun_germany
+      - 🇫🇷naiyun_france
 
   - name: 🤖 AI / IDE Nodes
     type: select
@@ -534,9 +582,7 @@ proxy-groups:
       - 🇧🇷naiyun_brazil
       - 🇦🇷naiyun_argentina
 
-  # ---------------------------------------------------------------------------
   # Streaming & Social Media Groups
-  # ---------------------------------------------------------------------------
   - name: ☎️ Telegram
     type: select
     proxies:
@@ -646,9 +692,7 @@ proxy-groups:
       - 🍁 Other Regions
       - DIRECT
 
-  # ---------------------------------------------------------------------------
   # Utility Groups
-  # ---------------------------------------------------------------------------
   - name: 🛡️ Privacy Protection
     type: select
     proxies:
@@ -719,9 +763,7 @@ proxy-groups:
     url: https://i.ytimg.com/generate_204
     interval: 500
 
-  # ---------------------------------------------------------------------------
   # Protocol Groups
-  # ---------------------------------------------------------------------------
   - name: ⚡️IPLC/IEPL
     type: select
     proxies:
@@ -761,9 +803,7 @@ proxy-groups:
       - 🇷🇺naiyun_russia
       - DIRECT
 
-  # ---------------------------------------------------------------------------
   # Regional Groups
-  # ---------------------------------------------------------------------------
   - name: 🇭🇰 Hong Kong Nodes
     type: select
     proxies:
@@ -840,76 +880,7 @@ proxy-groups:
       - 🇦🇷naiyun_argentina
       - 🇧🇷naiyun_brazil
 
-  # ---------------------------------------------------------------------------
-  # Naiyun Subscription Group
-  # ---------------------------------------------------------------------------
-  - name: 🌐 Naiyun
-    type: select
-    proxies:
-      # Netflix/Direct Trojan
-      - 🇭🇰naiyun_hongkong_direct
-      - 🇭🇰naiyun_hongkong_netflix
-      - 🇹🇼naiyun_taiwan_netflix
-      - 🇸🇬naiyun_singapore_netflix
-      - 🇯🇵naiyun_japan_netflix
-      - 🇺🇸naiyun_usa_netflix
-      - 🇹🇭naiyun_thailand_netflix
-      - 🇷🇺naiyun_russia
-      # IPLC Shadowsocks
-      - 🇭🇰naiyun_hongkong_ss_b
-      - 🇭🇰naiyun_hongkong_ss_d
-      - 🇹🇼naiyun_taiwan_ss_b
-      - 🇹🇼naiyun_taiwan_ss_d
-      - 🇸🇬naiyun_singapore_ss_b
-      - 🇸🇬naiyun_singapore_ss_d
-      - 🇯🇵naiyun_japan_ss_b
-      - 🇯🇵naiyun_japan_ss_d
-      - 🇺🇸naiyun_usa_ss_b
-      - 🇺🇸naiyun_usa_ss_d
-      - 🇹🇭naiyun_thailand_ss_b
-      - 🇹🇭naiyun_thailand_ss_d
-      - 🇲🇴naiyun_macau_ss_b
-      - 🇲🇴naiyun_macau_ss_d
-      # IPLC VMess
-      - 🇭🇰naiyun_hongkong_vmess_b
-      - 🇭🇰naiyun_hongkong_vmess_d
-      # IDC Trojan
-      - 🇰🇷naiyun_korea
-      - 🇬🇧naiyun_uk
-      - 🇲🇾naiyun_malaysia
-      - 🇵🇭naiyun_philippines
-      - 🇨🇦naiyun_canada
-      - 🇦🇷naiyun_argentina
-      - 🇮🇳naiyun_india
-      - 🇲🇽naiyun_mexico
-      - 🇦🇺naiyun_australia
-      - 🇹🇷naiyun_turkey
-      - 🇳🇬naiyun_nigeria
-      - 🇻🇳naiyun_vietnam
-      - 🇧🇷naiyun_brazil
-      - 🇿🇦naiyun_southafrica
-      - 🇦🇪naiyun_uae
-      - 🇲🇲naiyun_myanmar
-      - 🇺🇦naiyun_ukraine
-      - 🇵🇰naiyun_pakistan
-      - 🇳🇿naiyun_newzealand
-      - 🇮🇱naiyun_israel
-      - 🇰🇿naiyun_kazakhstan
-      - 🇮🇩naiyun_indonesia
-      - 🇬🇱naiyun_greenland
-      - 🇮🇹naiyun_italy
-      - 🇪🇬naiyun_egypt
-      - 🇵🇪naiyun_peru
-      - 🇮🇸naiyun_iceland
-      - 🇬🇭naiyun_ghana
-      - 🇦🇿naiyun_azerbaijan
-      - 🇨🇭naiyun_switzerland
-      - 🇩🇪naiyun_germany
-      - 🇫🇷naiyun_france
-
-  # ---------------------------------------------------------------------------
   # Commented Out - Manual Selection (kept for reference)
-  # ---------------------------------------------------------------------------
   # - name: 🔑 Manual Selection
   #   type: select
   #   proxies:
@@ -937,9 +908,7 @@ proxy-groups:
   #     - 🇬🇧naiyun_uk
   #     - 🇰🇷naiyun_korea
 
-# =============================================================================
 # Rule Providers
-# =============================================================================
 rule-providers:
   IPfake:
     type: http
@@ -1053,16 +1022,11 @@ rule-providers:
     path: ./Rules/Lan.yaml
     interval: 1386400
 
-# =============================================================================
 # Rules
-# =============================================================================
 rules:
-  # ---------------------------------------------------------------------------
-  # 🚀 Node Selection (formerly Manual Selection)
-  # ---------------------------------------------------------------------------
+  # 🚀 Node Selection
   - DOMAIN,ouo.io,🚀 Node Selection
   - DOMAIN-SUFFIX,amd.com,🚀 Node Selection
-  - DOMAIN-KEYWORD,doudou520,🚀 Node Selection
   - DOMAIN-SUFFIX,connectivitycheck.gstatic.com,🚀 Node Selection
   - DOMAIN-SUFFIX,linux.do,🚀 Node Selection
   - DOMAIN-SUFFIX,microsoft.com,🚀 Node Selection
@@ -1070,57 +1034,46 @@ rules:
   - DOMAIN-SUFFIX,pool.ntp.org,🚀 Node Selection
   - DOMAIN-SUFFIX,services.googleapis.cn,🚀 Node Selection
   - DOMAIN-KEYWORD,cdn2020,🚀 Node Selection
+  - DOMAIN-KEYWORD,doudou520,🚀 Node Selection
   - DOMAIN-KEYWORD,polymarket,🚀 Node Selection
   - DOMAIN-KEYWORD,siwazywcdn2,🚀 Node Selection
   - DOMAIN-KEYWORD,trading212,🚀 Node Selection
   - DOMAIN-KEYWORD,windowsup,🚀 Node Selection
 
-  # ---------------------------------------------------------------------------
   # 🖥️ Cursor Website Nodes
-  # ---------------------------------------------------------------------------
   - DOMAIN-KEYWORD,hcaptcha,🖥️ Cursor Website Nodes
+  - DOMAIN-KEYWORD,oracle,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,px-cloud,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,stripe,🖥️ Cursor Website Nodes
-  - DOMAIN-KEYWORD,oracle,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,workos,🖥️ Cursor Website Nodes
 
-  # ---------------------------------------------------------------------------
-  # 🇺🇸 United States Nodes (IP-based)
-  # ---------------------------------------------------------------------------
+  # 🇺🇸 United States Nodes
   - SRC-IP-CIDR,100.125.223.72/32,🇺🇸 United States Nodes
 
-  # ---------------------------------------------------------------------------
   # 🧠 Claude Nodes
-  # ---------------------------------------------------------------------------
   - DOMAIN-KEYWORD,anthropic,🧠 Claude Nodes
   - DOMAIN-KEYWORD,claude,🧠 Claude Nodes
   - DOMAIN-KEYWORD,namecheap,🧠 Claude Nodes
 
-  # ---------------------------------------------------------------------------
   # 🤖 AI / IDE Nodes
-  # ---------------------------------------------------------------------------
   - DOMAIN-SUFFIX,challenges.cloudflare.com,🤖 AI / IDE Nodes
   # - DOMAIN-SUFFIX,cursor.com,🤖 AI / IDE Nodes
   - DOMAIN-SUFFIX,ft.com,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,booking,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,chatgpt,🤖 AI / IDE Nodes
   # - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
+  - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,heytap,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,oai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,openai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,translate.googleapis,🤖 AI / IDE Nodes
-  - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
   - PROCESS-NAME,cursor.exe,🤖 AI / IDE Nodes
-  - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
+  - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
 
-  # ---------------------------------------------------------------------------
-  # 🎮 Gaming Process Rules
-  # ---------------------------------------------------------------------------
+  # 🎮 Gaming
   - PROCESS-NAME,com.riotgames.league.teamfighttactics,🚀 Node Selection
 
-  # ---------------------------------------------------------------------------
   # 🎰 Stake Nodes
-  # ---------------------------------------------------------------------------
   - DOMAIN-KEYWORD,cidbopixq,🎰 Stake Nodes
   - DOMAIN-KEYWORD,evo-games,🎰 Stake Nodes
   - DOMAIN-KEYWORD,gcmlgxrmkp,🎰 Stake Nodes
@@ -1129,33 +1082,23 @@ rules:
   - DOMAIN-KEYWORD,puyqhjvx,🎰 Stake Nodes
   - DOMAIN-KEYWORD,stake,🎰 Stake Nodes
 
-  # ---------------------------------------------------------------------------
   # 📺 YouTube Nodes
-  # ---------------------------------------------------------------------------
   - DOMAIN-KEYWORD,googlevideo,📺 YouTube Nodes
   - DOMAIN-KEYWORD,instagram,📺 YouTube Nodes
   - DOMAIN-KEYWORD,youtube,📺 YouTube Nodes
 
-  # ---------------------------------------------------------------------------
   # 🌏 Regional Nodes
-  # ---------------------------------------------------------------------------
-  # 🇹🇼 Taiwan
   - DOMAIN-KEYWORD,certipedia,🇹🇼 Taiwan Nodes
-  # 🇯🇵 Japan
   - DOMAIN-KEYWORD,bybit,🇯🇵 Japan Nodes
   - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
-  # 🇪🇺 Europe
   - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
   - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
-  # 🇺🇸 United States
   - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,links.com,🇺🇸 United States Nodes
 
-  # ---------------------------------------------------------------------------
-  # ✅ Direct Rules
-  # ---------------------------------------------------------------------------
+  # ✅ DIRECT
   - DOMAIN-SUFFIX,bijiago.com,DIRECT
   - DOMAIN-SUFFIX,showmyip.com,DIRECT
   - DOMAIN-KEYWORD,aws-latency-test,DIRECT
@@ -1165,25 +1108,19 @@ rules:
   - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
   - PROCESS-NAME,cfst.exe,DIRECT
 
-  # ---------------------------------------------------------------------------
-  # 🚫 Reject Rules
-  # ---------------------------------------------------------------------------
+  # 🚫 REJECT
   - DOMAIN-SUFFIX,gjfzpt.cn,REJECT
   # - DST-PORT,34089,REJECT
   # - DST-PORT,36033,REJECT
   # - DST-PORT,46871,REJECT
   - SRC-IP-CIDR,219.143.187.136/32,REJECT
 
-  # ---------------------------------------------------------------------------
-  # 🛒 JD (京东) - Bypass Ad Blocking for legitimate services
-  # ---------------------------------------------------------------------------
-  - DOMAIN-SUFFIX,jd.com,🇨🇳 China Traffic
+  # 🛒 JD
   - DOMAIN-SUFFIX,360buyimg.com,🇨🇳 China Traffic
+  - DOMAIN-SUFFIX,jd.com,🇨🇳 China Traffic
   - DOMAIN-KEYWORD,jdcloud,🇨🇳 China Traffic
 
-  # ---------------------------------------------------------------------------
   # 📦 Rule Sets
-  # ---------------------------------------------------------------------------
   - RULE-SET,BiliBili,📺 BiliBili
   - RULE-SET,YouTube,🎬 YouTube
   - RULE-SET,Netflix,🎥 Netflix
@@ -1201,15 +1138,11 @@ rules:
   - RULE-SET,ChinaMax,🇨🇳 China Traffic
   - RULE-SET,Global,🚀 Node Selection
 
-  # ---------------------------------------------------------------------------
-  # 🏁 Final Rules
-  # ---------------------------------------------------------------------------
+  # 🏁 Final
   - GEOIP,CN,🇨🇳 China Traffic
   - MATCH,🐟 Final
 
-# =============================================================================
 # Reference: Cloudflare IP Test Results
-# =============================================================================
 # IP Address        Sent  Recv  Loss    Latency(ms)  Speed(MB/s)  Region
 # 104.18.40.253     4     4     0.00    90.67        40.78        SIN
 # 108.162.198.16    4     4     0.00    89.36        40.39        NRT
@@ -1219,9 +1152,7 @@ rules:
 # 162.159.26.63     4     4     0.00    89.12        34.15        SIN
 # 172.64.48.237     4     4     0.00    89.48        30.25        SIN
 
-# =============================================================================
-# DNS Configuration (Plain UDP DNS - fast)
-# =============================================================================
+# DNS Configuration
 dns:
   enable: true
   listen: 0.0.0.0:53
