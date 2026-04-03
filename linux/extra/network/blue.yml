@@ -376,11 +376,10 @@ proxy-groups:
   - name: 🚀 Node Selection
     type: select
     proxies:
-      - DIRECT
       - 🅰️ Ali Nodes
+      - DIRECT
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
-      - 📺 YouTube Nodes
       - 🌐 Naiyun
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
