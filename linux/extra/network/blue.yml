@@ -634,6 +634,18 @@ proxy-groups:
       - 🇧🇷ny_brazil
       - 🇦🇷ny_argentina
 
+  - name: 🎮 Riot Games
+    type: select
+    proxies:
+      - 🅰️ Ali Nodes
+      - 🚀 Node Selection
+      - 🌊 Digital Ocean Nodes
+      - ☁️ Cloudflare CF Nodes
+      - 🌐 Naiyun
+      - 🇯🇵ny_japan_ss_b
+      - 🇸🇬ny_singapore_ss_b
+      - 🇰🇷ny_korea
+
   # Streaming & Social Media Groups
   - name: ☎️ Telegram
     type: select
@@ -1122,8 +1134,8 @@ rules:
   - PROCESS-NAME,cursor.exe,🤖 AI / IDE Nodes
   - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
 
-  # 🎮 Gaming
-  - PROCESS-NAME,com.riotgames.league.teamfighttactics,🅰️ Ali Nodes
+  # 🎮 Riot Games
+  - PROCESS-NAME,com.riotgames.league.teamfighttactics,🎮 Riot Games
 
   # 🎰 Stake Nodes
   - DOMAIN-KEYWORD,cidbopixq,🎰 Stake Nodes
