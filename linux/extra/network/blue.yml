@@ -376,31 +376,12 @@ proxy-groups:
   - name: 🚀 Node Selection
     type: select
     proxies:
-      - 🇸🇬ali_singapore_tj
+      - 🅰️ Ali Nodes
       - DIRECT
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
-      - 🇸🇬do_singapore
+      - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
+      - 📺 YouTube Nodes
       - 🌐 Naiyun
-      - 🇭🇰ny_hongkong_ss_b
-      - 🇹🇼ny_taiwan_ss_b
-      - 🇸🇬ny_singapore_ss_b
-      - 🇯🇵ny_japan_ss_b
-      - 🇺🇸ny_usa_ss_b
-      - 🇹🇭ny_thailand_ss_b
-      - 🇲🇴ny_macau_ss_b
-      - 🇭🇰ny_hongkong_netflix
-      - 🇸🇬ny_singapore_netflix
-      - 🇯🇵ny_japan_netflix
-      - 🇺🇸ny_usa_netflix
-      - 🇬🇧ny_uk
-      - 🇰🇷ny_korea
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
       # - ☁️ Cloudflare CF Nodes
