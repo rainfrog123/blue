@@ -559,6 +559,17 @@ proxy-groups:
       - 🇸🇬ny_singapore_netflix
       - 🇺🇸ny_usa_netflix
 
+  - name: 🔑 Manual Selection
+    type: select
+    proxies:
+      - DIRECT
+      - 🅰️ Ali Nodes
+      - 🌊 Digital Ocean Nodes
+      - ☁️ Cloudflare CF Nodes
+      - 🌐 Naiyun
+      - ⚡️IPLC/IEPL
+      - 🎠Trojan
+
   - name: 🖥️ Cursor Website Nodes
     type: select
     proxies:
