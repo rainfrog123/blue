@@ -376,8 +376,8 @@ proxy-groups:
   - name: 🚀 Node Selection
     type: select
     proxies:
-      - 🅰️ Ali Nodes
       - DIRECT
+      - 🅰️ Ali Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - 🌐 Naiyun
