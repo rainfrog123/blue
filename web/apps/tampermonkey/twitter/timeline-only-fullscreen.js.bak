@@ -62,23 +62,137 @@
             display: none !important;
         }
 
-        /* Center the main content */
+        /* Make the main content full width */
         main[role="main"] {
-            margin: 0 auto !important;
-            display: flex !important;
-            justify-content: center !important;
-        }
-
-        /* Center the primary column with a reasonable max-width */
-        [data-testid="primaryColumn"] {
-            max-width: 600px !important;
+            margin-left: 0 !important;
+            max-width: 100% !important;
             width: 100% !important;
-            margin: 0 auto !important;
         }
 
-        /* Center the main content wrapper */
+        /* Expand the primary column to full width */
+        [data-testid="primaryColumn"] {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            border: none !important;
+        }
+
+        /* Override Twitter's internal width constraints on nested containers */
+        [data-testid="primaryColumn"] > div > div,
+        [data-testid="primaryColumn"] > div > div > div,
+        [data-testid="primaryColumn"] section > div > div {
+            max-width: 100% !important;
+        }
+
+        /* Force all parent containers to be full width */
+        #react-root > div,
+        #react-root > div > div,
+        #react-root > div > div > div,
+        #react-root > div > div > div > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Remove the empty sidebar space */
         main[role="main"] > div {
-            justify-content: center !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            justify-content: flex-start !important;
+        }
+
+        /* Override all max-width on common Twitter container classes */
+        main[role="main"] div[class*="r-"] {
+            max-width: 100% !important;
+        }
+
+        /* Force primaryColumn parent wrappers to full width */
+        [data-testid="primaryColumn"],
+        [data-testid="primaryColumn"] > div,
+        [data-testid="primaryColumn"] > div > div,
+        [data-testid="primaryColumn"] > div > div > div,
+        [data-testid="primaryColumn"] > div > div > div > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Make timeline section fill available space */
+        section[role="region"] {
+            max-width: 100% !important;
+        }
+
+        /* Expand tweet articles to full width */
+        article[data-testid="tweet"] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Make all tweet cell wrappers full width */
+        [data-testid="cellInnerDiv"] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Expand the tweet text content area */
+        [data-testid="tweetText"] {
+            max-width: 100% !important;
+        }
+
+        /* Make media (images/videos) in tweets wider */
+        [data-testid="tweetPhoto"],
+        [data-testid="videoPlayer"],
+        [data-testid="card.wrapper"] {
+            max-width: 100% !important;
+        }
+
+        /* Timeline container full width - home, profile, and individual pages */
+        [aria-label="Timeline: Your Home Timeline"],
+        [aria-label="Timeline: Trending now"],
+        [aria-label^="Timeline:"],
+        [aria-label="Section details"],
+        [data-testid="tweet"] [data-testid="User-Name"],
+        section[role="region"] > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Individual tweet/status page - expand conversation thread */
+        [aria-label^="Timeline: Conversation"],
+        [data-testid="tweet-reply"],
+        [data-testid="inline-reply"] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Profile page - expand user profile header and all components */
+        [data-testid="UserProfileHeader_Items"],
+        [data-testid="UserDescription"],
+        [data-testid="UserName"],
+        [data-testid="UserAvatar-Container-unknown"],
+        [data-testid="placementTracking"],
+        [data-testid="userActions"] {
+            max-width: 100% !important;
+        }
+
+        /* Profile header banner - full width */
+        [href$="/header_photo"],
+        [href$="/header_photo"] > div {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Profile timeline section - full width */
+        [aria-label$="'s posts"],
+        [aria-label$="'s posts"] > div,
+        section[aria-labelledby] {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
+        /* Timeline virtualized container */
+        [aria-label^="Timeline:"] > div[style*="position: relative"],
+        div[style*="min-height"][style*="position: relative"] {
+            max-width: 100% !important;
+            width: 100% !important;
         }
 
         /* Hide the bottom bar/dock if present */

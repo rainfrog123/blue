@@ -342,6 +342,232 @@ def cmd_proxy_delete(args):
                 print(f"error: {e}")
 
 
+def cmd_create_free(args):
+    """Create a completely free Azure VM with IPv6-only (no public IPv4 charges)."""
+    from azure.mgmt.compute.models import (
+        VirtualMachine, HardwareProfile, StorageProfile, OSDisk,
+        ImageReference, NetworkProfile, NetworkInterfaceReference,
+        OSProfile, LinuxConfiguration, SshConfiguration, SshPublicKey,
+        DiskCreateOptionTypes, CachingTypes, DeleteOptions
+    )
+    from azure.mgmt.network.models import (
+        VirtualNetwork, Subnet, AddressSpace, PublicIPAddress,
+        NetworkInterface, NetworkInterfaceIPConfiguration,
+        NetworkSecurityGroup, SecurityRule
+    )
+    
+    clients = get_clients()
+    location = args.location
+    rg_name = args.name
+    vm_name = args.name
+    username = args.username
+    
+    import os
+    # Read SSH public key
+    ssh_key_path = os.path.expanduser(args.ssh_key)
+    try:
+        with open(ssh_key_path, 'r') as f:
+            ssh_pub_key = f.read().strip()
+    except FileNotFoundError:
+        print(f"Error: SSH key not found at {ssh_key_path}")
+        print("Generate one with: ssh-keygen -t ed25519")
+        return
+    
+    vm_size = args.size
+    
+    print(f"\n{'='*60}")
+    print("Creating FREE Azure VM")
+    print(f"{'='*60}")
+    print(f"  Name:     {vm_name}")
+    print(f"  Location: {location}")
+    print(f"  Size:     {vm_size}")
+    print(f"  Disk:     64 GB Premium SSD (P6)")
+    print(f"  IP:       IPv6 only (free)")
+    print()
+    
+    # 1. Create Resource Group
+    print("1. Creating resource group...", end=" ", flush=True)
+    clients.resource.resource_groups.create_or_update(rg_name, {"location": location})
+    print("done")
+    
+    # 2. Create Network Security Group
+    print("2. Creating network security group...", end=" ", flush=True)
+    nsg_name = f"{vm_name}-nsg"
+    nsg = clients.network.network_security_groups.begin_create_or_update(
+        rg_name, nsg_name,
+        NetworkSecurityGroup(
+            location=location,
+            security_rules=[
+                SecurityRule(
+                    name="AllowSSH",
+                    protocol="Tcp",
+                    source_port_range="*",
+                    destination_port_range="22",
+                    source_address_prefix="*",
+                    destination_address_prefix="*",
+                    access="Allow",
+                    priority=1000,
+                    direction="Inbound"
+                ),
+                SecurityRule(
+                    name="AllowSSH-IPv6",
+                    protocol="Tcp",
+                    source_port_range="*",
+                    destination_port_range="22",
+                    source_address_prefix="::/0",
+                    destination_address_prefix="::/0",
+                    access="Allow",
+                    priority=1001,
+                    direction="Inbound"
+                )
+            ]
+        )
+    ).result()
+    print("done")
+    
+    # 3. Create VNet with IPv4 + IPv6
+    print("3. Creating virtual network with IPv6...", end=" ", flush=True)
+    vnet_name = f"{vm_name}-vnet"
+    subnet_name = "default"
+    
+    vnet = clients.network.virtual_networks.begin_create_or_update(
+        rg_name, vnet_name,
+        VirtualNetwork(
+            location=location,
+            address_space=AddressSpace(
+                address_prefixes=["10.0.0.0/16", "fd00:db8:deca::/48"]
+            ),
+            subnets=[
+                Subnet(
+                    name=subnet_name,
+                    address_prefixes=["10.0.0.0/24", "fd00:db8:deca:deed::/64"],
+                    network_security_group={"id": nsg.id}
+                )
+            ]
+        )
+    ).result()
+    subnet_id = vnet.subnets[0].id
+    print("done")
+    
+    # 4. Create Public IPv6 Address (FREE!)
+    print("4. Creating public IPv6 address (free)...", end=" ", flush=True)
+    ipv6_name = f"{vm_name}-ipv6"
+    ipv6 = clients.network.public_ip_addresses.begin_create_or_update(
+        rg_name, ipv6_name,
+        PublicIPAddress(
+            location=location,
+            sku={"name": "Standard"},
+            public_ip_allocation_method="Static",
+            public_ip_address_version="IPv6"
+        )
+    ).result()
+    print("done")
+    
+    # 5. Create Network Interface with IPv4 (private) + IPv6 (public)
+    print("5. Creating network interface...", end=" ", flush=True)
+    nic_name = f"{vm_name}-nic"
+    nic = clients.network.network_interfaces.begin_create_or_update(
+        rg_name, nic_name,
+        NetworkInterface(
+            location=location,
+            ip_configurations=[
+                NetworkInterfaceIPConfiguration(
+                    name="ipconfig-ipv4",
+                    subnet={"id": subnet_id},
+                    private_ip_allocation_method="Dynamic",
+                    private_ip_address_version="IPv4",
+                    primary=True
+                ),
+                NetworkInterfaceIPConfiguration(
+                    name="ipconfig-ipv6",
+                    subnet={"id": subnet_id},
+                    private_ip_allocation_method="Dynamic",
+                    private_ip_address_version="IPv6",
+                    public_ip_address={"id": ipv6.id}
+                )
+            ]
+        )
+    ).result()
+    print("done")
+    
+    # 6. Create VM
+    print("6. Creating virtual machine (this takes 2-3 minutes)...", end=" ", flush=True)
+    zone = args.zone
+    vm_params = VirtualMachine(
+        location=location,
+        zones=[zone] if zone else None,
+        hardware_profile=HardwareProfile(vm_size=vm_size),
+        storage_profile=StorageProfile(
+            image_reference=ImageReference(
+                publisher="Canonical",
+                offer="ubuntu-24_04-lts",
+                sku="server",
+                version="latest"
+            ),
+            os_disk=OSDisk(
+                name=f"{vm_name}-osdisk",
+                caching=CachingTypes.READ_WRITE,
+                create_option=DiskCreateOptionTypes.FROM_IMAGE,
+                disk_size_gb=64,
+                managed_disk={"storage_account_type": "Premium_LRS"},
+                delete_option=DeleteOptions.DELETE
+            )
+        ),
+        network_profile=NetworkProfile(
+            network_interfaces=[
+                NetworkInterfaceReference(
+                    id=nic.id,
+                    delete_option=DeleteOptions.DELETE
+                )
+            ]
+        ),
+        os_profile=OSProfile(
+            computer_name=vm_name,
+            admin_username=username,
+            linux_configuration=LinuxConfiguration(
+                disable_password_authentication=True,
+                ssh=SshConfiguration(
+                    public_keys=[
+                        SshPublicKey(
+                            path=f"/home/{username}/.ssh/authorized_keys",
+                            key_data=ssh_pub_key
+                        )
+                    ]
+                )
+            )
+        )
+    )
+    vm = clients.compute.virtual_machines.begin_create_or_update(
+        rg_name, vm_name, vm_params
+    ).result()
+    print("done")
+    
+    # Get the actual IPv6 address
+    ipv6_updated = clients.network.public_ip_addresses.get(rg_name, ipv6_name)
+    ipv6_addr = ipv6_updated.ip_address or "(pending - check in a minute)"
+    
+    print(f"\n{'='*60}")
+    print("FREE VM Created Successfully!")
+    print(f"{'='*60}")
+    print(f"  Resource Group: {rg_name}")
+    print(f"  VM Name:        {vm_name}")
+    print(f"  Location:       {location}")
+    print(f"  Size:           {vm_size}")
+    print(f"  OS Disk:        64 GB Premium SSD (P6)")
+    print(f"  IPv6 Address:   {ipv6_addr}")
+    print(f"  Username:       {username}")
+    print()
+    print("Cost: $0/month (750 free hours + 64GB P6 + free IPv6)")
+    print()
+    print("Connect via SSH:")
+    print(f"  ssh -6 {username}@{ipv6_addr}")
+    print()
+    print("IMPORTANT: After first login, create swap (1GB RAM is low):")
+    print("  sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile")
+    print("  sudo mkswap /swapfile && sudo swapon /swapfile")
+    print("  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Azure CLI", formatter_class=argparse.RawDescriptionHelpFormatter)
     subparsers = parser.add_subparsers(dest="command", help="Commands")
@@ -374,6 +600,15 @@ def main():
     subparsers.add_parser("proxy-status", help="Show proxy status")
     subparsers.add_parser("proxy-delete", help="Delete proxy")
     
+    # Free VM creation
+    free_p = subparsers.add_parser("create-free", help="Create FREE VM (IPv6-only)")
+    free_p.add_argument("--name", default="free-sg", help="VM and resource group name")
+    free_p.add_argument("--location", default="southeastasia", help="Azure region (default: Singapore)")
+    free_p.add_argument("--zone", default="1", help="Availability zone (1, 2, or 3)")
+    free_p.add_argument("--size", default="Standard_B2ats_v2", help="VM size (default: B2ats_v2 - 2vCPU/1GB, free tier)")
+    free_p.add_argument("--username", default="azureuser", help="Admin username")
+    free_p.add_argument("--ssh-key", default="~/.ssh/id_ed25519.pub", help="Path to SSH public key")
+    
     args = parser.parse_args()
     
     if not args.command:
@@ -393,6 +628,7 @@ def main():
         "proxy-deploy": cmd_proxy_deploy,
         "proxy-status": cmd_proxy_status,
         "proxy-delete": cmd_proxy_delete,
+        "create-free": cmd_create_free,
     }
     
     commands[args.command](args)
