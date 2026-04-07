@@ -1,37 +1,37 @@
 # Proxies
 proxies:
   # Personal Servers (ali nodes first, then do nodes)
-  - name: 🇸🇬ali_singapore_tj
+  - name: 🇸🇬azure_singapore_tj
     type: trojan
     # server: 172.64.158.247
     server: 162.159.25.200
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj
+  - name: 🇯🇵azure_japan_tj
     type: trojan
     server: 162.159.44.32
     # server: 108.162.198.20
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇸🇬ali_singapore
+  - name: 🇸🇬azure_singapore
     type: ss
     server: 8.222.182.157
     port: 12033
@@ -112,102 +112,102 @@ proxies:
   # 108.162.198.67    92ms     34.96        NRT
   # 162.159.39.117    88ms     34.33        NRT
   # 162.159.26.232    88ms     33.01        SIN
-  - name: 🇯🇵ali_japan_tj_2
+  - name: 🇯🇵azure_japan_tj_2
     type: trojan
     server: 162.159.44.134
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj_3
+  - name: 🇯🇵azure_japan_tj_3
     type: trojan
     server: 162.159.38.224
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj_4
+  - name: 🇯🇵azure_japan_tj_4
     type: trojan
     server: 172.64.52.9
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj_5
+  - name: 🇯🇵azure_japan_tj_5
     type: trojan
     server: 172.64.53.142
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj_6
+  - name: 🇯🇵azure_japan_tj_6
     type: trojan
     server: 108.162.198.67
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵ali_japan_tj_7
+  - name: 🇯🇵azure_japan_tj_7
     type: trojan
     server: 162.159.39.117
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
-  - name: 🇸🇬ali_singapore_tj_2
+  - name: 🇸🇬azure_singapore_tj_2
     type: trojan
     server: 162.159.26.232
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.site
+    sni: a.hyas.site
     skip-cert-verify: false
     network: ws
     ws-opts:
       path: /x7f9k2m4p8
       headers:
-        Host: x.hyas.site
+        Host: a.hyas.site
     udp: true
 
   - name: 🇯🇵do_japan_tj_2
@@ -377,7 +377,7 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
-      - 🅰️ Ali Nodes
+      - ☁️ Azure Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - 🌐 Naiyun
@@ -399,15 +399,15 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
-      - 🇯🇵ali_japan_tj_2
-      - 🇯🇵ali_japan_tj_3
-      - 🇯🇵ali_japan_tj_4
-      - 🇯🇵ali_japan_tj_5
-      - 🇯🇵ali_japan_tj_6
-      - 🇯🇵ali_japan_tj_7
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore_tj_2
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇸🇬azure_singapore_tj
+      - 🇯🇵azure_japan_tj
+      - 🇸🇬azure_singapore_tj_2
       - 🇯🇵do_japan_tj_2
       - 🇯🇵do_japan_tj_3
       - 🇯🇵do_japan_tj_4
@@ -420,19 +420,19 @@ proxy-groups:
       - 🇯🇵do_japan_tj
       - 🇸🇬do_singapore_tj_2
 
-  - name: 🅰️ Ali Nodes
+  - name: ☁️ Azure Nodes
     type: select
     proxies:
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore
-      - 🇯🇵ali_japan_tj_2
-      - 🇯🇵ali_japan_tj_3
-      - 🇯🇵ali_japan_tj_4
-      - 🇯🇵ali_japan_tj_5
-      - 🇯🇵ali_japan_tj_6
-      - 🇯🇵ali_japan_tj_7
-      - 🇸🇬ali_singapore_tj_2
+      - 🇸🇬azure_singapore_tj
+      - 🇯🇵azure_japan_tj
+      - 🇸🇬azure_singapore
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇸🇬azure_singapore_tj_2
 
   - name: 🌊 Digital Ocean Nodes
     type: select
@@ -565,16 +565,16 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
-      - 🇸🇬ali_singapore_tj
-      - 🇯🇵ali_japan_tj
-      - 🇸🇬ali_singapore
-      - 🇯🇵ali_japan_tj_2
-      - 🇯🇵ali_japan_tj_3
-      - 🇯🇵ali_japan_tj_4
-      - 🇯🇵ali_japan_tj_5
-      - 🇯🇵ali_japan_tj_6
-      - 🇯🇵ali_japan_tj_7
-      - 🇸🇬ali_singapore_tj_2
+      - 🇸🇬azure_singapore_tj
+      - 🇯🇵azure_japan_tj
+      - 🇸🇬azure_singapore
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇸🇬azure_singapore_tj_2
       - 🇸🇬do_singapore_tj
       - 🇯🇵do_japan_tj
       - 🇸🇬do_singapore
@@ -637,7 +637,7 @@ proxy-groups:
   - name: 🎮 Riot Games
     type: select
     proxies:
-      - 🅰️ Ali Nodes
+      - ☁️ Azure Nodes
       - 🚀 Node Selection
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
@@ -949,9 +949,9 @@ proxy-groups:
   #   type: select
   #   proxies:
   #     - DIRECT
-  #     - 🇸🇬ali_singapore_tj
-  #     - 🇯🇵ali_japan_tj
-  #     - 🇸🇬ali_singapore
+  #     - 🇸🇬azure_singapore_tj
+  #     - 🇯🇵azure_japan_tj
+  #     - 🇸🇬azure_singapore
   #     - 🇸🇬do_singapore_reality
   #     - 🇸🇬do_singapore_vless_warp
   #     - 🇸🇬do_singapore_tj
