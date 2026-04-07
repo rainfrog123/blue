@@ -454,6 +454,8 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
+      - ☁️ Azure Nodes
+      - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - 🌐 Naiyun
       - 🇸🇬do_singapore_tj
