@@ -202,6 +202,103 @@ def cmd_cost(args):
         print(f"  Error: {e}")
 
 
+def cmd_traffic(args):
+    """Show network traffic usage for VMs."""
+    from azure.mgmt.monitor import MonitorManagementClient
+    
+    clients = get_clients()
+    vms = list(clients.compute.virtual_machines.list_all())
+    
+    if not vms:
+        print("No VMs found.")
+        return
+    
+    monitor = MonitorManagementClient(clients.credential, clients.subscription_id)
+    end_time = datetime.now(timezone.utc)
+    start_30d = end_time - timedelta(days=30)
+    start_7d = end_time - timedelta(days=7)
+    
+    end_str = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_30d_str = start_30d.strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_7d_str = start_7d.strftime("%Y-%m-%dT%H:%M:%SZ")
+    
+    for vm in vms:
+        print(f"\n{'='*50}")
+        print(f"VM: {vm.name}")
+        print(f"{'='*50}")
+        
+        # 30-day totals
+        print(f"\nNetwork Traffic (Last 30 Days):")
+        try:
+            metrics = monitor.metrics.list(
+                vm.id,
+                timespan=f"{start_30d_str}/{end_str}",
+                interval="P1D",
+                metricnames="Network In Total,Network Out Total",
+                aggregation="Total"
+            )
+            
+            totals = {}
+            for metric in metrics.value:
+                total = sum(d.total for ts in metric.timeseries for d in ts.data if d.total)
+                totals[metric.name.localized_value] = total
+            
+            net_in = totals.get("Network In Total", 0)
+            net_out = totals.get("Network Out Total", 0)
+            
+            print(f"  In:    {net_in / (1024**3):.2f} GB ({net_in / (1024**2):.0f} MB)")
+            print(f"  Out:   {net_out / (1024**3):.2f} GB ({net_out / (1024**2):.0f} MB)")
+            print(f"  Total: {(net_in + net_out) / (1024**3):.2f} GB")
+            
+            # Free tier info (PAYG accounts get 100 GB free egress/month)
+            free_limit_gb = 100
+            out_gb = net_out / (1024**3)
+            remaining = max(0, free_limit_gb - out_gb)
+            pct_used = (out_gb / free_limit_gb) * 100
+            print(f"\n  Free Tier (100 GB outbound/month):")
+            print(f"    Used:      {out_gb:.2f} GB ({pct_used:.1f}%)")
+            print(f"    Remaining: {remaining:.2f} GB")
+            
+        except Exception as e:
+            print(f"  Error: {e}")
+        
+        # Daily breakdown
+        print(f"\nDaily Breakdown (Last 7 Days):")
+        try:
+            metrics = monitor.metrics.list(
+                vm.id,
+                timespan=f"{start_7d_str}/{end_str}",
+                interval="P1D",
+                metricnames="Network In Total,Network Out Total",
+                aggregation="Total"
+            )
+            
+            data_by_date = {}
+            for metric in metrics.value:
+                for ts in metric.timeseries:
+                    for data in ts.data:
+                        if data.total and data.time_stamp:
+                            date = data.time_stamp.strftime("%Y-%m-%d")
+                            if date not in data_by_date:
+                                data_by_date[date] = {"in": 0, "out": 0}
+                            if "In" in metric.name.localized_value:
+                                data_by_date[date]["in"] = data.total / (1024**2)
+                            else:
+                                data_by_date[date]["out"] = data.total / (1024**2)
+            
+            if data_by_date:
+                print(f"  {'Date':<12} {'In (MB)':>10} {'Out (MB)':>10}")
+                print(f"  {'-'*34}")
+                for date in sorted(data_by_date.keys()):
+                    d = data_by_date[date]
+                    print(f"  {date:<12} {d['in']:>10.1f} {d['out']:>10.1f}")
+            else:
+                print("  No data")
+                
+        except Exception as e:
+            print(f"  Error: {e}")
+
+
 def cmd_quota(args):
     """Check compute quota for a location."""
     clients = get_clients()
@@ -582,6 +679,7 @@ def main():
     subparsers.add_parser("sub", help="Show subscription info")
     subparsers.add_parser("resources", help="List all resources")
     subparsers.add_parser("cost", help="Show cost info")
+    subparsers.add_parser("traffic", help="Show network traffic usage")
     
     # Quota
     quota_p = subparsers.add_parser("quota", help="Check compute quota")
@@ -623,6 +721,7 @@ def main():
         "sub": cmd_sub,
         "resources": cmd_resources,
         "cost": cmd_cost,
+        "traffic": cmd_traffic,
         "quota": cmd_quota,
         "delete-all": cmd_delete_all,
         "proxy-deploy": cmd_proxy_deploy,
