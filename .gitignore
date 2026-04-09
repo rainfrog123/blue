@@ -59,3 +59,7 @@ dist/
 .DS_Store
 web/patchright/test/
 web/patchright/test_report.json
+
+# iOS app packages
+*.ipa
+*.tipa
