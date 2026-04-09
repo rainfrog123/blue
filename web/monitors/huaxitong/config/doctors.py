@@ -6,36 +6,19 @@ Add or modify doctors to monitor by editing the DOCTORS list.
 
 DOCTORS = [
     {
-        "name": "伍俊良 (整形外科/烧伤科)",
+        "name": "伍俊良 (美容烧伤整形)",
         "payload": {
             "hospitalCode": "HID0101",
-            "deptCode": "",
+            "deptCode": "252",
             "doctorId": "4028b881646e3d8701646e3d87190048",
             "channelCode": "PATIENT_IOS",
             "appCode": "HXGYAPP",
-            "hospitalAreaCode": "",
+            "hospitalAreaCode": "HID0101",
             "tabAreaCode": "",
-            "cardId": "",
-            "encrypt": "aI7cGAvltRxXZCwGbqfLaw==",
-            "deptCategoryCode": "",
+            "cardId": "655883725768908800",
+            "encrypt": "VgOaEZTg92mK8o2j33W0TA==",
+            "deptCategoryCode": "4110-MRSSZX",
             "appointmentType": "1"
         }
     },
-    # Add more doctors here as needed:
-    # {
-    #     "name": "Doctor Name (Department)",
-    #     "payload": {
-    #         "hospitalCode": "HID0101",
-    #         "deptCode": "",
-    #         "doctorId": "doctor_id_here",
-    #         "channelCode": "PATIENT_IOS",
-    #         "appCode": "HXGYAPP",
-    #         "hospitalAreaCode": "",
-    #         "tabAreaCode": "",
-    #         "cardId": "",
-    #         "encrypt": "encrypt_value_here",
-    #         "deptCategoryCode": "",
-    #         "appointmentType": "1"
-    #     }
-    # },
 ]

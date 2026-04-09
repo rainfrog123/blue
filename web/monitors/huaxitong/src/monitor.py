@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 from config import settings, DOCTORS
 from .api_client import HuaxitongAPIClient
 from .models import AppointmentEntry, DoctorConfig
-from .notifiers import ServerChanNotifier
+from .notifiers import TelegramNotifier
 
 
 class AppointmentMonitor:
@@ -19,7 +19,7 @@ class AppointmentMonitor:
     def __init__(
         self,
         api_client: Optional[HuaxitongAPIClient] = None,
-        notifier: Optional[ServerChanNotifier] = None,
+        notifier: Optional[TelegramNotifier] = None,
         doctors: Optional[List[Dict]] = None,
     ):
         """
@@ -31,7 +31,7 @@ class AppointmentMonitor:
             doctors: List of doctor configurations (defaults to config/doctors.py)
         """
         self.api_client = api_client or HuaxitongAPIClient()
-        self.notifier = notifier or ServerChanNotifier()
+        self.notifier = notifier or TelegramNotifier()
         self.doctors = [
             DoctorConfig.from_dict(d) for d in (doctors or DOCTORS)
         ]
@@ -68,43 +68,43 @@ class AppointmentMonitor:
         doctor_name: str,
     ) -> List[AppointmentEntry]:
         """
-        Check for appointments that became available.
+        Check for appointments that became bookable.
 
-        Tracks:
-        - availableCount: 0 → positive
-        - status: any (0, 2=Booked, 3=Suspended) → 1=Available
+        Only notifies when slot becomes truly bookable:
+        - status becomes 1 (Available) AND availableCount > 0
 
         Args:
             entries: Current appointment entries
             doctor_name: Name of the doctor
 
         Returns:
-            List of entries that changed to available
+            List of entries that became bookable
         """
         changes = []
 
         for entry in entries:
-            changed_fields = []
-
-            # Track availableCount: 0 → positive
-            avail_key = f"{doctor_name}_{entry.id}_avail"
-            prev_avail = self._previous_state.get(avail_key, 0)
-
-            if prev_avail == 0 and entry.available_count > 0:
-                changed_fields.append(f"availableCount: {prev_avail} → {entry.available_count}")
-            self._previous_state[avail_key] = entry.available_count
-
-            # Track status: any (0,2,3) → 1=Available
+            # Track status changes
             status_key = f"{doctor_name}_{entry.id}_status"
             prev_status = self._previous_state.get(status_key, -1)
-
-            if prev_status >= 0 and entry.status == 1 and prev_status != 1:
-                changed_fields.append(f"status: {prev_status} → {entry.status}")
             self._previous_state[status_key] = entry.status
 
-            # Add to changes if anything changed
-            if changed_fields:
-                entry.changes_summary = ", ".join(changed_fields)
+            # Track availableCount changes
+            avail_key = f"{doctor_name}_{entry.id}_avail"
+            prev_avail = self._previous_state.get(avail_key, 0)
+            self._previous_state[avail_key] = entry.available_count
+
+            # Only notify if slot is NOW bookable (status=1 AND count>0)
+            is_now_bookable = entry.status == 1 and entry.available_count > 0
+            was_bookable = prev_status == 1 and prev_avail > 0
+
+            # Skip first check (prev_status == -1) to avoid false positives on startup
+            if prev_status >= 0 and is_now_bookable and not was_bookable:
+                change_details = []
+                if prev_status != entry.status:
+                    change_details.append(f"status: {prev_status} → {entry.status}")
+                if prev_avail != entry.available_count:
+                    change_details.append(f"availableCount: {prev_avail} → {entry.available_count}")
+                entry.changes_summary = ", ".join(change_details) or "became bookable"
                 changes.append(entry)
 
         return changes
@@ -148,7 +148,6 @@ class AppointmentMonitor:
             message = f"{len(changes)} new slot(s) found for {doctors_list}"
             
             if os.name == 'nt':  # Windows
-                # Use PowerShell toast notification
                 import subprocess
                 ps_script = f'''
                 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
@@ -159,11 +158,13 @@ class AppointmentMonitor:
                 $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
                 [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Huaxitong Monitor").Show($toast)
                 '''
-                subprocess.run(['powershell', '-Command', ps_script], capture_output=True)
-            else:  # Linux
-                os.system(f'notify-send "Appointment Available" "{message}"')
+                subprocess.run(['powershell', '-Command', ps_script], capture_output=True, stderr=subprocess.DEVNULL)
+            else:  # Linux - silently skip if notify-send not available
+                import subprocess
+                subprocess.run(['notify-send', 'Appointment Available', message], 
+                             capture_output=True, stderr=subprocess.DEVNULL)
         except:
-            pass  # Ignore if notification fails
+            pass
 
     def check_once(self) -> tuple[List[AppointmentEntry], List[AppointmentEntry]]:
         """
@@ -205,8 +206,8 @@ class AppointmentMonitor:
               f"Peak: {settings.PEAK_HOUR_INTERVAL}s intervals")
         print(f"Monitoring: {doctors_names}")
         print("Anti-detection: Dynamic timestamps, randomized intervals, rotating User-Agents")
-        print("WeChat notifications: Enabled via ServerChan")
-        print("Tracking: availableCount (0->positive), status (0/2=Booked/3=Suspended->1=Available)")
+        print("Telegram notifications: Enabled")
+        print("Tracking: Only truly BOOKABLE slots (status=1 AND availableCount>0)")
         print("=" * 60)
 
         iteration = 0

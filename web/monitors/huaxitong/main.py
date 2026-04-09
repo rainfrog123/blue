@@ -16,15 +16,15 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.monitor import AppointmentMonitor
-from src.notifiers import ServerChanNotifier
+from src.notifiers import TelegramNotifier
 
 
 def main():
     """Main entry point."""
     if len(sys.argv) > 1 and sys.argv[1] == "--test":
         # Test notification mode
-        print("Testing ServerChan notification...")
-        notifier = ServerChanNotifier()
+        print("Testing Telegram notification...")
+        notifier = TelegramNotifier()
         success = notifier.test_connection()
         sys.exit(0 if success else 1)
 

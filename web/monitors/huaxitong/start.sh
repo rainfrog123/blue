@@ -18,8 +18,8 @@ else
     echo "No active monitor session found"
 fi
 
-# Kill any remaining monitoring processes
-monitor_pids=$(pgrep -f "main.py" 2>/dev/null)
+# Kill any remaining monitoring processes (only for this project)
+monitor_pids=$(pgrep -f "$SCRIPT_DIR/main.py" 2>/dev/null)
 if [ -n "$monitor_pids" ]; then
     echo "Cleaning up remaining monitor processes..."
     echo "$monitor_pids" | xargs kill 2>/dev/null
