@@ -2,7 +2,12 @@
 Configuration settings for the West China Hospital appointment monitor.
 """
 import os
+import sys
 from datetime import timezone, timedelta
+
+# Add blue/linux/extra to path for cred_loader
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'linux', 'extra'))
+from cred_loader import get_telegram
 
 # Timezone
 CST_TZ = timezone(timedelta(hours=8))  # China Standard Time (UTC+8)
@@ -43,16 +48,10 @@ SERVERCHAN_URL = os.environ.get(
     "https://sctapi.ftqq.com/SCT282278T91zPNpvuek2817He3xtGpSLJ.send"
 )
 
-# Telegram notification configuration
-# Get bot token from @BotFather, get chat_id from @userinfobot
-TELEGRAM_BOT_TOKEN = os.environ.get(
-    "TELEGRAM_BOT_TOKEN",
-    "7580665549:AAEiILYjLzZg34wIFOBZB-FtfUhsjQMBUrA"
-)
-TELEGRAM_CHAT_ID = os.environ.get(
-    "TELEGRAM_CHAT_ID",
-    "1968437033"
-)
+# Telegram notification configuration (loaded from blue/cred.json)
+_telegram_cred = get_telegram()
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", _telegram_cred["bot_token"])
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", _telegram_cred["chat_id"])
 
 NOTIFICATION_COOLDOWN = 60  # 1 minute cooldown between notifications
 

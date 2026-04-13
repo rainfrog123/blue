@@ -1,0 +1,5089 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "WebInspector",
+      "version": "537.36"
+    },
+    "pages": [
+      {
+        "startedDateTime": "2026-04-12T19:03:52.511Z",
+        "id": "page_1",
+        "title": "https://www.caixin.com/2026-03-12/102421991.html",
+        "pageTimings": {
+          "onContentLoad": 405.5769999977201,
+          "onLoad": 601.8070001155138
+        }
+      },
+      {
+        "startedDateTime": "2026-04-12T19:04:36.569Z",
+        "id": "page_2",
+        "title": "https://www.caixin.com/",
+        "pageTimings": {
+          "onContentLoad": null,
+          "onLoad": null
+        }
+      },
+      {
+        "startedDateTime": "2026-04-12T19:04:36.721Z",
+        "id": "page_3",
+        "title": "https://www.caixinglobal.com/",
+        "pageTimings": {
+          "onContentLoad": 986.6079997736961,
+          "onLoad": 2176.5489999670535
+        }
+      }
+    ],
+    "entries": [
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 7
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/content/redirect.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i19049_c6956, i2016977_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Sun, 04 Jan 2026 07:58:19 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5502,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.770Z",
+        "time": 22.79399987310171,
+        "timings": {
+          "blocked": 20.810000016242267,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.25699997797608365,
+          "receive": 1.7269998788833618,
+          "_blocked_queueing": 14.190000016242266,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 14
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/jquery-1.7.2.min.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i27269_c14934, i2016991_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Jul 2018 03:45:01 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 94840,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 23.674999829381704,
+        "timings": {
+          "blocked": 21.171999842762947,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.17799997805058965,
+          "receive": 2.3250000085681677,
+          "_blocked_queueing": 15.267999842762947,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 15
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webchannel/all/js/dist/content.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2759680_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Mar 2026 03:34:01 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 354458,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 24.245999986305833,
+        "timings": {
+          "blocked": 21.181999886095525,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.2390000096857552,
+          "receive": 2.8250000905245543,
+          "_blocked_queueing": 15.395999886095524,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 306
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/caixin/js/error404/404.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i41044_c28457, i2016609_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:22:05 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 27 Dec 2023 03:05:09 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 2664,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 76.77299994975328,
+        "timings": {
+          "blocked": 75.81699981017411,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.22099989803135395,
+          "receive": 0.735000241547823,
+          "_blocked_queueing": 75.50099981017411,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 331
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/comment/count_comment.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i27271_c14934, i2017003_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Thu, 28 Jan 2021 08:45:00 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5207,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 84.04499990865588,
+        "timings": {
+          "blocked": 82.70199995534122,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.2469999897331001,
+          "receive": 1.095999963581562,
+          "_blocked_queueing": 79.64799995534122,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 333
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://files.caixin.com/webjs/common/caixinlog.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://other.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 131.3700000755489,
+        "timings": {
+          "blocked": 131.3700000755489,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 388
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://lf3-data.volccdn.com/obj/data-static/log-sdk/collect/5.0/collect-rangers-v5.2.1.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://other.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-request-ip",
+              "value": "fdbd:dc02:19:809::45"
+            },
+            {
+              "name": "content-md5",
+              "value": "De56DPef7bmsxbMXyeUSfw=="
+            },
+            {
+              "name": "x-bdcdn-cache-status",
+              "value": "TCP_HIT"
+            },
+            {
+              "name": "content-encoding",
+              "value": "br"
+            },
+            {
+              "name": "etag",
+              "value": "W/\"0dee7a0cf79fedb9acc5b317c9e5127f\""
+            },
+            {
+              "name": "age",
+              "value": "995409"
+            },
+            {
+              "name": "x-tos-request-id",
+              "value": "6bc81cbc2e2d80969cbc2e2-fdbdgdc01gdg410gg42"
+            },
+            {
+              "name": "server-timing",
+              "value": "inner; dur=3"
+            },
+            {
+              "name": "x-cache",
+              "value": "HIT TCP_MEM_HIT dirn:-2:-2"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 23 Oct 2024 10:00:51 GMT"
+            },
+            {
+              "name": "x-tt-trace-host",
+              "value": "0135c61f4328e125ba024f9d5698c11a8e19fd9b341341af911358d122efc6cfafbf3e92237f823f751d44b5c307250baa97e463167c8cedc6e6aca66a57359fadd1ace762551ba50e91ec9f96ae1cd2ce33b4d62d741b242142627ef0bb39a423"
+            },
+            {
+              "name": "cache-control",
+              "value": "max-age=2592000"
+            },
+            {
+              "name": "x-swift-cachetime",
+              "value": "1929174"
+            },
+            {
+              "name": "ali-swift-global-savetime",
+              "value": "1775024189"
+            },
+            {
+              "name": "x-swift-savetime",
+              "value": "Wed, 08 Apr 2026 22:23:35 GMT"
+            },
+            {
+              "name": "accept-ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "x-tt-trace-id",
+              "value": "00-260401141629384DA5C60D21031383EC-3F243DAB7CBD4C4F-00"
+            },
+            {
+              "name": "content-length",
+              "value": "52245"
+            },
+            {
+              "name": "eagleid",
+              "value": "7756092117760195986517014e"
+            },
+            {
+              "name": "x-response-cache",
+              "value": "edge_hit"
+            },
+            {
+              "name": "server",
+              "value": "Tengine"
+            },
+            {
+              "name": "x-response-cinfo",
+              "value": "171.221.159.15"
+            },
+            {
+              "name": "date",
+              "value": "Wed, 01 Apr 2026 06:16:29 GMT"
+            },
+            {
+              "name": "x-kfc-cachekey",
+              "value": "http://pinner-imgserver.byted.org/data-static/log-sdk/collect/5.0/collect-rangers-v5.2.1.js"
+            },
+            {
+              "name": "x-tos-storage-class",
+              "value": "STANDARD"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-tt-trace-tag",
+              "value": "id=03;cdn-cache=hit;type=static"
+            },
+            {
+              "name": "via",
+              "value": "fdbd:dc01:d:414::26, ens-cache17.l2cn8902[0,0,200-0,H], ens-cache7.l2cn8902[1,0], ens-cache24.cn9193[0,0,200-0,H], ens-cache13.cn9193[1,0]"
+            },
+            {
+              "name": "x-tos-response-time",
+              "value": "Tue, 31 Mar 2026 12:49:38 GMT"
+            },
+            {
+              "name": "x-tos-hash-crc64ecma",
+              "value": "5798157167271700540"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-tt-logid",
+              "value": "20260401141629384DA5C60D21031383EC"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 196476,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:03:52.771Z",
+        "time": 85.90099983848631,
+        "timings": {
+          "blocked": 83.17499983775616,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.4140000911504029,
+          "receive": 2.311999909579754,
+          "_blocked_queueing": 81.19199983775616,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://other.caixin.com/404/index.html",
+          "lineNumber": 27
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "http://pinggai3.caixin.com/s?z=caixin&c=2865&slot=416840160",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "Referer",
+              "value": ""
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2865"
+            },
+            {
+              "name": "slot",
+              "value": "416840160"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:03:52.850Z",
+        "time": 0.022999942302703857,
+        "timings": {
+          "blocked": 0.022999942302703857,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 7
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/monitor/cxMonitor.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2017009_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 12:22:59 GMT"
+            },
+            {
+              "name": "last-modified",
+              "value": "Fri, 20 Mar 2026 06:07:55 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 9766,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 25.68800002336502,
+        "timings": {
+          "blocked": 23.802000012725593,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.25399992381036274,
+          "receive": 1.6320000868290663,
+          "_blocked_queueing": 17.33900001272559,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 8
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/content/redirect.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i19049_c6956, i2016977_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Sun, 04 Jan 2026 07:58:19 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5502,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 25.922999950125813,
+        "timings": {
+          "blocked": 24.203000131353736,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.17299991351366062,
+          "receive": 1.5469999052584171,
+          "_blocked_queueing": 20.290000131353736,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 27
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/jquery-1.7.2.min.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i27269_c14934, i2016991_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Jul 2018 03:45:01 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 94840,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 29.30200006812811,
+        "timings": {
+          "blocked": 24.33100007507205,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.15400010128319241,
+          "receive": 4.816999891772866,
+          "_blocked_queueing": 20.83300007507205,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_connectionId": "1687809",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 28
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webchannel/home/js/all_v6.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": ":authority",
+              "value": "file.caixin.com"
+            },
+            {
+              "name": ":method",
+              "value": "GET"
+            },
+            {
+              "name": ":path",
+              "value": "/webchannel/home/js/all_v6.js"
+            },
+            {
+              "name": ":scheme",
+              "value": "https"
+            },
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en-GB;q=0.9,en;q=0.8"
+            },
+            {
+              "name": "if-modified-since",
+              "value": "Mon, 16 Mar 2026 03:33:45 GMT"
+            },
+            {
+              "name": "origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "priority",
+              "value": "u=1"
+            },
+            {
+              "name": "referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "script"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "cors"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "same-site"
+            },
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 304,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 19:04:35 GMT"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Mar 2026 03:33:45 GMT"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-ser",
+              "value": "i2016979_c24367"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 38167,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 263,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 56.9029999896884,
+        "timings": {
+          "blocked": 24.581999999791385,
+          "dns": -1,
+          "ssl": 18.817,
+          "connect": 20.784999999999997,
+          "send": 0.3190000000000026,
+          "wait": 9.861999916806816,
+          "receive": 1.3550000730901957,
+          "_blocked_queueing": 20.975999999791384,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 29
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/comment/count_comment.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i27271_c14934, i2017003_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:46:38 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Thu, 28 Jan 2021 08:45:00 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 5207,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 29.012999963015318,
+        "timings": {
+          "blocked": 24.304999985426665,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.670999971523881,
+          "receive": 4.037000006064773,
+          "_blocked_queueing": 21.126999985426664,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 30
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://tjs.sjs.sinajs.cn/open/api/js/wb.js?appkey=2046696190",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "appkey",
+              "value": "2046696190"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:36.634Z",
+        "time": 65.64399995841086,
+        "timings": {
+          "blocked": 65.64399995841086,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 32
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://dup.baidustatic.com/js/ds.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:36.635Z",
+        "time": 65.65599981695414,
+        "timings": {
+          "blocked": 65.65599981695414,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 1736
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/file/common/js/common.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i91500_c21609, i2512989_c28569"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-cache",
+              "value": "HIT from i2512989_c28569(cloudsvr)"
+            },
+            {
+              "name": "date",
+              "value": "Fri, 13 Mar 2026 20:39:56 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Fri, 10 Nov 2017 03:43:08 GMT"
+            },
+            {
+              "name": "server",
+              "value": "Tengine"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 62777,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.636Z",
+        "time": 71.86299981549382,
+        "timings": {
+          "blocked": 70.5239999691099,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.30599989685416223,
+          "receive": 1.032999949529767,
+          "_blocked_queueing": 70.23199996910989,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 1739
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://files.caixin.com/webjs/common/caixinlog.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "Origin",
+              "value": "https://www.caixin.com"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:36.636Z",
+        "time": 90.41299996897578,
+        "timings": {
+          "blocked": 90.41299996897578,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixin.com/",
+          "lineNumber": 1794
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_2",
+        "request": {
+          "method": "GET",
+          "url": "https://lf3-data.volccdn.com/obj/data-static/log-sdk/collect/5.0/collect-rangers-v5.2.1.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixin.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-request-ip",
+              "value": "fdbd:dc02:19:809::45"
+            },
+            {
+              "name": "content-md5",
+              "value": "De56DPef7bmsxbMXyeUSfw=="
+            },
+            {
+              "name": "x-bdcdn-cache-status",
+              "value": "TCP_HIT"
+            },
+            {
+              "name": "content-encoding",
+              "value": "br"
+            },
+            {
+              "name": "etag",
+              "value": "W/\"0dee7a0cf79fedb9acc5b317c9e5127f\""
+            },
+            {
+              "name": "age",
+              "value": "995409"
+            },
+            {
+              "name": "x-tos-request-id",
+              "value": "6bc81cbc2e2d80969cbc2e2-fdbdgdc01gdg410gg42"
+            },
+            {
+              "name": "server-timing",
+              "value": "inner; dur=3"
+            },
+            {
+              "name": "x-cache",
+              "value": "HIT TCP_MEM_HIT dirn:-2:-2"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 23 Oct 2024 10:00:51 GMT"
+            },
+            {
+              "name": "x-tt-trace-host",
+              "value": "0135c61f4328e125ba024f9d5698c11a8e19fd9b341341af911358d122efc6cfafbf3e92237f823f751d44b5c307250baa97e463167c8cedc6e6aca66a57359fadd1ace762551ba50e91ec9f96ae1cd2ce33b4d62d741b242142627ef0bb39a423"
+            },
+            {
+              "name": "cache-control",
+              "value": "max-age=2592000"
+            },
+            {
+              "name": "x-swift-cachetime",
+              "value": "1929174"
+            },
+            {
+              "name": "ali-swift-global-savetime",
+              "value": "1775024189"
+            },
+            {
+              "name": "x-swift-savetime",
+              "value": "Wed, 08 Apr 2026 22:23:35 GMT"
+            },
+            {
+              "name": "accept-ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "x-tt-trace-id",
+              "value": "00-260401141629384DA5C60D21031383EC-3F243DAB7CBD4C4F-00"
+            },
+            {
+              "name": "content-length",
+              "value": "52245"
+            },
+            {
+              "name": "eagleid",
+              "value": "7756092117760195986517014e"
+            },
+            {
+              "name": "x-response-cache",
+              "value": "edge_hit"
+            },
+            {
+              "name": "server",
+              "value": "Tengine"
+            },
+            {
+              "name": "x-response-cinfo",
+              "value": "171.221.159.15"
+            },
+            {
+              "name": "date",
+              "value": "Wed, 01 Apr 2026 06:16:29 GMT"
+            },
+            {
+              "name": "x-kfc-cachekey",
+              "value": "http://pinner-imgserver.byted.org/data-static/log-sdk/collect/5.0/collect-rangers-v5.2.1.js"
+            },
+            {
+              "name": "x-tos-storage-class",
+              "value": "STANDARD"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-tt-trace-tag",
+              "value": "id=03;cdn-cache=hit;type=static"
+            },
+            {
+              "name": "via",
+              "value": "fdbd:dc01:d:414::26, ens-cache17.l2cn8902[0,0,200-0,H], ens-cache7.l2cn8902[1,0], ens-cache24.cn9193[0,0,200-0,H], ens-cache13.cn9193[1,0]"
+            },
+            {
+              "name": "x-tos-response-time",
+              "value": "Tue, 31 Mar 2026 12:49:38 GMT"
+            },
+            {
+              "name": "x-tos-hash-crc64ecma",
+              "value": "5798157167271700540"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "x-tt-logid",
+              "value": "20260401141629384DA5C60D21031383EC"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 196476,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:36.636Z",
+        "time": 170.8070000167936,
+        "timings": {
+          "blocked": 169.2640000831932,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.1949999138116837,
+          "receive": 1.348000019788742,
+          "_blocked_queueing": 168.55300008319318,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 19
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i27247_c14934, i2017011_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Jul 2018 03:45:01 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 84320,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.105Z",
+        "time": 25.803999975323677,
+        "timings": {
+          "blocked": 23.890999981969596,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.13999999703466903,
+          "receive": 1.7729999963194132,
+          "_blocked_queueing": 20.514999981969595,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 20
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/webjs/wap/flexible.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i90840_c28781, i2016987_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Mon, 16 Jul 2018 03:45:02 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 1823,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.105Z",
+        "time": 26.218999875709414,
+        "timings": {
+          "blocked": 23.852999949157237,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.15000004947185497,
+          "receive": 2.2159998770803213,
+          "_blocked_queueing": 20.632999949157238,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 21
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/plugins/js/index.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016991_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:33 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 10715,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.105Z",
+        "time": 26.414999971166253,
+        "timings": {
+          "blocked": 23.835000128373505,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.16300006501376618,
+          "receive": 2.416999777778983,
+          "_blocked_queueing": 20.840000128373504,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 70
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/web/js/caixin-cookie.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2759680_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "accept-ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-length",
+              "value": "996"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:36 GMT"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 996,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.105Z",
+        "time": 26.599999982863665,
+        "timings": {
+          "blocked": 23.819999914854765,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.168999977171421,
+          "receive": 2.6110000908374786,
+          "_blocked_queueing": 21.025999914854765,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 709
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/js/slider.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016975_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:33 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 1872,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.174Z",
+        "time": 16.555000096559525,
+        "timings": {
+          "blocked": 15.490000063583254,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.18000004623830318,
+          "receive": 0.8849999867379665,
+          "_blocked_queueing": 15.297000063583255,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 724
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 307,
+          "statusText": "Internal Redirect",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "Location",
+              "value": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/googlesyndication_adsbygoogle.js"
+            },
+            {
+              "name": "Non-Authoritative-Reason",
+              "value": "WebRequest API"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/googlesyndication_adsbygoogle.js",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.174Z",
+        "time": 30.660000164061785,
+        "timings": {
+          "blocked": -1,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 30.660000164061785,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 919
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/web/js/sendDownloadAddress.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016993_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:36 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 31536,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 42.96200000680983,
+        "timings": {
+          "blocked": 32.454000106543305,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.29299988365173313,
+          "receive": 10.215000016614795,
+          "_blocked_queueing": 19.400000106543303,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1030
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/js/home.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2759684_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:33 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 3398,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 47.697999980300665,
+        "timings": {
+          "blocked": 41.817999792858956,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.18200010655820265,
+          "receive": 5.698000080883503,
+          "_blocked_queueing": 19.63399979285896,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1031
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/js/fixedScroll.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016995_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:33 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 3433,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 47.851999988779426,
+        "timings": {
+          "blocked": 42.078000028595326,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.12900005003809767,
+          "receive": 5.644999910145998,
+          "_blocked_queueing": 19.87900002859533,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1052
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://www.googletagmanager.com/gtag/js?id=UA-86535477-1",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "id",
+              "value": "UA-86535477-1"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 307,
+          "statusText": "Internal Redirect",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "Location",
+              "value": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/google-analytics_analytics.js"
+            },
+            {
+              "name": "Non-Authoritative-Reason",
+              "value": "WebRequest API"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/google-analytics_analytics.js",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 38.11999992467463,
+        "timings": {
+          "blocked": -1,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 38.11999992467463,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1065
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://www.googletagmanager.com/gtag/js?id=AW-314414063",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "id",
+              "value": "AW-314414063"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 307,
+          "statusText": "Internal Redirect",
+          "httpVersion": "http/1.1",
+          "headers": [
+            {
+              "name": "Location",
+              "value": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/google-analytics_analytics.js"
+            },
+            {
+              "name": "Non-Authoritative-Reason",
+              "value": "WebRequest API"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "chrome-extension://a814f995-41a4-423c-a918-2298561584f1/web_accessible_resources/google-analytics_analytics.js",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 38.310999982059,
+        "timings": {
+          "blocked": -1,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 38.310999982059,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1104
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://files.caixin.com/webjs/common/caixinlog.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 29.497999930754304,
+        "timings": {
+          "blocked": 29.497999930754304,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1169
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/web/js/jquery.cookie.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016999_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:36 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 1692,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 47.777000116184354,
+        "timings": {
+          "blocked": 41.90100013574958,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.1519999344050902,
+          "receive": 5.724000046029687,
+          "_blocked_queueing": 20.26000013574958,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_fromCache": "disk",
+        "_initiator": {
+          "type": "parser",
+          "url": "https://www.caixinglobal.com/",
+          "lineNumber": 1170
+        },
+        "_priority": "Medium",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/web/js/caixin-common.js",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "x-ser",
+              "value": "i2016991_c24367"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 18:03:44 GMT"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:36 GMT"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 24298,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": 0,
+          "_transferSize": 0,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.175Z",
+        "time": 47.9180000256747,
+        "timings": {
+          "blocked": 41.89899998636544,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0.14300000002980084,
+          "receive": 5.876000039279461,
+          "_blocked_queueing": 20.484999986365438,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "31",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 43,
+                "columnNumber": 14
+              },
+              {
+                "functionName": "",
+                "scriptId": "31",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 43,
+                "columnNumber": 32
+              }
+            ]
+          }
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://connect.facebook.net/en_US/fbevents.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.193Z",
+        "time": 21.461999975144863,
+        "timings": {
+          "blocked": 21.461999975144863,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "33",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 61,
+                "columnNumber": 2
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2925&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2925"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.197Z",
+        "time": 17.679000040516257,
+        "timings": {
+          "blocked": 17.679000040516257,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "34",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 66,
+                "columnNumber": 2
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=3201&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "3201"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.215Z",
+        "time": 3.1170002184808254,
+        "timings": {
+          "blocked": 3.1170002184808254,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "37",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 278,
+                "columnNumber": 1209
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2958&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2958"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.221Z",
+        "time": 5.4079999681562185,
+        "timings": {
+          "blocked": 5.4079999681562185,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "40",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 318,
+                "columnNumber": 12
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=3203&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "3203"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.227Z",
+        "time": 64.90799994207919,
+        "timings": {
+          "blocked": 64.90799994207919,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "48",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 327,
+                "columnNumber": 1
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2960&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2960"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.305Z",
+        "time": 4.282000008970499,
+        "timings": {
+          "blocked": 4.282000008970499,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "51",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 495,
+                "columnNumber": 1
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2928&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2928"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.311Z",
+        "time": 1.3019999023526907,
+        "timings": {
+          "blocked": 1.3019999023526907,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "52",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 619,
+                "columnNumber": 1
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2930&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2930"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.313Z",
+        "time": 0.6800000555813313,
+        "timings": {
+          "blocked": 0.6800000555813313,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "60",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1080,
+                "columnNumber": 241
+              },
+              {
+                "functionName": "",
+                "scriptId": "60",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1080,
+                "columnNumber": 261
+              }
+            ]
+          }
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://assets.growingio.com/2.1/gio.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.320Z",
+        "time": 177.26900009438396,
+        "timings": {
+          "blocked": 177.26900009438396,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "",
+                "scriptId": "61",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1092,
+                "columnNumber": 45
+              },
+              {
+                "functionName": "",
+                "scriptId": "61",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1094,
+                "columnNumber": 2
+              }
+            ]
+          }
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://cdn.taboola.com/libtrc/unip/1104137/tfa.js",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.321Z",
+        "time": 177.04300000332296,
+        "timings": {
+          "blocked": 177.04300000332296,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "90",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1206,
+                "columnNumber": 6
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=3205&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "3205"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.499Z",
+        "time": 197.48900015838444,
+        "timings": {
+          "blocked": 197.48900015838444,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "ads_display",
+                "scriptId": "30",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 31,
+                "columnNumber": 12
+              },
+              {
+                "functionName": "",
+                "scriptId": "133",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 1211,
+                "columnNumber": 6
+              }
+            ]
+          }
+        },
+        "_priority": "High",
+        "_resourceType": "script",
+        "cache": {},
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://gg.caixin.com/s?z=caixin&c=2956&slot=656258821",
+          "httpVersion": "",
+          "headers": [
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "Referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "Intervention",
+              "value": "<https://www.chromestatus.com/feature/5718547946799104>; level=\"warning\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "z",
+              "value": "caixin"
+            },
+            {
+              "name": "c",
+              "value": "2956"
+            },
+            {
+              "name": "slot",
+              "value": "656258821"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 0,
+          "statusText": "",
+          "httpVersion": "",
+          "headers": [],
+          "cookies": [],
+          "content": {
+            "size": 0,
+            "mimeType": "x-unknown"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 0,
+          "_error": "net::ERR_BLOCKED_BY_CLIENT",
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "",
+        "startedDateTime": "2026-04-12T19:04:37.698Z",
+        "time": 1.5810001641511917,
+        "timings": {
+          "blocked": 1.5810001641511917,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0,
+          "wait": 0,
+          "receive": 0,
+          "_blocked_queueing": -1
+        }
+      },
+      {
+        "_connectionId": "1687535",
+        "_initiator": {
+          "type": "script",
+          "stack": {
+            "callFrames": [
+              {
+                "functionName": "send",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 3,
+                "columnNumber": 15436
+              },
+              {
+                "functionName": "ajax",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 3,
+                "columnNumber": 10523
+              },
+              {
+                "functionName": "",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 3,
+                "columnNumber": 11518
+              },
+              {
+                "functionName": "getScript",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 3,
+                "columnNumber": 11383
+              },
+              {
+                "functionName": "DrawStock",
+                "scriptId": "22",
+                "url": "https://file.caixin.com/en/plugins/js/index.js",
+                "lineNumber": 0,
+                "columnNumber": 10537
+              },
+              {
+                "functionName": "",
+                "scriptId": "39",
+                "url": "https://www.caixinglobal.com/",
+                "lineNumber": 309,
+                "columnNumber": 24
+              },
+              {
+                "functionName": "j",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 1,
+                "columnNumber": 26910
+              },
+              {
+                "functionName": "fireWith",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 1,
+                "columnNumber": 27723
+              },
+              {
+                "functionName": "ready",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 1,
+                "columnNumber": 29517
+              },
+              {
+                "functionName": "I",
+                "scriptId": "23",
+                "url": "https://file.caixin.com/webjs/jquery-2.1.3.min.js",
+                "lineNumber": 1,
+                "columnNumber": 29708
+              }
+            ]
+          }
+        },
+        "_priority": "Low",
+        "_resourceType": "script",
+        "cache": {},
+        "connection": "7890",
+        "pageref": "page_3",
+        "request": {
+          "method": "GET",
+          "url": "https://file.caixin.com/en/plugins/js/d3.min.js?_=1776020677187",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": ":authority",
+              "value": "file.caixin.com"
+            },
+            {
+              "name": ":method",
+              "value": "GET"
+            },
+            {
+              "name": ":path",
+              "value": "/en/plugins/js/d3.min.js?_=1776020677187"
+            },
+            {
+              "name": ":scheme",
+              "value": "https"
+            },
+            {
+              "name": "accept",
+              "value": "*/*"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en-GB;q=0.9,en;q=0.8"
+            },
+            {
+              "name": "referer",
+              "value": "https://www.caixinglobal.com/"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Windows\""
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "script"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "no-cors"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "cross-site"
+            },
+            {
+              "name": "sec-fetch-storage-access",
+              "value": "active"
+            },
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+            }
+          ],
+          "queryString": [
+            {
+              "name": "_",
+              "value": "1776020677187"
+            }
+          ],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "access-control-allow-headers",
+              "value": "X-Sign,X-Nonce,X-Timestamp,DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "content-type",
+              "value": "application/javascript; charset=UTF-8"
+            },
+            {
+              "name": "date",
+              "value": "Sun, 12 Apr 2026 19:04:36 GMT"
+            },
+            {
+              "name": "last-modified",
+              "value": "Wed, 25 Mar 2026 04:49:33 GMT"
+            },
+            {
+              "name": "timing-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "vary",
+              "value": "Accept-Encoding"
+            },
+            {
+              "name": "x-ser",
+              "value": "i2016997_c24367"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 151698,
+            "mimeType": "application/javascript"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 53891,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "127.0.0.1",
+        "startedDateTime": "2026-04-12T19:04:37.702Z",
+        "time": 14.405000023543835,
+        "timings": {
+          "blocked": 1.313999947488308,
+          "dns": -1,
+          "ssl": -1,
+          "connect": -1,
+          "send": 0.30300000000000005,
+          "wait": 8.823999927356839,
+          "receive": 3.9640001486986876,
+          "_blocked_queueing": 0.940999947488308,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      }
+    ]
+  }
+}

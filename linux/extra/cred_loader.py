@@ -117,6 +117,16 @@ def get_resend() -> dict:
     return load_cred()["resend"]
 
 
+def get_telegram() -> dict:
+    """Get Telegram bot credentials."""
+    return load_cred()["telegram"]
+
+
+def get_digitalocean() -> dict:
+    """Get DigitalOcean credentials."""
+    return load_cred()["digitalocean"]
+
+
 if __name__ == "__main__":
     # Test loading
     try:
