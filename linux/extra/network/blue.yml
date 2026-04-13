@@ -488,68 +488,68 @@ proxy-groups:
   - name: ☁️ Cloudflare CF Nodes
     type: select
     proxies:
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
       - 🇸🇬azure_singapore_tj
-      - 🇯🇵azure_japan_tj
       - 🇸🇬azure_singapore_tj_2
       - 🇸🇬azure_singapore_tj_3
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵azure_japan_tj
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
       - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
 
   - name: ☁️ Azure Nodes
     type: select
     proxies:
       - 🇸🇬azure_singapore_tj
-      - 🇯🇵azure_japan_tj
-      - 🇸🇬azure_singapore
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
       - 🇸🇬azure_singapore_tj_2
       - 🇸🇬azure_singapore_tj_3
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore
+      - 🇯🇵azure_japan_tj
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
 
   - name: 🌊 Digital Ocean Nodes
     type: select
     proxies:
       - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
 
   - name: 📺 YouTube Nodes
     type: select
@@ -669,33 +669,33 @@ proxy-groups:
     proxies:
       - DIRECT
       - 🇸🇬azure_singapore_tj
-      - 🇯🇵azure_japan_tj
-      - 🇸🇬azure_singapore
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
       - 🇸🇬azure_singapore_tj_2
       - 🇸🇬azure_singapore_tj_3
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore
+      - 🇯🇵azure_japan_tj
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
       - 🇸🇬do_singapore_tj
-      - 🇯🇵do_japan_tj
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
       - 🇭🇰ny_hongkong_ss_b
       - 🇹🇼ny_taiwan_ss_b
       - 🇸🇬ny_singapore_ss_b
