@@ -469,6 +469,7 @@ proxy-groups:
       - ☁️ Azure Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
+      - 🔄 CF WARP Outbound
       - 🌐 Naiyun
       - 🔑 Manual Selection
       # - ⚡️IPLC/IEPL
@@ -1053,6 +1054,12 @@ proxy-groups:
       - 🇦🇷ny_argentina
       - 🇧🇷ny_brazil
 
+  # CF Endpoint with WARP Outbound (Clean IP)
+  - name: 🔄 CF WARP Outbound
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_vless_warp
+
   # Commented Out - Manual Selection (kept for reference)
   # - name: 🔑 Manual Selection
   #   type: select
@@ -1197,6 +1204,9 @@ rule-providers:
 
 # Rules
 rules:
+  # 🔄 CF WARP Outbound
+  - DOMAIN-KEYWORD,archive,🔄 CF WARP Outbound
+
   # 🚀 Node Selection
   - DOMAIN,ouo.io,🚀 Node Selection
   - DOMAIN-SUFFIX,amd.com,🚀 Node Selection
