@@ -1,5 +1,8 @@
 # Proxies
 proxies:
+  # Version Info
+  - {name: 📅 2026-04-23 16:51, type: http, server: 127.0.0.1, port: 1}
+
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
     type: trojan
@@ -472,6 +475,7 @@ proxy-groups:
       # - 🔄 CF WARP Outbound
       - 🌐 Naiyun
       - 🔑 Manual Selection
+      - 📅 2026-04-23 16:51
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
       # - ☁️ Cloudflare CF Nodes
@@ -749,7 +753,6 @@ proxy-groups:
   #   type: select
   #   proxies:
   #     - 🇸🇬do_singapore_vless_warp
-  #     - 🚀 Node Selection
   #     - DIRECT
 
   - name: 🎮 Riot Games
