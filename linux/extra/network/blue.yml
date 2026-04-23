@@ -469,7 +469,7 @@ proxy-groups:
       - ☁️ Azure Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
-      - 🔄 CF WARP Outbound
+      # - 🔄 CF WARP Outbound
       - 🌐 Naiyun
       - 🔑 Manual Selection
       # - ⚡️IPLC/IEPL
@@ -745,12 +745,12 @@ proxy-groups:
       - 🇦🇷ny_argentina
 
   # CF Endpoint with WARP Outbound (Clean IP)
-  - name: 🔄 CF WARP Outbound
-    type: select
-    proxies:
-      - 🇸🇬do_singapore_vless_warp
-      - 🚀 Node Selection
-      - DIRECT
+  # - name: 🔄 CF WARP Outbound
+  #   type: select
+  #   proxies:
+  #     - 🇸🇬do_singapore_vless_warp
+  #     - 🚀 Node Selection
+  #     - DIRECT
 
   - name: 🎮 Riot Games
     type: select
