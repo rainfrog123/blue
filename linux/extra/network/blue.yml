@@ -1,13 +1,14 @@
 # Proxies
 proxies:
-  # Version Info
-  - {name: 📅 2026-04-23 16:51, type: http, server: 127.0.0.1, port: 1}
+  # Version Info - UPDATE THIS TIMESTAMP whenever changes are made to this file
+  # Format: 📅 YYYY-MM-DD HH:MM (use `date '+%Y-%m-%d %H:%M'` to get current time)
+  - {name: 📅 2026-04-24 14:00, type: http, server: 127.0.0.1, port: 1}
 
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
     type: trojan
     # server: 172.64.158.247
-    server: 162.159.25.200
+    server: 162.159.23.222
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -21,7 +22,7 @@ proxies:
 
   - name: 🇯🇵azure_japan_tj
     type: trojan
-    server: 162.159.44.32
+    server: 162.159.38.58
     # server: 108.162.198.20
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
@@ -44,7 +45,7 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj
     type: trojan
-    server: 162.159.25.200
+    server: 162.159.23.222
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -58,7 +59,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj
     type: trojan
-    server: 162.159.44.32
+    server: 162.159.38.58
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -106,23 +107,29 @@ proxies:
     ws-opts:
       path: /vless-warp
 
-  # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed
-  # NRT (Japan) - Top 5
+  # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed (2026-04-24 14:00)
+  # NRT (Japan) - 8 IPs
   # IP Address        Latency  Speed(MB/s)  Region
-  # 162.159.39.105    85ms     51.02        NRT
-  # 108.162.198.12    89ms     49.13        NRT
-  # 162.159.38.197    82ms     41.83        NRT
-  # 162.159.44.83     85ms     41.14        NRT
-  # 172.64.229.76     89ms     39.89        NRT
-  # SIN (Singapore) - Top 5
-  # 172.64.35.80      123ms    9.51         SIN
-  # 172.64.154.240    123ms    7.46         SIN
-  # 162.159.25.237    123ms    6.29         SIN
-  # 162.159.24.248    122ms    3.27         SIN
-  # 104.18.35.244     123ms    2.19         SIN
+  # 162.159.38.58     85ms     49.75        NRT
+  # 162.159.39.248    84ms     49.27        NRT
+  # 172.64.53.144     91ms     45.89        NRT
+  # 108.162.198.99    91ms     40.84        NRT
+  # 162.159.44.202    86ms     37.89        NRT
+  # 172.64.229.84     89ms     35.33        NRT
+  # 162.159.45.212    81ms     33.64        NRT
+  # 172.64.52.153     86ms     14.93        NRT
+  # SIN (Singapore) - 8 IPs
+  # 162.159.23.222    94ms     17.60        SIN
+  # 172.64.148.125    86ms     2.67         SIN
+  # 172.64.158.77     94ms     2.17         SIN
+  # 172.64.145.176    98ms     2.05         SIN
+  # 162.159.33.135    92ms     1.87         SIN
+  # 104.18.46.191     93ms     0.91         SIN
+  # 104.18.35.160     95ms     0.71         SIN
+  # 172.64.40.7       99ms     0.58         SIN
   - name: 🇯🇵azure_japan_tj_2
     type: trojan
-    server: 162.159.39.105
+    server: 162.159.39.248
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -136,7 +143,7 @@ proxies:
 
   - name: 🇯🇵azure_japan_tj_3
     type: trojan
-    server: 108.162.198.12
+    server: 172.64.53.144
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -150,7 +157,7 @@ proxies:
 
   - name: 🇯🇵azure_japan_tj_4
     type: trojan
-    server: 162.159.38.197
+    server: 108.162.198.99
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -164,7 +171,7 @@ proxies:
 
   - name: 🇯🇵azure_japan_tj_5
     type: trojan
-    server: 162.159.44.83
+    server: 162.159.44.202
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -178,7 +185,7 @@ proxies:
 
   - name: 🇯🇵azure_japan_tj_6
     type: trojan
-    server: 172.64.229.76
+    server: 172.64.229.84
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -192,7 +199,7 @@ proxies:
 
   - name: 🇸🇬azure_singapore_tj_2
     type: trojan
-    server: 172.64.35.80
+    server: 172.64.148.125
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -206,7 +213,7 @@ proxies:
 
   - name: 🇸🇬azure_singapore_tj_3
     type: trojan
-    server: 172.64.154.240
+    server: 172.64.158.77
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -220,7 +227,7 @@ proxies:
 
   - name: 🇸🇬azure_singapore_tj_4
     type: trojan
-    server: 162.159.25.237
+    server: 172.64.145.176
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -234,7 +241,7 @@ proxies:
 
   - name: 🇸🇬azure_singapore_tj_5
     type: trojan
-    server: 162.159.24.248
+    server: 162.159.33.135
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -248,7 +255,63 @@ proxies:
 
   - name: 🇸🇬azure_singapore_tj_6
     type: trojan
-    server: 104.18.35.244
+    server: 104.18.46.191
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: a.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: a.hyas.site
+    udp: true
+
+  - name: 🇸🇬azure_singapore_tj_7
+    type: trojan
+    server: 104.18.35.160
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: a.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: a.hyas.site
+    udp: true
+
+  - name: 🇸🇬azure_singapore_tj_8
+    type: trojan
+    server: 172.64.40.7
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: a.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: a.hyas.site
+    udp: true
+
+  - name: 🇯🇵azure_japan_tj_7
+    type: trojan
+    server: 162.159.45.212
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: a.hyas.site
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: a.hyas.site
+    udp: true
+
+  - name: 🇯🇵azure_japan_tj_8
+    type: trojan
+    server: 172.64.52.153
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: a.hyas.site
@@ -262,7 +325,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj_2
     type: trojan
-    server: 162.159.39.105
+    server: 162.159.39.248
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -276,7 +339,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj_3
     type: trojan
-    server: 108.162.198.12
+    server: 172.64.53.144
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -290,7 +353,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj_4
     type: trojan
-    server: 162.159.38.197
+    server: 108.162.198.99
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -304,7 +367,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj_5
     type: trojan
-    server: 162.159.44.83
+    server: 162.159.44.202
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -318,7 +381,7 @@ proxies:
 
   - name: 🇯🇵do_japan_tj_6
     type: trojan
-    server: 172.64.229.76
+    server: 172.64.229.84
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -332,7 +395,7 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj_2
     type: trojan
-    server: 172.64.35.80
+    server: 172.64.148.125
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -346,7 +409,7 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj_3
     type: trojan
-    server: 172.64.154.240
+    server: 172.64.158.77
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -360,7 +423,7 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj_4
     type: trojan
-    server: 162.159.25.237
+    server: 172.64.145.176
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -374,7 +437,7 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj_5
     type: trojan
-    server: 162.159.24.248
+    server: 162.159.33.135
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -388,7 +451,63 @@ proxies:
 
   - name: 🇸🇬do_singapore_tj_6
     type: trojan
-    server: 104.18.35.244
+    server: 104.18.46.191
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
+  - name: 🇸🇬do_singapore_tj_7
+    type: trojan
+    server: 104.18.35.160
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
+  - name: 🇸🇬do_singapore_tj_8
+    type: trojan
+    server: 172.64.40.7
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
+  - name: 🇯🇵do_japan_tj_7
+    type: trojan
+    server: 162.159.45.212
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
+
+  - name: 🇯🇵do_japan_tj_8
+    type: trojan
+    server: 172.64.52.153
     port: 443
     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
     sni: x.hyas.space
@@ -475,7 +594,7 @@ proxy-groups:
       # - 🔄 CF WARP Outbound
       - 🌐 Naiyun
       - 🔑 Manual Selection
-      - 📅 2026-04-23 16:51
+      - 📅 2026-04-24 14:00
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
       # - ☁️ Cloudflare CF Nodes
@@ -499,18 +618,24 @@ proxy-groups:
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore_tj_7
+      - 🇸🇬azure_singapore_tj_8
       - 🇯🇵azure_japan_tj
       - 🇯🇵azure_japan_tj_2
       - 🇯🇵azure_japan_tj_3
       - 🇯🇵azure_japan_tj_4
       - 🇯🇵azure_japan_tj_5
       - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇯🇵azure_japan_tj_8
       - 🇸🇬do_singapore_tj
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
@@ -519,6 +644,8 @@ proxy-groups:
       - 🇯🇵do_japan_tj_4
       - 🇯🇵do_japan_tj_5
       - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
+      - 🇯🇵do_japan_tj_8
 
   - name: ☁️ Azure Nodes
     type: select
@@ -529,6 +656,8 @@ proxy-groups:
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore_tj_7
+      - 🇸🇬azure_singapore_tj_8
       - 🇸🇬azure_singapore
       - 🇯🇵azure_japan_tj
       - 🇯🇵azure_japan_tj_2
@@ -536,6 +665,8 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_4
       - 🇯🇵azure_japan_tj_5
       - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇯🇵azure_japan_tj_8
 
   - name: 🌊 Digital Ocean Nodes
     type: select
@@ -546,6 +677,8 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
@@ -555,6 +688,8 @@ proxy-groups:
       - 🇯🇵do_japan_tj_4
       - 🇯🇵do_japan_tj_5
       - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
+      - 🇯🇵do_japan_tj_8
 
   - name: 📺 YouTube Nodes
     type: select
@@ -679,6 +814,8 @@ proxy-groups:
       - 🇸🇬azure_singapore_tj_4
       - 🇸🇬azure_singapore_tj_5
       - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore_tj_7
+      - 🇸🇬azure_singapore_tj_8
       - 🇸🇬azure_singapore
       - 🇯🇵azure_japan_tj
       - 🇯🇵azure_japan_tj_2
@@ -686,12 +823,16 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_4
       - 🇯🇵azure_japan_tj_5
       - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇯🇵azure_japan_tj_8
       - 🇸🇬do_singapore_tj
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
       - 🇸🇬do_singapore_tj_5
       - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
@@ -701,6 +842,8 @@ proxy-groups:
       - 🇯🇵do_japan_tj_4
       - 🇯🇵do_japan_tj_5
       - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
+      - 🇯🇵do_japan_tj_8
       - 🇭🇰ny_hongkong_ss_b
       - 🇹🇼ny_taiwan_ss_b
       - 🇸🇬ny_singapore_ss_b
@@ -1330,20 +1473,26 @@ rules:
   - GEOIP,CN,🇨🇳 China Traffic
   - MATCH,🐟 Final
 
-# Reference: Cloudflare IP Test Results
+# Reference: Cloudflare IP Test Results (2026-04-24 14:00)
 # IP Address        Sent  Recv  Loss    Latency(ms)  Speed(MB/s)  Region
-# NRT (Japan) - Top 5
-# 162.159.39.105    4     4     0.00    84.83        51.02        NRT
-# 108.162.198.12    4     4     0.00    88.55        49.13        NRT
-# 162.159.38.197    4     4     0.00    82.37        41.83        NRT
-# 162.159.44.83     4     4     0.00    84.70        41.14        NRT
-# 172.64.229.76     4     4     0.00    88.95        39.89        NRT
-# SIN (Singapore) - Top 5
-# 172.64.35.80      4     4     0.00    123.33       9.51         SIN
-# 172.64.154.240    4     4     0.00    123.26       7.46         SIN
-# 162.159.25.237    4     4     0.00    123.34       6.29         SIN
-# 162.159.24.248    4     4     0.00    121.69       3.27         SIN
-# 104.18.35.244     4     4     0.00    122.59       2.19         SIN
+# NRT (Japan) - 8 IPs
+# 162.159.38.58     4     4     0.00    85.07        49.75        NRT
+# 162.159.39.248    4     4     0.00    84.01        49.27        NRT
+# 172.64.53.144     4     4     0.00    91.05        45.89        NRT
+# 108.162.198.99    4     4     0.00    91.48        40.84        NRT
+# 162.159.44.202    4     4     0.00    86.45        37.89        NRT
+# 172.64.229.84     4     4     0.00    88.81        35.33        NRT
+# 162.159.45.212    4     4     0.00    81.47        33.64        NRT
+# 172.64.52.153     4     4     0.00    86.40        14.93        NRT
+# SIN (Singapore) - 8 IPs
+# 162.159.23.222    4     4     0.00    94.03        17.60        SIN
+# 172.64.148.125    4     4     0.00    85.68        2.67         SIN
+# 172.64.158.77     4     4     0.00    93.73        2.17         SIN
+# 172.64.145.176    4     4     0.00    97.90        2.05         SIN
+# 162.159.33.135    4     4     0.00    91.78        1.87         SIN
+# 104.18.46.191     4     4     0.00    92.64        0.91         SIN
+# 104.18.35.160     4     4     0.00    94.83        0.71         SIN
+# 172.64.40.7       4     4     0.00    98.57        0.58         SIN
 
 # DNS Configuration
 dns:
