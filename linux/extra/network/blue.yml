@@ -1,8 +1,8 @@
 # Proxies
 proxies:
   # Version Info - UPDATE THIS TIMESTAMP whenever changes are made to this file
-  # Format: 🔖 <commit-hash> (use `git rev-parse --short HEAD` to get current hash)
-  - {name: 🔖 9291f22, type: http, server: 127.0.0.1, port: 1}
+  # Format: 🔖 <random-hash> (generate new hash with: head -c 4 /dev/urandom | xxd -p)
+  - {name: 🔖 f780817a, type: http, server: 127.0.0.1, port: 1}
 
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
@@ -594,7 +594,7 @@ proxy-groups:
       # - 🔄 CF WARP Outbound
       - 🌐 Naiyun
       - 🔑 Manual Selection
-      - 🔖 9291f22
+      - 🔖 f780817a
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
       # - ☁️ Cloudflare CF Nodes
