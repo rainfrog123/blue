@@ -1,6 +1,6 @@
 {
   "log": {
-    "loglevel": "warning"
+    "loglevel": "debug"
   },
   "dns": {
     "servers": [
@@ -79,15 +79,15 @@
       "protocol": "wireguard",
       "settings": {
         "secretKey": "ALaljxCONL1RWyt41XIqR81TxB+CovAf0A1k6GGXWXA=",
+        "reserved": [0, 0, 0],
         "address": [
-          "172.16.0.2/32",
-          "2606:4700:110:8909:f59e:da35:7ed0:30d8/128"
+          "172.16.0.2/32"
         ],
         "peers": [
           {
             "publicKey": "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=",
-            "allowedIPs": ["0.0.0.0/0", "::/0"],
-            "endpoint": "engage.cloudflareclient.com:2408",
+            "allowedIPs": ["0.0.0.0/0"],
+            "endpoint": "162.159.192.1:2408",
             "keepAlive": 30
           }
         ],

@@ -1,0 +1,16 @@
+listen: :5333
+
+acme:
+  domains:
+    - hy.hyas.site
+  email: admin@hyas.site
+
+auth:
+  type: password
+  password: jEdTlnZe2q2nv1N0lmmXHCp2
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bing.com
+    rewriteHost: true

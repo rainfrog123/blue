@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stake Blackjack DOM Automation
 // @namespace    http://tampermonkey.net/
-// @version      2.0
+// @version      2.2
 // @description  Automate blackjack on Stake.com using pure DOM observation (no API interception)
 // @author       You
 // @match        https://stake.com/casino/games/blackjack*
@@ -38,7 +38,7 @@
     // ============================================
     // CONFIGURATION
     // ============================================
-    
+
     const CONFIG = {
         betAmount: 0.3,
         currency: 'usdt',
@@ -62,15 +62,18 @@
 
     const BETTING_SYSTEMS = {
         flat: { name: 'Flat Betting', description: 'Same bet every hand' },
-        martingale: { name: 'Martingale', description: 'Double after loss (risky!)' }
+        martingale: { name: 'Martingale', description: 'Double after loss (risky!)' },
+        fifthBalance: { name: '1/5 Balance', description: 'Bet 1/5 of current balance each hand' },
+        fifthMartingale: { name: '1/5 + Martingale', description: 'Start 1/5 balance, double after loss' }
     };
 
     // ============================================
     // STATE
     // ============================================
-    
+
     let currentBet = CONFIG.betAmount;
     let consecutiveLosses = 0;
+    let fifthMartingaleBaseBet = 0; // Base bet for 1/5 + Martingale system
     let handNumber = 0;
     let isPlaying = false;
     let isHandInProgress = false;
@@ -111,28 +114,28 @@
     function readCardsFromContainer(testId) {
         const container = document.querySelector(`[data-testid="${testId}"]`);
         if (!container) return [];
-        
+
         const cards = [];
         const cardEls = container.querySelectorAll('.content.dealt');
-        
+
         cardEls.forEach(cardEl => {
             // Check if card is face-down (hidden card)
             const cardContent = cardEl.querySelector('.content');
             if (cardContent?.classList.contains('face-down')) return;
-            
+
             const faceContent = cardEl.querySelector('.face-content');
             if (!faceContent) return;
-            
+
             const rankEl = faceContent.querySelector('span');
             const suitIcon = faceContent.querySelector('svg[data-ds-icon]');
-            
+
             if (rankEl && rankEl.textContent.trim()) {
                 const rank = rankEl.textContent.trim();
                 const suit = getSuitFromIcon(suitIcon);
                 cards.push({ rank, suit });
             }
         });
-        
+
         return cards;
     }
 
@@ -148,19 +151,19 @@
     function readDealerCards() {
         return readCardsFromContainer('dealer');
     }
-    
+
     // Handle split hands - find the currently active player hand
     // Split structure: [data-testid="player"] contains multiple .hand-wrap elements
     // Active hand has class="value active" on the value element
     function getActivePlayerHand() {
         const playerContainer = document.querySelector('[data-testid="player"]');
         if (!playerContainer) return null;
-        
+
         // Look for multiple .hand-wrap elements (split scenario)
         const handWraps = playerContainer.querySelectorAll('.hand-wrap');
-        
+
         if (handWraps.length <= 1) return null; // No split, single hand
-        
+
         // Method 1: Find the hand with "active" class on value element (most reliable)
         for (const handWrap of handWraps) {
             const valueEl = handWrap.querySelector('.value');
@@ -169,7 +172,7 @@
                 return handWrap;
             }
         }
-        
+
         // Method 2: Find hand with "active" class on face elements
         for (const handWrap of handWraps) {
             const faceEl = handWrap.querySelector('.face.active');
@@ -178,71 +181,71 @@
                 return handWrap;
             }
         }
-        
+
         // Method 3: Find hand without win/lose/push/bust result (fallback)
         for (const handWrap of handWraps) {
             const valueEl = handWrap.querySelector('.value');
-            if (valueEl && 
-                !valueEl.classList.contains('win') && 
-                !valueEl.classList.contains('lose') && 
+            if (valueEl &&
+                !valueEl.classList.contains('win') &&
+                !valueEl.classList.contains('lose') &&
                 !valueEl.classList.contains('push') &&
                 !valueEl.classList.contains('bust')) {
                 debugLog('ACTIVE_HAND_FOUND', { method: 'no_result' });
                 return handWrap;
             }
         }
-        
+
         // All hands completed, return null
         return null;
     }
-    
+
     function readCardsFromElement(container) {
         if (!container) return [];
-        
+
         const cards = [];
         const cardEls = container.querySelectorAll('.content.dealt');
-        
+
         cardEls.forEach(cardEl => {
             // Check for face-down cards
             const faceEl = cardEl.querySelector('.face');
             if (faceEl?.classList.contains('face-down')) return;
-            
+
             const faceContent = cardEl.querySelector('.face-content');
             if (!faceContent) return;
-            
+
             const rankEl = faceContent.querySelector('span');
             const suitIcon = faceContent.querySelector('svg[data-ds-icon]');
-            
+
             if (rankEl && rankEl.textContent.trim()) {
                 const rank = rankEl.textContent.trim();
                 const suit = getSuitFromIcon(suitIcon);
                 cards.push({ rank, suit });
             }
         });
-        
+
         return cards;
     }
-    
+
     function isSplitGame() {
         const playerContainer = document.querySelector('[data-testid="player"]');
         if (!playerContainer) return false;
         return playerContainer.querySelectorAll('.hand-wrap').length > 1;
     }
-    
+
     function getSplitHandCount() {
         const playerContainer = document.querySelector('[data-testid="player"]');
         if (!playerContainer) return 1;
         const handWraps = playerContainer.querySelectorAll('.hand-wrap');
         return handWraps.length || 1;
     }
-    
+
     function getSplitResults() {
         const playerContainer = document.querySelector('[data-testid="player"]');
         if (!playerContainer) return [];
-        
+
         const results = [];
         const handWraps = playerContainer.querySelectorAll('.hand-wrap');
-        
+
         handWraps.forEach((handWrap, index) => {
             const valueEl = handWrap.querySelector('.value');
             let result = 'pending';
@@ -254,7 +257,7 @@
             }
             results.push({ hand: index + 1, result, value: valueEl?.textContent?.trim() });
         });
-        
+
         return results;
     }
 
@@ -297,7 +300,7 @@
             bet: isBetEnabled()
         };
     }
-    
+
     function isInsuranceOffered() {
         const actions = getAvailableActions();
         return actions.insurance || actions.noInsurance;
@@ -327,7 +330,7 @@
                 reject(new Error(`Button disabled: ${selector}`));
                 return;
             }
-            
+
             debugLog('CLICK', { selector, text: btn.textContent?.trim()?.substring(0, 20) });
             btn.click();
             resolve(true);
@@ -346,25 +349,25 @@
                 resolve(false);
                 return;
             }
-            
+
             // Check if input is disabled (game in progress)
             if (input.disabled) {
                 debugLog('BET_INPUT_DISABLED');
                 resolve(false);
                 return;
             }
-            
+
             input.focus();
-            
+
             // Use native setter for Svelte reactivity
             const nativeSetter = Object.getOwnPropertyDescriptor(
                 window.HTMLInputElement.prototype, 'value'
             ).set;
             nativeSetter.call(input, amount.toString());
-            
+
             input.dispatchEvent(new Event('input', { bubbles: true }));
             input.dispatchEvent(new Event('change', { bubbles: true }));
-            
+
             debugLog('BET_SET', { amount });
             resolve(true);
         });
@@ -566,12 +569,12 @@
 
     async function handleGameState() {
         if (actionInProgress) return;
-        
+
         const status = getGameStatus();
         const actions = getAvailableActions();
         const playerCards = readPlayerCards();
         const dealerCards = readDealerCards();
-        
+
         debugLog('STATE_CHECK', {
             status,
             actions,
@@ -587,7 +590,7 @@
         const endStatuses = ['win', 'lose', 'draw', 'push', 'blackjack', 'bust'];
         const isGameEnd = statusParts.some(s => endStatuses.includes(s));
         const isSplit = statusParts.length > 1;
-        
+
         if (isGameEnd && isHandInProgress && status !== lastGameStatus) {
             handleGameEnd(status, isSplit);
             lastGameStatus = status;
@@ -602,7 +605,7 @@
             const action = takeInsurance ? 'insurance' : 'noInsurance';
             log(`Insurance offered - ${takeInsurance ? 'ACCEPTING (not recommended!)' : 'DECLINING'}`);
             debugLog('INSURANCE', { takeInsurance, action });
-            
+
             await sleep(CONFIG.delayBetweenActions);
             try {
                 await clickAction(action);
@@ -634,14 +637,14 @@
                 debugLog('WAITING', { timeSinceEnd, delay: CONFIG.delayBetweenHands });
                 return;
             }
-            
+
             debugLog('STARTING_NEXT_HAND', { status, timeSinceEnd });
             lastGameStatus = 'none';
             lastPlayerCards = [];
             await startNewHand();
         }
     }
-    
+
     function startGameLoop() {
         stopGameLoop();
         // Poll every 500ms as backup for MutationObserver
@@ -652,7 +655,7 @@
         }, 500);
         debugLog('GAME_LOOP_STARTED');
     }
-    
+
     function stopGameLoop() {
         if (gameLoopInterval) {
             clearInterval(gameLoopInterval);
@@ -662,21 +665,21 @@
 
     async function takeStrategyAction(playerCards, dealerCards, actions) {
         actionInProgress = true;
-        
+
         const { value: playerValue, soft } = calculateHandValue(playerCards);
         const dealerUpcard = dealerCards[0];
-        
+
         // Log split info if in split game
         const splitInfo = isSplitGame() ? ` [Split: Hand ${getSplitHandCount()}]` : '';
         log(`Player: ${formatCards(playerCards)} (${playerValue}${soft ? 'S' : ''}) | Dealer: ${formatCards([dealerUpcard])}${splitInfo}`);
 
         let action = getAction(playerCards, dealerUpcard, actions.double, actions.split);
-        
+
         // Validate action is available
         if (action === 'double' && !actions.double) action = 'hit';
         if (action === 'split' && !actions.split) action = 'hit';
         if (action === 'hit' && !actions.hit) action = 'stand';
-        
+
         debugLog('ACTION', {
             strategy: CONFIG.strategy,
             action,
@@ -693,7 +696,7 @@
 
         try {
             await clickAction(action);
-            
+
             // After split, reset card tracking and wait longer for UI update
             if (action === 'split') {
                 lastPlayerCards = [];
@@ -713,19 +716,19 @@
 
     function handleGameEnd(status, isSplit = false) {
         if (!isHandInProgress) return;
-        
+
         const dealerValue = readHandValue('dealer');
-        
+
         let profit = 0;
         let resultSummary = '';
-        
+
         if (isSplit) {
             // Handle split results - status is like "win,lose"
             const splitResults = getSplitResults();
             const betPerHand = currentBet; // Each split hand has the same bet
-            
+
             let wins = 0, losses = 0, pushes = 0;
-            
+
             splitResults.forEach((hand, idx) => {
                 if (hand.result === 'win' || hand.result === 'blackjack') {
                     profit += betPerHand;
@@ -738,9 +741,9 @@
                 }
                 log(`  Hand ${idx + 1}: ${hand.result.toUpperCase()} (${hand.value})`);
             });
-            
+
             resultSummary = `SPLIT: ${wins}W/${losses}L/${pushes}P`;
-            
+
             debugLog('HAND_END_SPLIT', {
                 status,
                 splitResults,
@@ -749,21 +752,21 @@
                 bet: currentBet,
                 isPlaying
             });
-            
+
             log(`Result: ${resultSummary} | D:${dealerValue} | ${profit >= 0 ? '+' : ''}${profit.toFixed(4)}`);
-            
+
             // For martingale: split counts as win if net positive, loss if net negative
             const netResult = profit > 0 ? 'win' : (profit < 0 ? 'lose' : 'push');
             updateStats(netResult, profit);
-            
+
         } else {
             // Normal single hand
             const playerValue = readHandValue('player');
             const resultClass = getResultClass();
-            
+
             let result = status;
             if (resultClass) result = resultClass;
-            
+
             // Calculate profit
             if (result === 'win' || result === 'blackjack') {
                 profit = result === 'blackjack' ? currentBet * 1.5 : currentBet;
@@ -771,7 +774,7 @@
                 profit = -currentBet;
             }
             // push = 0
-            
+
             debugLog('HAND_END', {
                 result,
                 profit,
@@ -782,13 +785,13 @@
             });
 
             log(`Result: ${result.toUpperCase()} | P:${playerValue} D:${dealerValue} | ${profit >= 0 ? '+' : ''}${profit.toFixed(4)}`);
-            
+
             updateStats(result, profit);
         }
-        
+
         isHandInProgress = false;
         actionInProgress = false;
-        
+
         // If auto-playing, log that next hand will start soon
         if (isPlaying) {
             log(`Next hand in ${CONFIG.delayBetweenHands/1000}s...`);
@@ -802,132 +805,133 @@
 
     async function startNewHand() {
         if (isHandInProgress) return;
-        
+
         isHandInProgress = true;
         handNumber++;
         lastPlayerCards = [];
-        
-        let betToUse = CONFIG.bettingSystem === 'martingale' ? currentBet : CONFIG.betAmount;
+
         const balance = getBalance();
-        
+        let betToUse;
+
+        if (CONFIG.bettingSystem === 'martingale') {
+            betToUse = currentBet;
+        } else if (CONFIG.bettingSystem === 'fifthBalance') {
+            if (balance !== null && balance > 0) {
+                betToUse = Math.floor((balance / 5) * 100000000) / 100000000; // Round to 8 decimals
+                betToUse = Math.max(betToUse, 0.00000001); // Minimum bet
+                currentBet = betToUse;
+                updateBetDisplay();
+            } else {
+                betToUse = CONFIG.betAmount;
+            }
+        } else if (CONFIG.bettingSystem === 'fifthMartingale') {
+            if (consecutiveLosses === 0) {
+                // First hand or after win: calculate 1/5 of balance
+                if (balance !== null && balance > 0) {
+                    fifthMartingaleBaseBet = Math.floor((balance / 5) * 100000000) / 100000000;
+                    fifthMartingaleBaseBet = Math.max(fifthMartingaleBaseBet, 0.00000001);
+                    currentBet = fifthMartingaleBaseBet;
+                } else {
+                    currentBet = CONFIG.betAmount;
+                    fifthMartingaleBaseBet = CONFIG.betAmount;
+                }
+            }
+            // Use currentBet (which may have been doubled after loss)
+            betToUse = currentBet;
+            updateBetDisplay();
+        } else {
+            betToUse = CONFIG.betAmount;
+        }
+
         // Check for insufficient balance before betting
         if (hasInsufficientBalanceError(betToUse)) {
-            debugLog('INSUFFICIENT_BALANCE', { 
+            debugLog('INSUFFICIENT_BALANCE', {
                 balance,
-                currentBet: betToUse, 
+                currentBet: betToUse,
                 baseBet: CONFIG.betAmount,
-                consecutiveLosses 
+                consecutiveLosses
             });
-            log(`INSUFFICIENT BALANCE: ${betToUse.toFixed(4)} > ${balance?.toFixed(4) || '?'}, resetting to ${CONFIG.betAmount}`);
-            
-            // Reset martingale
-            currentBet = CONFIG.betAmount;
-            consecutiveLosses = 0;
-            betToUse = CONFIG.betAmount;
-            updateBetDisplay();
-            
-            // Check if we can even afford base bet
-            if (hasInsufficientBalanceError(betToUse)) {
-                log(`Cannot afford base bet ${betToUse.toFixed(4)}. Stopping.`);
-                isHandInProgress = false;
-                if (isPlaying) stopAutoPlay();
-                return;
-            }
-        }
-        
-        debugLog('HAND_START', { handNumber, bet: betToUse, balance });
-        log(`--- Hand #${handNumber} | Bet: ${betToUse} | Bal: ${balance?.toFixed(4) || '?'} ---`);
 
-        try {
-            await setBetAmount(betToUse);
-            await sleep(400); // Increased wait for UI validation
-            
-            // Check again after setting bet amount (UI validates async)
-            if (hasInsufficientBalanceError(betToUse)) {
-                debugLog('STILL_INSUFFICIENT', { bet: betToUse, balance: getBalance() });
-                log(`Insufficient balance for ${betToUse.toFixed(4)}.`);
-                
-                // Reset martingale to base bet
-                if (CONFIG.bettingSystem === 'martingale') {
-                    currentBet = CONFIG.betAmount;
-                    consecutiveLosses = 0;
-                    updateBetDisplay();
-                    log(`Martingale reset to ${currentBet.toFixed(4)}`);
-                    
-                    // Try with base bet if we can afford it
-                    const balance = getBalance();
-                    if (balance !== null && CONFIG.betAmount <= balance) {
-                        await setBetAmount(CONFIG.betAmount);
-                        await sleep(400);
-                        if (!hasInsufficientBalanceError(CONFIG.betAmount)) {
-                            log('Using base bet instead');
-                            betToUse = CONFIG.betAmount;
-                            // Continue to bet button
-                        } else {
-                            log('Cannot afford base bet. Stopping.');
-                            isHandInProgress = false;
-                            if (isPlaying) stopAutoPlay();
-                            return;
-                        }
-                    } else {
-                        log('Cannot afford base bet. Stopping.');
-                        isHandInProgress = false;
-                        if (isPlaying) stopAutoPlay();
-                        return;
-                    }
-                } else {
+            // For 1/5 balance systems, recalculate based on actual balance
+            if ((CONFIG.bettingSystem === 'fifthBalance' || CONFIG.bettingSystem === 'fifthMartingale') && balance !== null && balance > 0) {
+                betToUse = Math.floor((balance / 5) * 100000000) / 100000000;
+                betToUse = Math.max(betToUse, 0.00000001);
+                currentBet = betToUse;
+                consecutiveLosses = 0;
+                fifthMartingaleBaseBet = betToUse;
+                log(`INSUFFICIENT: Recalculating 1/5 of ${balance.toFixed(4)} = ${betToUse.toFixed(8)}`);
+                updateBetDisplay();
+            } else {
+                log(`INSUFFICIENT BALANCE: ${betToUse.toFixed(4)} > ${balance?.toFixed(4) || '?'}, resetting to ${CONFIG.betAmount}`);
+                // Reset to base bet
+                currentBet = CONFIG.betAmount;
+                consecutiveLosses = 0;
+                betToUse = CONFIG.betAmount;
+                updateBetDisplay();
+
+                // Check if we can even afford base bet
+                if (hasInsufficientBalanceError(betToUse)) {
+                    log(`Cannot afford base bet ${betToUse.toFixed(4)}. Stopping.`);
                     isHandInProgress = false;
                     if (isPlaying) stopAutoPlay();
                     return;
                 }
             }
-            
-            // Check if bet button is actually clickable
-            const betBtn = document.querySelector('[data-testid="bet-button"]');
-            if (betBtn && betBtn.disabled) {
-                debugLog('BET_BUTTON_DISABLED', { hasError: hasInsufficientBalanceError() });
-                log('Bet button disabled - checking for errors');
-                
-                if (hasInsufficientBalanceError() && CONFIG.bettingSystem === 'martingale') {
-                    log('Resetting martingale due to disabled bet');
-                    currentBet = CONFIG.betAmount;
-                    consecutiveLosses = 0;
-                    updateBetDisplay();
+        }
+
+        debugLog('HAND_START', { handNumber, bet: betToUse, balance });
+        log(`--- Hand #${handNumber} | Bet: ${betToUse} | Bal: ${balance?.toFixed(4) || '?'} ---`);
+
+        try {
+            await setBetAmount(betToUse);
+            await sleep(200);
+
+            // Check again after setting bet amount (in case balance changed)
+            if (hasInsufficientBalanceError(betToUse)) {
+                const currentBalance = getBalance();
+                // For 1/5 systems, try recalculating with current balance
+                if ((CONFIG.bettingSystem === 'fifthBalance' || CONFIG.bettingSystem === 'fifthMartingale') && currentBalance !== null && currentBalance > 0) {
+                    betToUse = Math.floor((currentBalance / 5) * 100000000) / 100000000;
+                    betToUse = Math.max(betToUse, 0.00000001);
+                    currentBet = betToUse;
+                    await setBetAmount(betToUse);
+                    await sleep(200);
                 }
-                isHandInProgress = false;
-                return;
+                // Final check
+                if (hasInsufficientBalanceError(betToUse)) {
+                    debugLog('STILL_INSUFFICIENT', { bet: betToUse, balance: currentBalance });
+                    log(`Still insufficient balance for ${betToUse.toFixed(8)}. Stopping.`);
+                    isHandInProgress = false;
+                    if (isPlaying) {
+                        stopAutoPlay();
+                    }
+                    return;
+                }
             }
-            
+
             await clickButton('[data-testid="bet-button"]');
             await sleep(CONFIG.delayAfterBet);
-            
-            // Final check after clicking bet - error might appear after click
-            if (hasInsufficientBalanceError()) {
-                debugLog('POST_BET_ERROR');
-                log('Error after bet click - resetting');
-                if (CONFIG.bettingSystem === 'martingale') {
-                    currentBet = CONFIG.betAmount;
-                    consecutiveLosses = 0;
-                    updateBetDisplay();
-                }
-                isHandInProgress = false;
-                return;
-            }
         } catch (e) {
             debugLog('HAND_ERROR', { error: e.message });
             log(`Error: ${e.message}`);
             isHandInProgress = false;
-            
-            // If bet failed, might be insufficient balance
-            if (hasInsufficientBalanceError() && CONFIG.bettingSystem === 'martingale') {
-                log('Bet failed - resetting martingale');
-                currentBet = CONFIG.betAmount;
-                consecutiveLosses = 0;
+
+            // If bet failed, might be insufficient balance - reset betting system
+            if (hasInsufficientBalanceError()) {
+                if (CONFIG.bettingSystem === 'martingale') {
+                    log('Bet failed - resetting martingale');
+                    currentBet = CONFIG.betAmount;
+                    consecutiveLosses = 0;
+                } else if (CONFIG.bettingSystem === 'fifthMartingale' || CONFIG.bettingSystem === 'fifthBalance') {
+                    log('Bet failed - will recalculate 1/5 balance next hand');
+                    consecutiveLosses = 0;
+                    fifthMartingaleBaseBet = 0;
+                }
                 updateBetDisplay();
             }
         }
     }
-    
+
     function getBalance() {
         // Read balance from the coin toggle button
         const coinToggle = document.querySelector('[data-testid="coin-toggle"]');
@@ -941,7 +945,7 @@
                     return balance;
                 }
             }
-            
+
             // Fallback: look for any number in the button text
             const text = coinToggle.textContent;
             const match = text.match(/(\d+\.?\d*)/);
@@ -951,35 +955,18 @@
         }
         return null;
     }
-    
+
     function hasInsufficientBalanceError(betAmount = null) {
         const bet = betAmount || currentBet;
-        
-        // Method 1: Check for .input-error element (most specific)
-        const inputError = document.querySelector('.input-error');
-        if (inputError) {
-            const text = inputError.textContent.toLowerCase();
-            if (text.includes('balance') || text.includes("can't bet")) {
-                debugLog('BALANCE_ERROR_ELEMENT', { text: text.slice(0, 50) });
-                return true;
-            }
-        }
-        
-        // Method 2: Check if input has 'invalid' class
-        const betInput = document.querySelector('[data-testid="input-game-amount"]');
-        if (betInput && betInput.classList.contains('invalid')) {
-            debugLog('BET_INPUT_INVALID');
-            return true;
-        }
-        
-        // Method 3: Compare balance to bet amount
+
+        // Method 1: Compare balance to bet amount
         const balance = getBalance();
         if (balance !== null && bet > balance) {
             debugLog('BALANCE_CHECK', { balance, bet, insufficient: true });
             return true;
         }
-        
-        // Method 4: Check for error messages in the UI
+
+        // Method 2: Check for error messages in the UI
         const sidebar = document.querySelector('.game-sidebar');
         if (sidebar) {
             const text = sidebar.textContent.toLowerCase();
@@ -987,13 +974,13 @@
                 return true;
             }
         }
-        
-        // Method 5: Check for any error/warning elements
+
+        // Method 3: Check for any error/warning elements
         const errorEl = document.querySelector('[class*="error"], [class*="warning"]');
         if (errorEl && errorEl.textContent.toLowerCase().includes('balance')) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -1003,11 +990,11 @@
 
     function startObserver() {
         if (observer) return;
-        
-        const gameContainer = document.querySelector('[data-testid="game-blackjack"]') || 
+
+        const gameContainer = document.querySelector('[data-testid="game-blackjack"]') ||
                               document.querySelector('[data-testid="game-frame"]') ||
                               document.body;
-        
+
         observer = new MutationObserver((mutations) => {
             // Debounce - only process once per batch
             clearTimeout(observer._timeout);
@@ -1042,15 +1029,15 @@
 
     function startAutoPlay() {
         if (isPlaying) return;
-        
+
         isPlaying = true;
         lastGameStatus = 'none';
         lastPlayerCards = [];
         handEndedAt = 0;
-        
+
         debugLog('AUTOPLAY_START', { config: CONFIG });
         log('Auto-play started');
-        
+
         const btn = document.getElementById('bjdom-play-btn');
         if (btn) btn.textContent = 'Stop';
 
@@ -1063,16 +1050,17 @@
         isPlaying = false;
         isHandInProgress = false;
         actionInProgress = false;
-        // Reset martingale on stop
+        // Reset betting systems on stop
         currentBet = CONFIG.betAmount;
         consecutiveLosses = 0;
+        fifthMartingaleBaseBet = 0;
         updateBetDisplay();
         stopObserver();
         stopGameLoop();  // Stop polling loop
-        
+
         debugLog('AUTOPLAY_STOP', { stats });
         log('Auto-play stopped');
-        
+
         const btn = document.getElementById('bjdom-play-btn');
         if (btn) btn.textContent = 'Start Auto-Play';
     }
@@ -1084,7 +1072,7 @@
         }
 
         const actions = getAvailableActions();
-        
+
         // Check if game needs action (resume existing hand)
         if (actions.hit || actions.stand) {
             log('Resuming active game...');
@@ -1167,6 +1155,38 @@
             updateBetDisplay();
         }
 
+        // 1/5 Balance + Martingale betting system adjustment
+        if (CONFIG.bettingSystem === 'fifthMartingale') {
+            if (result === 'lose' || result === 'bust') {
+                consecutiveLosses++;
+                const nextBet = currentBet * 2;
+                if (nextBet <= CONFIG.maxMartingaleBet) {
+                    currentBet = nextBet;
+                    debugLog('FIFTH_MARTINGALE', { action: 'double', nextBet: currentBet, consecutiveLosses, baseBet: fifthMartingaleBaseBet });
+                    log(`1/5+Martingale: Doubling to ${currentBet.toFixed(4)} (${consecutiveLosses} losses)`);
+                } else {
+                    // Hit max, reset to current 1/5 balance
+                    const balance = getBalance();
+                    if (balance !== null && balance > 0) {
+                        fifthMartingaleBaseBet = Math.floor((balance / 5) * 100000000) / 100000000;
+                        currentBet = fifthMartingaleBaseBet;
+                    } else {
+                        currentBet = CONFIG.betAmount;
+                    }
+                    consecutiveLosses = 0;
+                    debugLog('FIFTH_MARTINGALE', { action: 'reset_max', reason: 'exceeded max bet', newBase: currentBet });
+                    log(`1/5+Martingale: Hit max, resetting to 1/5 balance: ${currentBet.toFixed(4)}`);
+                }
+            } else if (result === 'win' || result === 'blackjack') {
+                // Win: reset to 1/5 of current balance
+                consecutiveLosses = 0;
+                debugLog('FIFTH_MARTINGALE', { action: 'reset_win', prevBet: currentBet });
+                log(`1/5+Martingale: Win! Will recalculate 1/5 balance next hand`);
+            }
+            // Push: keep same bet
+            updateBetDisplay();
+        }
+
         updateUI();
     }
 
@@ -1209,7 +1229,7 @@
             <style>
                 #bjdom-panel {
                     position: fixed;
-                    top: 10px;
+                    top: 80px;
                     right: 10px;
                     width: 280px;
                     background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
@@ -1312,7 +1332,7 @@
                 <div class="row">
                     <label>Strategy:</label>
                     <select id="bjdom-strategy">
-                        ${Object.entries(STRATEGIES).map(([k, v]) => 
+                        ${Object.entries(STRATEGIES).map(([k, v]) =>
                             `<option value="${k}" ${k === CONFIG.strategy ? 'selected' : ''}>${v.name}</option>`
                         ).join('')}
                     </select>
@@ -1321,7 +1341,7 @@
                 <div class="row">
                     <label>Betting:</label>
                     <select id="bjdom-betting">
-                        ${Object.entries(BETTING_SYSTEMS).map(([k, v]) => 
+                        ${Object.entries(BETTING_SYSTEMS).map(([k, v]) =>
                             `<option value="${k}" ${k === CONFIG.bettingSystem ? 'selected' : ''}>${v.name}</option>`
                         ).join('')}
                     </select>
@@ -1329,19 +1349,19 @@
                 <div id="bjdom-current-bet" style="font-size:11px;color:#ffaa00;margin:5px 0;display:none;">
                     Next bet: ${CONFIG.betAmount.toFixed(4)}
                 </div>
-                
+
                 <div class="stats">
                     <div class="row"><span>Hands:</span><span id="bjdom-stat-hands">0</span></div>
                     <div class="row"><span>W/L/P:</span><span id="bjdom-stat-wlp">0/0/0</span></div>
                     <div class="row"><span>Profit:</span><span id="bjdom-stat-profit">0.0000</span></div>
                 </div>
-                
+
                 <div>
                     <button id="bjdom-play-btn">Start Auto-Play</button>
                     <button id="bjdom-single-btn" class="secondary">Play 1</button>
                     <button id="bjdom-resume-btn" class="secondary">Resume</button>
                 </div>
-                
+
                 <div id="bjdom-log"></div>
             </div>
         `;
@@ -1384,6 +1404,7 @@
             CONFIG.bettingSystem = e.target.value;
             currentBet = CONFIG.betAmount;
             consecutiveLosses = 0;
+            fifthMartingaleBaseBet = 0;
             updateBetDisplay();
             debugLog('BETTING_CHANGED', { system: CONFIG.bettingSystem, description: BETTING_SYSTEMS[CONFIG.bettingSystem].description });
             log(`Betting: ${BETTING_SYSTEMS[CONFIG.bettingSystem]?.name || CONFIG.bettingSystem}`);
@@ -1398,7 +1419,7 @@
 
         log('DOM Bot loaded - pure DOM observation!');
         console.log('[BJDOM] API: bjDOM.readState(), bjDOM.dumpState(), bjDOM.resume()');
-        
+
         // Check for active game
         setTimeout(() => {
             const actions = getAvailableActions();
@@ -1412,7 +1433,7 @@
         const el = (id) => document.getElementById(id);
         if (el('bjdom-stat-hands')) el('bjdom-stat-hands').textContent = stats.hands;
         if (el('bjdom-stat-wlp')) el('bjdom-stat-wlp').textContent = `${stats.wins}/${stats.losses}/${stats.pushes}`;
-        
+
         const profitEl = el('bjdom-stat-profit');
         if (profitEl) {
             profitEl.textContent = (stats.profit >= 0 ? '+' : '') + stats.profit.toFixed(4);
@@ -1427,6 +1448,30 @@
                 currentBetDisplay.textContent = `Next bet: ${currentBet.toFixed(4)}`;
                 currentBetDisplay.style.display = 'block';
             }
+        } else if (CONFIG.bettingSystem === 'fifthBalance') {
+            const balance = getBalance();
+            if (currentBetDisplay) {
+                if (balance !== null) {
+                    const nextBet = Math.floor((balance / 5) * 100000000) / 100000000;
+                    currentBetDisplay.textContent = `1/5 Balance: ${nextBet.toFixed(4)} (Bal: ${balance.toFixed(4)})`;
+                } else {
+                    currentBetDisplay.textContent = `1/5 Balance: (calculating...)`;
+                }
+                currentBetDisplay.style.display = 'block';
+            }
+        } else if (CONFIG.bettingSystem === 'fifthMartingale') {
+            const balance = getBalance();
+            if (currentBetDisplay) {
+                if (consecutiveLosses > 0) {
+                    currentBetDisplay.textContent = `1/5+M: ${currentBet.toFixed(4)} (${consecutiveLosses} loss${consecutiveLosses > 1 ? 'es' : ''})`;
+                } else if (balance !== null) {
+                    const nextBet = Math.floor((balance / 5) * 100000000) / 100000000;
+                    currentBetDisplay.textContent = `1/5+M: ${nextBet.toFixed(4)} (Bal: ${balance.toFixed(4)})`;
+                } else {
+                    currentBetDisplay.textContent = `1/5+M: ${currentBet.toFixed(4)}`;
+                }
+                currentBetDisplay.style.display = 'block';
+            }
         } else {
             if (currentBetDisplay) currentBetDisplay.style.display = 'none';
         }
@@ -1435,7 +1480,7 @@
     // ============================================
     // DEBUG API
     // ============================================
-    
+
     window.bjDOM = {
         getStats: () => ({
             ...stats,
@@ -1456,7 +1501,7 @@
             }
             return `Unknown. Available: ${Object.keys(STRATEGIES).join(', ')}`;
         },
-        
+
         readState: () => ({
             gameStatus: getGameStatus(),
             playerCards: readPlayerCards(),
@@ -1468,9 +1513,9 @@
             isSplit: isSplitGame(),
             splitHands: getSplitHandCount()
         }),
-        
+
         resume: resumeGame,
-        
+
         clickHit: () => clickAction('hit'),
         clickStand: () => clickAction('stand'),
         clickDouble: () => clickAction('double'),
@@ -1483,15 +1528,15 @@
         clickNoInsurance: () => clickAction('noInsurance'),
         clickBet: () => clickButton('[data-testid="bet-button"]'),
         isInsuranceOffered,
-        
+
         dumpState: () => {
             console.log('=== BJDOM State Dump ===');
             console.log('Stats:', stats);
             console.log('Config:', CONFIG);
-            console.log('Flags:', { 
-                isPlaying, 
-                isHandInProgress, 
-                actionInProgress, 
+            console.log('Flags:', {
+                isPlaying,
+                isHandInProgress,
+                actionInProgress,
                 handNumber,
                 lastGameStatus,
                 handEndedAt,
@@ -1506,7 +1551,7 @@
             console.log('Dealer Cards:', readDealerCards());
             console.log('Available Actions:', getAvailableActions());
         },
-        
+
         // Force start next hand (for debugging)
         forceNextHand: async () => {
             if (isHandInProgress) {
@@ -1519,21 +1564,22 @@
             startGameLoop();
             await startNewHand();
         },
-        
+
         // Reset martingale to base bet
         resetMartingale: () => {
             currentBet = CONFIG.betAmount;
             consecutiveLosses = 0;
+            fifthMartingaleBaseBet = 0;
             updateBetDisplay();
             debugLog('MARTINGALE_RESET', { baseBet: CONFIG.betAmount });
-            return `Martingale reset. Next bet: ${currentBet}`;
+            return `Betting reset. Next bet: ${currentBet}`;
         },
-        
+
         hasInsufficientBalance: hasInsufficientBalanceError,
         getBalance,
-        
+
         getBettingSystems: () => BETTING_SYSTEMS,
-        
+
         setBettingSystem: (system) => {
             if (BETTING_SYSTEMS[system]) {
                 CONFIG.bettingSystem = system;
@@ -1541,6 +1587,7 @@
                 if (select) select.value = system;
                 currentBet = CONFIG.betAmount;
                 consecutiveLosses = 0;
+                fifthMartingaleBaseBet = 0;
                 updateBetDisplay();
                 debugLog('BETTING_CHANGED', { system, description: BETTING_SYSTEMS[system].description });
                 return `Betting system set to: ${BETTING_SYSTEMS[system].name}`;
@@ -1552,7 +1599,7 @@
     // ============================================
     // INIT
     // ============================================
-    
+
     function init() {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => setTimeout(createUI, 1000));
