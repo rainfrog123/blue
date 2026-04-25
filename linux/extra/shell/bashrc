@@ -78,7 +78,7 @@ alias ccxt='cd /allah/blue/ft/tools/realtime/ccxt'
 alias rtv='cd /allah/blue/ft/tools/realtime/tradingview'
 
 # /allah/blue/ft/user_data/*
-alias cf='cd /allah/blue/ft/user_data/config'
+alias udcf='cd /allah/blue/ft/user_data/config'
 alias hr='cd /allah/blue/ft/user_data/hyperopt_results'
 alias hy='cd /allah/blue/ft/user_data/hyperopts'
 alias nb='cd /allah/blue/ft/user_data/notebooks'
@@ -88,7 +88,6 @@ alias st='cd /allah/blue/ft/user_data/strategies'
 # /allah/blue/linux/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias ext='cd /allah/blue/linux/extra'
-alias vp='cd /allah/blue/linux/vps'
 alias vps='cd /allah/blue/linux/vps'
 
 # /allah/blue/linux/extra/*
@@ -103,7 +102,7 @@ alias shl='cd /allah/blue/linux/extra/shell'
 # /allah/blue/linux/vps/*
 alias ali='cd /allah/blue/linux/vps/ali'
 alias aw='cd /allah/blue/linux/vps/aws'
-alias azu='cd /allah/blue/linux/vps/azure'
+alias az='cd /allah/blue/linux/vps/azure'
 alias digi='cd /allah/blue/linux/vps/digi'
 alias gcp='cd /allah/blue/linux/vps/gcp'
 alias lno='cd /allah/blue/linux/vps/linode'
@@ -112,7 +111,6 @@ alias vu='cd /allah/blue/linux/vps/vultr'
 
 # /allah/blue/linux/vps/ali/*
 alias alicf='cd /allah/blue/linux/vps/ali/config'
-alias ec='cd /allah/blue/linux/vps/ali/ecs'
 alias ecs='cd /allah/blue/linux/vps/ali/ecs'
 alias alise='cd /allah/blue/linux/vps/ali/setup'
 
