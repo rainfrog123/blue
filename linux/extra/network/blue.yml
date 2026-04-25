@@ -1,9 +1,6 @@
 # Proxies
+# Version: 🔖 03:05-26/04 (UTC+8)
 proxies:
-  # Version Info - UPDATE THIS TIMESTAMP whenever changes are made to this file
-  # Format: 🔖 HH:MM-DD/MM (UTC+8)
-  - {name: 🔖 03:05-26/04, type: http, server: 127.0.0.1, port: 1}
-
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
     type: trojan
@@ -611,7 +608,6 @@ proxy-groups:
       # - 🔄 CF WARP Outbound
       # - 🌐 Naiyun
       - 🔑 Manual Selection
-      - 🔖 02:51-26/04
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
       # - ☁️ Cloudflare CF Nodes
