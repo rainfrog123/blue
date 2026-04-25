@@ -2,18 +2,17 @@
 
 ## Deployed Servers
 
-### Azure (US)
+### Azure (Singapore) - IPv6 Only
 
 | Setting | Value |
 |---------|-------|
 | **Server** | `hyaz.hyas.site:3365` |
 | **Port** | `3365` (UDP) |
 | **Password** | `NzPY5nTKThLxUb1MOJTuu6B0` |
-| **IPv4** | `4.194.62.9` |
 | **IPv6** | `2603:1040:0:3::52` |
 
 ```
-hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:3365?sni=hyaz.hyas.site#Azure-hy2
+hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:3365?sni=hyaz.hyas.site#Azure-SG-hy2
 ```
 
 ### DigitalOcean (Singapore)

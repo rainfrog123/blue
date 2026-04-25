@@ -112,8 +112,8 @@ proxies:
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
 
-  # Hysteria 2 (Azure US - Direct UDP)
-  - name: 🇺🇸azure_us_hy2
+  # Hysteria 2 (Azure SG - Direct UDP, IPv6 Only)
+  - name: 🇸🇬azure_sg_hy2
     type: hysteria2
     server: hyaz.hyas.site
     port: 3365
@@ -708,7 +708,7 @@ proxy-groups:
     type: select
     proxies:
       - 🇸🇬do_singapore_hy2
-      - 🇺🇸azure_us_hy2
+      - 🇸🇬azure_sg_hy2
 
   - name: 📺 YouTube Nodes
     type: select
@@ -829,7 +829,7 @@ proxy-groups:
     proxies:
       - DIRECT
       - 🇸🇬do_singapore_hy2
-      - 🇺🇸azure_us_hy2
+      - 🇸🇬azure_sg_hy2
       - 🇸🇬azure_singapore_tj
       - 🇸🇬azure_singapore_tj_2
       - 🇸🇬azure_singapore_tj_3
