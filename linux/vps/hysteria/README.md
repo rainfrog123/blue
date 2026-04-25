@@ -1,55 +1,69 @@
 # Hysteria 2 Server
 
-## Current Server Info (DO Singapore)
+## Deployed Servers
+
+### Azure (US)
+
+| Setting | Value |
+|---------|-------|
+| **Server** | `hyaz.hyas.site:3365` |
+| **Port** | `3365` (UDP) |
+| **Password** | `NzPY5nTKThLxUb1MOJTuu6B0` |
+| **IPv4** | `4.194.62.9` |
+| **IPv6** | `2603:1040:0:3::52` |
+
+```
+hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:3365?sni=hyaz.hyas.site#Azure-hy2
+```
+
+### DigitalOcean (Singapore)
 
 | Setting | Value |
 |---------|-------|
 | **Server** | `hy.hyas.site:5333` |
 | **Port** | `5333` (UDP) |
 | **Password** | `jEdTlnZe2q2nv1N0lmmXHCp2` |
-| **Protocol** | Hysteria 2 |
 | **IPv4** | `129.212.209.177` |
 | **IPv6** | `2400:6180:0:d2:0:2:c7ec:0` |
 
+```
+hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#DO-SG-hy2
+```
+
 ---
 
-## Setup on New Machine
+## Deploy on New Machine
 
 ### Prerequisites
 
-- Docker installed (`docker --version`)
-- Domain with Cloudflare DNS (for ACME TLS cert)
+- Docker installed
+- Domain with Cloudflare DNS
 - UDP port open (firewall/security group)
+- Ports 80/443 accessible for ACME certificate
 
-### Step 1: Create Directory
-
-```bash
-mkdir -p /allah/blue/linux/vps/hysteria
-cd /allah/blue/linux/vps/hysteria
-```
-
-### Step 2: Generate Random Password
+### Quick Deploy
 
 ```bash
-openssl rand -base64 24 | tr -d '/+=' | head -c 24
+# 1. Create directory
+mkdir -p /allah/blue/linux/vps/hysteria && cd /allah/blue/linux/vps/hysteria
+
+# 2. Generate password
+openssl rand -base64 24 | tr -d '/+=' | head -c 24 && echo
+
+# 3. Get server IPs
+curl -4 -s ifconfig.me && echo    # IPv4
+curl -6 -s ifconfig.me && echo    # IPv6
 ```
 
-### Step 3: Get Server IP
-
-```bash
-curl -4 -s ifconfig.me    # IPv4
-curl -6 -s ifconfig.me    # IPv6
-```
-
-### Step 4: Create config.yaml
+### config.yaml
 
 ```yaml
 listen: :PORT
 
 acme:
   domains:
-    - SUBDOMAIN.DOMAIN.TLD
-  email: admin@DOMAIN.TLD
+    - SUBDOMAIN.hyas.site
+  email: admin@hyas.site
 
 auth:
   type: password
@@ -62,7 +76,7 @@ masquerade:
     rewriteHost: true
 ```
 
-### Step 5: Create docker-compose.yml
+### docker-compose.yml
 
 ```yaml
 services:
@@ -77,26 +91,17 @@ services:
     command: ["server", "-c", "/etc/hysteria/config.yaml"]
 ```
 
-### Step 6: Add DNS Record (Cloudflare)
+### Add DNS Records
 
-**IMPORTANT:** Proxy must be OFF (DNS only / grey cloud) - Hysteria uses UDP.
-
-Using CF CLI (`/allah/blue/web/apps/cloudflare`):
+**Proxy must be OFF** (grey cloud) - Hysteria uses UDP.
 
 ```bash
 cd /allah/blue/web/apps/cloudflare
-python3 cli.py dns add --type A --name SUBDOMAIN --content SERVER_IPV4
-python3 cli.py dns add --type AAAA --name SUBDOMAIN --content SERVER_IPV6
+python3 cli.py dns add --type A --name SUBDOMAIN --content IPV4
+python3 cli.py dns add --type AAAA --name SUBDOMAIN --content IPV6
 ```
 
-Or manually in Cloudflare dashboard:
-
-| Type | Name | Content | Proxy |
-|------|------|---------|-------|
-| A | hy | 1.2.3.4 | OFF |
-| AAAA | hy | 2001:db8::1 | OFF |
-
-### Step 7: Start Server
+### Start Server
 
 ```bash
 mkdir -p acme
@@ -104,54 +109,30 @@ docker-compose up -d
 docker logs -f hysteria2
 ```
 
-Wait for `server up and running` and `certificate obtained successfully` in logs.
-
-### Step 8: Add to Clash Config
-
-Add node to `/allah/blue/linux/extra/network/blue.yml`:
-
-```yaml
-proxies:
-  - name: 🇸🇬LOCATION_hy2
-    type: hysteria2
-    server: SUBDOMAIN.DOMAIN.TLD
-    port: PORT
-    password: YOUR_PASSWORD
-    sni: SUBDOMAIN.DOMAIN.TLD
-```
-
-Add to Manual Selection group:
-
-```yaml
-  - name: 🔑 Manual Selection
-    type: select
-    proxies:
-      - 🇸🇬LOCATION_hy2
-      # ... other nodes
-```
+Wait for `server up and running` in logs.
 
 ---
 
-## Client Configs
+## Client Config Templates
 
 ### Clash Meta / Mihomo
 
 ```yaml
 proxies:
-  - name: "Hysteria2-HY"
+  - name: "NAME"
     type: hysteria2
-    server: hy.hyas.site
-    port: 5333
-    password: jEdTlnZe2q2nv1N0lmmXHCp2
-    sni: hy.hyas.site
+    server: SUBDOMAIN.hyas.site
+    port: PORT
+    password: PASSWORD
+    sni: SUBDOMAIN.hyas.site
 ```
 
-### Hysteria 2 Client (config.yaml)
+### Hysteria 2 Client
 
 ```yaml
-server: hy.hyas.site:5333
+server: SUBDOMAIN.hyas.site:PORT
 
-auth: jEdTlnZe2q2nv1N0lmmXHCp2
+auth: PASSWORD
 
 socks5:
   listen: 127.0.0.1:1080
@@ -160,10 +141,10 @@ http:
   listen: 127.0.0.1:8080
 ```
 
-### URI (for mobile apps)
+### URI (mobile apps)
 
 ```
-hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#Hysteria2-HY
+hysteria2://PASSWORD@SUBDOMAIN.hyas.site:PORT?sni=SUBDOMAIN.hyas.site#NAME
 ```
 
 ### NekoBox / Sing-box
@@ -171,13 +152,13 @@ hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#Hysteria
 ```json
 {
   "type": "hysteria2",
-  "tag": "hysteria2-hy",
-  "server": "hy.hyas.site",
-  "server_port": 5333,
-  "password": "jEdTlnZe2q2nv1N0lmmXHCp2",
+  "tag": "NAME",
+  "server": "SUBDOMAIN.hyas.site",
+  "server_port": PORT,
+  "password": "PASSWORD",
   "tls": {
     "enabled": true,
-    "server_name": "hy.hyas.site"
+    "server_name": "SUBDOMAIN.hyas.site"
   }
 }
 ```
@@ -187,23 +168,12 @@ hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#Hysteria
 ## Operations
 
 ```bash
-# View logs
-docker logs -f hysteria2
-
-# Restart
-docker-compose restart
-
-# Stop
-docker-compose down
-
-# Update image
-docker-compose pull && docker-compose up -d
-
-# Check if running
-docker ps | grep hysteria
-
-# Check port listening
-ss -ulnp | grep PORT
+docker logs -f hysteria2        # View logs
+docker-compose restart          # Restart
+docker-compose down             # Stop
+docker-compose pull && docker-compose up -d   # Update
+docker ps | grep hysteria       # Check status
+ss -ulnp | grep PORT            # Check port
 ```
 
 ---
@@ -211,14 +181,14 @@ ss -ulnp | grep PORT
 ## Troubleshooting
 
 ### ACME cert failed
-- Verify DNS record exists and points to this server
-- Ensure port 80 is accessible (for HTTP-01 challenge)
-- Check domain resolves: `dig SUBDOMAIN.DOMAIN.TLD`
+- DNS record must point to server IP
+- Ports 80/443 must be open for ACME challenge
+- Check: `dig SUBDOMAIN.hyas.site`
 
 ### Connection refused
-- Check UDP port is open in firewall: `ufw allow PORT/udp`
-- Check security group allows UDP inbound
+- Open UDP port in firewall: `ufw allow PORT/udp`
+- Check cloud security group allows UDP inbound
 
-### Container keeps restarting
+### Container restarting
 - Check logs: `docker logs hysteria2`
-- Verify config.yaml syntax is valid
+- Verify config.yaml syntax

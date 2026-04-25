@@ -1,13 +1,13 @@
-listen: :5333
+listen: :3365
 
 acme:
   domains:
-    - hy.hyas.site
+    - hyaz.hyas.site
   email: admin@hyas.site
 
 auth:
   type: password
-  password: jEdTlnZe2q2nv1N0lmmXHCp2
+  password: NzPY5nTKThLxUb1MOJTuu6B0
 
 masquerade:
   type: proxy

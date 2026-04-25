@@ -2,7 +2,7 @@
 proxies:
   # Version Info - UPDATE THIS TIMESTAMP whenever changes are made to this file
   # Format: 🔖 HH:MM-DD/MM (UTC+8)
-  - {name: 🔖 02:51-26/04, type: http, server: 127.0.0.1, port: 1}
+  - {name: 🔖 03:05-26/04, type: http, server: 127.0.0.1, port: 1}
 
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
@@ -114,6 +114,14 @@ proxies:
     port: 5333
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
+
+  # Hysteria 2 (Azure US - Direct UDP)
+  - name: 🇺🇸azure_us_hy2
+    type: hysteria2
+    server: hyaz.hyas.site
+    port: 3365
+    password: NzPY5nTKThLxUb1MOJTuu6B0
+    sni: hyaz.hyas.site
 
   # Cloudflare Custom IP Variants (Trojan) - Sorted by Speed (2026-04-24 14:00)
   # NRT (Japan) - 8 IPs
@@ -704,6 +712,7 @@ proxy-groups:
     type: select
     proxies:
       - 🇸🇬do_singapore_hy2
+      - 🇺🇸azure_us_hy2
 
   - name: 📺 YouTube Nodes
     type: select
@@ -824,6 +833,7 @@ proxy-groups:
     proxies:
       - DIRECT
       - 🇸🇬do_singapore_hy2
+      - 🇺🇸azure_us_hy2
       - 🇸🇬azure_singapore_tj
       - 🇸🇬azure_singapore_tj_2
       - 🇸🇬azure_singapore_tj_3
