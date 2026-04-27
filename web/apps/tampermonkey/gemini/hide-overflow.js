@@ -20,7 +20,7 @@
         const style = document.createElement('style');
         style.id = 'tm-sidenav-styles';
         style.textContent = `
-            bard-sidenav.tm-hidden {
+            mat-sidenav.tm-hidden {
                 display: none !important;
             }
             body.tm-sidenav-hidden side-nav-menu-button,
@@ -38,12 +38,6 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-family: 'Google Symbols', 'Material Symbols Outlined', sans-serif;
-                font-size: 24px;
-                font-weight: normal;
-                font-style: normal;
-                line-height: 1;
-                -webkit-font-smoothing: antialiased;
             }
             #${TOGGLE_ID}:hover {
                 background: rgba(255,255,255,0.08);
@@ -105,25 +99,36 @@
     }
 
     function getSidenav() {
-        return document.querySelector('bard-sidenav');
+        return document.querySelector('mat-sidenav');
     }
 
     function updateVisibility() {
-        const sidenav = getSidenav();
-        if (!sidenav) return;
-
+        // Always update body class (controls hamburger menu and logo visibility)
         if (isHidden) {
-            sidenav.classList.add('tm-hidden');
             document.body.classList.add('tm-sidenav-hidden');
         } else {
-            sidenav.classList.remove('tm-hidden');
             document.body.classList.remove('tm-sidenav-hidden');
         }
 
+        // Update sidenav if it exists
+        const sidenav = getSidenav();
+        if (sidenav) {
+            if (isHidden) {
+                sidenav.classList.add('tm-hidden');
+            } else {
+                sidenav.classList.remove('tm-hidden');
+            }
+        }
+
+        // Update button icon
         const btn = document.getElementById(TOGGLE_ID);
         if (btn) {
-            btn.textContent = isHidden ? 'menu' : 'close';
             btn.title = isHidden ? 'Show sidebar' : 'Hide sidebar';
+            const icon = btn.querySelector('mat-icon');
+            if (icon) {
+                icon.textContent = isHidden ? 'menu' : 'close';
+                icon.setAttribute('fonticon', isHidden ? 'menu' : 'close');
+            }
         }
     }
 
@@ -144,6 +149,14 @@
         btn.className = 'mdc-icon-button mat-mdc-icon-button mat-mdc-button-base mat-unthemed';
         btn.title = isHidden ? 'Show sidebar' : 'Hide sidebar';
         btn.onclick = toggle;
+
+        const icon = document.createElement('mat-icon');
+        icon.className = 'mat-icon notranslate gds-icon-l google-symbols mat-ligature-font mat-icon-no-color';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.setAttribute('fonticon', isHidden ? 'menu' : 'close');
+        icon.textContent = isHidden ? 'menu' : 'close';
+        btn.appendChild(icon);
+
         container.insertBefore(btn, container.firstChild);
         updateVisibility();
     }
@@ -168,6 +181,7 @@
     function init() {
         console.log('[Gemini Hide Sidenav] Script loaded');
         addStyles();
+        updateVisibility(); // Apply immediately to hide menu/logo
         createToggleButton();
         replaceDisclaimer();
         setupObserver();
