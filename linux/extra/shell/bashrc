@@ -192,3 +192,4 @@ alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
 alias note='cursor /allah/blue/ft/notes'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
+export PATH=$PATH:/usr/local/go/bin
