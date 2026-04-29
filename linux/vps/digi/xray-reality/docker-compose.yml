@@ -9,7 +9,7 @@ services:
       - ./config.json:/etc/xray/config.json:ro
     command: run -c /etc/xray/config.json
     ports:
-      - "443:443"
+      - "8443:8443"
     cap_add:
       - NET_ADMIN
     sysctls:

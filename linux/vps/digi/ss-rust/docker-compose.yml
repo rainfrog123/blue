@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  ss-rust:
+    image: teddysun/shadowsocks-rust
+    container_name: ss-rust
+    restart: always
+    volumes:
+      - ./config.json:/etc/shadowsocks-rust/config.json:ro
+    ports:
+      - "12033:12033/tcp"
+      - "12033:12033/udp"
+    command: ssserver -c /etc/shadowsocks-rust/config.json

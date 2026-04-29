@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    environment:
+      - CF_TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true
