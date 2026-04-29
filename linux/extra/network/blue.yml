@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 03:05-26/04 (UTC+8)
+# Version: 🔖 01:16-30/04 (UTC+8)
 proxies:
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
@@ -80,7 +80,7 @@ proxies:
   - name: 🇸🇬do_singapore_reality
     type: vless
     server: 188.166.252.16
-    port: 443
+    port: 8443
     uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
     network: tcp
     tls: true
