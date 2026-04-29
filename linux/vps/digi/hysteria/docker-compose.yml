@@ -1,0 +1,10 @@
+services:
+  hysteria:
+    image: tobyxdd/hysteria:v2
+    container_name: hysteria2
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config.yaml:/etc/hysteria/config.yaml:ro
+      - ./acme:/etc/hysteria/acme
+    command: ["server", "-c", "/etc/hysteria/config.yaml"]
