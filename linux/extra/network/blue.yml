@@ -76,14 +76,6 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
-  - name: 🇬🇧do_uk
-    type: ss
-    server: 138.68.143.33
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: bxsnucrgk6hfish
-    udp: true
-
   # DIGI VPS - VLESS with WARP Outbound (Clean IP)
   - name: 🇸🇬do_singapore_reality
     type: vless
@@ -701,7 +693,6 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
-      - 🇬🇧do_uk
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
@@ -743,70 +734,70 @@ proxy-groups:
       # - 🇺🇸ny_usa_netflix
 
   # Naiyun Subscription Group
-  - name: 🌐 Naiyun
-    type: select
-    proxies:
-      - DIRECT
-      # Netflix/Direct Trojan
-      # - 🇭🇰ny_hongkong_direct
-      # - 🇭🇰ny_hongkong_netflix
-      # - 🇹🇼ny_taiwan_netflix
-      # - 🇸🇬ny_singapore_netflix
-      # - 🇯🇵ny_japan_netflix
-      # - 🇺🇸ny_usa_netflix
-      # - 🇹🇭ny_thailand_netflix
-      # - 🇷🇺ny_russia
-      # IPLC Shadowsocks
-      # - 🇭🇰ny_hongkong_ss_b
-      # - 🇭🇰ny_hongkong_ss_d
-      # - 🇹🇼ny_taiwan_ss_b
-      # - 🇹🇼ny_taiwan_ss_d
-      # - 🇸🇬ny_singapore_ss_b
-      # - 🇸🇬ny_singapore_ss_d
-      # - 🇯🇵ny_japan_ss_b
-      # - 🇯🇵ny_japan_ss_d
-      # - 🇺🇸ny_usa_ss_b
-      # - 🇺🇸ny_usa_ss_d
-      # - 🇹🇭ny_thailand_ss_b
-      # - 🇹🇭ny_thailand_ss_d
-      # - 🇲🇴ny_macau_ss_b
-      # - 🇲🇴ny_macau_ss_d
-      # IPLC VMess
-      # - 🇭🇰ny_hongkong_vmess_b
-      # - 🇭🇰ny_hongkong_vmess_d
-      # IDC Trojan
-      # - 🇰🇷ny_korea
-      # - 🇬🇧ny_uk
-      # - 🇲🇾ny_malaysia
-      # - 🇵🇭ny_philippines
-      # - 🇨🇦ny_canada
-      # - 🇦🇷ny_argentina
-      # - 🇮🇳ny_india
-      # - 🇲🇽ny_mexico
-      # - 🇦🇺ny_australia
-      # - 🇹🇷ny_turkey
-      # - 🇳🇬ny_nigeria
-      # - 🇻🇳ny_vietnam
-      # - 🇧🇷ny_brazil
-      # - 🇿🇦ny_southafrica
-      # - 🇦🇪ny_uae
-      # - 🇲🇲ny_myanmar
-      # - 🇺🇦ny_ukraine
-      # - 🇵🇰ny_pakistan
-      # - 🇳🇿ny_newzealand
-      # - 🇮🇱ny_israel
-      # - 🇰🇿ny_kazakhstan
-      # - 🇮🇩ny_indonesia
-      # - 🇬🇱ny_greenland
-      # - 🇮🇹ny_italy
-      # - 🇪🇬ny_egypt
-      # - 🇵🇪ny_peru
-      # - 🇮🇸ny_iceland
-      # - 🇬🇭ny_ghana
-      # - 🇦🇿ny_azerbaijan
-      # - 🇨🇭ny_switzerland
-      # - 🇩🇪ny_germany
-      # - 🇫🇷ny_france
+  # - name: 🌐 Naiyun
+  #   type: select
+  #   proxies:
+  #     - DIRECT
+  #     # Netflix/Direct Trojan
+  #     # - 🇭🇰ny_hongkong_direct
+  #     # - 🇭🇰ny_hongkong_netflix
+  #     # - 🇹🇼ny_taiwan_netflix
+  #     # - 🇸🇬ny_singapore_netflix
+  #     # - 🇯🇵ny_japan_netflix
+  #     # - 🇺🇸ny_usa_netflix
+  #     # - 🇹🇭ny_thailand_netflix
+  #     # - 🇷🇺ny_russia
+  #     # IPLC Shadowsocks
+  #     # - 🇭🇰ny_hongkong_ss_b
+  #     # - 🇭🇰ny_hongkong_ss_d
+  #     # - 🇹🇼ny_taiwan_ss_b
+  #     # - 🇹🇼ny_taiwan_ss_d
+  #     # - 🇸🇬ny_singapore_ss_b
+  #     # - 🇸🇬ny_singapore_ss_d
+  #     # - 🇯🇵ny_japan_ss_b
+  #     # - 🇯🇵ny_japan_ss_d
+  #     # - 🇺🇸ny_usa_ss_b
+  #     # - 🇺🇸ny_usa_ss_d
+  #     # - 🇹🇭ny_thailand_ss_b
+  #     # - 🇹🇭ny_thailand_ss_d
+  #     # - 🇲🇴ny_macau_ss_b
+  #     # - 🇲🇴ny_macau_ss_d
+  #     # IPLC VMess
+  #     # - 🇭🇰ny_hongkong_vmess_b
+  #     # - 🇭🇰ny_hongkong_vmess_d
+  #     # IDC Trojan
+  #     # - 🇰🇷ny_korea
+  #     # - 🇬🇧ny_uk
+  #     # - 🇲🇾ny_malaysia
+  #     # - 🇵🇭ny_philippines
+  #     # - 🇨🇦ny_canada
+  #     # - 🇦🇷ny_argentina
+  #     # - 🇮🇳ny_india
+  #     # - 🇲🇽ny_mexico
+  #     # - 🇦🇺ny_australia
+  #     # - 🇹🇷ny_turkey
+  #     # - 🇳🇬ny_nigeria
+  #     # - 🇻🇳ny_vietnam
+  #     # - 🇧🇷ny_brazil
+  #     # - 🇿🇦ny_southafrica
+  #     # - 🇦🇪ny_uae
+  #     # - 🇲🇲ny_myanmar
+  #     # - 🇺🇦ny_ukraine
+  #     # - 🇵🇰ny_pakistan
+  #     # - 🇳🇿ny_newzealand
+  #     # - 🇮🇱ny_israel
+  #     # - 🇰🇿ny_kazakhstan
+  #     # - 🇮🇩ny_indonesia
+  #     # - 🇬🇱ny_greenland
+  #     # - 🇮🇹ny_italy
+  #     # - 🇪🇬ny_egypt
+  #     # - 🇵🇪ny_peru
+  #     # - 🇮🇸ny_iceland
+  #     # - 🇬🇭ny_ghana
+  #     # - 🇦🇿ny_azerbaijan
+  #     # - 🇨🇭ny_switzerland
+  #     # - 🇩🇪ny_germany
+  #     # - 🇫🇷ny_france
 
   - name: 🤖 AI / IDE Nodes
     type: select
@@ -866,7 +857,6 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
-      - 🇬🇧do_uk
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
@@ -910,7 +900,6 @@ proxy-groups:
     proxies:
       # - 🇹🇭ny_thailand_ss_b
       - 🚀 Node Selection
-      - 🇬🇧do_uk
       # - 🇹🇭ny_thailand_ss_d
       # - 🇹🇭ny_thailand_netflix
       # - 🇸🇬ny_singapore_ss_b
@@ -1226,7 +1215,6 @@ proxy-groups:
   - name: 🇪🇺 Europe Nodes
     type: select
     proxies:
-      - 🇬🇧do_uk
       # - 🇬🇧ny_uk
       # - 🇩🇪ny_germany
       # - 🇫🇷ny_france
