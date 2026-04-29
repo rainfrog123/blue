@@ -76,6 +76,14 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
+  - name: 🇬🇧do_uk
+    type: ss
+    server: 138.68.143.33
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
   # DIGI VPS - VLESS with WARP Outbound (Clean IP)
   - name: 🇸🇬do_singapore_reality
     type: vless
@@ -693,6 +701,7 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
+      - 🇬🇧do_uk
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
@@ -714,6 +723,7 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
+      - 🚀 Hysteria Nodes
       - ☁️ Azure Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
@@ -856,6 +866,7 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
       - 🇸🇬do_singapore
+      - 🇬🇧do_uk
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
@@ -899,6 +910,7 @@ proxy-groups:
     proxies:
       # - 🇹🇭ny_thailand_ss_b
       - 🚀 Node Selection
+      - 🇬🇧do_uk
       # - 🇹🇭ny_thailand_ss_d
       # - 🇹🇭ny_thailand_netflix
       # - 🇸🇬ny_singapore_ss_b
@@ -1214,6 +1226,7 @@ proxy-groups:
   - name: 🇪🇺 Europe Nodes
     type: select
     proxies:
+      - 🇬🇧do_uk
       # - 🇬🇧ny_uk
       # - 🇩🇪ny_germany
       # - 🇫🇷ny_france
