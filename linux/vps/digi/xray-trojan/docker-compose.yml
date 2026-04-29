@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  xray-trojan:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-trojan
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json:ro
+    command: run -c /etc/xray/config.json
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true
