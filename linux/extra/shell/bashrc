@@ -93,7 +93,7 @@ alias vps='cd /allah/blue/linux/vps'
 # /allah/blue/linux/extra/*
 alias excf='cd /allah/blue/linux/extra/config'
 alias cu='cd /allah/blue/linux/extra/cursor'
-alias iph='cd /allah/blue/linux/extra/iphone'
+alias iph='cd /allah/blue/linux/iphone'
 alias ne='cd /allah/blue/linux/extra/network'
 alias nt='cd /allah/blue/linux/extra/notes'
 alias exsc='cd /allah/blue/linux/extra/scripts'
@@ -112,7 +112,7 @@ alias vu='cd /allah/blue/linux/vps/vultr'
 # /allah/blue/linux/vps/ali/*
 alias alicf='cd /allah/blue/linux/vps/ali/config'
 alias ecs='cd /allah/blue/linux/vps/ali/ecs'
-alias alise='cd /allah/blue/linux/vps/ali/setup'
+alias alise='cd /allah/blue/linux/vps/ali/init'
 
 # /allah/blue/linux/vps/linode/*
 alias lm='cd /allah/blue/linux/vps/linode/manager'
@@ -131,13 +131,13 @@ alias px='cd /allah/blue/web/proxy'
 
 # /allah/blue/web/apps/*
 alias ac='cd /allah/blue/web/apps/alt'
-alias sk='cd /allah/blue/web/apps/stake'
+alias sk='cd /allah/blue/web/apps/tampermonkey/stake'
 alias tm='cd /allah/blue/web/apps/tampermonkey'
 alias ti='cd /allah/blue/web/apps/tinder'
 
-# /allah/blue/web/apps/stake/*
-alias ba='cd /allah/blue/web/apps/stake/baccarat'
-alias bj='cd /allah/blue/web/apps/stake/blackjack'
+# /allah/blue/web/apps/tampermonkey/stake/*
+alias ba='cd /allah/blue/web/apps/tampermonkey/stake/baccarat'
+alias bj='cd /allah/blue/web/apps/tampermonkey/stake/blackjack'
 
 # /allah/blue/web/apps/tampermonkey/*
 alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'

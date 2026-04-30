@@ -1465,7 +1465,8 @@ rules:
   - DOMAIN-KEYWORD,bendibao,DIRECT
   - DOMAIN-KEYWORD,ipqualityscore,DIRECT
   - IP-CIDR,101.124.19.122/32,DIRECT,no-resolve
-  - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
+  # - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
+  - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,🚀 Node Selection
   - PROCESS-NAME,cfst.exe,DIRECT
 
   # 🚫 REJECT
