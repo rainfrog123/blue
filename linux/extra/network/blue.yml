@@ -1449,7 +1449,7 @@ rules:
   - DOMAIN-KEYWORD,intercom,🎰 Stake Nodes
   - DOMAIN-KEYWORD,pragmatic,🎰 Stake Nodes
   - DOMAIN-KEYWORD,puyqhjvx,🎰 Stake Nodes
-  # - DOMAIN-KEYWORD,stake,🎰 Stake Nodes
+  - DOMAIN-KEYWORD,stake,🎰 Stake Nodes
 
   # 📺 YouTube Nodes
   - DOMAIN-KEYWORD,googlevideo,📺 YouTube Nodes
