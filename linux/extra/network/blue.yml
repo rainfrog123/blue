@@ -76,6 +76,14 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
+  - name: 🇮🇳digi_india
+    type: ss
+    server: 143.110.246.223
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
   # DIGI VPS - VLESS with WARP Outbound (Clean IP)
   - name: 🇸🇬do_singapore_reality
     type: vless
@@ -900,6 +908,7 @@ proxy-groups:
     proxies:
       # - 🇹🇭ny_thailand_ss_b
       - 🚀 Node Selection
+      - 🇮🇳digi_india
       # - 🇹🇭ny_thailand_ss_d
       # - 🇹🇭ny_thailand_netflix
       # - 🇸🇬ny_singapore_ss_b
