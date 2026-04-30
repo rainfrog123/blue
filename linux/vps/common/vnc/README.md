@@ -37,7 +37,9 @@ Password: vncpass123
 | **Resolution** | 1920x1080 |
 | **Color Depth** | 24-bit |
 | **VNC Password** | `lBoI6Ob6rD0s5MKO` |
-| **Password File** | `/root/.vnc2/passwd` |
+| **Linux User** | `vncuser` |
+| **User Password** | `vncuser123` |
+| **Password File** | `/home/vncuser/.vnc/passwd` |
 
 ```
 Address: 129.212.209.177:5902
@@ -118,12 +120,12 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-User=root
-Group=root
-WorkingDirectory=/root
+User=vncuser
+Group=vncuser
+WorkingDirectory=/home/vncuser
 
 ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || :'
-ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -depth 24 -localhost no -rfbauth /root/.vnc2/passwd
+ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -depth 24 -localhost no
 ExecStop=/usr/bin/vncserver -kill :%i
 
 [Install]
