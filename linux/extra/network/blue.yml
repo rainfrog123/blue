@@ -622,43 +622,28 @@ proxy-groups:
       # - 🍁 Other Regions
 
   # Special Purpose Groups
-  - name: ☁️ Cloudflare CF Nodes
+  - name: 📺 YouTube Nodes
     type: select
     proxies:
-      - 🇸🇬azure_singapore_tj
-      - 🇸🇬azure_singapore_tj_2
-      - 🇸🇬azure_singapore_tj_3
-      - 🇸🇬azure_singapore_tj_4
-      - 🇸🇬azure_singapore_tj_5
-      - 🇸🇬azure_singapore_tj_6
-      - 🇸🇬azure_singapore_tj_7
-      - 🇸🇬azure_singapore_tj_8
-      - 🇯🇵azure_japan_tj
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
-      - 🇯🇵azure_japan_tj_7
-      - 🇯🇵azure_japan_tj_8
+      - 🚀 Node Selection
+      - 🚀 Hysteria Nodes
+      - ☁️ Azure Nodes
+      - 🌊 Digital Ocean Nodes
+      - ☁️ Cloudflare CF Nodes
+      # - 🌐 Naiyun
       - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore_tj_2
-      - 🇸🇬do_singapore_tj_3
-      - 🇸🇬do_singapore_tj_4
-      - 🇸🇬do_singapore_tj_5
-      - 🇸🇬do_singapore_tj_6
-      - 🇸🇬do_singapore_tj_7
-      - 🇸🇬do_singapore_tj_8
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇯🇵do_japan_tj_8
+      - 🇸🇬do_singapore
+      # - 🇭🇰ny_hongkong_ss_b
+      # - 🇹🇼ny_taiwan_ss_b
+      # - 🇸🇬ny_singapore_ss_b
+      # - 🇯🇵ny_japan_ss_b
+      # - 🇺🇸ny_usa_ss_b
+      # - 🇹🇭ny_thailand_ss_b
+      # - 🇲🇴ny_macau_ss_b
+      # - 🇭🇰ny_hongkong_netflix
+      # - 🇸🇬ny_singapore_netflix
+      # - 🇯🇵ny_japan_netflix
+      # - 🇺🇸ny_usa_netflix
 
   - name: ☁️ Azure Nodes
     type: select
@@ -709,29 +694,6 @@ proxy-groups:
     proxies:
       - 🇸🇬do_singapore_hy2
       - 🇸🇬azure_sg_hy2
-
-  - name: 📺 YouTube Nodes
-    type: select
-    proxies:
-      - 🚀 Node Selection
-      - 🚀 Hysteria Nodes
-      - ☁️ Azure Nodes
-      - 🌊 Digital Ocean Nodes
-      - ☁️ Cloudflare CF Nodes
-      # - 🌐 Naiyun
-      - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore
-      # - 🇭🇰ny_hongkong_ss_b
-      # - 🇹🇼ny_taiwan_ss_b
-      # - 🇸🇬ny_singapore_ss_b
-      # - 🇯🇵ny_japan_ss_b
-      # - 🇺🇸ny_usa_ss_b
-      # - 🇹🇭ny_thailand_ss_b
-      # - 🇲🇴ny_macau_ss_b
-      # - 🇭🇰ny_hongkong_netflix
-      # - 🇸🇬ny_singapore_netflix
-      # - 🇯🇵ny_japan_netflix
-      # - 🇺🇸ny_usa_netflix
 
   # Naiyun Subscription Group
   # - name: 🌐 Naiyun
@@ -894,6 +856,44 @@ proxy-groups:
       # - 🇺🇸ny_usa_netflix
       # - 🇬🇧ny_uk
       # - 🇩🇪ny_germany
+
+  - name: ☁️ Cloudflare CF Nodes
+    type: select
+    proxies:
+      - 🇸🇬azure_singapore_tj
+      - 🇸🇬azure_singapore_tj_2
+      - 🇸🇬azure_singapore_tj_3
+      - 🇸🇬azure_singapore_tj_4
+      - 🇸🇬azure_singapore_tj_5
+      - 🇸🇬azure_singapore_tj_6
+      - 🇸🇬azure_singapore_tj_7
+      - 🇸🇬azure_singapore_tj_8
+      - 🇯🇵azure_japan_tj
+      - 🇯🇵azure_japan_tj_2
+      - 🇯🇵azure_japan_tj_3
+      - 🇯🇵azure_japan_tj_4
+      - 🇯🇵azure_japan_tj_5
+      - 🇯🇵azure_japan_tj_6
+      - 🇯🇵azure_japan_tj_7
+      - 🇯🇵azure_japan_tj_8
+      - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore_tj_2
+      - 🇸🇬do_singapore_tj_3
+      - 🇸🇬do_singapore_tj_4
+      - 🇸🇬do_singapore_tj_5
+      - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇯🇵do_japan_tj
+      - 🇯🇵do_japan_tj_2
+      - 🇯🇵do_japan_tj_3
+      - 🇯🇵do_japan_tj_4
+      - 🇯🇵do_japan_tj_5
+      - 🇯🇵do_japan_tj_6
+      - 🇯🇵do_japan_tj_7
+      - 🇯🇵do_japan_tj_8
 
   - name: 🎰 Stake Nodes
     type: select
