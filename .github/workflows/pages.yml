@@ -1,0 +1,39 @@
+name: Deploy Only blue.yml to Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'linux/extra/network/blue.yml'
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Isolate target file
+        run: |
+          mkdir public
+          mkdir -p public/linux/extra/network/
+          cp linux/extra/network/blue.yml public/linux/extra/network/
+          touch public/.nojekyll
+
+      - name: Upload isolated file
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'public'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
