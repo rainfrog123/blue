@@ -629,6 +629,7 @@ proxy-groups:
       - ☁️ Cloudflare CF Nodes
       - 🇸🇬do_singapore_tj
       - 🇸🇬do_singapore
+      - DIRECT
 
   - name: ☁️ Azure Nodes
     type: select
@@ -650,6 +651,7 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_6
       - 🇯🇵azure_japan_tj_7
       - 🇯🇵azure_japan_tj_8
+      - DIRECT
 
   - name: 🌊 Digital Ocean Nodes
     type: select
@@ -673,56 +675,24 @@ proxy-groups:
       - 🇯🇵do_japan_tj_6
       - 🇯🇵do_japan_tj_7
       - 🇯🇵do_japan_tj_8
+      - DIRECT
 
   - name: 🚀 Hysteria Nodes
     type: select
     proxies:
       - 🇸🇬do_singapore_hy2
       - 🇸🇬azure_sg_hy2
+      - DIRECT
 
   - name: 🔑 Manual Selection
     type: select
     proxies:
-      - DIRECT
-      - 🇸🇬do_singapore_hy2
-      - 🇸🇬azure_sg_hy2
-      - 🇸🇬azure_singapore_tj
-      - 🇸🇬azure_singapore_tj_2
-      - 🇸🇬azure_singapore_tj_3
-      - 🇸🇬azure_singapore_tj_4
-      - 🇸🇬azure_singapore_tj_5
-      - 🇸🇬azure_singapore_tj_6
-      - 🇸🇬azure_singapore_tj_7
-      - 🇸🇬azure_singapore_tj_8
-      - 🇸🇬azure_singapore
-      - 🇯🇵azure_japan_tj
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
-      - 🇯🇵azure_japan_tj_7
-      - 🇯🇵azure_japan_tj_8
-      - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore_tj_2
-      - 🇸🇬do_singapore_tj_3
-      - 🇸🇬do_singapore_tj_4
-      - 🇸🇬do_singapore_tj_5
-      - 🇸🇬do_singapore_tj_6
-      - 🇸🇬do_singapore_tj_7
-      - 🇸🇬do_singapore_tj_8
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇯🇵do_japan_tj
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇯🇵do_japan_tj_8
+      - ☁️ Azure Nodes
+      - 🌊 Digital Ocean Nodes
+      - 🚀 Hysteria Nodes
+      - ☁️ Cloudflare CF Nodes
       - 🌐 Naiyun
+      - DIRECT
 
   # Naiyun Subscription Group
   - name: 🌐 Naiyun
@@ -795,12 +765,14 @@ proxy-groups:
       - 🇸🇬do_singapore_reality
       - 🇸🇬do_singapore_vless_warp
       - 🇸🇬do_singapore_tj
+      - DIRECT
 
   - name: 🧠 Claude Nodes
     type: select
     proxies:
       - 🚀 Node Selection
       - 🇸🇬do_singapore_tj
+      - DIRECT
 
   - name: 🖥️ Cursor Website Nodes
     type: select
@@ -845,12 +817,15 @@ proxy-groups:
       - 🇯🇵do_japan_tj_6
       - 🇯🇵do_japan_tj_7
       - 🇯🇵do_japan_tj_8
+      - DIRECT
 
   - name: 🎰 Stake Nodes
     type: select
     proxies:
       - 🌐 Naiyun
+      - 🔑 Manual Selection
       - 🚀 Node Selection
+      - DIRECT
 
   # CF Endpoint with WARP Outbound (Clean IP)
   # - name: 🔄 CF WARP Outbound
@@ -866,6 +841,7 @@ proxy-groups:
       - 🚀 Node Selection
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
+      - DIRECT
 
   # Streaming & Social Media Groups
   - name: ☎️ Telegram
