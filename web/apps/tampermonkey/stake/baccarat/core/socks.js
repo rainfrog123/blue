@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PP WebSocket Interceptor
 // @namespace    http://tampermonkey.net/
-// @version      3.1
+// @version      3.2
 // @description  Intercept Pragmatic Play baccarat WebSocket (lobby + game)
 // @author       You
 // @match        *://client.pragmaticplaylive.net/*
@@ -22,8 +22,58 @@
     let nextUid = 1;
     let tablesOrder = [];
     let globalStats = null;
+    let lastPlayersCount = null;
     let msgCount = 0;
     let lastSeq = 0;
+    let suppressGoodRoadWarnings = true;
+
+    const _consoleWarn = console.warn.__ppOriginalWarn || console.warn.bind(console);
+    const isGoodRoadTablesOrderWarning = (args) => {
+        const line = args.map((x) => {
+            if (typeof x === 'string') return x;
+            if (x && typeof x.message === 'string') return x.message;
+            return '';
+        }).join(' ');
+        return line.includes('is not in tablesOrder') &&
+               line.includes('GoodRoadGameCommunicationProcessor');
+    };
+
+    const ppWarnProxy = (...args) => {
+        if (suppressGoodRoadWarnings && isGoodRoadTablesOrderWarning(args)) return;
+        _consoleWarn(...args);
+    };
+    ppWarnProxy.__ppOriginalWarn = _consoleWarn;
+    console.warn = ppWarnProxy;
+
+    const bumpSeq = (seq) => {
+        if (seq == null || seq === '') return;
+        const n = typeof seq === 'string' ? parseInt(seq, 10) : seq;
+        if (!Number.isFinite(n)) return;
+        if (n > lastSeq) lastSeq = n;
+    };
+
+    const resolveGameId = (tableOrLobbyId) => {
+        if (tableOrLobbyId == null) return null;
+        const s = String(tableOrLobbyId);
+        return lobbyToGame.get(s) || s;
+    };
+
+    function patchTable(gameId, partial, bumpUpdates = true) {
+        const gid = resolveGameId(gameId);
+        if (!gid) return;
+
+        const uid = assignUid(gid);
+        const prev = tables.get(gid) || {};
+        tables.set(gid, {
+            ...prev,
+            id: gid,
+            gameId: gid,
+            uid: prev.uid || uid,
+            ...partial,
+            updated: Date.now(),
+            updates: bumpUpdates ? (prev.updates || 0) + 1 : (prev.updates || 0)
+        });
+    }
 
     // Assign simple numeric UID to table
     const assignUid = (gameId, forceUid = null) => {
@@ -77,77 +127,300 @@
     window.WebSocket.CLOSING = 2;
     window.WebSocket.CLOSED = 3;
 
+    function gameIdFromWsUrl(url) {
+        if (!url || typeof url !== 'string') return null;
+        try {
+            const u = new URL(url.replace(/^ws/i, 'http'));
+            const t = u.searchParams.get('tableId');
+            return t ? decodeURIComponent(t) : null;
+        } catch (_) {
+            const m = url.match(/[?&]tableId=([^&]+)/i);
+            return m ? decodeURIComponent(m[1]) : null;
+        }
+    }
+
     function hookWS(ws, url) {
+        const ctxGameId = gameIdFromWsUrl(url);
         ws.addEventListener('message', (e) => {
             try {
                 const msg = JSON.parse(e.data);
                 msgCount++;
-                handleMessage(msg);
+                handleMessage(msg, ctxGameId);
             } catch(err) {}
         });
     }
 
-    function handleMessage(msg) {
-        // Track sequence number if present
-        if (msg.seq) lastSeq = msg.seq;
+    function handleMessage(msg, ctxGameId) {
+        if (msg.seq) bumpSeq(msg.seq);
 
         // === LOBBY WEBSOCKET FORMAT (dga.pragmaticplaylive.net) ===
-        // globalStats
         if (msg.globalStats) {
             globalStats = msg.globalStats;
         }
 
-        // tableKey list (lobby uses numeric IDs like "422")
+        if (msg.playersCount) {
+            const pc = msg.playersCount;
+            lastPlayersCount = {
+                total_seated_players: pc.total_seated_players,
+                seq: pc.seq
+            };
+            bumpSeq(pc.seq);
+        }
+
         if (msg.tableKey) {
             tablesOrder = msg.tableKey;
         }
 
-        // Table data from lobby format
-        // Full update: has baccaratShoeSummary with win counters
-        // Basic update: just tableId with basic info (like multiplay lobby)
         if (msg.tableId) {
             if (msg.baccaratShoeSummary || msg.tableName) {
                 updateFromLobby(msg);
             } else if (msg.totalSeatedPlayers !== undefined) {
-                // Delta update - just player count, update if table exists
                 updateLobbyDelta(msg);
+            } else if (msg.statistics !== undefined || msg.gameResult !== undefined ||
+                       msg.goodRoadsMap !== undefined || msg.goodRoadsDepthMap !== undefined) {
+                updateFromLobbyPartial(msg);
             }
         }
 
-        // === GAME WEBSOCKET FORMAT (gs17.pragmaticplaylive.net/game) ===
-        // tablesorder (game uses long IDs like "cbcf6qas8fscb222")
+        // === GAME WEBSOCKET FORMAT (gs*.pragmaticplaylive.net/game) ===
         if (msg.tablesorder) {
             tablesOrder = msg.tablesorder;
-            if (msg.seq) lastSeq = msg.seq;
+            bumpSeq(msg.seq);
         }
 
-        // tableconfig (maps gameId to lobbyId via operator_game_id)
         if (msg.tableconfig) {
             updateFromConfig(msg.tableconfig);
-            if (msg.tableconfig.seq) lastSeq = msg.tableconfig.seq;
+            bumpSeq(msg.tableconfig.seq);
         }
 
-        // statistic (full road data + win counters)
         if (msg.statistic) {
             updateFromStatistic(msg.statistic);
-            if (msg.statistic.seq) lastSeq = msg.statistic.seq;
+            bumpSeq(msg.statistic.seq);
         }
 
-        // statisticLA (incremental update)
         if (msg.statisticLA) {
             updateFromStatisticLA(msg.statisticLA);
-            if (msg.statisticLA.seq) lastSeq = msg.statisticLA.seq;
+            bumpSeq(msg.statisticLA.seq);
         }
 
-        // betsopen - betting window opened
         if (msg.betsopen) {
+            bumpSeq(msg.betsopen.seq);
             updateBetStatus(msg.betsopen.table, true, msg.betsopen.game, msg.betsopen.seq);
         }
 
-        // betsclosed - betting window closed
         if (msg.betsclosed) {
+            bumpSeq(msg.betsclosed.seq);
             updateBetStatus(msg.betsclosed.table, false, msg.betsclosed.game, msg.betsclosed.seq);
         }
+
+        if (msg.ShoeSummary) mergeShoeSummary(msg.ShoeSummary);
+        if (msg.goodroad) mergeGoodroad(msg.goodroad);
+        if (msg.game) mergeGameMeta(msg.game);
+        if (msg.timer) mergeTimer(msg.timer);
+        if (msg.dealer) mergeDealer(msg.dealer, ctxGameId);
+        if (msg.table && typeof msg.table === 'object' && 'value' in msg.table) {
+            mergeTableMeta(msg.table, ctxGameId);
+        }
+        if (msg.subscribe) mergeSubscribe(msg.subscribe);
+        if (msg.betstats) mergeBetstats(msg.betstats);
+        if (msg.disablesidebets) mergeDisableSidebets(msg.disablesidebets);
+        if (msg.gameresult) mergeGameresultPayload(msg.gameresult);
+        if (msg.winners) mergeWinnersPayload(msg.winners);
+        if (msg.betsclosingsoon) mergeBetsClosingSoon(msg.betsclosingsoon);
+        if (msg.startDealing) mergeStartDealing(msg.startDealing);
+        if (msg.startshuffling) mergeShuffling(msg.startshuffling, 'start');
+        if (msg.endshuffling) mergeShuffling(msg.endshuffling, 'end');
+        if (msg.currentShoe) mergeCurrentShoe(msg.currentShoe, ctxGameId);
+        if (msg.voip_cc) mergeVoip(msg.voip_cc, ctxGameId);
+        if (msg.pong) {
+            bumpSeq(msg.pong.seq);
+            mergePong(msg.pong, ctxGameId);
+        }
+        if (msg.seat) mergeSeat(msg.seat);
+        if (msg.card) mergeCard(msg.card);
+        if (msg.cardinc) mergeCardInc(msg.cardinc);
+    }
+
+    function updateFromLobbyPartial(msg) {
+        const lobbyId = msg.tableId;
+        let gameId = lobbyToGame.get(lobbyId);
+        if (!gameId) gameId = lobbyId;
+
+        const uid = assignUid(gameId);
+        const prev = tables.get(gameId) || {};
+        const next = {
+            ...prev,
+            id: gameId,
+            gameId,
+            lobbyId,
+            uid,
+            updated: Date.now(),
+            updates: (prev.updates || 0) + 1,
+            source: 'lobby-partial'
+        };
+
+        if (msg.statistics !== undefined) next.bigRoad = msg.statistics;
+        if (msg.gameResult !== undefined) next.games = msg.gameResult;
+        if (msg.goodRoadsMap !== undefined) next.roads = msg.goodRoadsMap;
+        if (msg.goodRoadsDepthMap !== undefined) next.goodRoadsDepthMap = msg.goodRoadsDepthMap;
+        if (msg.grTableCount !== undefined) next.grTableCount = msg.grTableCount;
+        if (msg.shuffle !== undefined) next.shuffle = msg.shuffle;
+
+        tables.set(gameId, next);
+        bumpSeq(msg.seq);
+    }
+
+    function mergeShoeSummary(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        const gid = resolveGameId(s.table);
+        const prev = tables.get(gid) || {};
+        patchTable(s.table, {
+            P: s.playerWinCounter != null ? +s.playerWinCounter : (prev.P ?? 0),
+            B: s.bankerWinCounter != null ? +s.bankerWinCounter : (prev.B ?? 0),
+            T: s.tieCounter != null ? +s.tieCounter : (prev.T ?? 0),
+            PP: s.playerPairCounter != null ? +s.playerPairCounter : (prev.PP ?? 0),
+            BP: s.bankerPairCounter != null ? +s.bankerPairCounter : (prev.BP ?? 0),
+            total: s.totalGames != null ? +s.totalGames : (prev.total ?? 0),
+            seq: s.seq,
+            source: 'game-shoe'
+        });
+    }
+
+    function mergeGoodroad(g) {
+        const tid = g.sourcetableId || g.table;
+        if (!tid) return;
+        bumpSeq(g.seq);
+        patchTable(tid, { goodroadLive: g }, false);
+    }
+
+    function mergeGameMeta(g) {
+        if (!g?.table) return;
+        bumpSeq(g.seq);
+        patchTable(g.table, {
+            currentGame: g.id,
+            gameClock: g.value,
+            gameStartTime: g.starttime,
+            seq: g.seq
+        }, false);
+    }
+
+    function mergeTimer(t) {
+        if (!t?.table) return;
+        bumpSeq(t.seq);
+        patchTable(t.table, { bettingTimer: t.value, timerGameId: t.id, seq: t.seq }, false);
+    }
+
+    function mergeDealer(d, ctxGameId) {
+        if (!d) return;
+        const gameId = ctxGameId || [...tables.entries()].find(([, row]) => row.dealerId === d.id)?.[0];
+        if (!gameId) return;
+        bumpSeq(d.seq);
+        patchTable(gameId, { dealer: d.value, dealerId: d.id, seq: d.seq }, false);
+    }
+
+    function mergeTableMeta(t, ctxGameId) {
+        bumpSeq(t.seq);
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, {
+            tableLabel: t.value,
+            tableOpenTime: t.openTime,
+            tableNewTable: t.newTable,
+            tableMetaSeq: t.seq
+        }, false);
+    }
+
+    function mergeSubscribe(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { subscribeChannel: s.channel, subscribeStatus: s.status }, false);
+    }
+
+    function mergeBetstats(b) {
+        if (!b?.table) return;
+        bumpSeq(b.seq);
+        patchTable(b.table, { betstats: b }, false);
+    }
+
+    function mergeDisableSidebets(d) {
+        const gid = d.tableId;
+        if (!gid) return;
+        bumpSeq(d.seq);
+        patchTable(gid, { disabledSidebets: d.value, seq: d.seq }, false);
+    }
+
+    function mergeGameresultPayload(g) {
+        if (!g?.table) return;
+        bumpSeq(g.seq);
+        patchTable(g.table, { lastGameresult: g }, true);
+    }
+
+    function mergeWinnersPayload(w) {
+        if (!w?.table) return;
+        bumpSeq(w.seq);
+        patchTable(w.table, { lastWinners: w }, true);
+    }
+
+    function mergeBetsClosingSoon(b) {
+        if (!b?.table) return;
+        bumpSeq(b.seq);
+        patchTable(b.table, {
+            betsClosingSoon: true,
+            betsClosingSoonGame: b.game,
+            seq: b.seq
+        }, false);
+    }
+
+    function mergeStartDealing(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { dealing: true, dealingGame: s.game, seq: s.seq }, false);
+    }
+
+    function mergeShuffling(s, phase) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { shuffling: phase === 'start', shuffleGame: s.game || '', seq: s.seq }, false);
+    }
+
+    function mergeCurrentShoe(c, ctxGameId) {
+        bumpSeq(c.seq);
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { currentShoe: c }, false);
+    }
+
+    function mergeVoip(v, ctxGameId) {
+        bumpSeq(v.seq);
+        const gameId = v.table || ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { voip: true, seq: v.seq }, false);
+    }
+
+    function mergePong(p, ctxGameId) {
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { lastPong: p }, false);
+    }
+
+    function mergeSeat(s) {
+        const tid = s.table_id || s.tableId;
+        if (!tid) return;
+        bumpSeq(s.seq);
+        patchTable(tid, { lastSeatEvent: s }, false);
+    }
+
+    function mergeCard(c) {
+        if (!c?.table) return;
+        bumpSeq(c.seq);
+        patchTable(c.table, { lastCard: c, seq: c.seq }, false);
+    }
+
+    function mergeCardInc(c) {
+        if (!c?.table) return;
+        bumpSeq(c.seq);
+        patchTable(c.table, { lastCardInc: c, seq: c.seq }, false);
     }
 
     // Lobby delta: just tableId + player count update
@@ -194,12 +467,12 @@
             minBet: msg.tableLimits?.minBet ?? prev.minBet ?? 0,
             maxBet: msg.tableLimits?.maxBet ?? prev.maxBet ?? 0,
             players: msg.totalSeatedPlayers ?? prev.players ?? 0,
-            P: +msg.baccaratShoeSummary?.playerWinCounter || prev.P || 0,
-            B: +msg.baccaratShoeSummary?.bankerWinCounter || prev.B || 0,
-            T: +msg.baccaratShoeSummary?.tieCounter || prev.T || 0,
-            PP: +msg.baccaratShoeSummary?.playerPairCounter || prev.PP || 0,
-            BP: +msg.baccaratShoeSummary?.bankerPairCounter || prev.BP || 0,
-            total: +msg.baccaratShoeSummary?.totalGames || prev.total || 0,
+            P: msg.baccaratShoeSummary?.playerWinCounter != null ? +msg.baccaratShoeSummary.playerWinCounter : (prev.P ?? 0),
+            B: msg.baccaratShoeSummary?.bankerWinCounter != null ? +msg.baccaratShoeSummary.bankerWinCounter : (prev.B ?? 0),
+            T: msg.baccaratShoeSummary?.tieCounter != null ? +msg.baccaratShoeSummary.tieCounter : (prev.T ?? 0),
+            PP: msg.baccaratShoeSummary?.playerPairCounter != null ? +msg.baccaratShoeSummary.playerPairCounter : (prev.PP ?? 0),
+            BP: msg.baccaratShoeSummary?.bankerPairCounter != null ? +msg.baccaratShoeSummary.bankerPairCounter : (prev.BP ?? 0),
+            total: msg.baccaratShoeSummary?.totalGames != null ? +msg.baccaratShoeSummary.totalGames : (prev.total ?? 0),
             roads: msg.goodRoadsMap || prev.roads || {},
             bigRoad: msg.statistics || prev.bigRoad || '',
             games: msg.gameResult || prev.games || [],
@@ -347,7 +620,7 @@
             T: data.tc ?? prev.T ?? 0,
             PP: data.ppc ?? prev.PP ?? 0,
             BP: data.bpc ?? prev.BP ?? 0,
-            total: (data.pwc || prev.P || 0) + (data.bwc || prev.B || 0) + (data.tc || prev.T || 0),
+            total: (data.pwc ?? prev.P ?? 0) + (data.bwc ?? prev.B ?? 0) + (data.tc ?? prev.T ?? 0),
             lastBR: data.br || prev.lastBR,      // last big road position
             lastBP: data.bp || prev.lastBP,      // last bead plate position
             lastBEB: data.beb || prev.lastBEB,   // last big eye boy
@@ -432,6 +705,60 @@
         return [];
     };
 
+    /** Latest live-stream payloads merged onto a table row (card, timer, goodroad, …). */
+    const buildLiveSnapshot = (t) => {
+        const out = {};
+        if (t.lastCard) out.card = t.lastCard;
+        if (t.lastCardInc) out.cardInc = t.lastCardInc;
+        if (t.bettingTimer != null && t.bettingTimer !== '' || t.timerGameId) {
+            out.timer = { value: t.bettingTimer, gameId: t.timerGameId };
+        }
+        if (t.goodroadLive) out.goodroad = t.goodroadLive;
+        if (t.currentGame != null && t.currentGame !== '' || t.gameClock != null && t.gameClock !== '' || t.gameStartTime) {
+            out.game = { id: t.currentGame, clock: t.gameClock, startTime: t.gameStartTime };
+        }
+        if (t.lastGameresult) out.gameresult = t.lastGameresult;
+        if (t.lastWinners) out.winners = t.lastWinners;
+        if (t.betstats) out.betstats = t.betstats;
+        if (t.disabledSidebets != null && t.disabledSidebets !== '') {
+            out.disabledSidebets = t.disabledSidebets;
+        }
+        if (t.betsClosingSoon) {
+            out.betsClosingSoon = { game: t.betsClosingSoonGame };
+        }
+        if (t.dealing) {
+            out.dealing = { game: t.dealingGame };
+        }
+        if (t.shuffling || (t.shuffleGame !== undefined && t.shuffleGame !== '')) {
+            out.shuffling = { active: !!t.shuffling, game: t.shuffleGame };
+        }
+        if (t.subscribeChannel || t.subscribeStatus) {
+            out.subscribe = { channel: t.subscribeChannel, status: t.subscribeStatus };
+        }
+        if (t.lastSeatEvent) out.seat = t.lastSeatEvent;
+        if (t.lastPong) out.pong = t.lastPong;
+        if (t.voip) out.voip = true;
+        if (t.currentShoe) out.shoe = t.currentShoe;
+        if (t.tableLabel != null && t.tableLabel !== '' || t.tableOpenTime || t.tableNewTable != null) {
+            out.tableMeta = {
+                label: t.tableLabel,
+                openTime: t.tableOpenTime,
+                newTable: t.tableNewTable
+            };
+        }
+        if (t.dealer || t.dealerId) {
+            out.dealer = { name: t.dealer, id: t.dealerId };
+        }
+        return out;
+    };
+
+    const liveForId = (uidOrId) => {
+        const id = resolveId(uidOrId);
+        const t = id ? tables.get(id) : null;
+        if (!t) return null;
+        return buildLiveSnapshot(t);
+    };
+
     // API
     window.pp = {
         tables: () => {
@@ -447,11 +774,51 @@
             const t = id ? tables.get(id) : null;
             return t ? { ...t, ratio: calcRatio(t) } : null;
         },
+        /** Grouped live-stream fields for one table (same ids as pp.get). Alias: lastEvents. */
+        live: liveForId,
+        lastEvents: liveForId,
         count: () => tables.size,
         msgs: () => msgCount,
         order: () => tablesOrder,
-        stats: () => globalStats,
+        stats: () => {
+            const out = {};
+            if (globalStats && typeof globalStats === 'object') Object.assign(out, globalStats);
+            if (lastPlayersCount) out.lobbyPlayersCount = lastPlayersCount;
+            return Object.keys(out).length ? out : null;
+        },
         seq: () => lastSeq,
+        setWarnFilter: (enabled = true) => {
+            suppressGoodRoadWarnings = !!enabled;
+            return suppressGoodRoadWarnings;
+        },
+        warnFilter: () => suppressGoodRoadWarnings,
+
+        help: () => {
+            const t = [
+                '',
+                '--- pp (Pragmatic Play WS) ---',
+                '  pp.help()             print this cheat sheet',
+                '  pp.status()           print tables summary',
+                '  pp.tables()           { gameId -> row }',
+                '  pp.get(id)            full row; id = uid | gameId | lobbyId',
+                '  pp.live(id)           grouped live stream (same as lastEvents)',
+                '  pp.lastEvents(id)     alias of pp.live',
+                '  pp.list()             compact list (tables with total > 0)',
+                '  pp.betting()          tables currently open for betting',
+                '  pp.setWarnFilter(v)   toggle GoodRoad/tablesOrder warn suppression',
+                '  pp.warnFilter()       current warn filter state (true/false)',
+                '',
+                '  pp.count()   pp.msgs()   pp.order()   pp.stats()   pp.seq()',
+                '',
+                '  pp.gameToLobby(g)     pp.lobbyToGame(l)',
+                '  pp.road(id)   pp.pbt(id)   pp.pbtStr(id)   pp.lastN(id, n)',
+                '  pp.sequences()        pp.seqAll()',
+                '  pp.configs()          raw tableconfig map',
+                '  pp.export()           pp.clear()',
+                ''
+            ].join('\n');
+            console.log(t);
+        },
 
         // ID mapping functions
         gameToLobby: (gameId) => gameToLobby.get(gameId) || null,
@@ -583,20 +950,32 @@
             msgCount = 0;
             lastSeq = 0;
             tablesOrder = [];
+            globalStats = null;
+            lastPlayersCount = null;
         }
     };
 
-    console.log('[PP] v3.1 | Fixed UID mapping + PBT sequence');
-    console.log('[PP] API: pp.status() pp.list() pp.pbt(1) pp.pbtStr(1)');
+    console.log('[PP] v3.2 | Full PP message types + lobby partial + WS URL context');
+    console.log('[PP] API: pp.help() pp.status() pp.get(1) pp.live(1) …');
 })();
 
 /*
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                     PP WEBSOCKET INTERCEPTOR API v3.1                        ║
+║                     PP WEBSOCKET INTERCEPTOR API v3.2                        ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║                                                                              ║
 ║  Intercepts Pragmatic Play WebSocket data from lobby + multiplay game.       ║
 ║  Data is available via window.pp API.                                        ║
+║                                                                              ║
+║  UPDATES IN v3.2:                                                            ║
+║  - pp.help() lists all public methods in the console                          ║
+║  - All PP game/lobby frame types from capture: ShoeSummary, goodroad, game,  ║
+║    timer, dealer, table meta, subscribe, betstats, sidebets, gameresult,     ║
+║    winners, dealing/shuffle/seat/pong/voip, card + cardinc, playersCount       ║
+║  - Lobby tableId partial updates (statistics/gameResult/roads without name)   ║
+║  - WS URL tableId context for dealer/table/shoe/pong when frame omits table  ║
+║  - pp.stats() adds lobbyPlayersCount; clear() resets global lobby stats       ║
+║  - pp.live(id) / pp.lastEvents(id) expose grouped live-stream snapshots      ║
 ║                                                                              ║
 ║  UPDATES IN v3.1:                                                            ║
 ║  ────────────────                                                            ║
@@ -607,6 +986,7 @@
 ║                                                                              ║
 ║  QUICK START                                                                 ║
 ║  ───────────                                                                 ║
+║  pp.help()                Print API cheat sheet in the console                 ║
 ║  pp.status()              Print all tables with stats and bet status         ║
 ║  pp.list()                Array with full table info                         ║
 ║  pp.betting()             Tables currently open for betting                  ║
@@ -617,9 +997,9 @@
 ║  TABLE DATA                                                                  ║
 ║  ──────────                                                                  ║
 ║  pp.tables()              All tables as object {gameId: tableData, ...}      ║
-║  pp.get(1)                Get table by UID (number)                          ║
-║  pp.get("cbcf...")        Get table by gameId (string)                       ║
-║  pp.get("422")            Get table by lobbyId (string)                      ║
+║  pp.get(1)                Get table by UID / gameId / lobbyId                 ║
+║  pp.live(1)               Grouped live stream: card, timer, goodroad, …      ║
+║  pp.lastEvents(1)         Same as pp.live                                    ║
 ║  pp.configs()             Raw tableconfig data from game WebSocket           ║
 ║  pp.order()               Table order array from WebSocket                   ║
 ║  pp.stats()               Global stats {playerCount: N}                      ║

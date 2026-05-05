@@ -1,0 +1,17 @@
+{
+  "name": "baccarat-ws-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WebSocket collector for baccarat data into Redis and TimescaleDB",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "ioredis": "^5.4.1",
+    "pg": "^8.12.0",
+    "ws": "^8.18.0"
+  }
+}

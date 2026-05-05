@@ -1,0 +1,61 @@
+services:
+  collector:
+    build:
+      context: ./streaming
+      dockerfile: Dockerfile
+    container_name: baccarat-ws-collector
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://collector:collector@timescaledb:5432/baccarat
+      CONFIG_PATH: /app/config/ws-config.json
+      RECONNECT_DELAY_MS: 3000
+      WEB_PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./streaming/config/ws-config.json:/app/config/ws-config.json:rw
+
+  redis:
+    image: redis:7-alpine
+    container_name: baccarat-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: baccarat-timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: baccarat
+      POSTGRES_USER: collector
+      POSTGRES_PASSWORD: collector
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./streaming/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U collector -d baccarat"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  redis_data:
+  pg_data:

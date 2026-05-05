@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pick
 // @namespace    http://tampermonkey.net/
-// @version      3.1
+// @version      3.2
 // @description  Table scoring - finds random/fair tables (high chop, balanced P/B, low ties)
 // @author       You
 // @match        *://client.pragmaticplaylive.net/*
@@ -14,7 +14,7 @@
     'use strict';
 
     // ═══════════════════════════════════════════════════════════════════════
-    // SCORING SYSTEM v3.1 - Randomness-Based Selection
+    // SCORING SYSTEM v3.2 - Randomness-Based Selection
     // ═══════════════════════════════════════════════════════════════════════
     //
     // Goal: Find tables that behave like TRUE RANDOM coin flips
@@ -41,6 +41,12 @@
         if (!window.pp) return [];
         const id = t?.uid || t?.gameId || t?.id || t;
         return window.pp.pbt(id) || [];
+    };
+
+    const getLive = (t) => {
+        if (!window.pp) return null;
+        const id = t?.uid || t?.gameId || t?.id || t;
+        return window.pp.live(id) || null;
     };
 
     // Count alternations (P→B or B→P transitions, ignoring T)
@@ -270,9 +276,12 @@
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        // 8. CAN BET (0-5 pts)
+        // 8. LIVE STATE / CAN BET (0-5 pts)
         // ─────────────────────────────────────────────────────────────────────
-        breakdown.canBet = t.canBet === true ? 5 : 0;
+        const live = getLive(t);
+        const isBlockedNow = !!(live?.dealing || live?.shuffling || live?.betsClosingSoon);
+        breakdown.canBet = t.canBet === true && !isBlockedNow ? 5 : 0;
+        if (isBlockedNow) notes.push('bet-window-transition');
 
         // ─────────────────────────────────────────────────────────────────────
         // FINAL SCORE
@@ -301,6 +310,7 @@
         return tables.map(t => {
             const result = scoreTable(t);
             const seq = getSequence(t);
+            const live = getLive(t);
             const total = t.total || 0;
             const ratio = total > 0 ? Math.abs((t.P||0) - (t.B||0)) / total : 0;
             const tieRatio = total > 0 ? (t.T||0) / total : 0;
@@ -311,6 +321,7 @@
                 ratioStr: ratio.toFixed(3),  // String for display
                 tieRatio,  // Keep as number
                 tieRatioStr: (tieRatio * 100).toFixed(1) + '%',  // String for display
+                live,
                 streak: currentStreak(seq),
                 longest: longestStreak(seq),
                 altIn12: countAlternations(seq.slice(-12)),
@@ -363,6 +374,19 @@
         return '💚';
     };
 
+    // Compact live state flags:
+    // D=dealing, S=shuffling, C=closing soon, V=voip active, K=card stream present
+    const liveFlags = (live) => {
+        if (!live) return '-----';
+        return [
+            live.dealing ? 'D' : '-',
+            live.shuffling?.active ? 'S' : '-',
+            live.betsClosingSoon ? 'C' : '-',
+            live.voip ? 'V' : '-',
+            (live.card || live.cardInc) ? 'K' : '-'
+        ].join('');
+    };
+
     // ═══════════════════════════════════════════════════════════════════════
     // API
     // ═══════════════════════════════════════════════════════════════════════
@@ -393,19 +417,21 @@
 
             console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║           TABLE PICKER v3.1 (${eligible.length} eligible / ${all.length} scored)                  ║
+║           TABLE PICKER v3.2 (${eligible.length} eligible / ${all.length} scored)                  ║
 ╠══════════════════════════════════════════════════════════════════════╣`);
 
             all.slice(0, 20).forEach((t, i) => {
                 const icon = scoreIcon(t.score);
-                const bet = t.canBet ? '✓' : ' ';
+                const blocked = !!(t.live?.dealing || t.live?.shuffling || t.live?.betsClosingSoon);
+                const bet = t.canBet && !blocked ? '✓' : ' ';
                 const name = (t.name || '?').slice(0, 18).padEnd(18);
                 const label = scoreLabel(t.score).padEnd(6);
                 const str = t.streak.length > 1 ? `${t.streak.length}${t.streak.side}` : '--';
+                const lf = liveFlags(t.live);
                 console.log(
                     `║ ${icon}${bet} ${String(t.score).padStart(2)} ${label} ${name} ` +
                     `P:${String(t.P||0).padStart(2)} B:${String(t.B||0).padStart(2)} ` +
-                    `a:${t.altIn12} ${str.padEnd(3)} ${t.last12.slice(-10)}`
+                    `a:${t.altIn12} ${str.padEnd(3)} ${lf} ${t.last12.slice(-10)}`
                 );
             });
 
@@ -460,19 +486,22 @@
             console.log('\n═══ TOP 5 MARTINGALE PICKS ═══\n');
             top.forEach((t, i) => {
                 const cur = t.streak;
+                const lf = liveFlags(t.live);
                 console.log(
                     `${i+1}. ${scoreIcon(t.score)} ${t.name} | Score: ${t.score} | ` +
                     `P:${t.P} B:${t.B} | Streak: ${cur.length}${cur.side||''} | ` +
-                    `Last: ${t.last12.slice(-8)}`
+                    `Live:${lf} | Last: ${t.last12.slice(-8)}`
                 );
             });
             console.log('');
         },
 
+        live: (uidOrId) => window.pp?.live(uidOrId) || null,
+
         help: () => {
             console.log(`
 ╔══════════════════════════════════════════════════════════════════════╗
-║                    TABLE PICKER v3.1 (Randomness)                    ║
+║                    TABLE PICKER v3.2 (Randomness)                    ║
 ╠══════════════════════════════════════════════════════════════════════╣
 ║                                                                      ║
 ║  SCORING (0-100, need 35+ to be eligible)                            ║
@@ -495,6 +524,8 @@
 ║  pick.status()      All tables ranked by score                       ║
 ║  pick.summary()     Quick top 5 list                                 ║
 ║  pick.check(1)      Detailed breakdown for table                     ║
+║  pick.live(1)       Show grouped live stream from pp.live()          ║
+║  Live flags in status/summary: D=dealing S=shuffle C=closing V=voip K=card ║
 ║  pick.top(5)        Get top N eligible tables                        ║
 ║  pick.best()        Get single best table                            ║
 ║  pick.eligible()    All eligible tables                              ║
@@ -514,8 +545,8 @@
     });
 
     waitForPP().then(() => {
-        console.log('[Pick] v3.1 | Randomness-based selection (high chop = good)');
-        console.log('[Pick] Commands: pick.status() pick.summary() pick.check(uid)');
+        console.log('[Pick] v3.2 | Randomness + live-state awareness');
+        console.log('[Pick] Commands: pick.status() pick.summary() pick.check(uid) pick.live(uid)');
     });
 
 })();
