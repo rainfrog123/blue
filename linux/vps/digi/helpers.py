@@ -1,20 +1,26 @@
 """DigitalOcean API helper functions."""
 
-import json
+import sys
 import time
 from pathlib import Path
 
 import requests
 
-CRED_PATH = Path("/allah/blue/cred.json")
 BASE_URL = "https://api.digitalocean.com/v2"
+
+# Reuse shared credential loader from blue/linux/extra/cred_loader.py
+ROOT_PATH = Path(__file__).resolve().parents[3]
+EXTRA_PATH = ROOT_PATH / "linux" / "extra"
+if str(EXTRA_PATH) not in sys.path:
+    sys.path.insert(0, str(EXTRA_PATH))
+
+from cred_loader import get_digitalocean  # noqa: E402
 
 
 def load_token() -> str:
     """Load DO token from cred.json."""
-    with open(CRED_PATH) as f:
-        creds = json.load(f)
-    return creds["digitalocean"]["token"]
+    creds = get_digitalocean()
+    return creds["token"]
 
 
 def get_headers(token: str = None) -> dict:
