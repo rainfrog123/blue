@@ -77,6 +77,50 @@ apt install -y tmux htop curl wget
 print_success "All packages installed"
 
 # ============================================================================
+# SWAP CONFIGURATION
+# ============================================================================
+print_header "SWAP CONFIGURATION"
+
+SWAP_FILE="/digi/swapfile"
+SWAP_SIZE_GB=4
+
+print_step "Ensuring /digi directory exists..."
+mkdir -p /digi
+
+if swapon --show | grep -qF "$SWAP_FILE"; then
+    print_info "Swap already active at $SWAP_FILE"
+else
+    if [ ! -f "$SWAP_FILE" ]; then
+        print_step "Creating ${SWAP_SIZE_GB}GB swapfile at $SWAP_FILE..."
+        fallocate -l "${SWAP_SIZE_GB}G" "$SWAP_FILE"
+        chmod 600 "$SWAP_FILE"
+        mkswap "$SWAP_FILE"
+    else
+        print_info "Swap file already exists: $SWAP_FILE"
+        chmod 600 "$SWAP_FILE"
+    fi
+
+    print_step "Enabling swap..."
+    swapon "$SWAP_FILE"
+fi
+
+if ! grep -qF "$SWAP_FILE none swap sw 0 0" /etc/fstab; then
+    print_step "Persisting swap in /etc/fstab..."
+    echo "$SWAP_FILE none swap sw 0 0" >> /etc/fstab
+else
+    print_info "Swap entry already present in /etc/fstab"
+fi
+
+print_step "Tuning swappiness..."
+tee /etc/sysctl.d/99-swap-tuning.conf > /dev/null <<EOF
+vm.swappiness = 20
+vm.vfs_cache_pressure = 50
+EOF
+sysctl -p /etc/sysctl.d/99-swap-tuning.conf > /dev/null
+
+print_success "Swap ready at $SWAP_FILE"
+
+# ============================================================================
 # DOCKER SERVICE
 # ============================================================================
 print_header "DOCKER CONFIGURATION"

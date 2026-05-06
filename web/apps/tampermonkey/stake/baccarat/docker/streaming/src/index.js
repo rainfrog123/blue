@@ -14,6 +14,7 @@ const WEB_PORT = Number(process.env.WEB_PORT || 8080);
 const redis = new Redis(REDIS_URL);
 const pgPool = new Pool({ connectionString: DATABASE_URL });
 const tableSnapshots = new Map();
+const tableRounds = new Map();
 const gameToLobby = new Map();
 const lobbyToGame = new Map();
 let tableOrderCounter = 1;
@@ -130,23 +131,34 @@ async function writeFrameToDb(frame) {
 }
 
 async function updateRedisState(frame) {
-  await redis.hset("baccarat:state:global", {
-    last_seen_at: nowIso(),
+  const now = nowIso();
+  const p = redis.pipeline();
+  p.hset("baccarat:state:global", {
+    last_seen_at: now,
     last_connection: frame.connectionName,
     last_event_type: frame.eventType || "",
     last_seq: frame.seq != null ? String(frame.seq) : ""
   });
 
-  if (!frame.tableId) return;
-  const key = `baccarat:state:table:${frame.tableId}`;
-  await redis.sadd("baccarat:tables", frame.tableId);
-  await redis.hset(key, {
-    table_id: frame.tableId,
-    updated_at: nowIso(),
-    last_event_type: frame.eventType || "",
-    last_seq: frame.seq != null ? String(frame.seq) : "",
-    last_payload: frame.payloadText
-  });
+  if (frame.tableId) {
+    const key = `baccarat:state:table:${frame.tableId}`;
+    p.sadd("baccarat:tables", frame.tableId);
+    p.hset(key, {
+      table_id: frame.tableId,
+      updated_at: now,
+      last_event_type: frame.eventType || "",
+      last_seq: frame.seq != null ? String(frame.seq) : "",
+      last_payload: frame.payloadText
+    });
+  }
+
+  const results = await p.exec();
+  if (!results) return;
+  for (const item of results) {
+    if (Array.isArray(item) && item[0]) {
+      throw item[0];
+    }
+  }
 }
 
 async function handleIncoming(connectionName, direction, rawText, logDirections) {
@@ -180,10 +192,12 @@ async function handleIncoming(connectionName, direction, rawText, logDirections)
     tableId,
     seq,
     payloadJson,
-    payloadText: String(rawText)
+    payloadText: String(rawText),
+    receivedAt: nowIso()
   };
 
   updateTableSnapshot(frame);
+  ingestDistilledRounds(frame);
   await updateRedisState(frame);
   if (logDirections.includes(direction)) {
     await writeFrameToDb(frame);
@@ -276,6 +290,124 @@ function updateTableSnapshot(frame) {
     s.bankerWinCounter = n(evt.bankerWinCounter);
     s.tieCounter = n(evt.tieCounter);
     s.totalGames = n(evt.totalGames);
+  }
+}
+
+function roundKey(round) {
+  if (!round) return null;
+  if (round.gameId) return `gid:${String(round.gameId)}`;
+  if (round.seq != null) return `seq:${String(round.seq)}`;
+  return `raw:${String(round.at || "")}|${String(round.result || "")}|${String(round.score || "")}`;
+}
+
+function upsertDistilledRound(tableIdRaw, roundRaw) {
+  const tableId = asId(tableIdRaw);
+  if (!tableId || !roundRaw) return;
+  const round = {
+    at: String(roundRaw.at || ""),
+    seq: roundRaw.seq != null ? roundRaw.seq : null,
+    result: roundRaw.result != null ? String(roundRaw.result) : null,
+    score: roundRaw.score != null ? String(roundRaw.score) : null,
+    gameId: roundRaw.gameId != null ? String(roundRaw.gameId) : null,
+    source: roundRaw.source != null ? String(roundRaw.source) : "unknown",
+    receivedAt: String(roundRaw.receivedAt || nowIso())
+  };
+  const key = roundKey(round);
+  if (!key) return;
+  if (!tableRounds.has(tableId)) tableRounds.set(tableId, new Map());
+  const bucket = tableRounds.get(tableId);
+  const prev = bucket.get(key);
+  if (!prev) {
+    bucket.set(key, round);
+  } else {
+    const prevHasSplitScore = String(prev.score || "").includes("-");
+    const nextHasSplitScore = String(round.score || "").includes("-");
+    const preferIncoming =
+      (nextHasSplitScore && !prevHasSplitScore) ||
+      (round.gameId && !prev.gameId) ||
+      String(round.receivedAt) > String(prev.receivedAt);
+    if (preferIncoming) bucket.set(key, { ...prev, ...round });
+  }
+
+  if (bucket.size > 3000) {
+    const sortedKeys = Array.from(bucket.entries())
+      .sort((a, b) => String(b[1].receivedAt).localeCompare(String(a[1].receivedAt)))
+      .slice(0, 2500)
+      .map(([k]) => k);
+    const keep = new Set(sortedKeys);
+    for (const k of bucket.keys()) {
+      if (!keep.has(k)) bucket.delete(k);
+    }
+  }
+}
+
+function extractRoundsFromPayload(payloadJson, frameMeta = {}) {
+  if (!payloadJson || typeof payloadJson !== "object") return [];
+  const out = [];
+  const p = payloadJson;
+
+  if (Array.isArray(p.gameResult)) {
+    for (const g of p.gameResult) {
+      if (!g || typeof g !== "object") continue;
+      out.push({
+        at: g.time || frameMeta.receivedAt,
+        seq: frameMeta.seq ?? null,
+        result: g.winner || g.result || null,
+        score: g.player != null && g.banker != null ? `${g.player}-${g.banker}` : null,
+        gameId: g.gameId || null,
+        source: "gameResult",
+        receivedAt: frameMeta.receivedAt
+      });
+    }
+  }
+
+  const gr = p.gameresult;
+  if (gr && typeof gr === "object") {
+    out.push({
+      at: frameMeta.receivedAt,
+      seq: gr.seq ?? frameMeta.seq ?? null,
+      result: gr.result || null,
+      score: gr.score || null,
+      gameId: gr.game || null,
+      source: "gameresult",
+      receivedAt: frameMeta.receivedAt
+    });
+  }
+
+  return out;
+}
+
+function ingestDistilledRounds(frame) {
+  if (!frame || !frame.payloadJson || !frame.tableId) return;
+  const tableId = String(frame.tableId);
+  const rounds = extractRoundsFromPayload(frame.payloadJson, { seq: frame.seq, receivedAt: frame.receivedAt });
+  for (const r of rounds) upsertDistilledRound(tableId, r);
+}
+
+async function backfillDistilledRoundsFromDb(tableId, limit = 6000) {
+  const { rows } = await pgPool.query(
+    `SELECT received_at, seq, payload_json, payload_text
+     FROM ws_frames
+     WHERE table_id = $1
+     ORDER BY received_at DESC
+     LIMIT $2`,
+    [tableId, Math.max(200, Math.min(12000, Number(limit || 6000)))]
+  );
+  for (const r of rows) {
+    let payload = r.payload_json;
+    if (!payload && r.payload_text) {
+      try {
+        payload = JSON.parse(String(r.payload_text));
+      } catch (_) {
+        payload = null;
+      }
+    }
+    if (!payload || typeof payload !== "object") continue;
+    const rounds = extractRoundsFromPayload(payload, {
+      seq: r.seq ?? null,
+      receivedAt: r.received_at ? new Date(r.received_at).toISOString() : nowIso()
+    });
+    for (const round of rounds) upsertDistilledRound(tableId, round);
   }
 }
 
@@ -392,6 +524,13 @@ async function waitForInfra() {
 
 function createWebApp() {
   const app = express();
+  const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
+  const queryBool = (req, key) => String(req.query?.[key] || "") === "1";
+  const queryInt = (req, key, fallback, min, max) => {
+    const parsed = Number(req.query?.[key] ?? fallback);
+    const value = Number.isFinite(parsed) ? parsed : fallback;
+    return Math.max(min, Math.min(max, value));
+  };
 
   function eventSummary(eventType, payloadJson) {
     const evt = payloadJson && eventType && payloadJson[eventType] && typeof payloadJson[eventType] === "object"
@@ -418,13 +557,13 @@ function createWebApp() {
     }
   });
 
-  app.get("/api/global", async (_req, res) => {
+  app.get("/api/global", asyncRoute(async (_req, res) => {
     const data = await redis.hgetall("baccarat:state:global");
     res.json(data);
-  });
+  }));
 
-  app.get("/api/tables", async (_req, res) => {
-    const includeSparse = _req.query.include_sparse === "1";
+  app.get("/api/tables", asyncRoute(async (_req, res) => {
+    const includeSparse = queryBool(_req, "include_sparse");
     const { rows } = await pgPool.query(
       `SELECT table_id, last_event_type, last_seq, last_received_at
        FROM latest_table_state
@@ -434,10 +573,10 @@ function createWebApp() {
       [includeSparse]
     );
     res.json(rows);
-  });
+  }));
 
-  app.get("/api/events", async (req, res) => {
-    const limit = Math.max(1, Math.min(500, Number(req.query.limit || 100)));
+  app.get("/api/events", asyncRoute(async (req, res) => {
+    const limit = queryInt(req, "limit", 100, 1, 500);
     const tableId = req.query.table_id ? String(req.query.table_id) : null;
     if (tableId) {
       const { rows } = await pgPool.query(
@@ -458,11 +597,11 @@ function createWebApp() {
       [limit]
     );
     res.json(rows);
-  });
+  }));
 
-  app.get("/api/table/:tableId/changes", async (req, res) => {
+  app.get("/api/table/:tableId/changes", asyncRoute(async (req, res) => {
     const tableId = String(req.params.tableId);
-    const limit = Math.max(1, Math.min(1000, Number(req.query.limit || 200)));
+    const limit = queryInt(req, "limit", 200, 1, 1000);
     const { rows } = await pgPool.query(
       `SELECT received_at, event_type, table_id, seq, payload_json, payload_text
        FROM ws_frames
@@ -480,11 +619,11 @@ function createWebApp() {
       payload_preview: String(r.payload_text || "").slice(0, 240)
     }));
     res.json(out);
-  });
+  }));
 
-  app.get("/api/table/:tableId/history", async (req, res) => {
+  app.get("/api/table/:tableId/history", asyncRoute(async (req, res) => {
     const tableId = String(req.params.tableId);
-    const limit = Math.max(10, Math.min(2000, Number(req.query.limit || 500)));
+    const limit = queryInt(req, "limit", 500, 10, 2000);
     const { rows } = await pgPool.query(
       `SELECT received_at, connection_name, event_type, table_id, seq, payload_json, payload_text
        FROM ws_frames
@@ -494,10 +633,29 @@ function createWebApp() {
       [tableId, limit]
     );
     res.json(rows);
-  });
+  }));
 
-  app.get("/api/lobby", async (_req, res) => {
-    const includeSparse = _req.query.include_sparse === "1";
+  app.get("/api/table/:tableId/rounds", asyncRoute(async (req, res) => {
+    const tableIdRaw = String(req.params.tableId);
+    const tableId = resolveTableId(tableIdRaw) || tableIdRaw;
+    const limit = queryInt(req, "limit", 800, 10, 3000);
+    const tableIdStr = String(tableId);
+    const minTarget = queryInt(req, "min_target", 1200, 200, 2500);
+    let bucket = tableRounds.get(tableIdStr);
+    if (!bucket || bucket.size < minTarget) {
+      await backfillDistilledRoundsFromDb(tableIdStr, 9000);
+      bucket = tableRounds.get(tableIdStr);
+    }
+    const rounds = bucket ? Array.from(bucket.values()).sort((a, b) => String(b.receivedAt).localeCompare(String(a.receivedAt))) : [];
+    res.json({
+      table_id: tableIdStr,
+      total: rounds.length,
+      rounds: rounds.slice(0, limit)
+    });
+  }));
+
+  app.get("/api/lobby", asyncRoute(async (_req, res) => {
+    const includeSparse = queryBool(_req, "include_sparse");
     const orderBy = _req.query.order === "updated" ? "updated" : "fixed";
     const rows = Array.from(tableSnapshots.values())
       .filter((t) => includeSparse || isActiveLobbyTable(t))
@@ -510,7 +668,7 @@ function createWebApp() {
       ts: nowIso(),
       tables: rows
     });
-  });
+  }));
 
   app.get("/casino", (_req, res) => {
     res.type("html").send(`<!doctype html>
@@ -542,30 +700,43 @@ function createWebApp() {
     .line { display:flex; justify-content:space-between; font-size:12px; color:#c3d0e4; margin-top:8px; }
     .card.clickable { cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
     .card.clickable:hover { transform: translateY(-2px); border-color:#3a5177; box-shadow:0 10px 20px rgba(0,0,0,0.32); }
-    .detail { position:fixed; right:0; top:0; width:min(720px, 92vw); height:100vh; background:#0b1527; border-left:1px solid #284064; box-shadow:-10px 0 28px rgba(0,0,0,0.4); transform:translateX(100%); transition:transform .18s ease; z-index:20; display:flex; flex-direction:column; }
+    .detail { position:fixed; right:0; top:0; width:min(920px, 96vw); height:100vh; background:linear-gradient(180deg,#0b1527 0%, #0a1323 100%); border-left:1px solid #284064; box-shadow:-14px 0 32px rgba(0,0,0,0.45); transform:translateX(100%); transition:transform .18s ease; z-index:20; display:flex; flex-direction:column; }
     .detail.open { transform:translateX(0); }
     .detail-head { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid #22314d; }
-    .detail-title { font-size:14px; font-weight:700; color:#eaf2ff; }
-    .detail-body { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px; overflow:auto; }
-    .detail-box { background:#0f1a2d; border:1px solid #22314d; border-radius:8px; padding:10px; }
+    .detail-title { font-size:16px; font-weight:700; color:#eaf2ff; }
+    .detail-body { display:grid; grid-template-columns: 1.05fr 1fr; gap:12px; padding:12px; overflow:auto; }
+    .detail-box { background:#0f1a2d; border:1px solid #22314d; border-radius:10px; padding:12px; }
     .detail-box h3 { margin:0 0 8px; font-size:12px; color:#8ea1bf; text-transform:uppercase; letter-spacing:.3px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
     .history-list { max-height:64vh; overflow:auto; }
-    .evt { border-bottom:1px solid #22314d; padding:8px 0; }
+    .evt { border-bottom:1px solid #22314d; padding:9px 0; }
     .evt:last-child { border-bottom:none; }
     .evt-meta { display:flex; justify-content:space-between; font-size:11px; color:#9fb0c9; margin-bottom:6px; gap:8px; }
     .evt-type { color:#d4e5ff; font-weight:700; }
-    .evt-payload { background:#081223; border:1px solid #1d2d45; border-radius:6px; padding:8px; font-size:11px; }
-    .chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px; }
-    .chip { background:#0b1527; border:1px solid #22314d; border-radius:999px; padding:3px 8px; font-size:11px; color:#cdd8ea; }
-    .road { letter-spacing:.6px; font-weight:700; color:#d7e6ff; }
-    .bead-wrap { margin:8px 0 10px; }
+    .evt-payload { background:#081223; border:1px solid #1d2d45; border-radius:7px; padding:8px; font-size:12px; color:#d5e2f7; }
+    .intel-name { font-size:27px; font-weight:800; margin:2px 0 10px; color:#f2f7ff; letter-spacing:.2px; }
+    .intel-sub { font-size:12px; color:#9db1d3; margin-bottom:10px; }
+    .intel-metrics { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+    .metric { background:#0b1527; border:1px solid #22314d; border-radius:8px; padding:8px; }
+    .metric .k { font-size:10px; margin-bottom:3px; }
+    .metric .v { font-size:15px; margin:0; }
+    .road-strip { background:#081223; border:1px solid #1d2d45; border-radius:8px; padding:9px; margin-bottom:10px; font-size:13px; color:#e5efff; word-spacing:3px; letter-spacing:.4px; }
+    .bead-wrap { margin:8px 0 12px; }
     .bead-grid { display:grid; grid-template-columns: repeat(12, 18px); gap:5px; align-items:center; }
     .bead { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; border:1px solid #2a3a56; }
     .bead-p { background:#17365f; color:#9fd1ff; border-color:#2e5f96; }
     .bead-b { background:#4a1f29; color:#ffc3d1; border-color:#8d374c; }
     .bead-t { background:#2f274d; color:#d3c7ff; border-color:#5d4f97; }
     .bead-q { background:#1f2a3d; color:#9aa9c2; border-color:#384b67; }
+    .hands-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .hands-table th, .hands-table td { border-bottom:1px solid #1f2f48; padding:6px 4px; text-align:left; }
+    .hands-table th { color:#8ea1bf; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.3px; }
+    .winner-p { color:#8ec5ff; font-weight:700; }
+    .winner-b { color:#ffb4c9; font-weight:700; }
+    .winner-t { color:#d1c0ff; font-weight:700; }
+    @media (max-width: 980px) {
+      .detail-body { grid-template-columns: 1fr; }
+      .history-list { max-height:none; }
+    }
   </style>
 </head>
 <body>
@@ -593,7 +764,7 @@ function createWebApp() {
     <div class="detail-body">
       <div class="detail-box">
         <h3>Table Intelligence</h3>
-        <div class="mono" id="detailSnapshot">Select a table card.</div>
+        <div id="detailSnapshot">Select a table card.</div>
       </div>
       <div class="detail-box">
         <h3>Shoe History</h3>
@@ -602,8 +773,28 @@ function createWebApp() {
     </div>
   </div>
 <script>
-async function j(url){ const r = await fetch(url); return r.json(); }
+async function j(url, timeoutMs = 7000){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    if (!r.ok) throw new Error('HTTP ' + String(r.status));
+    return await r.json();
+  } finally {
+    clearTimeout(t);
+  }
+}
 function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+function setTopStatus(msg){
+  const el = document.getElementById('stamp');
+  if (el) el.textContent = String(msg || '');
+}
+window.addEventListener('error', (e) => {
+  setTopStatus('UI error: ' + String(e?.message || 'unknown'));
+});
+window.addEventListener('unhandledrejection', (e) => {
+  setTopStatus('UI promise error');
+});
 function parseJsonSafe(s){
   try { return JSON.parse(String(s || '')); } catch (_) { return null; }
 }
@@ -623,8 +814,14 @@ function renderBeadRoad(handRows){
   }).join('');
   return '<div class="bead-wrap"><div class="bead-grid">' + beads + '</div></div>';
 }
-function renderTableIntelligence(table, handRows){
-  if (!table) return 'No live snapshot found.';
+function winnerClass(code){
+  if (code === 'P') return 'winner-p';
+  if (code === 'B') return 'winner-b';
+  if (code === 'T') return 'winner-t';
+  return '';
+}
+function buildIntelligence(table, handRows){
+  if (!table) return null;
   const bySeq = new Map();
   for (const h of handRows || []) {
     const key = h.seq != null ? String(h.seq) : String(h.at) + '|' + String(h.result) + '|' + String(h.score || '-');
@@ -632,6 +829,8 @@ function renderTableIntelligence(table, handRows){
   }
   const hands = Array.from(bySeq.values()).sort((a,b) => String(b.at).localeCompare(String(a.at)));
   const recent = hands.slice(0, 20);
+  const totalResolvedHands = hands.length;
+  const shoeTotalGames = table.totalGames != null ? Number(table.totalGames) : null;
   const road = recent.map(h => winnerCode(h.result)).join(' ');
   const streak = (() => {
     if (!recent.length) return '-';
@@ -651,21 +850,40 @@ function renderTableIntelligence(table, handRows){
     'Total ' + String(table.totalGames ?? hands.length ?? 0),
     'Streak ' + String(streak)
   ];
-  const lastHands = recent.slice(0, 8).map(h =>
-    (String(winnerCode(h.result)) + ' (' + String(h.score || '-') + ') ' + String(h.gameId ? '#'+h.gameId : '')).trim()
-  ).join('\\n');
-  return [
-    String(table.tableName || table.tableId),
-    '',
-    chips.map(c => '[' + String(c) + ']').join(' '),
-    '',
-    'Bead Road:',
-    '',
-    'Road (latest 20): ' + String(road || '-'),
-    '',
-    'Last hands:',
-    lastHands || '-'
-  ].join('\\n');
+  const lastHands = recent.slice(0, 8).map((h) => ({
+    code: winnerCode(h.result),
+    score: String(h.score || '-'),
+    gameId: String(h.gameId || '-'),
+    at: String(h.at || '-')
+  }));
+  return {
+    tableName: String(table.tableName || table.tableId),
+    tableId: String(table.tableId || '-'),
+    chips,
+    road: String(road || '-'),
+    totalResolvedHands,
+    shoeTotalGames,
+    recentHands: lastHands
+  };
+}
+function renderTableIntelligence(intel){
+  if (!intel) return '<div class="muted">No live snapshot found.</div>';
+  const metrics = intel.chips.map(c => {
+    const parts = String(c).split(' ');
+    const k = parts.shift() || '-';
+    const v = parts.join(' ') || '-';
+    return '<div class="metric"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div></div>';
+  }).join('');
+  const rows = (intel.recentHands || []).map(h =>
+    '<tr><td class="' + winnerClass(h.code) + '">' + esc(h.code) + '</td><td>' + esc(h.score) + '</td><td>' + esc(h.gameId) + '</td><td>' + esc(h.at) + '</td></tr>'
+  ).join('');
+  return '<div class="intel-name">' + esc(intel.tableName) + '</div>' +
+    '<div class="intel-sub">' + esc(intel.tableId) + '</div>' +
+    '<div class="intel-metrics">' + metrics + '</div>' +
+    '<div class="k">ROAD (LATEST 20 / PARSED ' + esc(String(intel.totalResolvedHands ?? 0)) + ' / SHOE ' + esc(String(intel.shoeTotalGames ?? '-')) + ')</div>' +
+    '<div class="road-strip">' + esc(intel.road) + '</div>' +
+    '<div class="k">LAST HANDS</div>' +
+    '<table class="hands-table"><thead><tr><th>W</th><th>Score</th><th>Game</th><th>Time</th></tr></thead><tbody>' + (rows || '<tr><td colspan="4" class="muted">No hands yet.</td></tr>') + '</tbody></table>';
 }
 function buildDistilledHistory(rows){
   const out = [];
@@ -699,16 +917,43 @@ function buildDistilledHistory(rows){
   return out;
 }
 function dedupeHands(handRows){
-  const byKey = new Map();
-  for (const h of handRows || []) {
-    const k = h.gameId ? String(h.gameId) : (h.seq != null ? String(h.seq) : String(h.at) + '|' + String(h.result) + '|' + String(h.score || '-'));
-    if (!byKey.has(k)) byKey.set(k, h);
+  const rows = (handRows || [])
+    .slice()
+    .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const byGame = new Map();
+  const accepted = [];
+  for (const h of rows) {
+    const gameKey = h.gameId ? String(h.gameId) : null;
+    if (gameKey) {
+      if (byGame.has(gameKey)) continue;
+      byGame.set(gameKey, true);
+      accepted.push(h);
+      continue;
+    }
+    const ts = Date.parse(String(h.at || ''));
+    const winner = winnerCode(h.result);
+    const score = String(h.score || '');
+    const isLikelyCompactDuplicate = winner !== '?' && !score.includes('-');
+    if (isLikelyCompactDuplicate && Number.isFinite(ts)) {
+      const dup = accepted.some((x) => {
+        if (!x || !x.gameId) return false;
+        const xts = Date.parse(String(x.at || ''));
+        if (!Number.isFinite(xts)) return false;
+        return winnerCode(x.result) === winner && Math.abs(xts - ts) <= 3000;
+      });
+      if (dup) continue;
+    }
+    accepted.push(h);
   }
-  return Array.from(byKey.values()).sort((a,b) => String(b.at).localeCompare(String(a.at)));
+  return accepted.sort((a, b) => String(b.at).localeCompare(String(a.at)));
 }
 function renderShoeHistory(rows, handRows){
-  const hands = dedupeHands(handRows).slice(0, 30);
-  const recentCodes = hands.slice(0, 24).map(h => winnerCode(h.result)).join(' ');
+  const hands = handRows || [];
+  const latestSummary = (rows || []).find((e) => String(e.event_type || '') === 'ShoeSummary');
+  const latestSummaryPayload = latestSummary ? (latestSummary.payload_json || parseJsonSafe(latestSummary.payload_text) || {}) : {};
+  const latestShoe = latestSummaryPayload && latestSummaryPayload.ShoeSummary ? latestSummaryPayload.ShoeSummary : {};
+  const shoeTotal = latestShoe.totalGames != null ? String(latestShoe.totalGames) : '-';
+  const recentCodes = hands.map(h => winnerCode(h.result)).join(' ');
   const summaries = (rows || [])
     .filter(e => String(e.event_type || '') === 'ShoeSummary')
     .slice(0, 6)
@@ -728,7 +973,7 @@ function renderShoeHistory(rows, handRows){
   }).join('');
 
   return (
-    '<div class="evt"><div class="evt-meta"><span class="evt-type">Road Trend</span><span>latest 24</span></div><div class="evt-payload">' + esc(recentCodes || '-') + '</div></div>' +
+    '<div class="evt"><div class="evt-meta"><span class="evt-type">Road Trend</span><span>parsed ' + esc(String(hands.length)) + ' / shoe total ' + esc(shoeTotal) + '</span></div><div class="evt-payload">' + esc(recentCodes || '-') + '</div></div>' +
     (summaries || '<div class="evt"><div class="evt-payload">No shoe summaries yet.</div></div>') +
     (rounds || '<div class="evt"><div class="evt-payload">No resolved rounds yet.</div></div>')
   );
@@ -771,55 +1016,84 @@ async function openDetail(encodedId){
   document.getElementById('detailHistory').innerHTML = '<div class="muted">Loading...</div>';
   try {
     let table = (lastLobbyRows || []).find(t => String(t.tableId) === String(tableId));
-    const historyPromise = j('/api/table/' + encodeURIComponent(tableId) + '/history?limit=220');
-    const lobbyPromise = table ? Promise.resolve({ tables: lastLobbyRows }) : j('/api/lobby?include_sparse=1');
-    const [detailHistory, lobby] = await Promise.all([historyPromise, lobbyPromise]);
+    if (table) {
+      const quickIntel = buildIntelligence(table, []);
+      document.getElementById('detailSnapshot').innerHTML = renderTableIntelligence(quickIntel);
+    }
+    const expectedGames = Number(table && table.totalGames != null ? table.totalGames : 0);
+    const roundsLimit = Math.max(200, Math.min(3000, Number.isFinite(expectedGames) && expectedGames > 0 ? (expectedGames * 3) : 800));
+    const minTarget = Math.max(200, Math.min(2500, Number.isFinite(expectedGames) && expectedGames > 0 ? (expectedGames * 2) : 1200));
+    const historyPromise = j('/api/table/' + encodeURIComponent(tableId) + '/history?limit=500', 7000);
+    const roundsPromise = j('/api/table/' + encodeURIComponent(tableId) + '/rounds?limit=' + String(roundsLimit) + '&min_target=' + String(minTarget), 7000);
+    const lobbyPromise = table ? Promise.resolve({ tables: lastLobbyRows }) : j('/api/lobby?include_sparse=1', 5000);
+    const [detailHistory, roundsData, lobby] = await Promise.all([historyPromise, roundsPromise, lobbyPromise]);
     if (!table) table = (lobby.tables || []).find(t => String(t.tableId) === String(tableId));
-    const shoeHands = buildDistilledHistory(detailHistory);
-    const summaryText = renderTableIntelligence(table, shoeHands);
+    const shoeHands = dedupeHands(Array.isArray(roundsData && roundsData.rounds) ? roundsData.rounds : buildDistilledHistory(detailHistory));
+    const intel = buildIntelligence(table, shoeHands);
+    const summaryHtml = renderTableIntelligence(intel);
     const beadRoadHtml = renderBeadRoad(shoeHands);
-    document.getElementById('detailSnapshot').innerHTML = '<div class="mono">' + esc(summaryText) + '</div>' + beadRoadHtml;
+    document.getElementById('detailSnapshot').innerHTML = summaryHtml + beadRoadHtml;
     document.getElementById('detailHistory').innerHTML = renderShoeHistory(detailHistory, shoeHands);
   } catch (err) {
-    document.getElementById('detailSnapshot').textContent = 'Failed to load details: ' + (err?.message || String(err));
-    document.getElementById('detailHistory').innerHTML = '<div class="muted">Failed to load history.</div>';
+    const msg = (err && err.name === 'AbortError')
+      ? 'Request timed out. Click the card again to retry.'
+      : ('Failed to load details: ' + (err?.message || String(err)));
+    document.getElementById('detailSnapshot').innerHTML = '<div class="muted">' + esc(msg) + '</div>';
+    document.getElementById('detailHistory').innerHTML = '<div class="muted">' + esc(msg) + '</div>';
   }
 }
 async function loadLobby(){
-  const sortBy = document.getElementById('sortBy').value || 'fixed';
-  const orderParam = sortBy === 'updated' ? '?order=updated' : '';
-  const data = await j('/api/lobby' + orderParam);
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const rows = (data.tables || []).filter(t => {
-    if (!q) return true;
-    return String(t.tableId || '').toLowerCase().includes(q) || String(t.tableName || '').toLowerCase().includes(q);
-  });
-  rows.sort((a, b) => {
-    if (sortBy === 'name') {
-      const an = String(a.tableName || a.tableId || '');
-      const bn = String(b.tableName || b.tableId || '');
-      return an.localeCompare(bn);
-    }
-    if (sortBy === 'players') {
-      const ap = Number(a.playersCount ?? a.seatedPlayers ?? -1);
-      const bp = Number(b.playersCount ?? b.seatedPlayers ?? -1);
-      return bp - ap;
-    }
-    if (sortBy === 'timer') {
-      const at = Number(a.timer ?? 9999);
-      const bt = Number(b.timer ?? 9999);
-      return at - bt;
-    }
-    return 0;
-  });
-  lastLobbyRows = rows;
-  document.getElementById('stamp').textContent = 'tables: ' + rows.length + ' | updated: ' + (data.ts || '');
-  document.getElementById('grid').innerHTML = rows.map(render).join('') || '<div class="muted">No live tables yet.</div>';
+  try {
+    const sortBy = document.getElementById('sortBy').value || 'fixed';
+    const orderParam = sortBy === 'updated' ? '?order=updated' : '';
+    const data = await j('/api/lobby' + orderParam);
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const rows = (data.tables || []).filter(t => {
+      if (!q) return true;
+      return String(t.tableId || '').toLowerCase().includes(q) || String(t.tableName || '').toLowerCase().includes(q);
+    });
+    rows.sort((a, b) => {
+      if (sortBy === 'name') {
+        const an = String(a.tableName || a.tableId || '');
+        const bn = String(b.tableName || b.tableId || '');
+        return an.localeCompare(bn);
+      }
+      if (sortBy === 'players') {
+        const ap = Number(a.playersCount ?? a.seatedPlayers ?? -1);
+        const bp = Number(b.playersCount ?? b.seatedPlayers ?? -1);
+        return bp - ap;
+      }
+      if (sortBy === 'timer') {
+        const at = Number(a.timer ?? 9999);
+        const bt = Number(b.timer ?? 9999);
+        return at - bt;
+      }
+      return 0;
+    });
+    lastLobbyRows = rows;
+    document.getElementById('stamp').textContent = 'tables: ' + rows.length + ' | updated: ' + (data.ts || '');
+    document.getElementById('grid').innerHTML = rows.map(render).join('') || '<div class="muted">No live tables yet.</div>';
+  } catch (err) {
+    const msg = (err && err.name === 'AbortError')
+      ? 'Lobby request timed out.'
+      : ('Failed to load lobby: ' + (err?.message || String(err)));
+    document.getElementById('stamp').textContent = msg;
+    document.getElementById('grid').innerHTML = '<div class="card"><div class="muted">' + esc(msg) + '</div><div style="margin-top:8px;"><button onclick="loadLobby()">Retry</button></div></div>';
+  }
 }
-document.getElementById('q').addEventListener('input', loadLobby);
-document.getElementById('sortBy').addEventListener('change', loadLobby);
 let lastLobbyRows = [];
-loadLobby(); setInterval(loadLobby, 2500);
+window.addEventListener('DOMContentLoaded', () => {
+  const q = document.getElementById('q');
+  const sort = document.getElementById('sortBy');
+  if (!q || !sort) {
+    setTopStatus('UI init failed: controls missing');
+    return;
+  }
+  q.addEventListener('input', loadLobby);
+  sort.addEventListener('change', loadLobby);
+  loadLobby();
+  setInterval(loadLobby, 2500);
+});
 </script>
 </body>
 </html>`);
@@ -913,6 +1187,12 @@ document.getElementById('tableFilter').addEventListener('input', renderTableRows
 loadAll(); setInterval(loadAll, 4000);
 </script>
 </body></html>`);
+  });
+
+  app.use((err, _req, res, _next) => {
+    console.error("[web] request error:", err?.message || err);
+    if (res.headersSent) return;
+    res.status(500).json({ ok: false, error: "Internal server error" });
   });
 
   app.listen(WEB_PORT, () => {

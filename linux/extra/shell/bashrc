@@ -180,6 +180,9 @@ alias gl='git pull'
 alias gp='git push'
 alias gs='git status'
 
+# Docker Compose v2 compatibility
+alias docker-compose='docker compose'
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilities
