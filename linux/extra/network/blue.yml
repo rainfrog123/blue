@@ -1076,6 +1076,12 @@ proxy-groups:
     proxies:
       - DIRECT
 
+  - name: 🇩🇪 Germany Nodes
+    type: select
+    proxies:
+      - 🇩🇪ny_germany
+      - DIRECT
+
   - name: 🍁 Other Regions
     type: select
     proxies:
@@ -1270,6 +1276,7 @@ rules:
   - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
   - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
   - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
+  - DOMAIN-KEYWORD,n26,🇩🇪 Germany Nodes
   - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
   - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
