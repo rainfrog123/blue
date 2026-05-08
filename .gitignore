@@ -63,3 +63,6 @@ web/patchright/test_report.json
 # iOS app packages
 *.ipa
 *.tipa
+
+# Windows-reserved filename not stageable on Windows
+linux/vps/digi/nul

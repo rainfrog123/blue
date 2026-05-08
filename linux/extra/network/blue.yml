@@ -997,6 +997,7 @@ proxy-groups:
     type: select
     proxies:
       - REJECT
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🚩 Social Media IP Location
@@ -1028,63 +1029,75 @@ proxy-groups:
   - name: ⚡️IPLC/IEPL
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🎠Trojan
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   # Regional Groups
   - name: 🇭🇰 Hong Kong Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇯🇵 Japan Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇰🇷 Korea Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇮🇩 Indonesia Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇺🇸 United States Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇹🇼 Taiwan Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇸🇬 Singapore Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇪🇺 Europe Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🇩🇪 Germany Nodes
     type: select
     proxies:
       - 🇩🇪ny_germany
+      - 🚀 Node Selection
       - DIRECT
 
   - name: 🍁 Other Regions
     type: select
     proxies:
+      - 🚀 Node Selection
       - DIRECT
 
 # Rule Providers
