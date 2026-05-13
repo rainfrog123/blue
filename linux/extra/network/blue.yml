@@ -1000,6 +1000,13 @@ proxy-groups:
       - 🚀 Node Selection
       - DIRECT
 
+  - name: 📱 MIUI
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - 🚀 Node Selection
+
   - name: 🚩 Social Media IP Location
     type: select
     proxies:
@@ -1234,6 +1241,9 @@ rules:
   - DOMAIN-KEYWORD,siwazywcdn2,🚀 Node Selection
   - DOMAIN-KEYWORD,trading212,🚀 Node Selection
   - DOMAIN-KEYWORD,windowsup,🚀 Node Selection
+
+  # 📱 MIUI (DOMAIN-KEYWORD → policy: group 📱 MIUI)
+  - DOMAIN-KEYWORD,miui,📱 MIUI
 
   # 🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,hcaptcha,🖥️ Cursor Website Nodes
