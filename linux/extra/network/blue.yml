@@ -1437,57 +1437,57 @@ rules:
 #       - "+.googleapis.com"
 #       - "+.gstatic.com"
 
-# Active DNS: 1.1.1.1 + 8.8.8.8 only
-dns:
-  enable: true
-  listen: 0.0.0.0:53
-  ipv6: false
-  use-hosts: true
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  fake-ip-filter:
-    - "*.lan"
-    - "*.local"
-    - "*.localhost"
-    - "localhost.ptlogin2.qq.com"
-    - "+.ntp.org"
-    - "ntp.org"
-    - "+.stun.*.*"
-    - "+.stun.*.*.*"
-    - "+.stun.*.*.*.*"
-    - "+.stun.*.*.*.*.*"
-    - "*.nintendo.net"
-    - "+.stun.playstation.net"
-    - "xbox.*.*.microsoft.com"
-    - "*.*.xboxlive.com"
-    - "*.msftncsi.com"
-    - "*.msftconnecttest.com"
-    - "WORKGROUP"
-  default-nameserver:
-    - 1.1.1.1
-    - 8.8.8.8
-  nameserver:
-    - 1.1.1.1
-    - 8.8.8.8
-  fallback:
-    - 1.1.1.1
-    - 8.8.8.8
-  proxy-server-nameserver:
-    - 1.1.1.1
-    - 8.8.8.8
-  fallback-filter:
-    geoip: true
-    geoip-code: CN
-    ipcidr:
-      - 240.0.0.0/4
-      - 0.0.0.0/32
-      - 127.0.0.1/32
-    domain:
-      - "+.google.com"
-      - "+.facebook.com"
-      - "+.youtube.com"
-      - "+.twitter.com"
-      - "+.github.com"
-      - "+.googleapis.com"
-      - "+.gstatic.com"
+# DNS disabled for now — last active profile was 1.1.1.1 + 8.8.8.8 only
+# dns:
+#   enable: true
+#   listen: 0.0.0.0:53
+#   ipv6: false
+#   use-hosts: true
+#   enhanced-mode: fake-ip
+#   fake-ip-range: 198.18.0.1/16
+#   fake-ip-filter:
+#     - "*.lan"
+#     - "*.local"
+#     - "*.localhost"
+#     - "localhost.ptlogin2.qq.com"
+#     - "+.ntp.org"
+#     - "ntp.org"
+#     - "+.stun.*.*"
+#     - "+.stun.*.*.*"
+#     - "+.stun.*.*.*.*"
+#     - "+.stun.*.*.*.*.*"
+#     - "*.nintendo.net"
+#     - "+.stun.playstation.net"
+#     - "xbox.*.*.microsoft.com"
+#     - "*.*.xboxlive.com"
+#     - "*.msftncsi.com"
+#     - "*.msftconnecttest.com"
+#     - "WORKGROUP"
+#   default-nameserver:
+#     - 1.1.1.1
+#     - 8.8.8.8
+#   nameserver:
+#     - 1.1.1.1
+#     - 8.8.8.8
+#   fallback:
+#     - 1.1.1.1
+#     - 8.8.8.8
+#   proxy-server-nameserver:
+#     - 1.1.1.1
+#     - 8.8.8.8
+#   fallback-filter:
+#     geoip: true
+#     geoip-code: CN
+#     ipcidr:
+#       - 240.0.0.0/4
+#       - 0.0.0.0/32
+#       - 127.0.0.1/32
+#     domain:
+#       - "+.google.com"
+#       - "+.facebook.com"
+#       - "+.youtube.com"
+#       - "+.twitter.com"
+#       - "+.github.com"
+#       - "+.googleapis.com"
+#       - "+.gstatic.com"
 
