@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Open Gem Shortcut
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  Add "Open a gem" sidenav link, Ctrl+Shift+U shortcut, and auto-select 3.5 Flash + Extended on gem page
+// @version      2.8
+// @description  Add "Open a gem" sidenav link, Ctrl+Shift+U shortcut, configurable model + thinking level on gem page
 // @author       You
 // @match        https://gemini.google.com/*
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -18,9 +20,161 @@
     const CHECK_INTERVAL = 1000;
     const LOG_PREFIX = '[Open Gem Shortcut]';
 
-    const TARGET_MODEL = '3.5 Flash';
-    const TARGET_MODEL_TEST_ID = 'bard-mode-option-56fdd199312815e2';
-    const TARGET_THINKING = 'Extended';
+    const TARGET_MODEL_KEY = 'targetModel';
+    const TARGET_THINKING_KEY = 'targetThinking';
+    const THINKING_CACHE_KEY = 'availableThinkingCache';
+    const DEFAULT_THINKING = 'Extended';
+
+    const DEFAULT_THINKING_LEVELS = ['Extended', 'Standard'];
+
+    const DEFAULT_MODEL = {
+        label: '3.5 Flash',
+        pillPrimary: 'Flash',
+        testId: 'bard-mode-option-56fdd199312815e2',
+        jslogId: '56fdd199312815e2',
+    };
+
+    const MODELS_CACHE_KEY = 'availableModelsCache';
+
+    const GEM_PAGE_MODELS = [
+        {
+            label: '3.1 Flash-Lite',
+            pillPrimary: 'Flash-Lite',
+            testId: 'bard-mode-option-8c46e95b1a07cecc',
+            jslogId: '8c46e95b1a07cecc',
+        },
+        { ...DEFAULT_MODEL },
+        {
+            label: '3.1 Pro',
+            pillPrimary: 'Pro',
+            testId: 'bard-mode-option-e6fa609c3fa255c0',
+            jslogId: 'e6fa609c3fa255c0',
+        },
+    ];
+
+    function guessPillPrimary(label) {
+        if (/flash-lite/i.test(label)) return 'Flash-Lite';
+        if (/flash/i.test(label)) return 'Flash';
+        if (/pro/i.test(label)) return 'Pro';
+        const parts = label.trim().split(/\s+/);
+        return parts[parts.length - 1] || label;
+    }
+
+    function normalizeModelConfig(config) {
+        return {
+            label: config.label,
+            pillPrimary: config.pillPrimary || guessPillPrimary(config.label),
+            testId: config.testId || null,
+            jslogId: config.jslogId || null,
+        };
+    }
+
+    function loadModelSettings() {
+        const stored = GM_getValue(TARGET_MODEL_KEY, null);
+        if (stored?.label) return normalizeModelConfig(stored);
+
+        const legacyId = GM_getValue('targetModelId', null);
+        if (legacyId === 'custom') {
+            return normalizeModelConfig({ label: GM_getValue('customModelLabel', DEFAULT_MODEL.label) });
+        }
+        if (legacyId === 'flash-35' || legacyId === 'pro') {
+            return legacyId === 'pro'
+                ? normalizeModelConfig(GEM_PAGE_MODELS[2])
+                : { ...DEFAULT_MODEL };
+        }
+
+        return { ...DEFAULT_MODEL };
+    }
+
+    let modelSettings = loadModelSettings();
+
+    function getTargetThinking() {
+        return GM_getValue(TARGET_THINKING_KEY, DEFAULT_THINKING);
+    }
+
+    function setTargetThinking(level) {
+        GM_setValue(TARGET_THINKING_KEY, level.trim());
+        resetGemSettingsState();
+        console.log(`${LOG_PREFIX} Thinking level set to ${getTargetThinking()}`);
+        if (isTargetGemPage()) scheduleGemRetries();
+    }
+
+    function getTargetModel() {
+        return modelSettings.label;
+    }
+
+    function getPillPrimary() {
+        return modelSettings.pillPrimary || guessPillPrimary(getTargetModel());
+    }
+
+    function getTargetModelTestId() {
+        return modelSettings.testId || null;
+    }
+
+    function setTargetModelConfig(config) {
+        modelSettings = normalizeModelConfig(config);
+        GM_setValue(TARGET_MODEL_KEY, modelSettings);
+        resetGemSettingsState();
+        console.log(`${LOG_PREFIX} Default model set to ${getTargetModel()}`);
+        if (isTargetGemPage()) scheduleGemRetries();
+    }
+
+    async function showModelPicker() {
+        const models = await discoverAvailableModels();
+        if (!models.length) {
+            alert('Could not read the model list. Open your gem page, then try again.');
+            return;
+        }
+
+        const lines = models.map((model, index) => {
+            const current = model.label === getTargetModel() ? ' *' : '';
+            return `${index + 1}. ${model.label}${current}`;
+        });
+
+        const choice = prompt(
+            `Pick a model from Gemini:\n\n${lines.join('\n')}\n\nEnter number:`,
+            ''
+        );
+        if (choice == null || choice.trim() === '') return;
+
+        const num = parseInt(choice.trim(), 10);
+        if (num >= 1 && num <= models.length) {
+            setTargetModelConfig(models[num - 1]);
+        }
+    }
+
+    async function showThinkingPicker() {
+        const levels = await discoverAvailableThinkingLevels();
+        if (!levels.length) {
+            alert('Could not read thinking levels. Open your gem page, then try again.');
+            return;
+        }
+
+        const lines = levels.map((level, index) => {
+            const current = level === getTargetThinking() ? ' *' : '';
+            return `${index + 1}. ${level}${current}`;
+        });
+
+        const choice = prompt(
+            `Pick a thinking level:\n\n${lines.join('\n')}\n\nEnter number:`,
+            ''
+        );
+        if (choice == null || choice.trim() === '') return;
+
+        const num = parseInt(choice.trim(), 10);
+        if (num >= 1 && num <= levels.length) {
+            setTargetThinking(levels[num - 1]);
+        }
+    }
+
+    function setupSettingsMenu() {
+        GM_registerMenuCommand(`Model: ${getTargetModel()} (${getPillPrimary()})`, () => {
+            showModelPicker();
+        });
+        GM_registerMenuCommand(`Thinking: ${getTargetThinking()}`, () => {
+            showThinkingPicker();
+        });
+    }
 
     let isConfiguringGem = false;
     let gemSettingsApplied = false;
@@ -35,7 +189,7 @@
 
     function markGemSettingsApplied() {
         gemSettingsApplied = true;
-        console.log(`${LOG_PREFIX} Gem settings configured (${TARGET_MODEL} + ${TARGET_THINKING})`);
+        console.log(`${LOG_PREFIX} Gem settings configured (${getTargetModel()} + ${getTargetThinking()})`);
     }
 
     function sleep(ms) {
@@ -75,32 +229,56 @@
 
     function isFullyConfigured() {
         if (isSettingsShownInPill()) return true;
-        return isTargetModelSelected() && getCurrentThinkingLevel() === TARGET_THINKING;
+        return isTargetModelSelected() && getCurrentThinkingLevel() === getTargetThinking();
     }
 
     function getVisiblePillLabel() {
-        for (const container of document.querySelectorAll('[data-test-id="logo-pill-label-container"]')) {
-            if (!isVisible(container)) continue;
+        const containers = [...document.querySelectorAll('[data-test-id="logo-pill-label-container"]')]
+            .filter(isVisible);
 
-            const model = container.querySelector('.picker-primary-text')?.textContent.trim() || '';
-            const thinking = container.querySelector('.picker-secondary-text')?.textContent.trim() || '';
-            if (model || thinking) {
-                return { model, thinking };
-            }
-        }
-        return null;
+        const inModeButton = (container) => container.closest(
+            'button.input-area-switch, [data-test-id="bard-mode-menu-button"], [data-test-id="bard-mode-switcher"]'
+        );
+
+        const preferred = containers.find((c) =>
+            c.classList.contains('thinking-level-enabled') && inModeButton(c)
+        ) || containers.find((c) => inModeButton(c))
+          || containers.find((c) => c.classList.contains('thinking-level-enabled'))
+          || containers[0];
+
+        if (!preferred) return null;
+
+        const model = preferred.querySelector('.picker-primary-text')?.textContent.trim() || '';
+        const thinking = preferred.querySelector('.picker-secondary-text')?.textContent.trim() || '';
+        if (!model && !thinking) return null;
+
+        return { model, thinking };
+    }
+
+    function confirmModelViaJslog() {
+        if (!modelSettings.jslogId) return true;
+        const jslog = findModeButton()?.getAttribute('jslog') || '';
+        if (jslog.includes(modelSettings.jslogId)) return true;
+
+        const activeItem = document.querySelector(
+            `[data-test-id="bard-mode-option-${modelSettings.jslogId}"][data-active="true"],` +
+            `[data-mode-id="${modelSettings.jslogId}"][data-active="true"]`
+        );
+        return !!activeItem;
     }
 
     function isModelLabelMatch(modelText) {
-        return modelText === TARGET_MODEL ||
-            modelText === 'Flash' ||
-            (TARGET_MODEL.includes('Flash') && modelText.includes('Flash'));
+        if (!modelText) return false;
+        if (modelText === getTargetModel()) return true;
+        if (modelText === getPillPrimary()) return true;
+        return false;
     }
 
     function isSettingsShownInPill() {
         const pill = getVisiblePillLabel();
-        if (!pill) return false;
-        return isModelLabelMatch(pill.model) && pill.thinking === TARGET_THINKING;
+        if (!pill || pill.thinking !== getTargetThinking()) return false;
+        if (!isModelLabelMatch(pill.model)) return false;
+        return confirmModelViaJslog();
     }
 
     function syncGemSettingsFromPill() {
@@ -262,22 +440,37 @@
         );
         if (popover && isVisible(popover)) return true;
 
-        const modelItem = document.querySelector(`[data-test-id="${TARGET_MODEL_TEST_ID}"]`);
-        return !!modelItem && isVisible(modelItem);
+        const testId = getTargetModelTestId();
+        if (testId) {
+            const modelItem = document.querySelector(`[data-test-id="${testId}"]`);
+            if (modelItem && isVisible(modelItem)) return true;
+        }
+
+        return !!findGemMenuItem(getTargetModel(), true);
     }
 
-    function isTargetModelSelected() {
-        const pill = getVisiblePillLabel();
-        if (pill && isModelLabelMatch(pill.model)) return true;
-
-        const modelItem = document.querySelector(`[data-test-id="${TARGET_MODEL_TEST_ID}"]`);
-        if (modelItem && isVisible(modelItem) && isMenuItemSelected(modelItem)) return true;
+    function isTargetModelSelectedInMenu() {
+        const testId = getTargetModelTestId();
+        if (testId) {
+            const modelItem = document.querySelector(`[data-test-id="${testId}"]`);
+            if (modelItem && isVisible(modelItem) && isMenuItemSelected(modelItem)) return true;
+        }
 
         const modeBtn = findModeButton();
         const jslog = modeBtn?.getAttribute('jslog') || '';
-        if (jslog.includes('56fdd199312815e2')) return true;
+        if (modelSettings.jslogId && jslog.includes(modelSettings.jslogId)) return true;
 
-        return false;
+        const menuItem = findGemMenuItem(getTargetModel(), true);
+        return isMenuItemSelected(menuItem);
+    }
+
+    function isTargetModelSelected() {
+        if (isSettingsShownInPill()) return true;
+
+        const pill = getVisiblePillLabel();
+        if (pill && isModelLabelMatch(pill.model) && confirmModelViaJslog()) return true;
+
+        return isTargetModelSelectedInMenu();
     }
 
     function getCurrentThinkingFromPill() {
@@ -301,6 +494,103 @@
         return label?.textContent.replace(/\s+/g, ' ').trim()
             || item?.textContent.replace(/\s+/g, ' ').trim()
             || '';
+    }
+
+    function extractJslogId(item) {
+        const testId = item.getAttribute('data-test-id') || '';
+        const fromTestId = testId.match(/bard-mode-option-([a-f0-9]+)/);
+        if (fromTestId) return fromTestId[1];
+
+        const jslog = item.getAttribute('jslog') || '';
+        const fromJslog = jslog.match(/([a-f0-9]{16,})/);
+        return fromJslog?.[1] || null;
+    }
+
+    function isModelMenuItem(item) {
+        if (!item || item.getAttribute('value') === 'thinking_level') return false;
+        const modeId = item.getAttribute('data-mode-id');
+        const testId = item.getAttribute('data-test-id') || '';
+        if (!modeId && !testId.startsWith('bard-mode-option-')) return false;
+        const label = getMenuItemLabel(item);
+        return !!label && !/^thinking level$/i.test(label);
+    }
+
+    function extractModeId(item) {
+        return item.getAttribute('data-mode-id') || extractJslogId(item);
+    }
+
+    function scrapeModelMenuItems() {
+        const models = [];
+        const seen = new Set();
+        const selectors = [
+            '[data-test-id="gem-mode-menu"] gem-menu-item[role="menuitem"]',
+            '[data-test-id="bard-mode-desktop-gem-menu"] gem-menu-item[role="menuitem"]',
+            '[data-test-id="bard-mode-mobile-gem-menu"] gem-menu-item[role="menuitem"]',
+            '[data-test-id="bard-mode-gem-menu"] gem-menu-item[role="menuitem"]',
+            'gem-menu-item[role="menuitem"][data-mode-id]',
+            'gem-menu-item[role="menuitem"][data-test-id^="bard-mode-option-"]',
+        ];
+
+        for (const selector of selectors) {
+            document.querySelectorAll(selector).forEach((item) => {
+                if (!isModelMenuItem(item)) return;
+
+                const rect = item.getBoundingClientRect();
+                if (rect.width === 0 && rect.height === 0) return;
+
+                const modeId = extractModeId(item);
+                if (modeId && seen.has(modeId)) return;
+
+                const label = getMenuItemLabel(item);
+                if (!label || seen.has(label)) return;
+
+                if (modeId) seen.add(modeId);
+                seen.add(label);
+
+                models.push(normalizeModelConfig({
+                    label,
+                    testId: item.getAttribute('data-test-id'),
+                    jslogId: modeId,
+                }));
+            });
+
+            if (models.length) break;
+        }
+
+        return models;
+    }
+
+    function cacheAvailableModels(models) {
+        if (models.length) GM_setValue(MODELS_CACHE_KEY, models);
+    }
+
+    function getCachedModels() {
+        const cached = GM_getValue(MODELS_CACHE_KEY, null);
+        return Array.isArray(cached) ? cached.map(normalizeModelConfig) : [];
+    }
+
+    async function discoverAvailableModels() {
+        let models = scrapeModelMenuItems();
+
+        if (!models.length) {
+            const button = findModeButton();
+            if (button) {
+                setConfigureVisualsHidden(true);
+                try {
+                    const opened = await ensureGemMenuOpen(button);
+                    if (opened) models = scrapeModelMenuItems();
+                    await closeMenuAndWait();
+                } finally {
+                    setConfigureVisualsHidden(false);
+                }
+            }
+        }
+
+        if (!models.length) models = getCachedModels();
+        if (!models.length && isTargetGemPage()) models = GEM_PAGE_MODELS.map(normalizeModelConfig);
+
+        cacheAvailableModels(models);
+        return models;
     }
 
     function isMenuItemSelected(item) {
@@ -338,8 +628,9 @@
     }
 
     async function selectTargetModel() {
-        const modelItem = document.querySelector(`[data-test-id="${TARGET_MODEL_TEST_ID}"]`) ||
-            findGemMenuItem(TARGET_MODEL, true);
+        const testId = getTargetModelTestId();
+        const modelItem = (testId && document.querySelector(`[data-test-id="${testId}"]`)) ||
+            findGemMenuItem(getTargetModel(), true);
         if (!modelItem || isMenuItemSelected(modelItem)) return true;
 
         modelItem.click();
@@ -347,7 +638,108 @@
         return true;
     }
 
-    async function selectExtendedThinking(button) {
+    function isThinkingLevelOption(item) {
+        if (!item || item.getAttribute('value') === 'thinking_level') return false;
+        if (item.getAttribute('data-mode-id')) return false;
+        if (item.getAttribute('data-test-id')?.startsWith('bard-mode-option-')) return false;
+        const label = getMenuItemLabel(item);
+        return !!label && !/^thinking level$/i.test(label);
+    }
+
+    function scrapeThinkingLevelItems() {
+        const levels = [];
+        const seen = new Set();
+        const thinkingItem = getThinkingLevelItem();
+        const menuId = thinkingItem?.getAttribute('aria-controls');
+        const roots = [];
+
+        if (menuId) {
+            const nested = document.getElementById(menuId);
+            if (nested) roots.push(nested);
+        }
+
+        document.querySelectorAll('.cdk-overlay-pane gem-menu').forEach((menu) => {
+            if (thinkingItem && menu.contains(thinkingItem)) return;
+            if (menu.querySelector('[data-test-id="gem-mode-menu"]')) return;
+            roots.push(menu);
+        });
+
+        const collect = (root) => {
+            root.querySelectorAll('gem-menu-item[role="menuitem"]').forEach((item) => {
+                if (!isThinkingLevelOption(item)) return;
+
+                const rect = item.getBoundingClientRect();
+                if (rect.width === 0 && rect.height === 0) return;
+
+                const label = getMenuItemLabel(item);
+                if (seen.has(label)) return;
+
+                seen.add(label);
+                levels.push(label);
+            });
+        };
+
+        roots.forEach(collect);
+
+        if (!levels.length) {
+            document.querySelectorAll('.cdk-overlay-pane gem-menu-item[role="menuitem"]').forEach((item) => {
+                if (!isThinkingLevelOption(item)) return;
+                const rect = item.getBoundingClientRect();
+                if (rect.width === 0 && rect.height === 0) return;
+                const label = getMenuItemLabel(item);
+                if (!label || seen.has(label)) return;
+                seen.add(label);
+                levels.push(label);
+            });
+        }
+
+        return levels;
+    }
+
+    function cacheAvailableThinkingLevels(levels) {
+        if (levels.length) GM_setValue(THINKING_CACHE_KEY, levels);
+    }
+
+    function getCachedThinkingLevels() {
+        const cached = GM_getValue(THINKING_CACHE_KEY, null);
+        return Array.isArray(cached) ? cached : [];
+    }
+
+    async function discoverAvailableThinkingLevels() {
+        let levels = scrapeThinkingLevelItems();
+
+        if (!levels.length) {
+            const button = findModeButton();
+            if (button) {
+                setConfigureVisualsHidden(true);
+                try {
+                    await ensureGemMenuOpen(button);
+                    let thinkingItem = getThinkingLevelItem();
+                    if (thinkingItem?.getAttribute('aria-expanded') !== 'true') {
+                        thinkingItem.click();
+                        await waitUntil(
+                            () => thinkingItem.getAttribute('aria-expanded') === 'true' || scrapeThinkingLevelItems().length > 0,
+                            1500,
+                            16
+                        );
+                    }
+                    levels = scrapeThinkingLevelItems();
+                    await closeMenuAndWait();
+                } finally {
+                    setConfigureVisualsHidden(false);
+                }
+            }
+        }
+
+        if (!levels.length) levels = getCachedThinkingLevels();
+        if (!levels.length) levels = [...DEFAULT_THINKING_LEVELS];
+
+        cacheAvailableThinkingLevels(levels);
+        return levels;
+    }
+
+    async function selectTargetThinking(button) {
+        const targetThinking = getTargetThinking();
         let thinkingItem = getThinkingLevelItem();
         if (!thinkingItem && button) {
             await ensureGemMenuOpen(button);
@@ -355,24 +747,24 @@
         }
         if (!thinkingItem) return false;
 
-        if (getCurrentThinkingLevel() === TARGET_THINKING) return true;
+        if (getCurrentThinkingLevel() === targetThinking) return true;
 
         if (thinkingItem.getAttribute('aria-expanded') !== 'true') {
             thinkingItem.click();
             await waitUntil(
-                () => thinkingItem.getAttribute('aria-expanded') === 'true' || !!findGemMenuItem(TARGET_THINKING, true),
+                () => thinkingItem.getAttribute('aria-expanded') === 'true' || !!findGemMenuItem(targetThinking, true),
                 1500,
                 16
             );
         }
 
-        const extendedItem = findGemMenuItem(TARGET_THINKING, true);
-        if (!extendedItem) return false;
-        if (isMenuItemSelected(extendedItem)) return true;
+        const levelItem = findGemMenuItem(targetThinking, true);
+        if (!levelItem) return false;
+        if (isMenuItemSelected(levelItem)) return true;
 
-        extendedItem.click();
-        await waitUntil(() => getCurrentThinkingLevel() === TARGET_THINKING, 1500, 16);
-        return getCurrentThinkingLevel() === TARGET_THINKING;
+        levelItem.click();
+        await waitUntil(() => getCurrentThinkingLevel() === targetThinking, 1500, 16);
+        return getCurrentThinkingLevel() === targetThinking;
     }
 
     async function configureGemSettings() {
@@ -406,7 +798,7 @@
                 }
             }
 
-            await selectExtendedThinking(button);
+            await selectTargetThinking(button);
             await closeMenuAndWait();
             focusInputArea();
 
@@ -607,13 +999,14 @@
     }
 
     function start() {
-        console.log(`${LOG_PREFIX} Script loaded`);
+        console.log(`${LOG_PREFIX} Script loaded (model: ${getTargetModel()})`);
         lastGemPath = location.pathname;
         injectOpenGemButton();
         setupObserver();
         setupLayoutWatchers();
         setupGemPageWatchers();
         setupGemConfigureWatcher();
+        setupSettingsMenu();
         setupKeyboardShortcut();
         syncGemSettingsFromPill();
         scheduleGemRetries();
