@@ -822,9 +822,9 @@ proxy-groups:
   - name: 🎰 Stake Nodes
     type: select
     proxies:
+      - 🚀 Node Selection
       - 🌐 Naiyun
       - 🔑 Manual Selection
-      - 🚀 Node Selection
       - DIRECT
 
   # CF Endpoint with WARP Outbound (Clean IP)
