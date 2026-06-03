@@ -1,0 +1,20 @@
+{
+   "manifest_version": 3,
+   "name": "Zoom Per Tab (Customizable)",
+   "version": "1.03",
+   "description": "Zoom one tab without affecting other tabs of the same site. Configurable to run on all sites or a custom list.",
+   "permissions": [
+      "tabs",
+      "storage"
+   ],
+   "background": {
+      "service_worker": "service_worker.js"
+   },
+   "action": {
+      "default_popup": "popup.html",
+      "default_title": "Zoom Per Tab settings"
+   },
+   "icons": {
+      "128": "icon128.png"
+   }
+}
