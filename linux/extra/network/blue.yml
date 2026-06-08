@@ -1268,7 +1268,7 @@ rules:
   - DOMAIN-KEYWORD,chatgpt,🤖 AI / IDE Nodes
   # - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
-  - DOMAIN-KEYWORD,heytap,🤖 AI / IDE Nodes
+  # - DOMAIN-KEYWORD,heytap,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,oai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,openai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,translate.googleapis,🤖 AI / IDE Nodes
