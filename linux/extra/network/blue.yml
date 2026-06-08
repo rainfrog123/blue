@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 01:16-30/04 (UTC+8)
+# Version: 🔖 11:43-08/06 (UTC+8)
 proxies:
   # Personal Servers (ali nodes first, then do nodes)
   - name: 🇸🇬azure_singapore_tj
@@ -592,6 +592,9 @@ proxies:
   - {name: 🇩🇪ny_germany, type: trojan, server: 27b1f609302182b51114f7ceb3316871.node.tro.cac.cab, port: 45951, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
   - {name: 🇫🇷ny_france, type: trojan, server: a25640a97d01ac9372899c961849b8b7.node.tro.cac.cab, port: 42710, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
 
+  # Version reference (display only)
+  - {name: "🔖 11:43-08/06 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+
 # Proxy Groups
 proxy-groups:
   # Primary Selection Groups
@@ -617,6 +620,7 @@ proxy-groups:
       # - 🇪🇺 Europe Nodes
       # - 🇹🇼 Taiwan Nodes
       # - 🍁 Other Regions
+      - "🔖 11:43-08/06 (UTC+8)"
 
   # Special Purpose Groups
   - name: 📺 YouTube Nodes
