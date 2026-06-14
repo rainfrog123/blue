@@ -1,17 +1,19 @@
 // ==UserScript==
-// @name         PP WebSocket Interceptor
+// @name         socks
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Intercept Pragmatic Play baccarat WebSocket (lobby + game)
+// @version      3.2.5
+// @description  Intercept Pragmatic Play baccarat WebSocket (lobby + game). multibaccarat page only.
 // @author       You
-// @match        *://client.pragmaticplaylive.net/*
-// @match        *://*.stake.com/*
+// @match        *://client.pragmaticplaylive.net/desktop/multibaccarat*
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
 
 (function() {
     'use strict';
+    // Counter abbreviations used in this file:
+    // P  = Player wins, B  = Banker wins, T  = Tie wins
+    // PP = Player Pairs, BP = Banker Pairs
 
     const tables = new Map();           // gameId -> tableData
     const configs = new Map();          // gameId -> raw tableconfig
@@ -26,6 +28,69 @@
     let msgCount = 0;
     let lastSeq = 0;
     let suppressGoodRoadWarnings = true;
+
+    /** Outgoing <lpbet> wire sends (for play.js / confirmations). */
+    let lpbetCount = 0;
+    let lastLpbetEvent = null;
+    const lpbetHistory = [];
+    const lpbetListeners = new Set();
+    const LPBET_HISTORY_MAX = 40;
+
+    const parseLpbetXml = (raw) => {
+        const s = typeof raw === 'string' ? raw : '';
+        if (!s.includes('lpbet')) return null;
+        const ch = /channel="table-([^"]+)"/.exec(s);
+        const tableId = ch ? ch[1] : null;
+        const gM = /gId="([^"]+)"/.exec(s);
+        const uM = /uId="([^"]+)"/.exec(s);
+        const bets = [];
+        const betRe = /<bet\s+([^>]+)\/?>/g;
+        let bm;
+        while ((bm = betRe.exec(s)) !== null) {
+            const attrs = bm[1];
+            const am = /amt="([^"]+)"/.exec(attrs);
+            const bcm = /bc="([^"]+)"/.exec(attrs);
+            if (am && bcm) {
+                bets.push({
+                    amt: parseFloat(am[1]),
+                    bc: bcm[1],
+                });
+            }
+        }
+        if (!tableId && bets.length === 0) return null;
+        return {
+            tableId,
+            gameId: gM ? gM[1] : null,
+            userId: uM ? uM[1] : null,
+            bets,
+            time: Date.now(),
+        };
+    };
+
+    const emitLpbet = (rec) => {
+        if (!rec) return;
+        lpbetCount++;
+        lastLpbetEvent = rec;
+        lpbetHistory.push(rec);
+        if (lpbetHistory.length > LPBET_HISTORY_MAX) lpbetHistory.shift();
+        for (const fn of lpbetListeners) {
+            try {
+                fn(rec);
+            } catch (_) {}
+        }
+    };
+
+    const hookOutgoingSend = (data) => {
+        let s = '';
+        if (typeof data === 'string') s = data;
+        else return;
+        if (!s.includes('lpbet')) return;
+        const rec = parseLpbetXml(s);
+        if (rec && (rec.tableId || rec.bets.length)) emitLpbet(rec);
+    };
+
+    /** On `betsopen`, delay before `pp.get(id).canBet === true`. */
+    const CAN_BET_OPEN_DELAY_MS = 1000;
 
     const _consoleWarn = console.warn.__ppOriginalWarn || console.warn.bind(console);
     const isGoodRoadTablesOrderWarning = (args) => {
@@ -113,6 +178,9 @@
         return uidOrId;
     };
 
+    // Player count is known only when lobby provides totalSeatedPlayers for that table.
+    const hasKnownPlayers = (t) => !!(t && Number.isFinite(t.players) && t.players >= 0);
+
     // Hook WebSocket
     const _WS = window.WebSocket;
     window.WebSocket = function(url, proto) {
@@ -141,6 +209,13 @@
 
     function hookWS(ws, url) {
         const ctxGameId = gameIdFromWsUrl(url);
+        const _send = ws.send.bind(ws);
+        ws.send = function(data) {
+            try {
+                hookOutgoingSend(data);
+            } catch (_) {}
+            return _send(data);
+        };
         ws.addEventListener('message', (e) => {
             try {
                 const msg = JSON.parse(e.data);
@@ -279,8 +354,8 @@
             P: s.playerWinCounter != null ? +s.playerWinCounter : (prev.P ?? 0),
             B: s.bankerWinCounter != null ? +s.bankerWinCounter : (prev.B ?? 0),
             T: s.tieCounter != null ? +s.tieCounter : (prev.T ?? 0),
-            PP: s.playerPairCounter != null ? +s.playerPairCounter : (prev.PP ?? 0),
-            BP: s.bankerPairCounter != null ? +s.bankerPairCounter : (prev.BP ?? 0),
+            PP: s.playerPairCounter != null ? +s.playerPairCounter : (prev.PP ?? 0), // Player Pairs
+            BP: s.bankerPairCounter != null ? +s.bankerPairCounter : (prev.BP ?? 0), // Banker Pairs
             total: s.totalGames != null ? +s.totalGames : (prev.total ?? 0),
             seq: s.seq,
             source: 'game-shoe'
@@ -434,7 +509,7 @@
 
         tables.set(gameId, {
             ...prev,
-            players: msg.totalSeatedPlayers ?? prev.players ?? 0,
+            players: msg.totalSeatedPlayers ?? prev.players ?? null,
             updated: Date.now()
         });
     }
@@ -466,12 +541,12 @@
             dealer: msg.dealer?.name || prev.dealer || '',
             minBet: msg.tableLimits?.minBet ?? prev.minBet ?? 0,
             maxBet: msg.tableLimits?.maxBet ?? prev.maxBet ?? 0,
-            players: msg.totalSeatedPlayers ?? prev.players ?? 0,
+            players: msg.totalSeatedPlayers ?? prev.players ?? null,
             P: msg.baccaratShoeSummary?.playerWinCounter != null ? +msg.baccaratShoeSummary.playerWinCounter : (prev.P ?? 0),
             B: msg.baccaratShoeSummary?.bankerWinCounter != null ? +msg.baccaratShoeSummary.bankerWinCounter : (prev.B ?? 0),
             T: msg.baccaratShoeSummary?.tieCounter != null ? +msg.baccaratShoeSummary.tieCounter : (prev.T ?? 0),
-            PP: msg.baccaratShoeSummary?.playerPairCounter != null ? +msg.baccaratShoeSummary.playerPairCounter : (prev.PP ?? 0),
-            BP: msg.baccaratShoeSummary?.bankerPairCounter != null ? +msg.baccaratShoeSummary.bankerPairCounter : (prev.BP ?? 0),
+            PP: msg.baccaratShoeSummary?.playerPairCounter != null ? +msg.baccaratShoeSummary.playerPairCounter : (prev.PP ?? 0), // Player Pairs
+            BP: msg.baccaratShoeSummary?.bankerPairCounter != null ? +msg.baccaratShoeSummary.bankerPairCounter : (prev.BP ?? 0), // Banker Pairs
             total: msg.baccaratShoeSummary?.totalGames != null ? +msg.baccaratShoeSummary.totalGames : (prev.total ?? 0),
             roads: msg.goodRoadsMap || prev.roads || {},
             bigRoad: msg.statistics || prev.bigRoad || '',
@@ -552,8 +627,8 @@
             P: data.playerWinCounter ?? prev.P ?? 0,
             B: data.bankerWinCounter ?? prev.B ?? 0,
             T: data.tieCounter ?? prev.T ?? 0,
-            PP: data.playerPairCounter ?? prev.PP ?? 0,
-            BP: data.bankerPairCounter ?? prev.BP ?? 0,
+            PP: data.playerPairCounter ?? prev.PP ?? 0, // Player Pairs
+            BP: data.bankerPairCounter ?? prev.BP ?? 0, // Banker Pairs
             total: (data.playerWinCounter || 0) + (data.bankerWinCounter || 0) + (data.tieCounter || 0),
             bigRoad: data.bigRoad || prev.bigRoad || [],
             beadPlate: data.beadPlate || prev.beadPlate || [],
@@ -589,8 +664,11 @@
         };
 
         if (canBet) {
-            // Delay to account for UI rendering
-            setTimeout(() => apply(true), 2000);
+            if (CAN_BET_OPEN_DELAY_MS <= 0) {
+                apply(true);
+            } else {
+                setTimeout(() => apply(true), CAN_BET_OPEN_DELAY_MS);
+            }
         } else {
             apply(false);
         }
@@ -618,8 +696,8 @@
             P: data.pwc ?? prev.P ?? 0,
             B: data.bwc ?? prev.B ?? 0,
             T: data.tc ?? prev.T ?? 0,
-            PP: data.ppc ?? prev.PP ?? 0,
-            BP: data.bpc ?? prev.BP ?? 0,
+            PP: data.ppc ?? prev.PP ?? 0, // Player Pairs
+            BP: data.bpc ?? prev.BP ?? 0, // Banker Pairs
             total: (data.pwc ?? prev.P ?? 0) + (data.bwc ?? prev.B ?? 0) + (data.tc ?? prev.T ?? 0),
             lastBR: data.br || prev.lastBR,      // last big road position
             lastBP: data.bp || prev.lastBP,      // last bead plate position
@@ -787,6 +865,88 @@
             return Object.keys(out).length ? out : null;
         },
         seq: () => lastSeq,
+
+        /** Last outgoing <lpbet> parsed from WS send, or null */
+        lastLpbet: () => lastLpbetEvent,
+        /** Recent outgoing lpbet records (newest last) */
+        lpbetHistory: () => lpbetHistory.slice(),
+        lpbetCount: () => lpbetCount,
+        /** Subscribe to each lpbet send; returns unsubscribe */
+        onLpbet: (fn) => {
+            if (typeof fn !== 'function') return () => {};
+            lpbetListeners.add(fn);
+            return () => lpbetListeners.delete(fn);
+        },
+        /**
+         * Wait until outgoing lpbet stake for this table matches side after `since`.
+         * bc on wire: "0" = Player, "1" = Banker (same as data-betcode).
+         * If `minTotal` is set, sums multiple chip-click lpbets until amount reached.
+         */
+        waitLpbet: (tableId, opts = {}) => {
+            const tid = resolveGameId(tableId) || String(tableId);
+            const timeoutMs = opts.timeoutMs ?? 8000;
+            const since = opts.since ?? 0;
+            const side = opts.side;
+            const wantBc = side === 'B' ? '1' : '0';
+            const minTotal = opts.minTotal;
+
+            const tableMatch = (rec) => {
+                if (!rec || !rec.tableId) return false;
+                const rt = resolveGameId(rec.tableId) || rec.tableId;
+                return rt === tid || rec.tableId === tid;
+            };
+
+            const stakeFromRec = (rec) => {
+                let s = 0;
+                for (const b of rec.bets) {
+                    if (b.bc === wantBc) s += b.amt;
+                }
+                return s;
+            };
+
+            const satisfied = (accumulated) => {
+                if (minTotal != null && Number(minTotal) > 0) {
+                    return accumulated >= Number(minTotal) - 1e-9;
+                }
+                return accumulated > 0;
+            };
+
+            return new Promise((resolve) => {
+                let accumulated = 0;
+                let lastRec = null;
+                for (const rec of lpbetHistory) {
+                    if (!tableMatch(rec) || rec.time < since) continue;
+                    const add = stakeFromRec(rec);
+                    if (add <= 0) continue;
+                    accumulated += add;
+                    lastRec = rec;
+                }
+                if (satisfied(accumulated)) {
+                    resolve(lastRec);
+                    return;
+                }
+
+                let timer = null;
+                const fn = (rec) => {
+                    if (!tableMatch(rec) || rec.time < since) return;
+                    const add = stakeFromRec(rec);
+                    if (add <= 0) return;
+                    accumulated += add;
+                    lastRec = rec;
+                    if (satisfied(accumulated)) {
+                        if (timer) clearTimeout(timer);
+                        lpbetListeners.delete(fn);
+                        resolve(lastRec);
+                    }
+                };
+                lpbetListeners.add(fn);
+                timer = setTimeout(() => {
+                    lpbetListeners.delete(fn);
+                    resolve(null);
+                }, timeoutMs);
+            });
+        },
+
         setWarnFilter: (enabled = true) => {
             suppressGoodRoadWarnings = !!enabled;
             return suppressGoodRoadWarnings;
@@ -794,29 +954,65 @@
         warnFilter: () => suppressGoodRoadWarnings,
 
         help: () => {
-            const t = [
-                '',
-                '--- pp (Pragmatic Play WS) ---',
-                '  pp.help()             print this cheat sheet',
-                '  pp.status()           print tables summary',
-                '  pp.tables()           { gameId -> row }',
-                '  pp.get(id)            full row; id = uid | gameId | lobbyId',
-                '  pp.live(id)           grouped live stream (same as lastEvents)',
-                '  pp.lastEvents(id)     alias of pp.live',
-                '  pp.list()             compact list (tables with total > 0)',
-                '  pp.betting()          tables currently open for betting',
-                '  pp.setWarnFilter(v)   toggle GoodRoad/tablesOrder warn suppression',
-                '  pp.warnFilter()       current warn filter state (true/false)',
-                '',
-                '  pp.count()   pp.msgs()   pp.order()   pp.stats()   pp.seq()',
-                '',
-                '  pp.gameToLobby(g)     pp.lobbyToGame(l)',
-                '  pp.road(id)   pp.pbt(id)   pp.pbtStr(id)   pp.lastN(id, n)',
-                '  pp.sequences()        pp.seqAll()',
-                '  pp.configs()          raw tableconfig map',
-                '  pp.export()           pp.clear()',
-                ''
-            ].join('\n');
+            const W = 62;
+            const line = (ch) => ch.repeat(W);
+            const row = (cmd, hint) =>
+                `  ${String(cmd).padEnd(26)} ${hint}`;
+            const title = 'pp — Pragmatic Play websocket intercept (tables + roads)';
+            const boxLine = () => `${line('═')}`;
+            const boxTitle = () => `║ ${title.padEnd(W - 4)} ║`;
+            const t = `
+${boxLine()}
+${boxTitle()}
+${boxLine()}
+
+ ▸ Table views
+${row('pp.help()', 'This cheat sheet')}
+${row('pp.status()', 'Print summary of all tracked tables')}
+${row('pp.tables()', 'Object: gameId → full row')}
+${row('pp.get(id)', 'One row · id = numeric uid OR gameId OR lobbyId')}
+${row('pp.list()', 'Compact array (total > 0) incl. playersKnown')}
+${row('pp.betting()', 'Subset with canBet and enough history')}
+${row('pp.players(id)', 'Seated players for table, or null if unknown')}
+${row('pp.playersKnown(id)', 'true when lobby sent totalSeatedPlayers')}
+
+ ▸ Live snapshots
+${row('pp.live(id)', 'Grouped recent stream fields (cards, timer, …)')}
+${row('pp.lastEvents(id)', 'Alias of pp.live')}
+
+ ▸ Road / PBT
+${row('pp.road(id)', 'bigRoad blob for table')}
+${row('pp.pbt(id)', "Chronological ['P','B','T',…]")}
+${row('pp.pbtStr(id)', 'Same sequence as string')}
+${row('pp.lastN(id, n)', 'Last n results')}
+${row('pp.sequences()', 'All tables + arrays')}
+${row('pp.seqAll()', 'Pretty-print sequences in console')}
+
+ ▸ ID mapping
+${row('pp.gameToLobby(g)', 'lobby id from game id')}
+${row('pp.lobbyToGame(l)', 'game id from lobby id')}
+
+ ▸ Global / meta
+${row('pp.stats()', 'Lobby global stats + playersCount blob')}
+${row('pp.order()', 'tableKey / tablesorder array')}
+${row('pp.seq()', 'Highest seq seen')}
+${row('pp.msgs()', 'Parsed JSON message count')}
+${row('pp.lpbetCount()', 'Outgoing <lpbet> sends observed')}
+${row('pp.lastLpbet()', 'Last parsed lpbet from WS send')}
+${row('pp.waitLpbet(id, {side,since,minTotal,timeoutMs})', 'Promise: wire stake sum for table + side')}
+${row('pp.onLpbet(fn)', 'Callback on each lpbet; returns unsubscribe')}
+${row('pp.count()', 'Tables in internal map')}
+${row('pp.setWarnFilter(v)', 'Suppress GoodRoad / tablesOrder noise')}
+${row('pp.warnFilter()', 'Current filter on/off')}
+
+ ▸ Raw dump
+${row('pp.configs()', 'Raw tableconfig by game id')}
+${row('pp.export()', 'JSON stringify of all table rows')}
+${row('pp.clear()', 'Clear all in-memory state')}
+
+${line('─')}
+  Tip: use a monospace console font so columns align.
+`.trimEnd();
             console.log(t);
         },
 
@@ -835,6 +1031,8 @@
                     gameId: t.gameId,
                     lobbyId: t.lobbyId,
                     name: t.name,
+                    players: hasKnownPlayers(t) ? t.players : null,
+                    playersKnown: hasKnownPlayers(t),
                     P: t.P,
                     B: t.B,
                     T: t.T,
@@ -897,6 +1095,19 @@
             return getPBTSequence(t).join('');
         },
 
+        // Seated players count for a table. Returns null when unknown.
+        players: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return hasKnownPlayers(t) ? t.players : null;
+        },
+
+        playersKnown: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return hasKnownPlayers(t);
+        },
+
         // Get last N results for a table
         lastN: (uidOrId, n = 10) => {
             const id = resolveId(uidOrId);
@@ -952,10 +1163,13 @@
             tablesOrder = [];
             globalStats = null;
             lastPlayersCount = null;
+            lpbetCount = 0;
+            lastLpbetEvent = null;
+            lpbetHistory.length = 0;
         }
     };
 
-    console.log('[PP] v3.2 | Full PP message types + lobby partial + WS URL context');
+    console.log('[PP] v3.2.5 | + outgoing lpbet capture (pp.waitLpbet / pp.lastLpbet)');
     console.log('[PP] API: pp.help() pp.status() pp.get(1) pp.live(1) …');
 })();
 
@@ -1040,8 +1254,8 @@
 ║    P: 17,                            // Player wins                          ║
 ║    B: 21,                            // Banker wins                          ║
 ║    T: 4,                             // Tie count                            ║
-║    PP: 2,                            // Player pair count                    ║
-║    BP: 4,                            // Banker pair count                    ║
+║    PP: 2,                            // Player Pairs count                    ║
+║    BP: 4,                            // Banker Pairs count                    ║
 ║    total: 42,                        // Total rounds                         ║
 ║    ratio: 0.095,                     // |P-B|/total (lower = more balanced)  ║
 ║                                                                              ║

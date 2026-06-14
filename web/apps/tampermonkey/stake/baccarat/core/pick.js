@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         pick
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Table scoring - finds random/fair tables (high chop, balanced P/B, low ties)
+// @version      4.0.5
+// @description  Table filter — PP ping-pong depth + fairness firewall (tie/PB/crowd). multibaccarat page only.
 // @author       You
-// @match        *://client.pragmaticplaylive.net/*
-// @match        *://*.stake.com/*
+// @match        *://client.pragmaticplaylive.net/desktop/multibaccarat*
 // @grant        none
 // @run-at       document-start
 // ==/UserScript==
@@ -13,29 +12,27 @@
 (function() {
     'use strict';
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // SCORING SYSTEM v3.2 - Randomness-Based Selection
-    // ═══════════════════════════════════════════════════════════════════════
-    //
-    // Goal: Find tables that behave like TRUE RANDOM coin flips
-    //   ✓ High alternation/chop (random P↔B switches)
-    //   ✓ Balanced P/B ratio (~50/50)
-    //   ✓ Low tie interference
-    //   ✓ No suspicious long streaks
-    //   ✓ Enough history to judge
-    //
-    // Score 0-100, higher = more random = better
-    // Minimum eligible: 35
+    /**
+     * v4.0 — "Absurdity firewall" + chop signal from PP payloads
+     * Prefer: goodroadLive / goodRoadsDepthMap playerPingPongDepth & bankerPingPongDepth
+     * Prefer: betstats playerpercentage / bankerpercentage (crowd)
+     * Fallback: shallow alternations in last-12 when depths missing (labelled in diagnostics)
+     */
 
     const Config = {
-        MIN_ELIGIBLE_SCORE: 35,
-        HARD_MIN_TOTAL: 30,
-        HARD_MIN_CHOP_12: 3,      // 3 or fewer alternations in 12 = too streaky, suspicious
-    };
+        MIN_TOTAL: 30,              // Ghost tables — not enough rounds
+        MAX_TIE_RATIO: 0.12,        // ~12%+ ties ⇒ reject ("tie storm")
+        MAX_PB_GAP_RATIO: 0.10,     // |P-B|/total > 10% ⇒ reject ("gravity")
+        MAX_CROWD_PCT: 85,          // Either side ≥ 85% ⇒ reject (percent units 0..100)
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // HELPERS
-    // ═══════════════════════════════════════════════════════════════════════
+        REQUIRE_BETSTATS_FOR_CROWD: false,
+
+        MIN_EFFECTIVE_DEPTH: 0,     // Extra gate: chop depth gate (PP uses max of both depths); 0 = off
+
+        // Display score clamps
+        DISPLAY_SCORE_ELIGIBLE_MIN: 50,
+        DISPLAY_SCORE_ELIGIBLE_MAX: 100,
+    };
 
     const getSequence = (t) => {
         if (!window.pp) return [];
@@ -49,260 +46,276 @@
         return window.pp.live(id) || null;
     };
 
-    // Count alternations (P→B or B→P transitions, ignoring T)
+    const n = (v) => {
+        if (v == null || v === '') return null;
+        const x = typeof v === 'number' ? v : parseFloat(String(v).replace(/%/g, ''));
+        return Number.isFinite(x) ? x : null;
+    };
+
+    /** If value looks like ratio 0..1 convert to percentage for crowd compare */
+    const asPercentMaybe = (v) => {
+        const x = n(v);
+        if (x == null) return null;
+        if (x > 0 && x <= 1) return x * 100;
+        return x;
+    };
+
     const countAlternations = (seq) => {
-        const filtered = seq.filter(x => x !== 'T');
+        const filtered = (seq || []).filter(x => x !== 'T');
         if (filtered.length < 2) return 0;
         let alt = 0;
         for (let i = 1; i < filtered.length; i++) {
-            if (filtered[i] !== filtered[i-1]) alt++;
+            if (filtered[i] !== filtered[i - 1]) alt++;
         }
         return alt;
     };
 
-    // Find longest streak in sequence
-    const longestStreak = (seq) => {
-        if (!seq || seq.length === 0) return { side: null, length: 0 };
-        let maxLen = 1, maxSide = seq[0];
-        let curLen = 1, curSide = seq[0];
-        
-        for (let i = 1; i < seq.length; i++) {
-            if (seq[i] === curSide || seq[i] === 'T') {
-                if (seq[i] !== 'T') curLen++;
-            } else {
-                if (curLen > maxLen) { maxLen = curLen; maxSide = curSide; }
-                curLen = 1;
-                curSide = seq[i];
+    const walkForCrowdPct = (obj, maxDepth = 6) => {
+        let player = null;
+        let banker = null;
+        const visit = (o, d) => {
+            if (!o || typeof o !== 'object' || d > maxDepth) return;
+            if (Array.isArray(o)) {
+                for (const it of o) visit(it, d + 1);
+                return;
             }
+            for (const [key, val] of Object.entries(o)) {
+                const kl = key.toLowerCase().replace(/\s+/g, '');
+                if (/^playerperc/.test(kl) || kl === 'playerpercentage' || kl === 'pctplayer') {
+                    const p = asPercentMaybe(val);
+                    if (p != null) player = player == null ? p : Math.max(player, p);
+                }
+                if (/^bankerperc/.test(kl) || kl === 'bankerpercentage' || kl === 'pctbanker') {
+                    const b = asPercentMaybe(val);
+                    if (b != null) banker = banker == null ? b : Math.max(banker, b);
+                }
+                if (val != null && typeof val === 'object') visit(val, d + 1);
+            }
+        };
+        visit(obj, 0);
+        return { player, banker };
+    };
+
+    /** Pull ping-pong depth from known maps or deep-scan goodroad payload */
+    const extractPingPongDepths = (t) => {
+        let pp = 0;
+        let bp = 0;
+        let source = '';
+
+        // Game WS goodroad — same as working play.js / console snippet (parseInt on top-level keys)
+        const gl = t?.goodroadLive;
+        if (gl && typeof gl === 'object') {
+            const a = parseInt(gl.playerPingPongDepth || 0, 10);
+            const b = parseInt(gl.bankerPingPongDepth || 0, 10);
+            pp = Number.isFinite(a) ? a : 0;
+            bp = Number.isFinite(b) ? b : 0;
+            source = 'goodroadLive';
         }
-        if (curLen > maxLen) { maxLen = curLen; maxSide = curSide; }
-        return { side: maxSide, length: maxLen };
-    };
 
-    // Current streak at end
-    const currentStreak = (seq) => {
-        if (!seq || seq.length === 0) return { side: null, length: 0 };
-        const filtered = seq.filter(x => x !== 'T');
-        if (filtered.length === 0) return { side: null, length: 0 };
-        const last = filtered[filtered.length - 1];
-        let count = 0;
-        for (let i = filtered.length - 1; i >= 0; i--) {
-            if (filtered[i] === last) count++;
-            else break;
-        }
-        return { side: last, length: count };
-    };
+        const takeMap = (m, label) => {
+            if (!m || typeof m !== 'object') return;
+            const a = n(m.playerPingPongDepth ?? m.playerpingpongdepth);
+            const b = n(m.bankerPingPongDepth ?? m.bankerpingpongdepth);
+            if (a != null) {
+                pp = Math.max(pp, a);
+                if (!source) source = label;
+            }
+            if (b != null) {
+                bp = Math.max(bp, b);
+                if (!source) source = label;
+            }
+        };
 
-    // Count pattern occurrences
-    const countPattern = (seq, pattern) => {
-        const str = seq.join('');
-        let count = 0, idx = 0;
-        while ((idx = str.indexOf(pattern, idx)) !== -1) { count++; idx++; }
-        return count;
-    };
+        takeMap(t?.goodRoadsDepthMap, 'goodRoadsDepthMap');
 
-    // Check if last N is pure alternation
-    const isPureAlt = (seq) => {
-        const filtered = seq.filter(x => x !== 'T');
-        if (filtered.length < 4) return false;
-        for (let i = 1; i < filtered.length; i++) {
-            if (filtered[i] === filtered[i-1]) return false;
-        }
-        return true;
-    };
+        const deepPing = (root, label) => {
+            if (!root || typeof root !== 'object') return;
+            const scan = (o, depth) => {
+                if (!o || typeof o !== 'object' || depth > 5) return;
+                for (const [k, v] of Object.entries(o)) {
+                    const kl = k.toLowerCase();
+                    if (/pingpong.*depth|ping_pong.*depth/.test(kl) ||
+                        (/pingpong/.test(kl) && /depth/.test(kl))) {
+                        const num = n(v);
+                        if (num != null) {
+                            if (/player/.test(kl)) pp = Math.max(pp, num);
+                            else if (/banker/.test(kl)) bp = Math.max(bp, num);
+                            else if (pp === 0 && bp === 0) {
+                                pp = num;
+                                source = source || label + '-ambiguous';
+                            }
+                        }
+                    } else if (v != null && typeof v === 'object') scan(v, depth + 1);
+                }
+            };
+            scan(root, 0);
+            if ((pp > 0 || bp > 0) && !source) source = label;
+        };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // SCORING ENGINE
-    // ═══════════════════════════════════════════════════════════════════════
+        if (pp === 0 && bp === 0) deepPing(t?.goodroadLive, 'goodroadLive-scan');
+
+        const effective = Math.max(pp, bp);
+        const depthSource = effective > 0 ? (source || 'payload') : 'none';
+
+        return { pp, bp, effective, depthSource };
+    };
 
     const scoreTable = (t) => {
-        if (!t) return { score: 0, eligible: false, reasons: ['no-table'] };
+        if (!t) {
+            return {
+                score: 0,
+                eligible: false,
+                reasons: ['no-table'],
+                breakdown: {},
+                firewall: {},
+                diagnostics: {},
+            };
+        }
 
-        const seq = getSequence(t);
-        const total = t.total || 0;
-        const P = t.P || 0;
-        const B = t.B || 0;
-        const T = t.T || 0;
+        const total = t.total ?? 0;
+        const P = t.P ?? 0;
+        const B = t.B ?? 0;
+        const Tie = t.T ?? 0;
+        const pbGapRatio = total > 0 ? Math.abs(P - B) / total : 1;
+        const tieRatio = total > 0 ? Tie / total : 0;
 
-        const breakdown = {};
+        const firewall = [];
+
+        // --- HARD REJECT ---
+        if (total < Config.MIN_TOTAL) {
+            firewall.push(`ghost: total=${total}<${Config.MIN_TOTAL}`);
+            return mkReject(firewall, { total, P, B, Tie, pbGapRatio, tieRatio }, t);
+        }
+
+        if (tieRatio > Config.MAX_TIE_RATIO + 1e-9) {
+            firewall.push(`tie-storm: ${(tieRatio * 100).toFixed(1)}% (> ${Config.MAX_TIE_RATIO * 100}%)`);
+        }
+
+        if (pbGapRatio > Config.MAX_PB_GAP_RATIO + 1e-9) {
+            firewall.push(`gravity: |P−B|/total=${(pbGapRatio * 100).toFixed(1)}% (> ${Config.MAX_PB_GAP_RATIO * 100}%)`);
+        }
+
+        const bs = t.betstats;
+        let crowd = { playerPct: null, bankerPct: null };
+        if (bs && typeof bs === 'object') {
+            crowd = walkForCrowdPct(bs);
+            const extremes = [];
+            if (crowd.playerPct != null && crowd.playerPct >= Config.MAX_CROWD_PCT + 1e-9)
+                extremes.push(`playerPct=${crowd.playerPct.toFixed(1)}%`);
+            if (crowd.bankerPct != null && crowd.bankerPct >= Config.MAX_CROWD_PCT + 1e-9)
+                extremes.push(`bankerPct=${crowd.bankerPct.toFixed(1)}%`);
+            if (extremes.length) {
+                firewall.push(`crowd: ${extremes.join(', ')} (≥ ${Config.MAX_CROWD_PCT}%)`);
+            }
+        } else if (Config.REQUIRE_BETSTATS_FOR_CROWD) {
+            firewall.push('crowd: no betstats payload');
+        }
+
+        const seq12 = countAlternations(getSequence(t).slice(-12));
+        const depthInfo = extractPingPongDepths(t);
+
+        if (Config.MIN_EFFECTIVE_DEPTH > 0 && depthInfo.effective < Config.MIN_EFFECTIVE_DEPTH) {
+            firewall.push(`chop-too-low: maxDepth=${depthInfo.effective} (< ${Config.MIN_EFFECTIVE_DEPTH})`);
+        }
+
+        if (firewall.length) return mkReject(firewall, { total, P, B, Tie, pbGapRatio, tieRatio }, t, seq12, depthInfo, crowd);
+
         const notes = [];
 
-        // ─────────────────────────────────────────────────────────────────────
-        // HARD PASS
-        // ─────────────────────────────────────────────────────────────────────
-
-        if (total < Config.HARD_MIN_TOTAL) {
-            return { score: 0, eligible: false, reasons: [`too-early: ${total} < ${Config.HARD_MIN_TOTAL}`], breakdown: {} };
+        let chopContribution = depthInfo.effective;
+        let chopFallback = false;
+        if (depthInfo.effective === 0 && seq12 > 0) {
+            chopContribution = seq12 / 11;
+            chopFallback = true;
+            notes.push('depth from last-12 alts (no PP depth yet)');
         }
 
-        const last12 = seq.slice(-12);
-        const altIn12 = countAlternations(last12);
-        if (altIn12 <= Config.HARD_MIN_CHOP_12) {
-            return { score: 0, eligible: false, reasons: [`too-streaky: only ${altIn12}/11 alternations (suspicious)`], breakdown: {} };
-        }
+        const tieQuality = Math.max(0, 25 - tieRatio * 200);
+        const balanceQuality = Math.max(0, 55 - pbGapRatio * 200);
+        const chopQuality = Math.min(40, chopContribution * (chopFallback ? 6 : 8));
+        const historyQuality = Math.min(15, (total / 60) * 15);
 
-        // ─────────────────────────────────────────────────────────────────────
-        // 1. HISTORY DEPTH (0-15 pts)
-        // ─────────────────────────────────────────────────────────────────────
-        if (total >= 60) breakdown.history = 15;
-        else if (total >= 50) breakdown.history = 12;
-        else if (total >= 40) breakdown.history = 8;
-        else breakdown.history = 4;
+        let displayScore =
+            chopQuality +
+            tieQuality +
+            balanceQuality +
+            historyQuality;
 
-        // ─────────────────────────────────────────────────────────────────────
-        // 2. P/B BALANCE (-10 to 40 pts) - CRITICAL FACTOR
-        // ─────────────────────────────────────────────────────────────────────
-        const ratio = Math.abs(P - B) / total;
-        if (ratio <= 0.03) {
-            breakdown.balance = 40; // Near perfect balance
-        } else if (ratio <= 0.06) {
-            breakdown.balance = 36; // Excellent
-        } else if (ratio <= 0.10) {
-            breakdown.balance = 30; // Very good
-        } else if (ratio <= 0.15) {
-            breakdown.balance = 22; // Good
-        } else if (ratio <= 0.20) {
-            breakdown.balance = 12; // Acceptable
-            notes.push('slightly-skewed');
-        } else if (ratio <= 0.28) {
-            breakdown.balance = 4;  // Skewed
-            notes.push('skewed-ratio');
-        } else {
-            breakdown.balance = -10; // Very skewed, heavy penalty
-            notes.push('very-skewed');
-        }
+        displayScore = Math.round(
+            Math.max(
+                Config.DISPLAY_SCORE_ELIGIBLE_MIN,
+                Math.min(Config.DISPLAY_SCORE_ELIGIBLE_MAX, displayScore)
+            )
+        );
 
-        // ─────────────────────────────────────────────────────────────────────
-        // 3. TIE RATIO (-25 to +30 pts) - CRITICAL FACTOR
-        // ─────────────────────────────────────────────────────────────────────
-        const tieRatio = T / total;
-        if (tieRatio < 0.03) breakdown.ties = 30;       // Excellent, very few ties
-        else if (tieRatio < 0.05) breakdown.ties = 25;  // Great
-        else if (tieRatio < 0.07) breakdown.ties = 18;  // Good
-        else if (tieRatio < 0.09) breakdown.ties = 12;  // Acceptable
-        else if (tieRatio < 0.11) breakdown.ties = 6;   // Borderline
-        else if (tieRatio < 0.13) breakdown.ties = 0;   // Neutral
-        else if (tieRatio < 0.16) {
-            breakdown.ties = -12;
-            notes.push(`elevated-ties: ${(tieRatio*100).toFixed(0)}%`);
-        } else {
-            breakdown.ties = -25;  // Heavy penalty for high ties
-            notes.push(`high-ties: ${(tieRatio*100).toFixed(0)}%`);
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // 4. PATTERN QUALITY - Last 20 (0-25 pts)
-        // Prefer balanced mix of short runs, penalize long streaks
-        // ─────────────────────────────────────────────────────────────────────
-        const last20 = seq.slice(-20);
-        const alt20 = countAlternations(last20);
-        const longest = longestStreak(last20);
-        
-        // Ideal: ~9-11 alternations in 20 hands (random)
-        breakdown.patternQuality = 0;
-        if (alt20 >= 12) {
-            breakdown.patternQuality = 20; // Very random
-        } else if (alt20 >= 9) {
-            breakdown.patternQuality = 16; // Good randomness
-        } else if (alt20 >= 7) {
-            breakdown.patternQuality = 10; // Acceptable
-        } else if (alt20 >= 5) {
-            breakdown.patternQuality = 4;  // Low randomness
-        } else {
-            breakdown.patternQuality = -5; // Too streaky
-            notes.push('low-randomness-20');
-        }
-
-        // Penalty for very long streaks (suspicious)
-        if (longest.length >= 6) {
-            breakdown.patternQuality -= 10;
-            notes.push(`suspicious-streak: ${longest.length}${longest.side}`);
-        } else if (longest.length >= 5) {
-            breakdown.patternQuality -= 5;
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // 5. RANDOMNESS SCORE - Last 12 (-15 to +15 pts)
-        // More alternations = more random = better (true 50/50 game)
-        // ─────────────────────────────────────────────────────────────────────
-        // altIn12 already calculated (max possible = 11)
-        // Ideal random: ~5-6 alternations in 12 hands
-        if (altIn12 >= 8) {
-            breakdown.randomness = 15;  // Very random, excellent
-        } else if (altIn12 >= 6) {
-            breakdown.randomness = 12;  // Good randomness
-        } else if (altIn12 >= 5) {
-            breakdown.randomness = 8;   // Acceptable
-        } else if (altIn12 >= 4) {
-            breakdown.randomness = 2;   // Low randomness
-            notes.push('low-randomness');
-        } else {
-            breakdown.randomness = -15; // Too streaky, suspicious
-            notes.push('suspicious-streaks');
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // 6. RECENT TREND - Last 6 (-8 to +10 pts)
-        // Prefer mixed/random patterns, penalize long streaks
-        // ─────────────────────────────────────────────────────────────────────
-        const last6 = seq.slice(-6);
-        const alt6 = countAlternations(last6);
-        if (alt6 >= 4) {
-            breakdown.recent = 10; // Very mixed, random
-        } else if (alt6 >= 3) {
-            breakdown.recent = 6;  // Good mix
-        } else if (alt6 >= 2) {
-            breakdown.recent = 2;  // Some mix
-        } else if (countPattern(last6, 'BBBB') > 0 || countPattern(last6, 'PPPP') > 0) {
-            breakdown.recent = -8; // Long streak, suspicious
-            notes.push('long-streak-in-6');
-        } else {
-            breakdown.recent = 0;
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // 7. CURRENT STREAK (-5 to +5 pts)
-        // Short streaks normal, long streaks suspicious
-        // ─────────────────────────────────────────────────────────────────────
-        const curStreak = currentStreak(seq);
-        if (curStreak.length >= 5) {
-            breakdown.currentStreak = -5; // Very long, suspicious
-        } else if (curStreak.length >= 4) {
-            breakdown.currentStreak = -2; // Getting long
-        } else if (curStreak.length <= 2) {
-            breakdown.currentStreak = 5;  // Normal/short, good
-        } else {
-            breakdown.currentStreak = 2;  // 3 in a row, acceptable
-        }
-
-        // ─────────────────────────────────────────────────────────────────────
-        // 8. LIVE STATE / CAN BET (0-5 pts)
-        // ─────────────────────────────────────────────────────────────────────
-        const live = getLive(t);
-        const isBlockedNow = !!(live?.dealing || live?.shuffling || live?.betsClosingSoon);
-        breakdown.canBet = t.canBet === true && !isBlockedNow ? 5 : 0;
-        if (isBlockedNow) notes.push('bet-window-transition');
-
-        // ─────────────────────────────────────────────────────────────────────
-        // FINAL SCORE
-        // ─────────────────────────────────────────────────────────────────────
-        let totalScore = Object.values(breakdown).reduce((a, b) => a + b, 0);
-        totalScore = Math.max(1, Math.min(100, totalScore));
-
-        const eligible = totalScore >= Config.MIN_ELIGIBLE_SCORE;
+        let canBetBonus = 0;
+        // If stream says bets open, do not penalize for dealing/shuffle flags (PP often overlaps phases)
+        if (t.canBet === true) canBetBonus = 5;
+        displayScore = Math.round(Math.min(100, displayScore + canBetBonus));
 
         return {
-            score: totalScore,
-            eligible,
-            breakdown,
+            score: displayScore,
+            eligible: true,
+            firewall: [],
+            reasons: [],
             notes,
-            reasons: eligible ? [] : notes
+            breakdown: {
+                chop: Math.round(chopQuality),
+                balance: Math.round(balanceQuality),
+                ties: Math.round(tieQuality),
+                history: Math.round(historyQuality),
+                canBet: canBetBonus,
+            },
+            diagnostics: {
+                pbGapRatio,
+                tieRatio,
+                seqAlternations12: seq12,
+                chopFallback,
+                ...depthInfo,
+                crowd,
+            },
         };
+
+        function mkReject(fw, sums, tbl, sq = 0, dpt = {}, cr = {}) {
+            return {
+                score: 0,
+                eligible: false,
+                reasons: [...fw],
+                firewall: [...fw],
+                notes: fw,
+                breakdown: {},
+                diagnostics: {
+                    total: sums.total,
+                    P: sums.P,
+                    B: sums.B,
+                    T: sums.Tie,
+                    pbGapRatio: sums.pbGapRatio,
+                    tieRatio: sums.tieRatio,
+                    seqAlternations12: sq,
+                    ...(dpt && typeof dpt === 'object' ? dpt : {}),
+                    crowd: cr,
+                    name: tbl.name,
+                    gameId: tbl.gameId,
+                },
+            };
+        }
     };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // SELECTION FUNCTIONS
-    // ═══════════════════════════════════════════════════════════════════════
+    const comparator = (a, b) => {
+        const ae = a.diagnostics?.effective ?? Math.max(a.diagnostics?.pp ?? 0, a.diagnostics?.bp ?? 0);
+        const be = b.diagnostics?.effective ?? Math.max(b.diagnostics?.pp ?? 0, b.diagnostics?.bp ?? 0);
+        if (be !== ae) return be - ae;
+
+        const ar = Math.abs(a.P - a.B) / (a.total || 1);
+        const br = Math.abs(b.P - b.B) / (b.total || 1);
+        if (ar !== br) return ar - br;
+
+        const at = (a.T || 0) / (a.total || 1);
+        const bt = (b.T || 0) / (b.total || 1);
+        if (at !== bt) return at - bt;
+
+        return (b.total || 0) - (a.total || 0);
+    };
 
     const getAllScored = () => {
         if (!window.pp) return [];
@@ -312,35 +325,46 @@
             const seq = getSequence(t);
             const live = getLive(t);
             const total = t.total || 0;
-            const ratio = total > 0 ? Math.abs((t.P||0) - (t.B||0)) / total : 0;
-            const tieRatio = total > 0 ? (t.T||0) / total : 0;
+            const ratio = total > 0 ? Math.abs((t.P || 0) - (t.B || 0)) / total : 0;
+            const tieRatio = total > 0 ? (t.T || 0) / total : 0;
+            const diagnostics = result.diagnostics || {};
+            const currentStreak = (() => {
+                const fx = seq.filter(x => x !== 'T');
+                if (!fx.length) return { side: null, length: 0 };
+                const last = fx[fx.length - 1];
+                let len = 0;
+                for (let i = fx.length - 1; i >= 0; i--) {
+                    if (fx[i] !== last) break;
+                    len++;
+                }
+                return { side: last, length: len };
+            })();
+            const streak = currentStreak;
             return {
                 ...t,
                 ...result,
-                ratio,  // Keep as number for calculations
-                ratioStr: ratio.toFixed(3),  // String for display
-                tieRatio,  // Keep as number
-                tieRatioStr: (tieRatio * 100).toFixed(1) + '%',  // String for display
+                ratio,
+                ratioStr: ratio.toFixed(3),
+                tieRatio,
+                tieRatioStr: `${(tieRatio * 100).toFixed(1)}%`,
                 live,
-                streak: currentStreak(seq),
-                longest: longestStreak(seq),
+                streak,
+                last12: seq.slice(-12).join(''),
                 altIn12: countAlternations(seq.slice(-12)),
-                last12: seq.slice(-12).join('')
+                pingPong: {
+                    pp: diagnostics.pp ?? null,
+                    bp: diagnostics.bp ?? null,
+                    effective: diagnostics.effective ?? 0,
+                    source: diagnostics.depthSource,
+                },
             };
-        });
+        }).sort(comparator);
     };
 
-    const getEligible = () => {
-        return getAllScored()
-            .filter(t => t.eligible)
-            .sort((a, b) => b.score - a.score);
-    };
+    const getEligible = () => getAllScored().filter(x => x.eligible);
 
-    const getAll = () => {
-        return getAllScored()
-            .filter(t => t.score > 0)
-            .sort((a, b) => b.score - a.score);
-    };
+    /** Everything sorted (eligible + rejected — rejected score 0) */
+    const getRankedAll = () => getAllScored();
 
     const getBest = () => getEligible()[0] || null;
 
@@ -350,32 +374,24 @@
         return { table, score: table.score };
     };
 
-    // Get top N tables
     const topN = (n = 5) => getEligible().slice(0, n);
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // DISPLAY
-    // ═══════════════════════════════════════════════════════════════════════
-
-    const scoreLabel = (s) => {
-        if (s === 0) return 'REJECT';
-        if (s < 35) return 'POOR';
-        if (s < 50) return 'FAIR';
-        if (s < 65) return 'GOOD';
+    const scoreLabel = (s, eligible) => {
+        if (!eligible) return 'REJECT';
+        if (s < 58) return 'FAIR';
+        if (s < 68) return 'GOOD';
         if (s < 80) return 'GREAT';
         return 'IDEAL';
     };
 
-    const scoreIcon = (s) => {
-        if (s === 0) return '🔴';
-        if (s < 35) return '🟠';
-        if (s < 50) return '🟡';
-        if (s < 65) return '🟢';
-        return '💚';
+    const scoreIcon = (s, eligible) => {
+        if (!eligible) return '🔴';
+        if (s < 58) return '🟡';
+        if (s < 68) return '🟢';
+        if (s < 80) return '💚';
+        return '⭐️';
     };
 
-    // Compact live state flags:
-    // D=dealing, S=shuffling, C=closing soon, V=voip active, K=card stream present
     const liveFlags = (live) => {
         if (!live) return '-----';
         return [
@@ -383,114 +399,96 @@
             live.shuffling?.active ? 'S' : '-',
             live.betsClosingSoon ? 'C' : '-',
             live.voip ? 'V' : '-',
-            (live.card || live.cardInc) ? 'K' : '-'
+            (live.card || live.cardInc) ? 'K' : '-',
         ].join('');
     };
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // API
-    // ═══════════════════════════════════════════════════════════════════════
+    /** Console display only — raw `name` from API may use underscores */
+    const displayTableName = (s) => String(s ?? '').replace(/_/g, ' ');
 
     window.pick = {
         config: Config,
-        
-        // Scoring
+
         score: scoreTable,
         scoreAll: getAllScored,
-        
-        // Selection
+
         eligible: getEligible,
-        all: getAll,
+        all: getRankedAll,
+        ranked: getRankedAll,
         best: getBest,
         pick,
         top: topN,
 
-        // Analysis helpers
-        streak: (t) => currentStreak(getSequence(t)),
-        longest: (t) => longestStreak(getSequence(t)),
-        chop: (t) => countAlternations(getSequence(t).slice(-12)),
+        chop: (t) => extractPingPongDepths(t).effective || countAlternations(getSequence(t).slice(-12)),
 
-        // Status - show all tables ranked
         status: () => {
-            const all = getAll();
+            const all = getRankedAll();
             const eligible = all.filter(t => t.eligible);
+            const line = () => `${'═'.repeat(74)}`;
 
             console.log(`
-╔══════════════════════════════════════════════════════════════════════╗
-║           TABLE PICKER v3.2 (${eligible.length} eligible / ${all.length} scored)                  ║
-╠══════════════════════════════════════════════════════════════════════╣`);
+${line()}
+║ TABLE PICKER v4 (${eligible.length} eligible / ${all.length} total) ${' '.repeat(Math.max(0, 74 - 44))} ║
+${line()}
+  Sort: PingPong depth (PP) ↑  →  balance |P−B|/total ↑  →  tie % ↑`);
 
-            all.slice(0, 20).forEach((t, i) => {
-                const icon = scoreIcon(t.score);
-                const blocked = !!(t.live?.dealing || t.live?.shuffling || t.live?.betsClosingSoon);
-                const bet = t.canBet && !blocked ? '✓' : ' ';
-                const name = (t.name || '?').slice(0, 18).padEnd(18);
-                const label = scoreLabel(t.score).padEnd(6);
-                const str = t.streak.length > 1 ? `${t.streak.length}${t.streak.side}` : '--';
-                const lf = liveFlags(t.live);
-                console.log(
-                    `║ ${icon}${bet} ${String(t.score).padStart(2)} ${label} ${name} ` +
-                    `P:${String(t.P||0).padStart(2)} B:${String(t.B||0).padStart(2)} ` +
-                    `a:${t.altIn12} ${str.padEnd(3)} ${lf} ${t.last12.slice(-10)}`
-                );
+            eligible.slice(0, 22).forEach((t) => {
+                const icon = scoreIcon(t.score, true);
+                const bet = t.canBet ? '✓' : ' ';
+                const name = displayTableName(t.name || '?').slice(0, 16).padEnd(16);
+                const chop = `${t.pingPong.effective}`.padStart(3);
+                const gap = `${(Math.abs((t.P || 0) - (t.B || 0)) / (t.total || 1) * 100).toFixed(0)}%`;
+                console.log(`${icon}${bet} s:${String(t.score).padStart(3)} chop:${chop} gap:${gap.padStart(4)} ` +
+                    `T%:${parseFloat(String(t.tieRatioStr).replace('%', '')).toFixed(0).padStart(2)}% ` +
+                    `${name} #${t.uid} ${liveFlags(t.live)}`);
             });
-
-            console.log('╠══════════════════════════════════════════════════════════════════════╣');
-            console.log(`║  Top pick: ${getBest()?.name || 'None'} (score: ${getBest()?.score || 0})`.padEnd(71) + '║');
-            console.log('╚══════════════════════════════════════════════════════════════════════╝');
+            const bestPick = getBest();
+            console.log(`${line()}
+  Best: ${bestPick ? displayTableName(bestPick.name) : '(none)'} · pick.best() · pick.summary()
+${line()}
+`);
         },
 
-        // Detailed check for single table
         check: (uidOrId) => {
             const t = window.pp?.get(uidOrId);
-            if (!t) { console.log('Table not found'); return null; }
-
-            const result = scoreTable(t);
-            const seq = getSequence(t);
-            const cur = currentStreak(seq);
-            const long = longestStreak(seq);
-            const alt12 = countAlternations(seq.slice(-12));
-
-            console.log(`
-╔══════════════════════════════════════════════════════════════════════╗
-║  ${(t.name || t.gameId || '?').slice(0, 50).padEnd(50)}                  ║
-╠══════════════════════════════════════════════════════════════════════╣
-║  SCORE: ${String(result.score).padStart(2)} / 100  ${scoreIcon(result.score)} ${scoreLabel(result.score).padEnd(6)}   Eligible: ${result.eligible ? 'YES ✓' : 'NO ✗'}             ║
-╠══════════════════════════════════════════════════════════════════════╣
-║  P: ${String(t.P||0).padStart(2)}  B: ${String(t.B||0).padStart(2)}  T: ${String(t.T||0).padStart(2)}  Total: ${String(t.total||0).padStart(3)}                               ║
-║  Ratio: ${(Math.abs((t.P||0)-(t.B||0))/(t.total||1)).toFixed(3)}   Ties: ${((t.T||0)/(t.total||1)*100).toFixed(1)}%                                   ║
-║  Alt in 12: ${alt12}   Current streak: ${cur.length}${cur.side||'-'}   Longest: ${long.length}${long.side||'-'}             ║
-║  Last 12: ${seq.slice(-12).join('').padEnd(12)}                                          ║
-╠══════════════════════════════════════════════════════════════════════╣
-║  BREAKDOWN:                                                          ║`);
-
-            Object.entries(result.breakdown).forEach(([k, v]) => {
-                const sign = v >= 0 ? '+' : '';
-                console.log(`║    ${k.padEnd(14)} ${sign}${String(v).padStart(3)}`.padEnd(71) + '║');
-            });
-
-            if (result.notes.length > 0) {
-                console.log('╠══════════════════════════════════════════════════════════════════════╣');
-                result.notes.forEach(n => {
-                    console.log(`║  ⚠ ${n}`.padEnd(71) + '║');
-                });
+            if (!t) {
+                console.log('Table not found');
+                return null;
             }
 
-            console.log('╚══════════════════════════════════════════════════════════════════════╝');
-            return result;
+            const r = scoreTable(t);
+            const d = r.diagnostics || {};
+            console.log(`
+┌────────────────────────────────────────────────────────────
+│ ${displayTableName(t.name || t.gameId).slice(0, 54)}
+│ id ${t.uid} · game ${(t.gameId || '').slice(0, 32)}
+├────────────────────────────────────────────────────────────
+│ PASS firewall: ${r.eligible ? 'YES ✓' : 'NO ✗'}   display score: ${r.score}
+└────────────────────────────────────────────────────────────`);
+
+            console.log(`  Shoe   P:${t.P} B:${t.B} T:${t.T} total:${t.total}`);
+            console.log(`  |P−B|/total: ${((d.pbGapRatio ?? 0) * 100).toFixed(2)}%  (reject if > ${Config.MAX_PB_GAP_RATIO * 100}%)`);
+            console.log(`  ties/total:   ${((d.tieRatio ?? 0) * 100).toFixed(2)}%  (reject if > ${Config.MAX_TIE_RATIO * 100}%)`);
+            console.log(`  Chop depth   PP:${d.pp ?? '—'}  BP:${d.bp ?? '—'}  max:${d.effective ?? 0}  [${d.depthSource}]`);
+            const cr = d.crowd || {};
+            console.log(`  Crowd pct    Player:${cr.playerPct != null ? `${cr.playerPct.toFixed(1)}%` : '—'}  Banker:${cr.bankerPct != null ? `${cr.bankerPct.toFixed(1)}%` : '—'}  (reject ≥${Config.MAX_CROWD_PCT}% on loaded side)`);
+            console.log(`  Alt last-12: ${countAlternations(getSequence(t).slice(-12))} (fallback when depths missing)`);
+
+            if (r.firewall?.length) {
+                console.log('  REASONS:', r.firewall.join(' · '));
+            }
+            return r;
         },
 
-        // Quick summary
         summary: () => {
-            const top = topN(5);
-            console.log('\n═══ TOP 5 MARTINGALE PICKS ═══\n');
-            top.forEach((t, i) => {
-                const cur = t.streak;
-                const lf = liveFlags(t.live);
+            const rows = topN(5);
+            console.log('\n═══ TOP 5 (eligible) ═══\n');
+            rows.forEach((t, i) => {
+                const chop = `${t.pingPong.effective}`.padStart(2);
+                const gap = `${(Math.abs((t.P || 0) - (t.B || 0)) / (t.total || 1) * 100).toFixed(0)}%`;
                 console.log(
-                    `${i+1}. ${scoreIcon(t.score)} ${t.name} | Score: ${t.score} | ` +
-                    `P:${t.P} B:${t.B} | Streak: ${cur.length}${cur.side||''} | ` +
-                    `Live:${lf} | Last: ${t.last12.slice(-8)}`
+                    `${i + 1}. ${scoreIcon(t.score, true)} ${displayTableName(t.name || '').slice(0, 26).padEnd(26)} chop:${chop} gap:${gap} ` +
+                        `tie:${parseFloat(String(t.tieRatioStr).replace('%', '')).toFixed(0)}% uid:${t.uid}`
                 );
             });
             console.log('');
@@ -500,44 +498,25 @@
 
         help: () => {
             console.log(`
-╔══════════════════════════════════════════════════════════════════════╗
-║                    TABLE PICKER v3.2 (Randomness)                    ║
-╠══════════════════════════════════════════════════════════════════════╣
-║                                                                      ║
-║  SCORING (0-100, need 35+ to be eligible)                            ║
-║  ────────────────────────────────────────                            ║
-║  history       0-15    More rounds = more reliable                   ║
-║  balance    -10-40    ★★ P/B equality (≤0.06 = 36+)                  ║
-║  ties       -25-30    ★★ Low ties (<5% = 25+)                        ║
-║  patternQuality-15-20  ★ Randomness in last 20                       ║
-║  randomness  -15-15    ★ More alternations = better                  ║
-║  recent       -8-10    Last 6 randomness                             ║
-║  currentStreak -5-5    Short streaks good, long bad                  ║
-║  canBet        0-5     Betting open bonus                            ║
-║                                                                      ║
-║  HARD PASS (score = 0)                                               ║
-║  • total < 30                                                        ║
-║  • ≤3 alternations in last 12 (too streaky, suspicious)              ║
-║                                                                      ║
-║  COMMANDS                                                            ║
-║  ────────                                                            ║
-║  pick.status()      All tables ranked by score                       ║
-║  pick.summary()     Quick top 5 list                                 ║
-║  pick.check(1)      Detailed breakdown for table                     ║
-║  pick.live(1)       Show grouped live stream from pp.live()          ║
-║  Live flags in status/summary: D=dealing S=shuffle C=closing V=voip K=card ║
-║  pick.top(5)        Get top N eligible tables                        ║
-║  pick.best()        Get single best table                            ║
-║  pick.eligible()    All eligible tables                              ║
-║                                                                      ║
-╚══════════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════════╗
+║  pick v4 — firewall + PingPong depth (goodroadLive / lobby map)          ║
+╠════════════════════════════════════════════════════════════════════╣
+║  HARD REJECT                                                          ║
+║  • total < ${Config.MIN_TOTAL}                                                         ║
+║  • T/total > ${Config.MAX_TIE_RATIO * 100}% (tie storm)                                  ║
+║  • |P−B|/total > ${Config.MAX_PB_GAP_RATIO * 100}% (gravity)                              ║
+║  • betstats: playerPct or bankerPct ≥ ${Config.MAX_CROWD_PCT}% (crowd herd)                       ║
+║                                                                       ║
+║  SORT (eligible rows)                                                  ║
+║  • max(playerPingPongDepth, bankerPingPongDepth) ↑ first              ║
+║  • then |P−B|/total lower better                                      ║
+║  • fallback chop signal: alternations in last 12                      ║
+║                                                                       ║
+║  COMMANDS pick.status · pick.summary · pick.check(uid) · pick.best() ║
+╚════════════════════════════════════════════════════════════════════╝
 `);
-        }
+        },
     };
-
-    // ═══════════════════════════════════════════════════════════════════════
-    // INIT
-    // ═══════════════════════════════════════════════════════════════════════
 
     const waitForPP = () => new Promise(resolve => {
         const check = () => window.pp ? resolve() : setTimeout(check, 100);
@@ -545,8 +524,8 @@
     });
 
     waitForPP().then(() => {
-        console.log('[Pick] v3.2 | Randomness + live-state awareness');
-        console.log('[Pick] Commands: pick.status() pick.summary() pick.check(uid) pick.live(uid)');
+        console.log('[Pick] v4.0 | Firewall + PP ping-pong depth + crowd (betstats)');
+        console.log('[Pick] pick.help() · pick.status()');
     });
 
 })();
