@@ -21,6 +21,7 @@ export DISPLAY=:1
 export PATH="/allah/freqtrade/.venv/bin:$PATH"
 export PATH="$HOME/development/flutter/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
+export PATH="$PATH:/usr/local/go/bin"
 
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 xauth merge /home/vncuser/.Xauthority 2>/dev/null
@@ -37,7 +38,7 @@ HISTCONTROL=ignoreboth:erasedups
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Root
+# Root (Linux-specific absolute mounts)
 # ─────────────────────────────────────────────────────────────────────────────
 alias al='cd /allah'
 alias bl='cd /allah/blue'
@@ -45,14 +46,14 @@ alias fq='cd /allah/freqtrade'
 alias me='cd /media'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /allah/blue/* (top level)
+# blue/* (top level)
 # ─────────────────────────────────────────────────────────────────────────────
 alias ft='cd /allah/blue/ft'
 alias li='cd /allah/blue/linux'
 alias we='cd /allah/blue/web'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /allah/blue/ft/*
+# blue/ft/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd /allah/blue/ft/hummingbot'
 alias ml='cd /allah/blue/ft/ml'
@@ -62,14 +63,14 @@ alias ftsc='cd /allah/blue/ft/scripts'
 alias to='cd /allah/blue/ft/tools'
 alias ud='cd /allah/blue/ft/user_data'
 
-# /allah/blue/ft/research/*
+# blue/ft/research/*
 alias exn='cd /allah/blue/ft/research/execution'
 alias lag='cd /allah/blue/ft/research/lead_lag'
 alias mm='cd /allah/blue/ft/research/market_making'
 alias mr='cd /allah/blue/ft/research/mean_reversion'
 alias ofi='cd /allah/blue/ft/research/ofi'
 
-# /allah/blue/ft/tools/*
+# blue/ft/tools/*
 alias bi='cd /allah/blue/ft/tools/binance'
 alias cv='cd /allah/blue/ft/tools/converters'
 alias hi='cd /allah/blue/ft/tools/historical'
@@ -77,7 +78,7 @@ alias re='cd /allah/blue/ft/tools/realtime'
 alias ccxt='cd /allah/blue/ft/tools/realtime/ccxt'
 alias rtv='cd /allah/blue/ft/tools/realtime/tradingview'
 
-# /allah/blue/ft/user_data/*
+# blue/ft/user_data/*
 alias udcf='cd /allah/blue/ft/user_data/config'
 alias hr='cd /allah/blue/ft/user_data/hyperopt_results'
 alias hy='cd /allah/blue/ft/user_data/hyperopts'
@@ -85,21 +86,21 @@ alias nb='cd /allah/blue/ft/user_data/notebooks'
 alias st='cd /allah/blue/ft/user_data/strategies'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /allah/blue/linux/*
+# blue/linux/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias ext='cd /allah/blue/linux/extra'
+alias iph='cd /allah/blue/linux/iphone'
 alias vps='cd /allah/blue/linux/vps'
 
-# /allah/blue/linux/extra/*
+# blue/linux/extra/*
 alias excf='cd /allah/blue/linux/extra/config'
 alias cu='cd /allah/blue/linux/extra/cursor'
-alias iph='cd /allah/blue/linux/iphone'
 alias ne='cd /allah/blue/linux/extra/network'
 alias nt='cd /allah/blue/linux/extra/notes'
 alias exsc='cd /allah/blue/linux/extra/scripts'
 alias shl='cd /allah/blue/linux/extra/shell'
 
-# /allah/blue/linux/vps/*
+# blue/linux/vps/*
 alias ali='cd /allah/blue/linux/vps/ali'
 alias aw='cd /allah/blue/linux/vps/aws'
 alias az='cd /allah/blue/linux/vps/azure'
@@ -109,60 +110,60 @@ alias lno='cd /allah/blue/linux/vps/linode'
 alias vpse='cd /allah/blue/linux/vps/setup'
 alias vu='cd /allah/blue/linux/vps/vultr'
 
-# /allah/blue/linux/vps/ali/*
+# blue/linux/vps/ali/*
 alias alicf='cd /allah/blue/linux/vps/ali/config'
 alias ecs='cd /allah/blue/linux/vps/ali/ecs'
 alias alise='cd /allah/blue/linux/vps/ali/init'
 
-# /allah/blue/linux/vps/linode/*
+# blue/linux/vps/linode/*
 alias lm='cd /allah/blue/linux/vps/linode/manager'
 alias lnsc='cd /allah/blue/linux/vps/linode/scripts'
 
-# /allah/blue/linux/vps/setup/*
+# blue/linux/vps/setup/*
 alias ssr='cd /allah/blue/linux/vps/setup/ssr-deploy'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# /allah/blue/web/*
+# blue/web/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias ap='cd /allah/blue/web/apps'
 alias au='cd /allah/blue/web/auto'
 alias mo='cd /allah/blue/web/monitors'
 alias px='cd /allah/blue/web/proxy'
 
-# /allah/blue/web/apps/*
+# blue/web/apps/*
 alias ac='cd /allah/blue/web/apps/alt'
+alias cf='cd /allah/blue/web/apps/cloudflare'
 alias sk='cd /allah/blue/web/apps/tampermonkey/stake'
 alias tm='cd /allah/blue/web/apps/tampermonkey'
 alias ti='cd /allah/blue/web/apps/tinder'
 
-# /allah/blue/web/apps/tampermonkey/stake/*
+# blue/web/apps/tampermonkey/stake/*
 alias ba='cd /allah/blue/web/apps/tampermonkey/stake/baccarat'
 alias bj='cd /allah/blue/web/apps/tampermonkey/stake/blackjack'
 
-# /allah/blue/web/apps/tampermonkey/*
+# blue/web/apps/tampermonkey/*
 alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'
 
-# /allah/blue/web/apps/tinder/*
+# blue/web/apps/tinder/*
 alias tida='cd /allah/blue/web/apps/tinder/data'
 alias tisc='cd /allah/blue/web/apps/tinder/scripts'
 
-# /allah/blue/web/auto/*
+# blue/web/auto/*
 alias dom='cd /allah/blue/web/auto/domain'
 alias drv='cd /allah/blue/web/auto/drivers'
 alias hs='cd /allah/blue/web/auto/herosms'
 alias oc='cd /allah/blue/web/auto/octo'
-alias cf='cd /allah/blue/web/apps/cloudflare'
 alias wo='cd /allah/blue/web/auto/worker'
 
-# /allah/blue/web/auto/octo/*
+# blue/web/auto/octo/*
 alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'
 alias ossl='cd /allah/blue/web/auto/octo/reverse_engineering/ssl'
 
-# /allah/blue/web/monitors/*
+# blue/web/monitors/*
 alias hu='cd /allah/blue/web/monitors/huaxitong'
 alias hx='cd /allah/blue/web/monitors/hxkq'
 
-# /allah/blue/web/proxy/*
+# blue/web/proxy/*
 alias de='cd /allah/blue/web/proxy/decodo'
 alias ipr='cd /allah/blue/web/proxy/iproyal'
 alias ra='cd /allah/blue/web/proxy/rayobyte'
@@ -183,7 +184,6 @@ alias gs='git status'
 # Docker Compose v2 compatibility
 alias docker-compose='docker compose'
 
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilities
 # ─────────────────────────────────────────────────────────────────────────────
@@ -195,4 +195,3 @@ alias lsh='ls -la | head'
 alias myip='curl -s http://ipinfo.io/ip'
 alias note='cursor /allah/blue/ft/notes'
 alias rc='cursor /allah/blue/linux/extra/shell/bashrc'
-export PATH=$PATH:/usr/local/go/bin

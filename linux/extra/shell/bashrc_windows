@@ -1,38 +1,49 @@
-# === WINDOWS GIT BASH CONFIGURATION ===
-# Adapted from Linux bashrc for Git Bash on Windows
-# To use: Add to your ~/.bashrc: source "$HOME/blue/linux/extra/shell/bashrc_windows"
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                      BASHRC CONFIG (Windows Git Bash)                      ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# Add to your ~/.bashrc: source "$HOME/blue/linux/extra/shell/bashrc_windows"
 
-# === BASE PATH ===
+# ─────────────────────────────────────────────────────────────────────────────
+# BASE PATH
+# ─────────────────────────────────────────────────────────────────────────────
 BLUE_DIR="$HOME/blue"
 
-# === PROMPT ===
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMPT
+# ─────────────────────────────────────────────────────────────────────────────
 if [ -n "$CURSOR_AGENT" ]; then
-  PS1='$ '
+    PS1='$ '
 else
-  PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] $ "
+    PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] $ "
 fi
 
-# === SHELL ===
+# ─────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT
+# ─────────────────────────────────────────────────────────────────────────────
 export EDITOR='cursor'
-HISTSIZE=10000
-HISTFILESIZE=20000
-HISTCONTROL=ignoreboth:erasedups
 
-# === PROXY ===
+if [ -d "$HOME/development/flutter/bin" ]; then
+    export PATH="$HOME/development/flutter/bin:$PATH"
+fi
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROXY
+# ─────────────────────────────────────────────────────────────────────────────
 export HTTP_PROXY=http://127.0.0.1:7890
 export HTTPS_PROXY=http://127.0.0.1:7890
 export http_proxy=http://127.0.0.1:7890
 export https_proxy=http://127.0.0.1:7890
 export ALL_PROXY=http://127.0.0.1:7890
 
-# === ENV ===
-# Add Flutter to PATH if installed
-if [ -d "$HOME/development/flutter/bin" ]; then
-  export PATH="$HOME/development/flutter/bin:$PATH"
-fi
-if [ -d "$HOME/.local/bin" ]; then
-  export PATH="$HOME/.local/bin:$PATH"
-fi
+# ─────────────────────────────────────────────────────────────────────────────
+# HISTORY
+# ─────────────────────────────────────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # DIRECTORY ALIASES
@@ -44,14 +55,14 @@ fi
 alias bl='cd "$BLUE_DIR"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# $BLUE_DIR/* (top level)
+# blue/* (top level)
 # ─────────────────────────────────────────────────────────────────────────────
 alias ft='cd "$BLUE_DIR/ft"'
 alias li='cd "$BLUE_DIR/linux"'
 alias we='cd "$BLUE_DIR/web"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# $BLUE_DIR/ft/*
+# blue/ft/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd "$BLUE_DIR/ft/hummingbot"'
 alias ml='cd "$BLUE_DIR/ft/ml"'
@@ -61,14 +72,14 @@ alias ftsc='cd "$BLUE_DIR/ft/scripts"'
 alias to='cd "$BLUE_DIR/ft/tools"'
 alias ud='cd "$BLUE_DIR/ft/user_data"'
 
-# $BLUE_DIR/ft/research/*
+# blue/ft/research/*
 alias exn='cd "$BLUE_DIR/ft/research/execution"'
 alias lag='cd "$BLUE_DIR/ft/research/lead_lag"'
 alias mm='cd "$BLUE_DIR/ft/research/market_making"'
 alias mr='cd "$BLUE_DIR/ft/research/mean_reversion"'
 alias ofi='cd "$BLUE_DIR/ft/research/ofi"'
 
-# $BLUE_DIR/ft/tools/*
+# blue/ft/tools/*
 alias bi='cd "$BLUE_DIR/ft/tools/binance"'
 alias cv='cd "$BLUE_DIR/ft/tools/converters"'
 alias hi='cd "$BLUE_DIR/ft/tools/historical"'
@@ -76,29 +87,29 @@ alias re='cd "$BLUE_DIR/ft/tools/realtime"'
 alias ccxt='cd "$BLUE_DIR/ft/tools/realtime/ccxt"'
 alias rtv='cd "$BLUE_DIR/ft/tools/realtime/tradingview"'
 
-# $BLUE_DIR/ft/user_data/*
-alias cf='cd "$BLUE_DIR/ft/user_data/config"'
+# blue/ft/user_data/*
+alias udcf='cd "$BLUE_DIR/ft/user_data/config"'
 alias hr='cd "$BLUE_DIR/ft/user_data/hyperopt_results"'
 alias hy='cd "$BLUE_DIR/ft/user_data/hyperopts"'
 alias nb='cd "$BLUE_DIR/ft/user_data/notebooks"'
 alias st='cd "$BLUE_DIR/ft/user_data/strategies"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# $BLUE_DIR/linux/*
+# blue/linux/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias ext='cd "$BLUE_DIR/linux/extra"'
-alias vp='cd "$BLUE_DIR/linux/vps"'
+alias iph='cd "$BLUE_DIR/linux/iphone"'
+alias vps='cd "$BLUE_DIR/linux/vps"'
 
-# $BLUE_DIR/linux/extra/*
+# blue/linux/extra/*
 alias excf='cd "$BLUE_DIR/linux/extra/config"'
 alias cu='cd "$BLUE_DIR/linux/extra/cursor"'
-alias iph='cd "$BLUE_DIR/linux/extra/iphone"'
 alias ne='cd "$BLUE_DIR/linux/extra/network"'
 alias nt='cd "$BLUE_DIR/linux/extra/notes"'
 alias exsc='cd "$BLUE_DIR/linux/extra/scripts"'
 alias shl='cd "$BLUE_DIR/linux/extra/shell"'
 
-# $BLUE_DIR/linux/vps/*
+# blue/linux/vps/*
 alias ali='cd "$BLUE_DIR/linux/vps/ali"'
 alias aw='cd "$BLUE_DIR/linux/vps/aws"'
 alias az='cd "$BLUE_DIR/linux/vps/azure"'
@@ -108,59 +119,60 @@ alias lno='cd "$BLUE_DIR/linux/vps/linode"'
 alias vpse='cd "$BLUE_DIR/linux/vps/setup"'
 alias vu='cd "$BLUE_DIR/linux/vps/vultr"'
 
-# $BLUE_DIR/linux/vps/ali/*
+# blue/linux/vps/ali/*
 alias alicf='cd "$BLUE_DIR/linux/vps/ali/config"'
-alias ec='cd "$BLUE_DIR/linux/vps/ali/ecs"'
-alias alise='cd "$BLUE_DIR/linux/vps/ali/setup"'
+alias ecs='cd "$BLUE_DIR/linux/vps/ali/ecs"'
+alias alise='cd "$BLUE_DIR/linux/vps/ali/init"'
 
-# $BLUE_DIR/linux/vps/linode/*
+# blue/linux/vps/linode/*
 alias lm='cd "$BLUE_DIR/linux/vps/linode/manager"'
 alias lnsc='cd "$BLUE_DIR/linux/vps/linode/scripts"'
 
-# $BLUE_DIR/linux/vps/setup/*
+# blue/linux/vps/setup/*
 alias ssr='cd "$BLUE_DIR/linux/vps/setup/ssr-deploy"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# $BLUE_DIR/web/*
+# blue/web/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias ap='cd "$BLUE_DIR/web/apps"'
 alias au='cd "$BLUE_DIR/web/auto"'
 alias mo='cd "$BLUE_DIR/web/monitors"'
 alias px='cd "$BLUE_DIR/web/proxy"'
 
-# $BLUE_DIR/web/apps/*
+# blue/web/apps/*
 alias ac='cd "$BLUE_DIR/web/apps/alt"'
-alias sk='cd "$BLUE_DIR/web/apps/stake"'
+alias cf='cd "$BLUE_DIR/web/apps/cloudflare"'
+alias sk='cd "$BLUE_DIR/web/apps/tampermonkey/stake"'
 alias tm='cd "$BLUE_DIR/web/apps/tampermonkey"'
 alias ti='cd "$BLUE_DIR/web/apps/tinder"'
 
-# $BLUE_DIR/web/apps/stake/*
-alias ba='cd "$BLUE_DIR/web/apps/stake/baccarat"'
-alias bj='cd "$BLUE_DIR/web/apps/stake/blackjack"'
+# blue/web/apps/tampermonkey/stake/*
+alias ba='cd "$BLUE_DIR/web/apps/tampermonkey/stake/baccarat"'
+alias bj='cd "$BLUE_DIR/web/apps/tampermonkey/stake/blackjack"'
 
-# $BLUE_DIR/web/apps/tampermonkey/*
+# blue/web/apps/tampermonkey/*
 alias tmba='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'
 
-# $BLUE_DIR/web/apps/tinder/*
+# blue/web/apps/tinder/*
 alias tida='cd "$BLUE_DIR/web/apps/tinder/data"'
 alias tisc='cd "$BLUE_DIR/web/apps/tinder/scripts"'
 
-# $BLUE_DIR/web/auto/*
+# blue/web/auto/*
 alias dom='cd "$BLUE_DIR/web/auto/domain"'
 alias drv='cd "$BLUE_DIR/web/auto/drivers"'
 alias hs='cd "$BLUE_DIR/web/auto/herosms"'
 alias oc='cd "$BLUE_DIR/web/auto/octo"'
 alias wo='cd "$BLUE_DIR/web/auto/worker"'
 
-# $BLUE_DIR/web/auto/octo/*
+# blue/web/auto/octo/*
 alias hid='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/hid"'
 alias ossl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"'
 
-# $BLUE_DIR/web/monitors/*
+# blue/web/monitors/*
 alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'
 alias hx='cd "$BLUE_DIR/web/monitors/hxkq"'
 
-# $BLUE_DIR/web/proxy/*
+# blue/web/proxy/*
 alias de='cd "$BLUE_DIR/web/proxy/decodo"'
 alias ipr='cd "$BLUE_DIR/web/proxy/iproyal"'
 alias ra='cd "$BLUE_DIR/web/proxy/rayobyte"'
@@ -177,6 +189,9 @@ alias gc='git commit -m'
 alias gl='git pull'
 alias gp='git push'
 alias gs='git status'
+
+# Docker Compose v2 compatibility
+alias docker-compose='docker compose'
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Utilities
@@ -202,4 +217,3 @@ alias clash='cd "$HOME/.config/clash/profiles"'
 alias azde='python "$BLUE_DIR/linux/vps/azure/cli.py" deallocate'
 alias azstart='python "$BLUE_DIR/linux/vps/azure/cli.py" start'
 alias azstatus='python "$BLUE_DIR/linux/vps/azure/cli.py" status'
-

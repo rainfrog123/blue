@@ -1,4 +1,6 @@
+# ─────────────────────────────────────────────────────────────────────────────
 # Sensitive credentials - never commit
+# ─────────────────────────────────────────────────────────────────────────────
 **/cred.json
 **/.env
 **/auth.json
@@ -6,49 +8,56 @@
 **/id_ed25519
 **/*.pem
 
-# Tinder HAR/data files with session tokens
-web/automation/tinder/data/*.json
+# Tinder data files with session tokens
+web/apps/tinder/data/*.json
 
-# Freqtrade backtest results
+# ─────────────────────────────────────────────────────────────────────────────
+# Freqtrade
+# ─────────────────────────────────────────────────────────────────────────────
 backtest-result*
 *result.json
 last_result.json
+ft/user_data/backtest_results/
+ft/user_data/logs/
+ft/user_data/plot/
+ft/user_data/ml_datasets/
 
-# ML datasets
+# ─────────────────────────────────────────────────────────────────────────────
+# ML datasets / models (large binaries)
+# ─────────────────────────────────────────────────────────────────────────────
 *.feather
 *.npy
-# Ignore everything in freq/project/ml_datasets except .py files
-freq/project/ml_datasets/*
-!freq/project/ml_datasets/*.py
+*.pkl
+*.pt
 ft/ml/processed/
 
-# Freqtrade user data
-user_data/backtest_results/
-user_data/logs/
-user_data/plot/
-user_data/ml_datasets/
-
+# ─────────────────────────────────────────────────────────────────────────────
 # TradingView collector data
-freq/project/tools/collector/tradingview_collector/data/
+# ─────────────────────────────────────────────────────────────────────────────
+ft/tools/realtime/tradingview/data/
 *.db
-*.log
 
-# AWS/Cloud provider output files
+# ─────────────────────────────────────────────────────────────────────────────
+# AWS / Cloud provider output
+# ─────────────────────────────────────────────────────────────────────────────
 linux/vps/aws/nuke-output*.txt
-
-# Binary tools (should be downloaded separately)
 linux/vps/aws/cloud-nuke
-
-# SQLite database files
 tradesv3.sqlite*
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Cache files
+# ─────────────────────────────────────────────────────────────────────────────
 *.cache
+*.log
+*.har
 __pycache__/
 *.pyc
 *.pyo
+.ruff_cache/
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Node.js
+# ─────────────────────────────────────────────────────────────────────────────
 node_modules/
 package-lock.json
 yarn.lock
@@ -56,14 +65,18 @@ pnpm-lock.yaml
 .wrangler/
 dist/
 
-# Temporary files
+# ─────────────────────────────────────────────────────────────────────────────
+# Temporary / OS
+# ─────────────────────────────────────────────────────────────────────────────
 *.tmp
 *.temp
 .DS_Store
 web/patchright/test/
 web/patchright/test_report.json
 
+# ─────────────────────────────────────────────────────────────────────────────
 # iOS app packages
+# ─────────────────────────────────────────────────────────────────────────────
 *.ipa
 *.tipa
 
