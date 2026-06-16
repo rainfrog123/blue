@@ -2,6 +2,9 @@
 **/cred.json
 **/.env
 **/auth.json
+**/id_rsa
+**/id_ed25519
+**/*.pem
 
 # Tinder HAR/data files with session tokens
 web/automation/tinder/data/*.json

@@ -17,17 +17,16 @@ ROOT_PASS="4dwlq5!H4uA26A8"
 # Current directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Check if SSH key exists
-if [ ! -f "${SCRIPT_DIR}/id_rsa" ]; then
-    echo "Error: SSH key not found in the project directory"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_rsa}"
+if [ ! -f "$SSH_KEY" ]; then
+    echo "Error: SSH key not found at $SSH_KEY (set SSH_KEY to override)"
     exit 1
 fi
 
-# Set proper permissions for SSH key
-chmod 600 "${SCRIPT_DIR}/id_rsa"
+chmod 600 "$SSH_KEY"
 
 echo "Step 1: Connecting to server and enabling root login..."
-ssh -i "${SCRIPT_DIR}/id_rsa" -o StrictHostKeyChecking=accept-new $SSH_USER@$SERVER_IP << 'EOF'
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new $SSH_USER@$SERVER_IP << 'EOF'
     echo "Connected as jeffrey, enabling root login..."
     
     # Create root .ssh directory if it doesn't exist
@@ -59,7 +58,7 @@ echo "Step 2: Waiting for SSH service to restart..."
 sleep 5
 
 echo "Step 3: Connecting as root and deploying SSR..."
-ssh -i "${SCRIPT_DIR}/id_rsa" -o StrictHostKeyChecking=accept-new $ROOT_USER@$SERVER_IP << 'EOF'
+ssh -i "$SSH_KEY" -o StrictHostKeyChecking=accept-new $ROOT_USER@$SERVER_IP << 'EOF'
     echo "Connected as root, deploying SSR..."
     
     # Create setup script - Using the exact same script from deploy_nodes.py
