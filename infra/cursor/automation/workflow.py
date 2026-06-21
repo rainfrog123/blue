@@ -111,6 +111,52 @@ def fail(message, payload=None):
     sys.exit(1)
 
 
+def detect_dropped_tile(ws):
+    """Return the index of a tile whose MCP loop has dropped, or None.
+
+    A dropped ("worked") tile is idle: NOT generating (no stop-state submit
+    button), NOT showing the "Planning next moves" shimmer, and carrying a
+    "Worked for ..." completion stamp in its conversation tail. That is the
+    signature of a turn that ended — i.e. the perpetual check_messages loop
+    fell out. Prefers an Opus tile if several qualify (the loop tile is Opus).
+    """
+    js = (
+        "(()=>{"
+        "const tiles=[...document.querySelectorAll('.glass-agent-conversation-tiling__tile')];"
+        "const out=tiles.map((t,i)=>{"
+        "const submit=t.querySelector('.ui-prompt-input-submit-button');"
+        "const generating=submit?.getAttribute('data-state')==='stop';"
+        "const sh=t.querySelector('.ui-collapsible-action.ui-collapsible-shimmer')?.textContent||'';"
+        "const planning=/planning\\s+next\\s+move/i.test(sh);"
+        "const tail=(t.innerText||'').replace(/\\s+/g,' ').trim().slice(-400);"
+        "const worked=/worked for\\s+[\\dhms ]+/i.test(tail);"
+        "const model=t.querySelector('.ui-model-picker__trigger-text')?.textContent?.trim()||'';"
+        "return {i,generating,planning,worked,model,dropped:(!generating&&!planning&&worked)};"
+        "});"
+        "return out;})()"
+    )
+    rows = eval_js(ws, js, await_promise=False) or []
+    print("detect:", json.dumps(rows))
+    dropped = [r for r in rows if r.get("dropped")]
+    if not dropped:
+        return None
+    opus = [r for r in dropped if "opus" in (r.get("model") or "").lower()]
+    chosen = (opus or dropped)[0]
+    return chosen.get("i")
+
+
+def reconnect(ws, idx, type_text, interval, max_secs):
+    """Re-prime an EXISTING dropped tile in place (no Ctrl+D split).
+
+    Mirrors the tail of the full workflow — type the invoke-mcp prompt into the
+    tile's live follow-up composer and hold Enter past "Planning next moves" —
+    which rebuilds the MCP loop on that very tile.
+    """
+    print(f"reconnect: targeting tile {idx}")
+    type_in_composer(ws, idx, type_text)
+    enter_until_response(ws, idx, interval, max_secs)
+
+
 def connect():
     ws, page = cdp.find_workbench()
     if not ws:
@@ -295,10 +341,29 @@ def main():
     ap.add_argument("--type-text", default=None,
                     help="Opus prompt to type into the composer before Enter spam "
                          "(default: an improvised 'directly invoke the mcp' instruction)")
+    ap.add_argument("--reconnect", action="store_true",
+                    help="Reconnect mode: skip split/Auto/Opus; detect a dropped "
+                         "('worked') tile and re-prime its MCP loop in place")
+    ap.add_argument("--tile", type=int, default=None,
+                    help="Target tile index for --reconnect (default: auto-detect "
+                         "the dropped tile)")
     args = ap.parse_args()
 
-    prompt = args.prompt or auto_prompt()
     type_text = args.type_text or opus_prompt()
+
+    if args.reconnect:
+        print(f"# reconnect mode; opus prompt: {type_text!r}")
+        ws = connect()
+        snap(ws, "initial")
+        idx = args.tile
+        if idx is None:
+            idx = detect_dropped_tile(ws)
+        if idx is None:
+            fail("no dropped tile detected (nothing to reconnect)")
+        reconnect(ws, idx, type_text, args.enter_interval, args.max_secs)
+        return
+
+    prompt = args.prompt or auto_prompt()
     print(f"# auto prompt: {prompt!r}")
     print(f"# opus prompt: {type_text!r}")
 
