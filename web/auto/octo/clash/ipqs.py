@@ -8,8 +8,8 @@ import sys
 from pathlib import Path
 import requests
 
-# Add cred_loader to path (clash -> octo -> auto -> web -> blue -> linux/extra)
-sys.path.insert(0, str(Path(__file__).parents[4] / "linux" / "extra"))
+# Add cred_loader to path (clash -> octo -> auto -> web -> blue -> infra/scripts)
+sys.path.insert(0, str(Path(__file__).parents[4] / "infra" / "scripts"))
 from cred_loader import get_ipqs
 
 # IPQS API endpoint

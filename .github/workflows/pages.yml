@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'linux/extra/network/blue.yml'
+      - 'infra/network/blue.yml'
   workflow_dispatch:
 
 permissions:
@@ -25,8 +25,8 @@ jobs:
       - name: Isolate target file
         run: |
           mkdir public
-          mkdir -p public/linux/extra/network/
-          cp linux/extra/network/blue.yml public/linux/extra/network/
+          mkdir -p public/infra/network/
+          cp infra/network/blue.yml public/infra/network/
           touch public/.nojekyll
 
       - name: Upload isolated file

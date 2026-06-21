@@ -17,10 +17,10 @@ web/apps/tinder/data/*.json
 backtest-result*
 *result.json
 last_result.json
-ft/user_data/backtest_results/
-ft/user_data/logs/
-ft/user_data/plot/
-ft/user_data/ml_datasets/
+trading/user_data/backtest_results/
+trading/user_data/logs/
+trading/user_data/plot/
+trading/user_data/ml_datasets/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ML datasets / models (large binaries)
@@ -29,19 +29,19 @@ ft/user_data/ml_datasets/
 *.npy
 *.pkl
 *.pt
-ft/ml/processed/
+trading/ml/processed/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TradingView collector data
 # ─────────────────────────────────────────────────────────────────────────────
-ft/tools/realtime/tradingview/data/
+trading/tools/realtime/tradingview/data/
 *.db
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AWS / Cloud provider output
 # ─────────────────────────────────────────────────────────────────────────────
-linux/vps/aws/nuke-output*.txt
-linux/vps/aws/cloud-nuke
+infra/cloud/aws/nuke-output*.txt
+infra/cloud/aws/cloud-nuke
 tradesv3.sqlite*
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -81,4 +81,4 @@ web/patchright/test_report.json
 *.tipa
 
 # Windows-reserved filename not stageable on Windows
-linux/vps/digi/nul
+infra/cloud/digi/nul

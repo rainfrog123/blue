@@ -1,0 +1,219 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                      BASHRC CONFIG (Windows Git Bash)                      ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# Add to your ~/.bashrc: source "$HOME/blue/infra/dotfiles/shell/bashrc_windows"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BASE PATH
+# ─────────────────────────────────────────────────────────────────────────────
+BLUE_DIR="$HOME/blue"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMPT
+# ─────────────────────────────────────────────────────────────────────────────
+if [ -n "$CURSOR_AGENT" ]; then
+    PS1='$ '
+else
+    PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] $ "
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT
+# ─────────────────────────────────────────────────────────────────────────────
+export EDITOR='cursor'
+
+if [ -d "$HOME/development/flutter/bin" ]; then
+    export PATH="$HOME/development/flutter/bin:$PATH"
+fi
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROXY
+# ─────────────────────────────────────────────────────────────────────────────
+export HTTP_PROXY=http://127.0.0.1:7890
+export HTTPS_PROXY=http://127.0.0.1:7890
+export http_proxy=http://127.0.0.1:7890
+export https_proxy=http://127.0.0.1:7890
+export ALL_PROXY=http://127.0.0.1:7890
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HISTORY
+# ─────────────────────────────────────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIRECTORY ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Root
+# ─────────────────────────────────────────────────────────────────────────────
+alias bl='cd "$BLUE_DIR"'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/* (top level)
+# ─────────────────────────────────────────────────────────────────────────────
+alias ft='cd "$BLUE_DIR/ft"'
+alias li='cd "$BLUE_DIR/linux"'
+alias we='cd "$BLUE_DIR/web"'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/ft/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias hb='cd "$BLUE_DIR/trading/hummingbot"'
+alias ml='cd "$BLUE_DIR/trading/ml"'
+alias ftn='cd "$BLUE_DIR/trading/notes"'
+alias rs='cd "$BLUE_DIR/trading/research"'
+alias ftsc='cd "$BLUE_DIR/trading/scripts"'
+alias to='cd "$BLUE_DIR/trading/tools"'
+alias ud='cd "$BLUE_DIR/trading/user_data"'
+
+# blue/trading/research/*
+alias exn='cd "$BLUE_DIR/trading/research/execution"'
+alias lag='cd "$BLUE_DIR/trading/research/lead_lag"'
+alias mm='cd "$BLUE_DIR/trading/research/market_making"'
+alias mr='cd "$BLUE_DIR/trading/research/mean_reversion"'
+alias ofi='cd "$BLUE_DIR/trading/research/ofi"'
+
+# blue/trading/tools/*
+alias bi='cd "$BLUE_DIR/trading/tools/binance"'
+alias cv='cd "$BLUE_DIR/trading/tools/converters"'
+alias hi='cd "$BLUE_DIR/trading/tools/historical"'
+alias re='cd "$BLUE_DIR/trading/tools/realtime"'
+alias ccxt='cd "$BLUE_DIR/trading/tools/realtime/ccxt"'
+alias rtv='cd "$BLUE_DIR/trading/tools/realtime/tradingview"'
+
+# blue/trading/user_data/*
+alias udcf='cd "$BLUE_DIR/trading/user_data/config"'
+alias hr='cd "$BLUE_DIR/trading/user_data/hyperopt_results"'
+alias hy='cd "$BLUE_DIR/trading/user_data/hyperopts"'
+alias nb='cd "$BLUE_DIR/trading/user_data/notebooks"'
+alias st='cd "$BLUE_DIR/trading/user_data/strategies"'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/linux/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias ext='cd "$BLUE_DIR/infra"'
+alias iph='cd "$BLUE_DIR/infra/mobile"'
+alias vps='cd "$BLUE_DIR/infra/cloud"'
+
+# blue/infra/*
+alias excf='cd "$BLUE_DIR/infra/dotfiles/config"'
+alias cu='cd "$BLUE_DIR/infra/cursor/accounts"'
+alias ne='cd "$BLUE_DIR/infra/network"'
+alias nt='cd "$BLUE_DIR/infra/notes"'
+alias exsc='cd "$BLUE_DIR/infra/scripts"'
+alias shl='cd "$BLUE_DIR/infra/dotfiles/shell"'
+
+# blue/infra/cloud/*
+alias ali='cd "$BLUE_DIR/infra/cloud/ali"'
+alias aw='cd "$BLUE_DIR/infra/cloud/aws"'
+alias az='cd "$BLUE_DIR/infra/cloud/azure"'
+alias digi='cd "$BLUE_DIR/infra/cloud/digi"'
+alias gcp='cd "$BLUE_DIR/infra/cloud/gcp"'
+alias lno='cd "$BLUE_DIR/infra/cloud/linode"'
+alias vpse='cd "$BLUE_DIR/infra/cloud/common/setup"'
+alias vu='cd "$BLUE_DIR/infra/cloud/vultr"'
+
+# blue/infra/cloud/ali/*
+alias alicf='cd "$BLUE_DIR/infra/cloud/ali/config"'
+alias ecs='cd "$BLUE_DIR/infra/cloud/ali/ecs"'
+alias alise='cd "$BLUE_DIR/infra/cloud/ali/init"'
+
+# blue/infra/cloud/linode/*
+alias lm='cd "$BLUE_DIR/infra/cloud/linode/manager"'
+alias lnsc='cd "$BLUE_DIR/infra/cloud/linode/scripts"'
+
+# blue/infra/cloud/common/setup/*
+alias ssr='cd "$BLUE_DIR/infra/cloud/common/setup/ssr-deploy"'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/web/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias ap='cd "$BLUE_DIR/web/apps"'
+alias au='cd "$BLUE_DIR/web/auto"'
+alias mo='cd "$BLUE_DIR/web/monitors"'
+alias px='cd "$BLUE_DIR/web/proxy"'
+
+# blue/web/apps/*
+alias ac='cd "$BLUE_DIR/web/apps/alt"'
+alias cf='cd "$BLUE_DIR/web/apps/cloudflare"'
+alias sk='cd "$BLUE_DIR/web/apps/tampermonkey/stake"'
+alias tm='cd "$BLUE_DIR/web/apps/tampermonkey"'
+alias ti='cd "$BLUE_DIR/web/apps/tinder"'
+
+# blue/web/apps/tampermonkey/stake/*
+alias ba='cd "$BLUE_DIR/web/apps/tampermonkey/stake/baccarat"'
+alias bj='cd "$BLUE_DIR/web/apps/tampermonkey/stake/blackjack"'
+
+# blue/web/apps/tampermonkey/*
+alias tmba='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'
+
+# blue/web/apps/tinder/*
+alias tida='cd "$BLUE_DIR/web/apps/tinder/data"'
+alias tisc='cd "$BLUE_DIR/web/apps/tinder/scripts"'
+
+# blue/web/auto/*
+alias dom='cd "$BLUE_DIR/web/auto/domain"'
+alias drv='cd "$BLUE_DIR/web/auto/drivers"'
+alias hs='cd "$BLUE_DIR/web/auto/herosms"'
+alias oc='cd "$BLUE_DIR/web/auto/octo"'
+alias wo='cd "$BLUE_DIR/web/auto/worker"'
+
+# blue/web/auto/octo/*
+alias hid='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/hid"'
+alias ossl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"'
+
+# blue/web/monitors/*
+alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'
+alias hx='cd "$BLUE_DIR/web/monitors/hxkq"'
+
+# blue/web/proxy/*
+alias de='cd "$BLUE_DIR/web/proxy/decodo"'
+alias ipr='cd "$BLUE_DIR/web/proxy/iproyal"'
+alias ra='cd "$BLUE_DIR/web/proxy/rayobyte"'
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Git
+# ─────────────────────────────────────────────────────────────────────────────
+alias ga='git add'
+alias gc='git commit -m'
+alias gl='git pull'
+alias gp='git push'
+alias gs='git status'
+
+# Docker Compose v2 compatibility
+alias docker-compose='docker compose'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
+alias bashrc='cursor "$BLUE_DIR/infra/dotfiles/shell/bashrc_windows"'
+alias cls='clear'
+alias code='cursor'
+alias diskspace='df -h'
+alias lsh='ls -la | head'
+alias myip='curl -s http://ipinfo.io/ip'
+alias note='cursor "$BLUE_DIR/trading/notes"'
+alias rc='cursor "$BLUE_DIR/infra/dotfiles/shell/bashrc_windows"'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Windows-specific
+# ─────────────────────────────────────────────────────────────────────────────
+alias azure='/usr/bin/az'
+alias explorer='explorer.exe .'
+alias open='start'
+alias clash='cd "$HOME/.config/clash/profiles"'
+
+# Azure VM
+alias azde='python "$BLUE_DIR/infra/cloud/azure/cli.py" deallocate'
+alias azstart='python "$BLUE_DIR/infra/cloud/azure/cli.py" start'
+alias azstatus='python "$BLUE_DIR/infra/cloud/azure/cli.py" status'

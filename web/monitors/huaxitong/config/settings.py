@@ -5,8 +5,8 @@ import os
 import sys
 from datetime import timezone, timedelta
 
-# Add blue/linux/extra to path for cred_loader
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'linux', 'extra'))
+# Add blue/infra/scripts to path for cred_loader
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', 'infra', 'scripts'))
 from cred_loader import get_telegram
 
 # Timezone

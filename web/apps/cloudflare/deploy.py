@@ -11,7 +11,7 @@ from pathlib import Path
 
 import requests
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "linux/extra"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent / "infra/scripts"))
 from cred_loader import get_cloudflare
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
