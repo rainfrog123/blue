@@ -66,15 +66,15 @@ alias we='cd "$BLUE_DIR/web"'
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd "$BLUE_DIR/trading/hummingbot"'
 alias ml='cd "$BLUE_DIR/trading/ml"'
-alias trn='cd "$BLUE_DIR/trading/notes"'
+alias tn='cd "$BLUE_DIR/trading/notes"'
 alias rs='cd "$BLUE_DIR/trading/research"'
-alias trsc='cd "$BLUE_DIR/trading/scripts"'
+alias ts='cd "$BLUE_DIR/trading/scripts"'
 alias to='cd "$BLUE_DIR/trading/tools"'
 alias ud='cd "$BLUE_DIR/trading/user_data"'
 
 # blue/trading/research/*
-alias exn='cd "$BLUE_DIR/trading/research/execution"'
-alias lag='cd "$BLUE_DIR/trading/research/lead_lag"'
+alias ex='cd "$BLUE_DIR/trading/research/execution"'
+alias ll='cd "$BLUE_DIR/trading/research/lead_lag"'
 alias mm='cd "$BLUE_DIR/trading/research/market_making"'
 alias mr='cd "$BLUE_DIR/trading/research/mean_reversion"'
 alias ofi='cd "$BLUE_DIR/trading/research/ofi"'
@@ -84,11 +84,11 @@ alias bi='cd "$BLUE_DIR/trading/tools/binance"'
 alias cv='cd "$BLUE_DIR/trading/tools/converters"'
 alias hi='cd "$BLUE_DIR/trading/tools/historical"'
 alias re='cd "$BLUE_DIR/trading/tools/realtime"'
-alias ccxt='cd "$BLUE_DIR/trading/tools/realtime/ccxt"'
-alias rtv='cd "$BLUE_DIR/trading/tools/realtime/tradingview"'
+alias cx='cd "$BLUE_DIR/trading/tools/realtime/ccxt"'
+alias tv='cd "$BLUE_DIR/trading/tools/realtime/tradingview"'
 
 # blue/trading/user_data/*
-alias udcf='cd "$BLUE_DIR/trading/user_data/config"'
+alias uc='cd "$BLUE_DIR/trading/user_data/config"'
 alias hr='cd "$BLUE_DIR/trading/user_data/hyperopt_results"'
 alias hy='cd "$BLUE_DIR/trading/user_data/hyperopts"'
 alias nb='cd "$BLUE_DIR/trading/user_data/notebooks"'
@@ -97,38 +97,38 @@ alias st='cd "$BLUE_DIR/trading/user_data/strategies"'
 # ─────────────────────────────────────────────────────────────────────────────
 # blue/infra/*
 # ─────────────────────────────────────────────────────────────────────────────
-alias cur='cd "$BLUE_DIR/infra/cursor"'
-alias cua='cd "$BLUE_DIR/infra/cursor/automation"'
-alias cuac='cd "$BLUE_DIR/infra/cursor/accounts"'
+alias cu='cd "$BLUE_DIR/infra/cursor"'
+alias ca='cd "$BLUE_DIR/infra/cursor/automation"'
+alias cac='cd "$BLUE_DIR/infra/cursor/accounts"'
 alias cl='cd "$BLUE_DIR/infra/cloud"'
-alias net='cd "$BLUE_DIR/infra/network"'
-alias dot='cd "$BLUE_DIR/infra/dotfiles"'
-alias cfg='cd "$BLUE_DIR/infra/dotfiles/config"'
-alias shl='cd "$BLUE_DIR/infra/dotfiles/shell"'
+alias ne='cd "$BLUE_DIR/infra/network"'
+alias dt='cd "$BLUE_DIR/infra/dotfiles"'
+alias dc='cd "$BLUE_DIR/infra/dotfiles/config"'
+alias ds='cd "$BLUE_DIR/infra/dotfiles/shell"'
 alias nt='cd "$BLUE_DIR/infra/notes"'
-alias insc='cd "$BLUE_DIR/infra/scripts"'
-alias win='cd "$BLUE_DIR/infra/scripts/window"'
-alias mob='cd "$BLUE_DIR/infra/mobile"'
-alias sec='cd "$BLUE_DIR/infra/security"'
+alias is='cd "$BLUE_DIR/infra/scripts"'
+alias wi='cd "$BLUE_DIR/infra/scripts/window"'
+alias mb='cd "$BLUE_DIR/infra/mobile"'
+alias se='cd "$BLUE_DIR/infra/security"'
 
 # blue/infra/cloud/*
 alias ali='cd "$BLUE_DIR/infra/cloud/ali"'
 alias aw='cd "$BLUE_DIR/infra/cloud/aws"'
 alias az='cd "$BLUE_DIR/infra/cloud/azure"'
-alias digi='cd "$BLUE_DIR/infra/cloud/digi"'
+alias dg='cd "$BLUE_DIR/infra/cloud/digi"'
 alias gcp='cd "$BLUE_DIR/infra/cloud/gcp"'
-alias lno='cd "$BLUE_DIR/infra/cloud/linode"'
+alias li='cd "$BLUE_DIR/infra/cloud/linode"'
 alias vu='cd "$BLUE_DIR/infra/cloud/vultr"'
-alias clse='cd "$BLUE_DIR/infra/cloud/common/setup"'
+alias cs='cd "$BLUE_DIR/infra/cloud/common/setup"'
 
 # blue/infra/cloud/ali/*
-alias alicf='cd "$BLUE_DIR/infra/cloud/ali/config"'
-alias ecs='cd "$BLUE_DIR/infra/cloud/ali/ecs"'
-alias alise='cd "$BLUE_DIR/infra/cloud/ali/init"'
+alias acf='cd "$BLUE_DIR/infra/cloud/ali/config"'
+alias ec='cd "$BLUE_DIR/infra/cloud/ali/ecs"'
+alias ai='cd "$BLUE_DIR/infra/cloud/ali/init"'
 
 # blue/infra/cloud/linode/*
 alias lm='cd "$BLUE_DIR/infra/cloud/linode/manager"'
-alias lnsc='cd "$BLUE_DIR/infra/cloud/linode/scripts"'
+alias lsc='cd "$BLUE_DIR/infra/cloud/linode/scripts"'
 
 # blue/infra/cloud/common/setup/*
 alias ssr='cd "$BLUE_DIR/infra/cloud/common/setup/ssr-deploy"'
@@ -140,7 +140,7 @@ alias ap='cd "$BLUE_DIR/web/apps"'
 alias au='cd "$BLUE_DIR/web/auto"'
 alias mo='cd "$BLUE_DIR/web/monitors"'
 alias px='cd "$BLUE_DIR/web/proxy"'
-alias med='cd "$BLUE_DIR/web/media"'
+alias md='cd "$BLUE_DIR/web/media"'
 
 # blue/web/apps/*
 alias ac='cd "$BLUE_DIR/web/apps/alt"'
@@ -154,22 +154,22 @@ alias ba='cd "$BLUE_DIR/web/apps/tampermonkey/stake/baccarat"'
 alias bj='cd "$BLUE_DIR/web/apps/tampermonkey/stake/blackjack"'
 
 # blue/web/apps/tampermonkey/*
-alias tmba='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'
+alias tb='cd "$BLUE_DIR/web/apps/tampermonkey/backup"'
 
 # blue/web/apps/tinder/*
-alias tida='cd "$BLUE_DIR/web/apps/tinder/data"'
-alias tisc='cd "$BLUE_DIR/web/apps/tinder/scripts"'
+alias td='cd "$BLUE_DIR/web/apps/tinder/data"'
+alias tsc='cd "$BLUE_DIR/web/apps/tinder/scripts"'
 
 # blue/web/auto/*
 alias dom='cd "$BLUE_DIR/web/auto/domain"'
-alias drv='cd "$BLUE_DIR/web/auto/drivers"'
+alias dr='cd "$BLUE_DIR/web/auto/drivers"'
 alias hs='cd "$BLUE_DIR/web/auto/herosms"'
 alias oc='cd "$BLUE_DIR/web/auto/octo"'
 alias wo='cd "$BLUE_DIR/web/auto/worker"'
 
 # blue/web/auto/octo/*
 alias hid='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/hid"'
-alias ossl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"'
+alias osl='cd "$BLUE_DIR/web/auto/octo/reverse_engineering/ssl"'
 
 # blue/web/monitors/*
 alias hu='cd "$BLUE_DIR/web/monitors/huaxitong"'

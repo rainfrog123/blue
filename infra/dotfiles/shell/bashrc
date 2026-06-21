@@ -57,15 +57,15 @@ alias we='cd /allah/blue/web'
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd /allah/blue/trading/hummingbot'
 alias ml='cd /allah/blue/trading/ml'
-alias trn='cd /allah/blue/trading/notes'
+alias tn='cd /allah/blue/trading/notes'
 alias rs='cd /allah/blue/trading/research'
-alias trsc='cd /allah/blue/trading/scripts'
+alias ts='cd /allah/blue/trading/scripts'
 alias to='cd /allah/blue/trading/tools'
 alias ud='cd /allah/blue/trading/user_data'
 
 # blue/trading/research/*
-alias exn='cd /allah/blue/trading/research/execution'
-alias lag='cd /allah/blue/trading/research/lead_lag'
+alias ex='cd /allah/blue/trading/research/execution'
+alias ll='cd /allah/blue/trading/research/lead_lag'
 alias mm='cd /allah/blue/trading/research/market_making'
 alias mr='cd /allah/blue/trading/research/mean_reversion'
 alias ofi='cd /allah/blue/trading/research/ofi'
@@ -75,11 +75,11 @@ alias bi='cd /allah/blue/trading/tools/binance'
 alias cv='cd /allah/blue/trading/tools/converters'
 alias hi='cd /allah/blue/trading/tools/historical'
 alias re='cd /allah/blue/trading/tools/realtime'
-alias ccxt='cd /allah/blue/trading/tools/realtime/ccxt'
-alias rtv='cd /allah/blue/trading/tools/realtime/tradingview'
+alias cx='cd /allah/blue/trading/tools/realtime/ccxt'
+alias tv='cd /allah/blue/trading/tools/realtime/tradingview'
 
 # blue/trading/user_data/*
-alias udcf='cd /allah/blue/trading/user_data/config'
+alias uc='cd /allah/blue/trading/user_data/config'
 alias hr='cd /allah/blue/trading/user_data/hyperopt_results'
 alias hy='cd /allah/blue/trading/user_data/hyperopts'
 alias nb='cd /allah/blue/trading/user_data/notebooks'
@@ -88,38 +88,38 @@ alias st='cd /allah/blue/trading/user_data/strategies'
 # ─────────────────────────────────────────────────────────────────────────────
 # blue/infra/*
 # ─────────────────────────────────────────────────────────────────────────────
-alias cur='cd /allah/blue/infra/cursor'
-alias cua='cd /allah/blue/infra/cursor/automation'
-alias cuac='cd /allah/blue/infra/cursor/accounts'
+alias cu='cd /allah/blue/infra/cursor'
+alias ca='cd /allah/blue/infra/cursor/automation'
+alias cac='cd /allah/blue/infra/cursor/accounts'
 alias cl='cd /allah/blue/infra/cloud'
-alias net='cd /allah/blue/infra/network'
-alias dot='cd /allah/blue/infra/dotfiles'
-alias cfg='cd /allah/blue/infra/dotfiles/config'
-alias shl='cd /allah/blue/infra/dotfiles/shell'
+alias ne='cd /allah/blue/infra/network'
+alias dt='cd /allah/blue/infra/dotfiles'
+alias dc='cd /allah/blue/infra/dotfiles/config'
+alias ds='cd /allah/blue/infra/dotfiles/shell'
 alias nt='cd /allah/blue/infra/notes'
-alias insc='cd /allah/blue/infra/scripts'
-alias win='cd /allah/blue/infra/scripts/window'
-alias mob='cd /allah/blue/infra/mobile'
-alias sec='cd /allah/blue/infra/security'
+alias is='cd /allah/blue/infra/scripts'
+alias wi='cd /allah/blue/infra/scripts/window'
+alias mb='cd /allah/blue/infra/mobile'
+alias se='cd /allah/blue/infra/security'
 
 # blue/infra/cloud/*
 alias ali='cd /allah/blue/infra/cloud/ali'
 alias aw='cd /allah/blue/infra/cloud/aws'
 alias az='cd /allah/blue/infra/cloud/azure'
-alias digi='cd /allah/blue/infra/cloud/digi'
+alias dg='cd /allah/blue/infra/cloud/digi'
 alias gcp='cd /allah/blue/infra/cloud/gcp'
-alias lno='cd /allah/blue/infra/cloud/linode'
+alias li='cd /allah/blue/infra/cloud/linode'
 alias vu='cd /allah/blue/infra/cloud/vultr'
-alias clse='cd /allah/blue/infra/cloud/common/setup'
+alias cs='cd /allah/blue/infra/cloud/common/setup'
 
 # blue/infra/cloud/ali/*
-alias alicf='cd /allah/blue/infra/cloud/ali/config'
-alias ecs='cd /allah/blue/infra/cloud/ali/ecs'
-alias alise='cd /allah/blue/infra/cloud/ali/init'
+alias acf='cd /allah/blue/infra/cloud/ali/config'
+alias ec='cd /allah/blue/infra/cloud/ali/ecs'
+alias ai='cd /allah/blue/infra/cloud/ali/init'
 
 # blue/infra/cloud/linode/*
 alias lm='cd /allah/blue/infra/cloud/linode/manager'
-alias lnsc='cd /allah/blue/infra/cloud/linode/scripts'
+alias lsc='cd /allah/blue/infra/cloud/linode/scripts'
 
 # blue/infra/cloud/common/setup/*
 alias ssr='cd /allah/blue/infra/cloud/common/setup/ssr-deploy'
@@ -131,7 +131,7 @@ alias ap='cd /allah/blue/web/apps'
 alias au='cd /allah/blue/web/auto'
 alias mo='cd /allah/blue/web/monitors'
 alias px='cd /allah/blue/web/proxy'
-alias med='cd /allah/blue/web/media'
+alias md='cd /allah/blue/web/media'
 
 # blue/web/apps/*
 alias ac='cd /allah/blue/web/apps/alt'
@@ -145,22 +145,22 @@ alias ba='cd /allah/blue/web/apps/tampermonkey/stake/baccarat'
 alias bj='cd /allah/blue/web/apps/tampermonkey/stake/blackjack'
 
 # blue/web/apps/tampermonkey/*
-alias tmba='cd /allah/blue/web/apps/tampermonkey/backup'
+alias tb='cd /allah/blue/web/apps/tampermonkey/backup'
 
 # blue/web/apps/tinder/*
-alias tida='cd /allah/blue/web/apps/tinder/data'
-alias tisc='cd /allah/blue/web/apps/tinder/scripts'
+alias td='cd /allah/blue/web/apps/tinder/data'
+alias tsc='cd /allah/blue/web/apps/tinder/scripts'
 
 # blue/web/auto/*
 alias dom='cd /allah/blue/web/auto/domain'
-alias drv='cd /allah/blue/web/auto/drivers'
+alias dr='cd /allah/blue/web/auto/drivers'
 alias hs='cd /allah/blue/web/auto/herosms'
 alias oc='cd /allah/blue/web/auto/octo'
 alias wo='cd /allah/blue/web/auto/worker'
 
 # blue/web/auto/octo/*
 alias hid='cd /allah/blue/web/auto/octo/reverse_engineering/hid'
-alias ossl='cd /allah/blue/web/auto/octo/reverse_engineering/ssl'
+alias osl='cd /allah/blue/web/auto/octo/reverse_engineering/ssl'
 
 # blue/web/monitors/*
 alias hu='cd /allah/blue/web/monitors/huaxitong'
