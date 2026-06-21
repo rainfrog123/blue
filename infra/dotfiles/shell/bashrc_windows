@@ -57,18 +57,18 @@ alias bl='cd "$BLUE_DIR"'
 # ─────────────────────────────────────────────────────────────────────────────
 # blue/* (top level)
 # ─────────────────────────────────────────────────────────────────────────────
-alias ft='cd "$BLUE_DIR/ft"'
-alias li='cd "$BLUE_DIR/linux"'
+alias tr='cd "$BLUE_DIR/trading"'
+alias in='cd "$BLUE_DIR/infra"'
 alias we='cd "$BLUE_DIR/web"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# blue/ft/*
+# blue/trading/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd "$BLUE_DIR/trading/hummingbot"'
 alias ml='cd "$BLUE_DIR/trading/ml"'
-alias ftn='cd "$BLUE_DIR/trading/notes"'
+alias trn='cd "$BLUE_DIR/trading/notes"'
 alias rs='cd "$BLUE_DIR/trading/research"'
-alias ftsc='cd "$BLUE_DIR/trading/scripts"'
+alias trsc='cd "$BLUE_DIR/trading/scripts"'
 alias to='cd "$BLUE_DIR/trading/tools"'
 alias ud='cd "$BLUE_DIR/trading/user_data"'
 
@@ -95,19 +95,21 @@ alias nb='cd "$BLUE_DIR/trading/user_data/notebooks"'
 alias st='cd "$BLUE_DIR/trading/user_data/strategies"'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# blue/linux/*
-# ─────────────────────────────────────────────────────────────────────────────
-alias ext='cd "$BLUE_DIR/infra"'
-alias iph='cd "$BLUE_DIR/infra/mobile"'
-alias vps='cd "$BLUE_DIR/infra/cloud"'
-
 # blue/infra/*
-alias excf='cd "$BLUE_DIR/infra/dotfiles/config"'
-alias cu='cd "$BLUE_DIR/infra/cursor/accounts"'
-alias ne='cd "$BLUE_DIR/infra/network"'
-alias nt='cd "$BLUE_DIR/infra/notes"'
-alias exsc='cd "$BLUE_DIR/infra/scripts"'
+# ─────────────────────────────────────────────────────────────────────────────
+alias cur='cd "$BLUE_DIR/infra/cursor"'
+alias cua='cd "$BLUE_DIR/infra/cursor/automation"'
+alias cuac='cd "$BLUE_DIR/infra/cursor/accounts"'
+alias cl='cd "$BLUE_DIR/infra/cloud"'
+alias net='cd "$BLUE_DIR/infra/network"'
+alias dot='cd "$BLUE_DIR/infra/dotfiles"'
+alias cfg='cd "$BLUE_DIR/infra/dotfiles/config"'
 alias shl='cd "$BLUE_DIR/infra/dotfiles/shell"'
+alias nt='cd "$BLUE_DIR/infra/notes"'
+alias insc='cd "$BLUE_DIR/infra/scripts"'
+alias win='cd "$BLUE_DIR/infra/scripts/window"'
+alias mob='cd "$BLUE_DIR/infra/mobile"'
+alias sec='cd "$BLUE_DIR/infra/security"'
 
 # blue/infra/cloud/*
 alias ali='cd "$BLUE_DIR/infra/cloud/ali"'
@@ -116,8 +118,8 @@ alias az='cd "$BLUE_DIR/infra/cloud/azure"'
 alias digi='cd "$BLUE_DIR/infra/cloud/digi"'
 alias gcp='cd "$BLUE_DIR/infra/cloud/gcp"'
 alias lno='cd "$BLUE_DIR/infra/cloud/linode"'
-alias vpse='cd "$BLUE_DIR/infra/cloud/common/setup"'
 alias vu='cd "$BLUE_DIR/infra/cloud/vultr"'
+alias clse='cd "$BLUE_DIR/infra/cloud/common/setup"'
 
 # blue/infra/cloud/ali/*
 alias alicf='cd "$BLUE_DIR/infra/cloud/ali/config"'
@@ -138,6 +140,7 @@ alias ap='cd "$BLUE_DIR/web/apps"'
 alias au='cd "$BLUE_DIR/web/auto"'
 alias mo='cd "$BLUE_DIR/web/monitors"'
 alias px='cd "$BLUE_DIR/web/proxy"'
+alias med='cd "$BLUE_DIR/web/media"'
 
 # blue/web/apps/*
 alias ac='cd "$BLUE_DIR/web/apps/alt"'

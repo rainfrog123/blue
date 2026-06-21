@@ -48,18 +48,18 @@ alias me='cd /media'
 # ─────────────────────────────────────────────────────────────────────────────
 # blue/* (top level)
 # ─────────────────────────────────────────────────────────────────────────────
-alias ft='cd /allah/blue/ft'
-alias li='cd /allah/blue/linux'
+alias tr='cd /allah/blue/trading'
+alias in='cd /allah/blue/infra'
 alias we='cd /allah/blue/web'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# blue/ft/*
+# blue/trading/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias hb='cd /allah/blue/trading/hummingbot'
 alias ml='cd /allah/blue/trading/ml'
-alias ftn='cd /allah/blue/trading/notes'
+alias trn='cd /allah/blue/trading/notes'
 alias rs='cd /allah/blue/trading/research'
-alias ftsc='cd /allah/blue/trading/scripts'
+alias trsc='cd /allah/blue/trading/scripts'
 alias to='cd /allah/blue/trading/tools'
 alias ud='cd /allah/blue/trading/user_data'
 
@@ -86,19 +86,21 @@ alias nb='cd /allah/blue/trading/user_data/notebooks'
 alias st='cd /allah/blue/trading/user_data/strategies'
 
 # ─────────────────────────────────────────────────────────────────────────────
-# blue/linux/*
-# ─────────────────────────────────────────────────────────────────────────────
-alias ext='cd /allah/blue/infra'
-alias iph='cd /allah/blue/infra/mobile'
-alias vps='cd /allah/blue/infra/cloud'
-
 # blue/infra/*
-alias excf='cd /allah/blue/infra/dotfiles/config'
-alias cu='cd /allah/blue/infra/cursor/accounts'
-alias ne='cd /allah/blue/infra/network'
-alias nt='cd /allah/blue/infra/notes'
-alias exsc='cd /allah/blue/infra/scripts'
+# ─────────────────────────────────────────────────────────────────────────────
+alias cur='cd /allah/blue/infra/cursor'
+alias cua='cd /allah/blue/infra/cursor/automation'
+alias cuac='cd /allah/blue/infra/cursor/accounts'
+alias cl='cd /allah/blue/infra/cloud'
+alias net='cd /allah/blue/infra/network'
+alias dot='cd /allah/blue/infra/dotfiles'
+alias cfg='cd /allah/blue/infra/dotfiles/config'
 alias shl='cd /allah/blue/infra/dotfiles/shell'
+alias nt='cd /allah/blue/infra/notes'
+alias insc='cd /allah/blue/infra/scripts'
+alias win='cd /allah/blue/infra/scripts/window'
+alias mob='cd /allah/blue/infra/mobile'
+alias sec='cd /allah/blue/infra/security'
 
 # blue/infra/cloud/*
 alias ali='cd /allah/blue/infra/cloud/ali'
@@ -107,8 +109,8 @@ alias az='cd /allah/blue/infra/cloud/azure'
 alias digi='cd /allah/blue/infra/cloud/digi'
 alias gcp='cd /allah/blue/infra/cloud/gcp'
 alias lno='cd /allah/blue/infra/cloud/linode'
-alias vpse='cd /allah/blue/infra/cloud/common/setup'
 alias vu='cd /allah/blue/infra/cloud/vultr'
+alias clse='cd /allah/blue/infra/cloud/common/setup'
 
 # blue/infra/cloud/ali/*
 alias alicf='cd /allah/blue/infra/cloud/ali/config'
@@ -129,6 +131,7 @@ alias ap='cd /allah/blue/web/apps'
 alias au='cd /allah/blue/web/auto'
 alias mo='cd /allah/blue/web/monitors'
 alias px='cd /allah/blue/web/proxy'
+alias med='cd /allah/blue/web/media'
 
 # blue/web/apps/*
 alias ac='cd /allah/blue/web/apps/alt'
