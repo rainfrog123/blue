@@ -1319,6 +1319,7 @@ rules:
   # - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
   - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,🚀 Node Selection
   - PROCESS-NAME,cfst.exe,DIRECT
+  - PROCESS-NAME,com.sankai.meituan.takeoutnew,DIRECT
 
   # 🚫 REJECT
   - DOMAIN-SUFFIX,gjfzpt.cn,REJECT
