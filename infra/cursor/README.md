@@ -6,21 +6,21 @@ Tools for automating and extending **Cursor IDE** on this machine.
 
 ```
 cursor/
-├── jefr-cursor/    MCP side-panel extension + Obsidian plugin (VSIX pack source)
-└── accounts/       Account / hook Utilities (legacy)
+└── accounts/       Account / hook utilities (legacy)
 ```
 
-> **CDP automation** (`workflow.py`, `cdp.py`, tile helpers) lives in the canonical repo:
-> `C:/Users/jar71/Downloads/jefr-cursor/automation/` — not under this tree.
+All **jefr-cursor** source (extension, MCP server, automation) lives in the canonical repo:
+
+`C:/Users/jar71/Downloads/jefr-cursor/`
 
 ## jefr-cursor (MCP messenger)
 
-Side-panel chat via **Model Context Protocol**. See [jefr-cursor/README.md](jefr-cursor/README.md) and [jefr-cursor/QUICKSTART.txt](jefr-cursor/QUICKSTART.txt).
+Side-panel chat via **Model Context Protocol**. See [QUICKSTART.txt](C:/Users/jar71/Downloads/jefr-cursor/QUICKSTART.txt) and [README.md](C:/Users/jar71/Downloads/jefr-cursor/README.md).
 
 **Install extension:**
 
 ```bash
-cd jefr-cursor
+cd ~/Downloads/jefr-cursor
 python pack_vsix.py   # or: cd extension && npm run package
 ```
 
@@ -32,13 +32,11 @@ Drag `jefr-cursor/jefr-cursor.vsix` into Cursor Extensions, restart, enable **je
 
 ## automation (CDP workflow)
 
-Canonical location:
-
 ```bash
-cd C:/Users/jar71/Downloads/jefr-cursor/automation
+cd ~/Downloads/jefr-cursor/automation
 python workflow.py
 ```
 
-The jefr extension **General** tab launches this script from the open `jefr-cursor` workspace only.
+The jefr extension **General** tab launches this script when the Downloads workspace is open.
 
 See `C:/Users/jar71/Downloads/jefr-cursor/automation/README.md`.
