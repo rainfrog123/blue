@@ -98,7 +98,7 @@ alias st='cd "$BLUE_DIR/trading/user_data/strategies"'
 # blue/infra/*
 # ─────────────────────────────────────────────────────────────────────────────
 alias cu='cd "$BLUE_DIR/infra/cursor"'
-alias ca='cd "$BLUE_DIR/infra/cursor/automation"'
+alias ca='cd "$HOME/Downloads/jefr-cursor/automation"'
 alias cac='cd "$BLUE_DIR/infra/cursor/accounts"'
 alias cl='cd "$BLUE_DIR/infra/cloud"'
 alias ne='cd "$BLUE_DIR/infra/network"'
