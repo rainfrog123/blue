@@ -17,6 +17,7 @@ from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.costmanagement import CostManagementClient
+from azure.mgmt.consumption import ConsumptionManagementClient
 from azure.mgmt.containerinstance import ContainerInstanceManagementClient
 
 
@@ -30,6 +31,7 @@ class AzureClients:
     resource: ResourceManagementClient
     subscription: SubscriptionClient
     cost: CostManagementClient
+    consumption: ConsumptionManagementClient
     container: ContainerInstanceManagementClient
 
 
@@ -72,5 +74,6 @@ def get_clients() -> AzureClients:
         resource=ResourceManagementClient(credential, sub_id),
         subscription=SubscriptionClient(credential),
         cost=CostManagementClient(credential),
+        consumption=ConsumptionManagementClient(credential, sub_id),
         container=ContainerInstanceManagementClient(credential, sub_id),
     )

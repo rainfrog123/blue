@@ -1,10 +1,74 @@
 #!/usr/bin/env python3
 """Azure CLI - unified management for VMs, resources, billing, and proxies."""
 import sys
+import time
 import argparse
 from datetime import datetime, timedelta, timezone
 
 from core import get_clients
+
+# Unique ClientType moves our calls out of the shared (empty-ClientType) throttle
+# pool that Azure Cost Management rate-limits globally across all anonymous callers.
+_CLIENT_TYPE = "blue-vps-cli"
+_COST_HEADERS = {
+    "ClientType": _CLIENT_TYPE,
+    "x-ms-command-name": f"{_CLIENT_TYPE}/cost",
+}
+
+
+def _retry_429(fn, *args, retries=5, **kwargs):
+    """Call fn with exponential backoff on Azure 429 throttling responses."""
+    for attempt in range(retries):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            if "429" in str(e) and attempt < retries - 1:
+                wait = 15 * (2 ** attempt)
+                print(f"  Rate limited, retrying in {wait}s...", flush=True)
+                time.sleep(wait)
+            else:
+                raise
+
+
+def _last_calendar_month(today=None):
+    """Return (label, from_iso, to_iso) for the previous calendar month."""
+    today = today or datetime.now(timezone.utc)
+    first_this_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_prev = first_this_month - timedelta(days=1)
+    first_prev = last_prev.replace(day=1)
+    label = first_prev.strftime("%B %Y")
+    return (
+        label,
+        first_prev.strftime("%Y-%m-%dT00:00:00Z"),
+        first_this_month.strftime("%Y-%m-%dT00:00:00Z"),
+    )
+
+
+def _cost_query(clients, sub_id, query, retries=5):
+    """Run a cost query with backoff on rate limits and a unique ClientType."""
+    scope = f"/subscriptions/{sub_id}"
+    return _retry_429(
+        clients.cost.query.usage,
+        scope,
+        query,
+        headers=dict(_COST_HEADERS),
+        retries=retries,
+    )
+
+
+def _build_cost_query(date_from, date_to, granularity="None", group_by=None):
+    dataset = {
+        "granularity": granularity,
+        "aggregation": {"totalCost": {"name": "Cost", "function": "Sum"}},
+    }
+    if group_by:
+        dataset["grouping"] = [{"type": "Dimension", "name": group_by}]
+    return {
+        "type": "ActualCost",
+        "timeframe": "Custom",
+        "time_period": {"from": date_from, "to": date_to},
+        "dataset": dataset,
+    }
 
 
 def cmd_status(args):
@@ -149,57 +213,147 @@ def cmd_resources(args):
                 print(f"    - {n}")
 
 
+def _usage_detail_fields(item):
+    """Normalize Legacy/Modern usage-detail rows to (name, meter, cost)."""
+    name = (
+        getattr(item, "resource_name", None)
+        or getattr(item, "instance_name", None)
+        or "(unknown resource)"
+    )
+    # instance_name is often a full resource ID; show only the resource name.
+    if isinstance(name, str) and "/" in name:
+        name = name.rstrip("/").split("/")[-1]
+    meter = (
+        getattr(item, "meter_name", None)
+        or getattr(item, "product", None)
+        or ""
+    )
+    cost = getattr(item, "cost", None)
+    if cost is None:
+        cost = getattr(item, "cost_in_billing_currency", None)
+    if cost is None:
+        cost = getattr(item, "cost_in_usd", None)
+    return name, meter, float(cost or 0)
+
+
 def cmd_cost(args):
     """Show cost information."""
     clients = get_clients()
     sub_id = clients.subscription_id
     today = datetime.now(timezone.utc)
-    
+
+    month_label, month_from, month_to = _last_calendar_month(today)
     print(f"\n{'='*50}")
-    print("Cost (Last 30 Days)")
+    print(f"Billed Last Month ({month_label})")
     print(f"{'='*50}")
-    
-    query = {
-        "type": "ActualCost",
-        "timeframe": "Custom",
-        "time_period": {
-            "from": (today - timedelta(days=30)).strftime("%Y-%m-%dT00:00:00Z"),
-            "to": today.strftime("%Y-%m-%dT%H:%M:%SZ")
-        },
-        "dataset": {
-            "granularity": "None",
-            "aggregation": {"totalCost": {"name": "Cost", "function": "Sum"}}
-        }
-    }
-    
+    print(f"  Period: {month_from[:10]} to {month_to[:10]}")
+
     try:
-        result = clients.cost.query.usage(f"/subscriptions/{sub_id}", query)
-        total = result.rows[0][0] if result.rows else 0
-        print(f"  Total: ${total:.2f}")
-    except Exception as e:
-        print(f"  Error: {e}")
-    
-    print(f"\n{'='*50}")
-    print("Daily Cost (Last 7 Days)")
-    print(f"{'='*50}")
-    
-    query["dataset"]["granularity"] = "Daily"
-    query["time_period"]["from"] = (today - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00Z")
-    
-    try:
-        result = clients.cost.query.usage(f"/subscriptions/{sub_id}", query)
-        if result.rows:
-            for row in result.rows:
-                c, d = row[0], row[1]
-                if isinstance(d, int):
-                    d = f"{str(d)[:4]}-{str(d)[4:6]}-{str(d)[6:8]}"
-                else:
-                    d = str(d)[:10]
-                print(f"  {d}: ${c:.2f}")
+        result = _cost_query(
+            clients,
+            sub_id,
+            _build_cost_query(month_from, month_to, group_by="ServiceName"),
+        )
+        if not result.rows:
+            print("  No billing data")
         else:
-            print("  No data")
+            total = 0.0
+            for row in sorted(result.rows, key=lambda r: float(r[0] or 0), reverse=True):
+                cost = float(row[0] or 0)
+                if cost == 0:
+                    continue
+                svc = row[1] if len(row) > 1 else "Unknown"
+                print(f"  {svc}: ${cost:.2f}")
+                total += cost
+            print(f"  {'-'*40}")
+            print(f"  Total: ${total:.2f}")
     except Exception as e:
         print(f"  Error: {e}")
+
+    if getattr(args, "details", False):
+        print(f"\n{'='*50}")
+        print(f"Per-Resource Detail ({month_label})")
+        print(f"{'='*50}")
+        scope = f"/subscriptions/{sub_id}"
+        # usageEnd is exclusive of month_to's day; filter the full prior month.
+        last_day = (datetime.strptime(month_to[:10], "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+        flt = (
+            f"properties/usageStart ge '{month_from[:10]}' and "
+            f"properties/usageEnd le '{last_day}'"
+        )
+        try:
+            items = _retry_429(
+                lambda: list(
+                    clients.consumption.usage_details.list(
+                        scope, filter=flt, metric="ActualCost"
+                    )
+                )
+            )
+            if not items:
+                print("  No line items")
+            else:
+                agg = {}
+                for it in items:
+                    name, meter, cost = _usage_detail_fields(it)
+                    key = (name, meter)
+                    agg[key] = agg.get(key, 0.0) + cost
+                total = 0.0
+                for (name, meter), cost in sorted(
+                    agg.items(), key=lambda kv: kv[1], reverse=True
+                ):
+                    if cost == 0:
+                        continue
+                    label = f"{name} / {meter}" if meter else name
+                    print(f"  {label}: ${cost:.4f}")
+                    total += cost
+                print(f"  {'-'*40}")
+                print(f"  Total: ${total:.4f}  ({len(items)} line items)")
+        except Exception as e:
+            print(f"  Error: {e}")
+
+    if getattr(args, "recent", False):
+        print(f"\n{'='*50}")
+        print("Cost (Last 30 Days)")
+        print(f"{'='*50}")
+        try:
+            result = _cost_query(
+                clients,
+                sub_id,
+                _build_cost_query(
+                    (today - timedelta(days=30)).strftime("%Y-%m-%dT00:00:00Z"),
+                    today.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                ),
+            )
+            total = float(result.rows[0][0]) if result.rows else 0
+            print(f"  Total: ${total:.2f}")
+        except Exception as e:
+            print(f"  Error: {e}")
+
+        print(f"\n{'='*50}")
+        print("Daily Cost (Last 7 Days)")
+        print(f"{'='*50}")
+        try:
+            result = _cost_query(
+                clients,
+                sub_id,
+                _build_cost_query(
+                    (today - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00Z"),
+                    today.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    granularity="Daily",
+                ),
+            )
+            if result.rows:
+                for row in result.rows:
+                    c, d = row[0], row[1]
+                    if isinstance(d, int):
+                        d = f"{str(d)[:4]}-{str(d)[4:6]}-{str(d)[6:8]}"
+                    else:
+                        d = str(d)[:10]
+                    print(f"  {d}: ${float(c):.2f}")
+            else:
+                print("  No data")
+        except Exception as e:
+            print(f"  Error: {e}")
 
 
 def cmd_traffic(args):
@@ -678,7 +832,17 @@ def main():
     # Account commands
     subparsers.add_parser("sub", help="Show subscription info")
     subparsers.add_parser("resources", help="List all resources")
-    subparsers.add_parser("cost", help="Show cost info")
+    cost_p = subparsers.add_parser("cost", help="Show last month's billed cost")
+    cost_p.add_argument(
+        "--recent",
+        action="store_true",
+        help="Also show last 30 days and daily last-7-day costs (extra API calls)",
+    )
+    cost_p.add_argument(
+        "--details",
+        action="store_true",
+        help="Show per-resource line items from the Consumption usageDetails API",
+    )
     subparsers.add_parser("traffic", help="Show network traffic usage")
     
     # Quota
