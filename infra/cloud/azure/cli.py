@@ -356,33 +356,99 @@ def cmd_cost(args):
             print(f"  Error: {e}")
 
 
+def _billing_free_egress_mtd(clients):
+    """Sum calendar-month MTD qty for Standard Data Transfer Out - Free (GB).
+
+    This is the meter Azure uses for the 100 GB/month internet-egress allowance.
+    Monitor Network Out Total is NOT the same thing and overstates free-tier burn.
+    """
+    today = datetime.now(timezone.utc)
+    month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    scope = f"/subscriptions/{clients.subscription_id}"
+    flt = (
+        f"properties/usageStart ge '{month_start.strftime('%Y-%m-%d')}' and "
+        f"properties/usageEnd le '{today.strftime('%Y-%m-%d')}'"
+    )
+    items = _retry_429(
+        lambda: list(
+            clients.consumption.usage_details.list(
+                scope, filter=flt, metric="ActualCost"
+            )
+        )
+    )
+    free_gb = 0.0
+    other_bw = {}  # meter -> [qty, cost]
+    for it in items:
+        _name, meter, cost = _usage_detail_fields(it)
+        meter_l = (meter or "").lower()
+        qty = float(
+            getattr(it, "quantity", None)
+            or getattr(it, "usage_quantity", None)
+            or 0
+        )
+        if "standard data transfer out - free" in meter_l:
+            free_gb += qty
+        elif "data transfer" in meter_l or "bandwidth" in meter_l:
+            if qty or cost:
+                q, c = other_bw.get(meter, [0.0, 0.0])
+                other_bw[meter] = [q + qty, c + cost]
+    other_list = [(m, q, c) for m, (q, c) in other_bw.items()]
+    return (
+        free_gb,
+        month_start.strftime("%Y-%m-%d"),
+        today.strftime("%Y-%m-%d"),
+        other_list,
+    )
+
+
 def cmd_traffic(args):
-    """Show network traffic usage for VMs."""
+    """Show network traffic usage for VMs + billing free-egress allowance."""
     from azure.mgmt.monitor import MonitorManagementClient
-    
+
     clients = get_clients()
     vms = list(clients.compute.virtual_machines.list_all())
-    
+
     if not vms:
         print("No VMs found.")
         return
-    
+
+    # Subscription-wide free internet egress (billing meter), calendar month MTD
+    print(f"\n{'='*50}")
+    print("Free Tier — Internet Egress (billing meter)")
+    print(f"{'='*50}")
+    free_limit_gb = 100
+    try:
+        free_gb, d_from, d_to, other_bw = _billing_free_egress_mtd(clients)
+        remaining = max(0.0, free_limit_gb - free_gb)
+        pct_used = (free_gb / free_limit_gb) * 100
+        print(f"  Meter:     Standard Data Transfer Out - Free")
+        print(f"  Period:    {d_from} -> {d_to} (calendar month MTD)")
+        print(f"  Used:      {free_gb:.3f} GB ({pct_used:.1f}% of {free_limit_gb} GB)")
+        print(f"  Remaining: {remaining:.3f} GB")
+        if other_bw:
+            print("  Other bandwidth meters (not free-tier):")
+            for meter, qty, cost in sorted(other_bw, key=lambda x: -x[2]):
+                print(f"    {meter}: {qty:.6f} GB  ${cost:.6f}")
+    except Exception as e:
+        print(f"  Error reading billing free meter: {e}")
+
     monitor = MonitorManagementClient(clients.credential, clients.subscription_id)
     end_time = datetime.now(timezone.utc)
     start_30d = end_time - timedelta(days=30)
     start_7d = end_time - timedelta(days=7)
-    
+
     end_str = end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
     start_30d_str = start_30d.strftime("%Y-%m-%dT%H:%M:%SZ")
     start_7d_str = start_7d.strftime("%Y-%m-%dT%H:%M:%SZ")
-    
+
     for vm in vms:
         print(f"\n{'='*50}")
         print(f"VM: {vm.name}")
         print(f"{'='*50}")
-        
-        # 30-day totals
-        print(f"\nNetwork Traffic (Last 30 Days):")
+
+        # 30-day NIC totals (ops signal — not the free-allowance counter)
+        print(f"\nNIC Traffic via Monitor (Last 30 Days):")
+        print("  (all outbound bytes; overstates free-tier vs billing)")
         try:
             metrics = monitor.metrics.list(
                 vm.id,
@@ -391,31 +457,22 @@ def cmd_traffic(args):
                 metricnames="Network In Total,Network Out Total",
                 aggregation="Total"
             )
-            
+
             totals = {}
             for metric in metrics.value:
                 total = sum(d.total for ts in metric.timeseries for d in ts.data if d.total)
                 totals[metric.name.localized_value] = total
-            
+
             net_in = totals.get("Network In Total", 0)
             net_out = totals.get("Network Out Total", 0)
-            
+
             print(f"  In:    {net_in / (1024**3):.2f} GB ({net_in / (1024**2):.0f} MB)")
             print(f"  Out:   {net_out / (1024**3):.2f} GB ({net_out / (1024**2):.0f} MB)")
             print(f"  Total: {(net_in + net_out) / (1024**3):.2f} GB")
-            
-            # Free tier info (PAYG accounts get 100 GB free egress/month)
-            free_limit_gb = 100
-            out_gb = net_out / (1024**3)
-            remaining = max(0, free_limit_gb - out_gb)
-            pct_used = (out_gb / free_limit_gb) * 100
-            print(f"\n  Free Tier (100 GB outbound/month):")
-            print(f"    Used:      {out_gb:.2f} GB ({pct_used:.1f}%)")
-            print(f"    Remaining: {remaining:.2f} GB")
-            
+
         except Exception as e:
             print(f"  Error: {e}")
-        
+
         # Daily breakdown
         print(f"\nDaily Breakdown (Last 7 Days):")
         try:
@@ -426,7 +483,7 @@ def cmd_traffic(args):
                 metricnames="Network In Total,Network Out Total",
                 aggregation="Total"
             )
-            
+
             data_by_date = {}
             for metric in metrics.value:
                 for ts in metric.timeseries:
@@ -439,7 +496,7 @@ def cmd_traffic(args):
                                 data_by_date[date]["in"] = data.total / (1024**2)
                             else:
                                 data_by_date[date]["out"] = data.total / (1024**2)
-            
+
             if data_by_date:
                 print(f"  {'Date':<12} {'In (MB)':>10} {'Out (MB)':>10}")
                 print(f"  {'-'*34}")
@@ -448,7 +505,7 @@ def cmd_traffic(args):
                     print(f"  {date:<12} {d['in']:>10.1f} {d['out']:>10.1f}")
             else:
                 print("  No data")
-                
+
         except Exception as e:
             print(f"  Error: {e}")
 
