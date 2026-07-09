@@ -82,3 +82,6 @@ web/patchright/test_report.json
 
 # Windows-reserved filename not stageable on Windows
 infra/cloud/digi/nul
+
+# Local Python venvs
+**/.venv/
