@@ -1,6 +1,6 @@
 services:
   hysteria:
-    image: tobyxdd/hysteria:v2
+    image: tobyxdd/hysteria:v2.9.3
     container_name: hysteria2
     restart: always
     network_mode: host

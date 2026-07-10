@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Azure CLI - unified management for VMs, resources, billing, and proxies."""
+"""Azure manager - unified management for VMs, resources, billing, and proxies."""
 import sys
 import time
 import argparse
@@ -650,6 +650,81 @@ def cmd_proxy_delete(args):
                 print(f"error: {e}")
 
 
+def _iter_nsgs(clients):
+    for nsg in clients.network.network_security_groups.list_all():
+        rg = nsg.id.split("/")[4]
+        yield rg, nsg
+
+
+def cmd_nsg(args):
+    """List NSGs and inbound rules, or open a port."""
+    clients = get_clients()
+    from azure.mgmt.network.models import SecurityRule
+
+    if args.action == "open":
+        protocol = args.protocol.capitalize() if args.protocol.lower() != "any" else "*"
+        port = str(args.port)
+        name = args.name or f"Allow-{protocol}-{port}"
+        priority = args.priority
+        source = args.source
+        opened = 0
+        for rg, nsg in _iter_nsgs(clients):
+            if args.nsg and nsg.name != args.nsg and args.nsg not in nsg.id:
+                continue
+            existing = {r.name: r for r in (nsg.security_rules or [])}
+            used = {r.priority for r in existing.values() if r.direction == "Inbound"}
+            pri = priority
+            while pri in used:
+                pri += 1
+            rule = SecurityRule(
+                name=name,
+                protocol=protocol,
+                source_port_range="*",
+                destination_port_range=port,
+                source_address_prefix=source,
+                destination_address_prefix="*",
+                access="Allow",
+                priority=pri,
+                direction="Inbound",
+            )
+            print(
+                f"Opening {protocol}/{port} on {nsg.name} ({rg}) as {name} pri={pri}...",
+                end=" ",
+                flush=True,
+            )
+            clients.network.security_rules.begin_create_or_update(
+                rg, nsg.name, name, rule
+            ).result()
+            print("done")
+            opened += 1
+        if not opened:
+            print("No matching NSG found.")
+        return
+
+    nsgs = list(_iter_nsgs(clients))
+    if not nsgs:
+        print("No NSGs found.")
+        return
+    for rg, nsg in nsgs:
+        print(f"\n{'='*50}")
+        print(f"NSG: {nsg.name}  (rg={rg})")
+        print(f"{'='*50}")
+        rules = sorted(
+            nsg.security_rules or [],
+            key=lambda r: (r.direction or "", r.priority or 0),
+        )
+        if not rules:
+            print("  (no custom rules)")
+            continue
+        for r in rules:
+            ports = r.destination_port_range or ",".join(r.destination_port_ranges or [])
+            src = r.source_address_prefix or ",".join(r.source_address_prefixes or [])
+            print(
+                f"  [{r.priority:>4}] {r.direction:<8} {r.access:<6} "
+                f"{r.protocol:<4} dst={ports:<12} src={src}  {r.name}"
+            )
+
+
 def cmd_create_free(args):
     """Create a completely free Azure VM with IPv6-only (no public IPv4 charges)."""
     from azure.mgmt.compute.models import (
@@ -877,7 +952,7 @@ def cmd_create_free(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Azure CLI", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description="Azure manager", formatter_class=argparse.RawDescriptionHelpFormatter)
     subparsers = parser.add_subparsers(dest="command", help="Commands")
     
     # VM commands
@@ -918,6 +993,22 @@ def main():
     
     subparsers.add_parser("proxy-status", help="Show proxy status")
     subparsers.add_parser("proxy-delete", help="Delete proxy")
+
+    # NSG
+    nsg_p = subparsers.add_parser("nsg", help="List NSG rules or open a port")
+    nsg_p.add_argument(
+        "action",
+        nargs="?",
+        default="list",
+        choices=["list", "open"],
+        help="list (default) or open",
+    )
+    nsg_p.add_argument("--port", type=int, help="Destination port (required for open)")
+    nsg_p.add_argument("--protocol", default="Udp", help="Tcp, Udp, or Any (default: Udp)")
+    nsg_p.add_argument("--name", help="Rule name (default: Allow-<proto>-<port>)")
+    nsg_p.add_argument("--priority", type=int, default=1100, help="Inbound priority")
+    nsg_p.add_argument("--source", default="*", help="Source prefix (default: *)")
+    nsg_p.add_argument("--nsg", help="Only this NSG name (default: all)")
     
     # Free VM creation
     free_p = subparsers.add_parser("create-free", help="Create FREE VM (IPv6-only)")
@@ -933,6 +1024,9 @@ def main():
     if not args.command:
         parser.print_help()
         return
+
+    if args.command == "nsg" and args.action == "open" and not args.port:
+        nsg_p.error("--port is required for nsg open")
     
     commands = {
         "status": cmd_status,
@@ -948,6 +1042,7 @@ def main():
         "proxy-deploy": cmd_proxy_deploy,
         "proxy-status": cmd_proxy_status,
         "proxy-delete": cmd_proxy_delete,
+        "nsg": cmd_nsg,
         "create-free": cmd_create_free,
     }
     

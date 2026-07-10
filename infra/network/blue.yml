@@ -116,7 +116,7 @@ proxies:
   - name: 🇸🇬azure_sg_hy2
     type: hysteria2
     server: hyaz.hyas.site
-    port: 3365
+    port: 443
     password: NzPY5nTKThLxUb1MOJTuu6B0
     sni: hyaz.hyas.site
 

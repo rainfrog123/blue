@@ -228,11 +228,10 @@ This method works from any network (IPv4 or IPv6) and costs $0.
 
 ### Deallocate When Not in Use
 
-Simply stopping the OS doesn't stop billing. Use Azure Portal "Stop" button to deallocate:
+Simply stopping the OS doesn't stop billing. Use Azure Portal "Stop" button to deallocate, or:
 
 ```bash
-# Or via CLI
-az vm deallocate --resource-group free-vm-rg --name free-vm
+python cli.py stop
 ```
 
 ### Monitor Free Tier Usage

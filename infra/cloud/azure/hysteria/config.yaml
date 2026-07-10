@@ -1,4 +1,4 @@
-listen: :3365
+listen: :443
 
 acme:
   domains:

@@ -6,13 +6,13 @@
 
 | Setting | Value |
 |---------|-------|
-| **Server** | `hyaz.hyas.site:3365` |
-| **Port** | `3365` (UDP) |
+| **Server** | `hyaz.hyas.site:443` |
+| **Port** | `443` (UDP) |
 | **Password** | `NzPY5nTKThLxUb1MOJTuu6B0` |
 | **IPv6** | `2603:1040:0:3::52` |
 
 ```
-hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:3365?sni=hyaz.hyas.site#Azure-SG-hy2
+hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:443?sni=hyaz.hyas.site#Azure-SG-hy2
 ```
 
 ### DigitalOcean (Singapore)

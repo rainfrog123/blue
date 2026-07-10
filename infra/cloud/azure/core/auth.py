@@ -4,9 +4,14 @@ from pathlib import Path
 from dataclasses import dataclass
 from functools import lru_cache
 
-for _parent in Path(__file__).resolve().parents:
-    if (_parent / "cred.json").exists():
-        sys.path.insert(0, str(_parent / "linux" / "extra"))
+_here = Path(__file__).resolve()
+for _parent in _here.parents:
+    _scripts = _parent / "infra" / "scripts"
+    if (_parent / "cred.json").exists() and (_scripts / "cred_loader.py").exists():
+        sys.path.insert(0, str(_scripts))
+        break
+    if (_parent / "cred_loader.py").exists():
+        sys.path.insert(0, str(_parent))
         break
 
 from cred_loader import get_azure
@@ -14,7 +19,7 @@ from cred_loader import get_azure
 from azure.identity import ClientSecretCredential
 from azure.mgmt.compute import ComputeManagementClient
 from azure.mgmt.network import NetworkManagementClient
-from azure.mgmt.resource import ResourceManagementClient
+from azure.mgmt.resource.resources import ResourceManagementClient
 from azure.mgmt.subscription import SubscriptionClient
 from azure.mgmt.costmanagement import CostManagementClient
 from azure.mgmt.consumption import ConsumptionManagementClient
