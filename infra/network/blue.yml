@@ -34,7 +34,7 @@ proxies:
 
   - name: 🇸🇬azure_singapore
     type: ss
-    server: 8.222.182.157
+    server: 2603:1040:0:3::52
     port: 12033
     cipher: chacha20-ietf-poly1305
     password: bxsnucrgk6hfish
