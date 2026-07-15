@@ -1,7 +1,7 @@
 # Proxies
 # Version: 🔖 11:43-08/06 (UTC+8)
 proxies:
-  # Personal Servers (ali nodes first, then do nodes)
+  # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬azure_singapore_tj
     type: trojan
     # server: 172.64.158.247
@@ -641,8 +641,8 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
+      - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
-      # - 🌊 Digital Ocean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       # - 🔄 CF WARP Outbound
@@ -667,8 +667,8 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - 🚀 Hysteria Nodes
+      - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
-      # - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       # - 🇸🇬do_singapore_tj
       # - 🇸🇬do_singapore
@@ -700,16 +700,19 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_8
       - DIRECT
 
-  - name: 🌊 Digital Ocean Nodes
+  - name: ☁️ Aliyun Nodes
     type: select
     proxies:
-      # Digi/DO SG direct (unpaid) — replaced by Aliyun SS below
+      - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
+      - 🇸🇬ali_singapore_hy2
+      - 🇸🇬ali_singapore_hy2_v6
+      - DIRECT
+      # former DigitalOcean members (commented)
       # - 🇸🇬do_singapore_tj
       # - 🇸🇬do_singapore
       # - 🇸🇬do_singapore_reality
       # - 🇸🇬do_singapore_vless_warp
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
       # - 🇸🇬do_singapore_tj_2
       # - 🇸🇬do_singapore_tj_3
       # - 🇸🇬do_singapore_tj_4
@@ -725,7 +728,6 @@ proxy-groups:
       # - 🇯🇵do_japan_tj_6
       # - 🇯🇵do_japan_tj_7
       # - 🇯🇵do_japan_tj_8
-      - DIRECT
 
   - name: 🚀 Hysteria Nodes
     type: select
@@ -739,8 +741,8 @@ proxy-groups:
   - name: 🔑 Manual Selection
     type: select
     proxies:
+      - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
-      # - 🌊 Digital Ocean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       # - 🌐 Naiyun
@@ -899,9 +901,9 @@ proxy-groups:
   - name: 🎮 Riot Games
     type: select
     proxies:
+      - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
       - 🚀 Node Selection
-      # - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
 
