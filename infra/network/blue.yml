@@ -130,6 +130,14 @@ proxies:
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
 
+  # Hysteria 2 (Aliyun SG — IPv6 only)
+  - name: 🇸🇬ali_singapore_hy2_v6
+    type: hysteria2
+    server: "240b:4000:20:ee00:eb99:2357:52aa:50a9"
+    port: 443
+    password: jEdTlnZe2q2nv1N0lmmXHCp2
+    sni: hy.hyas.site
+
   # Hysteria 2 (Azure SG - Direct UDP, IPv6 Only)
   - name: 🇸🇬azure_sg_hy2
     type: hysteria2
@@ -653,6 +661,7 @@ proxy-groups:
       # - 🇸🇬do_singapore
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_hy2
+      - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
   - name: ☁️ Azure Nodes
@@ -708,6 +717,7 @@ proxy-groups:
     proxies:
       # - 🇸🇬do_singapore_hy2
       - 🇸🇬ali_singapore_hy2
+      - 🇸🇬ali_singapore_hy2_v6
       - 🇸🇬azure_sg_hy2
       - DIRECT
 
@@ -794,6 +804,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_hy2
+      - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
   - name: 🧠 Claude Nodes
@@ -803,6 +814,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_hy2
+      - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
   - name: 🖥️ Cursor Website Nodes
