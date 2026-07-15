@@ -23,9 +23,11 @@ Usage:
 import sys
 from pathlib import Path
 
-# Add credential loader to path (swas -> ali -> vps -> linux -> extra)
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "extra"))
-from cred_loader import get_alibaba
+# Shared helpers live one level up (infra/cloud/ali/common.py)
+_ali_root = Path(__file__).resolve().parents[1]
+if str(_ali_root) not in sys.path:
+    sys.path.insert(0, str(_ali_root))
+from common import load_alibaba, print_header as _print_header
 
 from alibabacloud_swas_open20200601 import models as swas_models
 from alibabacloud_swas_open20200601.client import Client as SwasClient
@@ -36,7 +38,7 @@ REGION_ID = "ap-southeast-1"
 INSTANCE_ID = "6911f5dbf7d440d8ac63e9ac1706d406"
 
 # Load credentials and create client
-_alibaba = get_alibaba()
+_alibaba = load_alibaba()
 _config = open_api_models.Config(
     access_key_id=_alibaba["access_key_id"],
     access_key_secret=_alibaba["access_key_secret"],
@@ -46,11 +48,13 @@ client = SwasClient(_config)
 
 
 def print_header(title: str):
-    print(f"\n{'='*60}")
-    print(f"SWAS (轻量应用服务器) - {title}")
-    print(f"{'='*60}")
-    print(f"Region: {REGION_ID} | Instance: {INSTANCE_ID[:12]}...")
-    print(f"{'='*60}\n")
+    _print_header(
+        title,
+        product="SWAS",
+        region=REGION_ID,
+        extra=f"Instance:  {INSTANCE_ID[:12]}...",
+    )
+    print()
 
 
 # %% Instance Operations

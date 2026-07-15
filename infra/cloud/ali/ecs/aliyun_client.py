@@ -9,7 +9,7 @@ initialization, and common utility functions.
 Exports:
     ecs_client: Configured ECS API client
     ecs_models: ECS request/response models
-    REGION_ID: Target region (cn-hongkong)
+    REGION_ID: Target region (ap-southeast-1 / Singapore)
     print_header: Formatted output helper
     create_vpc_client: Factory for VPC client
 
@@ -31,19 +31,21 @@ try:
 except NameError:
     _script_dir = Path.cwd()
 
-# Add credential loader to path (ecs -> ali -> vps -> linux -> extra)
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "extra"))
-from cred_loader import get_alibaba
+# Shared helpers live one level up (infra/cloud/ali/common.py)
+_ali_root = Path(__file__).resolve().parents[1]
+if str(_ali_root) not in sys.path:
+    sys.path.insert(0, str(_ali_root))
+from common import load_alibaba, print_header as _print_header
 
 from alibabacloud_ecs20140526 import models as ecs_models
 from alibabacloud_ecs20140526.client import Client as EcsClient
 from alibabacloud_tea_openapi import models as open_api_models
 
 # Configuration
-REGION_ID = "cn-hongkong"
+REGION_ID = "ap-southeast-1"
 
 # Load credentials
-_alibaba = get_alibaba()
+_alibaba = load_alibaba()
 ACCESS_KEY_ID = _alibaba["access_key_id"]
 ACCESS_KEY_SECRET = _alibaba["access_key_secret"]
 
@@ -68,13 +70,13 @@ def create_vpc_client():
 
 
 def print_header(title: str):
-    """Print a formatted header."""
-    print(f"{'='*60}")
-    print(f"ALIBABA CLOUD ECS - {title}")
-    print(f"{'='*60}")
-    print(f"Region:     {REGION_ID}")
-    print(f"Access Key: {ACCESS_KEY_ID[:8]}...")
-    print(f"{'='*60}")
+    """Print a formatted header for ECS CLI output."""
+    _print_header(
+        title,
+        product="ECS",
+        region=REGION_ID,
+        extra=f"Access Key: {ACCESS_KEY_ID[:8]}...",
+    )
 
 
 # Export everything needed

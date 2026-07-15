@@ -34,7 +34,7 @@ def get_network_config():
     config = {
         'vpc_id': None,
         'vswitch_id': None,
-        'zone_id': 'cn-hongkong-c',
+        'zone_id': 'ap-southeast-1a',
         'security_group_id': None,
         'key_pair_name': None,
     }
@@ -60,7 +60,8 @@ def get_network_config():
             )
             if vswitch_response.body and vswitch_response.body.v_switches and vswitch_response.body.v_switches.v_switch:
                 vswitches = vswitch_response.body.v_switches.v_switch
-                vswitch = next((vs for vs in vswitches if vs.zone_id == "cn-hongkong-c"), vswitches[0])
+                preferred = "ap-southeast-1a"
+                vswitch = next((vs for vs in vswitches if vs.zone_id == preferred), vswitches[0])
                 config['vswitch_id'] = vswitch.v_switch_id
                 config['zone_id'] = vswitch.zone_id
     except Exception:
@@ -519,11 +520,170 @@ def cmd_rotate(args):
     rotate_and_terminate()
 
 
+def _ecs_client_for_region(region_id: str):
+    """Build an ECS client for an arbitrary region (default client is REGION_ID)."""
+    from aliyun_client import ACCESS_KEY_ID, ACCESS_KEY_SECRET, open_api_models
+    from alibabacloud_ecs20140526.client import Client as EcsClient
+
+    cfg = open_api_models.Config(
+        access_key_id=ACCESS_KEY_ID,
+        access_key_secret=ACCESS_KEY_SECRET,
+    )
+    cfg.endpoint = f"ecs.{region_id}.aliyuncs.com"
+    return EcsClient(cfg)
+
+
+def list_spot_prices(
+    region_id: str = None,
+    max_cpu: int = 4,
+    max_mem: float = 8.0,
+    top: int = 25,
+    disk_size: int = 20,
+):
+    """Query cheapest SpotAsPriceGo instance types available via API."""
+    region_id = region_id or REGION_ID
+    client = _ecs_client_for_region(region_id)
+    print("=" * 60)
+    print(f"ALIBABA CLOUD ECS - SPOT PRICES")
+    print("=" * 60)
+    print(f"Region:     {region_id}")
+    print(f"Filter:     <= {max_cpu} vCPU / {max_mem:g} GiB")
+    print(f"Disk:       {disk_size} GB | SpotAsPriceGo | PayByTraffic 1 Mbps")
+    print("=" * 60)
+    print()
+
+    avail = client.describe_available_resource(
+        ecs_models.DescribeAvailableResourceRequest(
+            region_id=region_id,
+            destination_resource="InstanceType",
+            instance_charge_type="PostPaid",
+            spot_strategy="SpotAsPriceGo",
+        )
+    )
+    spot_zones = {}
+    zones = []
+    if avail.body and avail.body.available_zones and avail.body.available_zones.available_zone:
+        zones = avail.body.available_zones.available_zone
+    for z in zones:
+        resources = (
+            z.available_resources.available_resource
+            if z.available_resources and z.available_resources.available_resource
+            else []
+        )
+        for r in resources:
+            supported = (
+                r.supported_resources.supported_resource
+                if r.supported_resources and r.supported_resources.supported_resource
+                else []
+            )
+            for s in supported:
+                if getattr(s, "status", None) == "SoldOut":
+                    continue
+                if getattr(s, "status_category", None) == "WithoutStock":
+                    continue
+                spot_zones.setdefault(s.value, set()).add(z.zone_id)
+
+    type_ids = sorted(spot_zones)
+    specs = {}
+    for i in range(0, len(type_ids), 10):
+        batch = type_ids[i : i + 10]
+        resp = client.describe_instance_types(
+            ecs_models.DescribeInstanceTypesRequest(instance_types=batch)
+        )
+        types = (
+            resp.body.instance_types.instance_type
+            if resp.body and resp.body.instance_types
+            else []
+        )
+        for t in types:
+            specs[t.instance_type_id] = (t.cpu_core_count, float(t.memory_size))
+
+    candidates = [
+        (itype, *specs[itype], sorted(spot_zones[itype])[0])
+        for itype in type_ids
+        if itype in specs and specs[itype][0] <= max_cpu and specs[itype][1] <= max_mem
+    ]
+
+    disk_cats = ("cloud_essd_entry", "cloud_efficiency", "cloud_essd", "cloud_ssd")
+    results = []
+    for itype, cpu, mem, zone in candidates:
+        for disk_cat in disk_cats:
+            try:
+                sd = ecs_models.DescribePriceRequestSystemDisk(category=disk_cat, size=disk_size)
+                price_resp = client.describe_price(
+                    ecs_models.DescribePriceRequest(
+                        region_id=region_id,
+                        resource_type="instance",
+                        instance_type=itype,
+                        price_unit="Hour",
+                        period=1,
+                        amount=1,
+                        instance_network_type="vpc",
+                        internet_charge_type="PayByTraffic",
+                        internet_max_bandwidth_out=1,
+                        system_disk=sd,
+                        spot_strategy="SpotAsPriceGo",
+                    )
+                )
+                pi = price_resp.body.price_info.price
+                results.append(
+                    {
+                        "type": itype,
+                        "cpu": cpu,
+                        "mem": mem,
+                        "zone": zone,
+                        "disk": disk_cat,
+                        "price": float(pi.trade_price),
+                        "currency": pi.currency,
+                    }
+                )
+                break
+            except Exception:
+                continue
+
+    results.sort(key=lambda r: r["price"])
+    print(f"Spot-available types: {len(spot_zones)} | Priced (filtered): {len(results)}\n")
+    print(f"{'Price/h':>12}  {'~/mo':>8}  {'Type':28s} {'Spec':10s} {'Disk':18s} Zone")
+    print("-" * 100)
+    for r in results[:top]:
+        monthly = r["price"] * 720
+        print(
+            f"{r['price']:12.6f}  {monthly:8.2f}  {r['type']:28s} "
+            f"{r['cpu']}C/{r['mem']:g}G{'':3s} {r['disk']:18s} {r['zone']}"
+        )
+
+    if results:
+        best = results[0]
+        usable = next((r for r in results if r["mem"] >= 2.0), None)
+        print(f"\nCheapest overall: {best['type']} ({best['cpu']}C/{best['mem']:g}G) "
+              f"@ {best['price']:.6f} {best['currency']}/h "
+              f"(~{best['price'] * 720:.2f}/mo if always up)")
+        if usable:
+            print(f"Cheapest >=2 GiB:  {usable['type']} ({usable['cpu']}C/{usable['mem']:g}G) "
+                  f"@ {usable['price']:.6f} {usable['currency']}/h "
+                  f"(~{usable['price'] * 720:.2f}/mo if always up)")
+        print("Note: prices include 20 GB system disk + 1 Mbps pay-by-traffic; spot can be reclaimed.")
+    else:
+        print("No priced spot candidates matched the filter.")
+    return results
+
+
+def cmd_spot_prices(args):
+    """Handle spot-prices subcommand."""
+    list_spot_prices(
+        region_id=args.region,
+        max_cpu=args.max_cpu,
+        max_mem=args.max_mem,
+        top=args.top,
+        disk_size=args.disk_size,
+    )
+
+
 # =============================================================================
 # SSH CONFIG HELPERS
 # =============================================================================
 
-def update_ssh_config(new_ip: str, host_alias: str = "ali_hk"):
+def update_ssh_config(new_ip: str, host_alias: str = "ali_sg"):
     """Update SSH config with new IP."""
     import re
     ssh_config = Path.home() / ".ssh" / "config"
@@ -569,7 +729,7 @@ VNC_PASSWORD = "Xk9#mP2$vNc@2026"
 VNC_USERNAME = "vncuser"
 
 
-def update_vnc_config(new_ip: str, port: int = 5901, name: str = "ali_hk"):
+def update_vnc_config(new_ip: str, port: int = 5901, name: str = "ali_sg"):
     """Create/update VNC connection for Remmina (Linux) or RealVNC (Windows)."""
     import re
     import base64
@@ -651,6 +811,7 @@ Examples:
   %(prog)s list instances          List all instances
   %(prog)s list images             List custom images
   %(prog)s provision --spot        Create spot instance from latest image
+  %(prog)s spot-prices             Cheapest Singapore spot types (API)
   %(prog)s terminate               Stop and delete instance
   %(prog)s create image            Create image from current instance
   %(prog)s cleanup --images        Delete all custom images
@@ -680,7 +841,7 @@ Examples:
     prov_parser.add_argument('--disk-size', type=int, default=63, help='System disk size (GB)')
     prov_parser.add_argument('--spot', action='store_true', help='Use spot instance')
     prov_parser.add_argument('--update-ssh', action='store_true', help='Update SSH config')
-    prov_parser.add_argument('--ssh-host', default='ali_hk', help='SSH host alias to update')
+    prov_parser.add_argument('--ssh-host', default='ali_sg', help='SSH host alias to update')
     prov_parser.set_defaults(func=cmd_provision)
     
     # terminate
@@ -722,6 +883,18 @@ Examples:
     rotate_parser = subparsers.add_parser('rotate', help='Backup instance to image, then terminate')
     rotate_parser.add_argument('-y', '--yes', action='store_true', help='Skip confirmation')
     rotate_parser.set_defaults(func=cmd_rotate)
+
+    # spot-prices
+    spot_parser = subparsers.add_parser(
+        'spot-prices', aliases=['spot', 'prices'],
+        help='List cheapest Spot instance types via DescribePrice',
+    )
+    spot_parser.add_argument('--region', default=REGION_ID, help='Region (default: Singapore)')
+    spot_parser.add_argument('--max-cpu', type=int, default=4, help='Max vCPU filter')
+    spot_parser.add_argument('--max-mem', type=float, default=8.0, help='Max memory GiB filter')
+    spot_parser.add_argument('--top', type=int, default=25, help='Rows to print')
+    spot_parser.add_argument('--disk-size', type=int, default=20, help='System disk GB for pricing')
+    spot_parser.set_defaults(func=cmd_spot_prices)
     
     args = parser.parse_args()
     

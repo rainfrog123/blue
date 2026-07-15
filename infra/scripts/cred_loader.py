@@ -107,9 +107,19 @@ def get_cloudflare_api_token() -> str:
     return cred.get("CLOUDFLARE_API_TOKEN", "")
 
 
-def get_azure() -> dict:
-    """Get Azure service principal credentials."""
-    return load_cred()["azure"]
+def get_azure(account: str = "azure") -> dict:
+    """Get Azure service principal credentials.
+
+    account: cred.json key, e.g. \"azure\" or \"azure2\".
+    Aliases: az → azure, az2 → azure2.
+    """
+    aliases = {"az": "azure", "az2": "azure2", "primary": "azure", "secondary": "azure2"}
+    key = aliases.get(account, account)
+    cred = load_cred()
+    if key not in cred:
+        available = [k for k in cred if k.startswith("azure")]
+        raise KeyError(f"No '{key}' in cred.json (found: {available or 'none'})")
+    return cred[key]
 
 
 def get_resend() -> dict:

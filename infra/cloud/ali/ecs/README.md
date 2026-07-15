@@ -1,124 +1,44 @@
-# Alibaba Cloud ECS Manager
+# Alibaba Cloud ECS CLI
 
-A Python toolkit for managing Alibaba Cloud ECS (Elastic Compute Service) instances, images, snapshots, and backups in the Hong Kong region.
+Python toolkit for ECS instances, images, snapshots, and spot pricing.
 
-## Features
+Default region: **ap-southeast-1** (Singapore).
 
-- **Instance Lifecycle**: Provision and terminate ECS instances from custom images
-- **Backup Management**: Create/rotate snapshots and custom images
-- **Spot Instance Support**: Cost-effective spot pricing with automatic fallback
-- **SSH/VNC Integration**: Auto-update local SSH config and VNC connections
-- **Security Diagnostics**: Debug firewall rules and port accessibility
+## Usage
+
+```bash
+python cli.py status                  # resource summary
+python cli.py list instances
+python cli.py list images
+python cli.py provision --spot        # create from latest custom image
+python cli.py spot-prices             # cheapest spot in Singapore (default)
+python cli.py spot-prices --region ap-southeast-1 --max-mem 2
+python cli.py terminate
+python cli.py create image
+python cli.py cleanup --images
+python cli.py diagnose --port 22
+python cli.py rotate                  # backup image then terminate
+```
+
+## Files
+
+| File | Role |
+|------|------|
+| `cli.py` | Unified CLI entry |
+| `aliyun_client.py` | Credentials, ECS/VPC clients, default `REGION_ID` |
+| `ecs_operations.py` | List/create/delete helpers for instances, images, snapshots, disks |
+| `../common.py` | Shared `cred_loader` bootstrap |
 
 ## Prerequisites
-
-### Python Packages
 
 ```bash
 pip install alibabacloud_ecs20140526 alibabacloud_vpc20160428 alibabacloud_tea_openapi
 ```
 
-### Credentials
+Credentials: `infra/scripts/cred_loader.py` → `get_alibaba()`.
 
-Requires Alibaba Cloud credentials configured via `cred_loader` module (located in `infra/`):
-- `access_key_id`
-- `access_key_secret`
+## Notes
 
-## File Structure
-
-```
-├── aliyun_client.py        # Shared client configuration and credentials
-├── ecs_operations.py       # Common API operations (instances, images, snapshots, disks)
-│
-├── provision_instance.py   # Create new ECS instances from custom images
-├── terminate_instance.py   # Stop and delete ECS instances
-│
-├── create_image.py         # Create custom images from running instances
-├── delete_images.py        # Bulk delete custom images
-├── manage_snapshots.py     # Create and delete disk snapshots
-├── rotate_backup.py        # Full backup rotation (snapshot + image, cleanup old)
-│
-├── explore_api.py          # API exploration and testing utilities
-└── diagnose_firewall.py    # Security group rule diagnostics
-```
-
-## Common Workflows
-
-### Provision a New Instance
-
-```python
-# In provision_instance.py
-# Uses latest custom image, creates spot instance with auto-naming
-build_instance(image_id, instance_name="blue-0224", spot=True)
-```
-
-After provisioning, the script automatically:
-1. Updates `~/.ssh/config` with the new IP
-2. Updates RealVNC saved connections
-3. Clears old SSH known_hosts entries
-
-### Create a Backup
-
-```python
-# In rotate_backup.py
-create_backup()    # Create new snapshot + image (keeps existing)
-rotate_backup()    # Create new backup AND delete old ones
-```
-
-### Terminate an Instance
-
-```python
-# In terminate_instance.py
-release_all()      # Stop instance, then delete (auto-deletes system disk)
-```
-
-### Debug Port Access
-
-```bash
-python diagnose_firewall.py 47.86.7.159 443
-```
-
-## Configuration
-
-Default region: `cn-hongkong`
-
-Edit `aliyun_client.py` to change:
-- `REGION_ID` - Target region
-- Endpoint configuration
-
-## Interactive Usage
-
-All scripts use `# %%` cell markers for interactive execution in VS Code/Jupyter:
-
-1. Open any script in VS Code with Python extension
-2. Run cells interactively with `Shift+Enter`
-3. Functions are defined but not auto-executed (except where noted)
-
-## API Reference
-
-### ecs_operations.py
-
-**Instances**
-- `list_instances(status=None, verbose=True)` - List all instances
-- `get_instance(instance_id=None)` - Get specific or first instance
-
-**Images**
-- `list_images(image_type="self", verbose=True)` - List images
-- `get_latest_image(image_type="self")` - Get most recent image
-- `create_image(instance_id, snapshot_id, image_name, description)`
-- `delete_image(image_id, force=False)`
-- `wait_for_image(image_id, timeout=600)`
-
-**Snapshots**
-- `list_snapshots(disk_id=None, instance_id=None, verbose=True)`
-- `create_snapshot(disk_id, snapshot_name, description, instant_access=False)`
-- `delete_snapshot(snapshot_id, force=False)`
-- `wait_for_snapshot(snapshot_id, timeout=600)`
-
-**Disks**
-- `list_disks(instance_id=None, disk_type=None, verbose=True)`
-- `get_system_disk(instance_id)` - Get instance's system disk
-
-**Bulk Operations**
-- `delete_all_images(keep_ids=[], force=False)`
-- `delete_all_snapshots(keep_ids=[], force=False)`
+- Provision/list/status/spot-prices all default to `REGION_ID` (`ap-southeast-1`).
+- Override spot queries with `--region` if needed.
+- Spot prices include a 20 GB system disk + 1 Mbps pay-by-traffic in the quote.

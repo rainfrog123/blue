@@ -1,5 +1,8 @@
 # Hysteria 2 Server
 
+> [!important] Port policy
+> **Always use UDP `443`** for Hysteria 2 (Azure, Aliyun, and any new box). Do not use `5333` anymore.
+
 ## Deployed Servers
 
 ### Azure (Singapore) - IPv6 Only
@@ -7,7 +10,7 @@
 | Setting | Value |
 |---------|-------|
 | **Server** | `hyaz.hyas.site:443` |
-| **Port** | `443` (UDP) |
+| **Port** | **443** (UDP) |
 | **Password** | `NzPY5nTKThLxUb1MOJTuu6B0` |
 | **IPv6** | `2603:1040:0:3::52` |
 
@@ -15,19 +18,23 @@
 hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:443?sni=hyaz.hyas.site#Azure-SG-hy2
 ```
 
-### DigitalOcean (Singapore)
+### Aliyun (Singapore) — current (`hy.hyas.site`)
 
 | Setting | Value |
 |---------|-------|
-| **Server** | `hy.hyas.site:5333` |
-| **Port** | `5333` (UDP) |
-| **Password** | `jEdTlnZe2q2nv1N0lmmXHCp2` |
-| **IPv4** | `129.212.209.177` |
-| **IPv6** | `2400:6180:0:d2:0:2:c7ec:0` |
+| **SS** | `47.237.141.29:12033` · `chacha20-ietf-poly1305` · `bxsnucrgk6hfish` |
+| **Hy2** | `hy.hyas.site:**443**` · password `jEdTlnZe2q2nv1N0lmmXHCp2` |
+| **IPv4** | `47.237.141.29` |
+| **IPv6** | `240b:4000:20:ee00:eb99:2357:52aa:50a9` |
+| **Compose** | `infra/cloud/ali/hysteria/` |
 
 ```
-hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#DO-SG-hy2
+hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:443?sni=hy.hyas.site#Ali-SG-hy2
 ```
+
+### Digi / DigitalOcean (Singapore) — archived
+
+Formerly `hy.hyas.site` on Digi `129.212.209.177` (Hy2 used to listen on **5333**; policy is now **443 only**). DNS and service moved to Aliyun above. Digi SS was on DO `188.166.252.16:12033`.
 
 ---
 
@@ -36,15 +43,15 @@ hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:5333?sni=hy.hyas.site#DO-SG-hy
 ### Prerequisites
 
 - Docker installed
-- Domain with Cloudflare DNS
-- UDP port open (firewall/security group)
-- Ports 80/443 accessible for ACME certificate
+- Domain with Cloudflare DNS (grey cloud / DNS only)
+- **UDP 443** open (security group / firewall)
+- TCP **80** open for ACME HTTP-01 (and preferably TCP 443 unused by other listeners)
 
 ### Quick Deploy
 
 ```bash
-# 1. Create directory
-mkdir -p /allah/blue/infra/cloud/hysteria && cd /allah/blue/infra/cloud/hysteria
+# 1. Create directory (example: ali)
+mkdir -p /allah/blue/infra/cloud/ali/hysteria && cd /allah/blue/infra/cloud/ali/hysteria
 
 # 2. Generate password
 openssl rand -base64 24 | tr -d '/+=' | head -c 24 && echo
@@ -56,8 +63,10 @@ curl -6 -s ifconfig.me && echo    # IPv6
 
 ### config.yaml
 
+**Always** `listen: :443`:
+
 ```yaml
-listen: :PORT
+listen: :443
 
 acme:
   domains:
@@ -92,7 +101,7 @@ services:
 
 ### Add DNS Records
 
-**Proxy must be OFF** (grey cloud) - Hysteria uses UDP.
+**Proxy must be OFF** (grey cloud) — Hysteria uses UDP.
 
 ```bash
 cd /allah/blue/web/apps/cloudflare
@@ -104,11 +113,11 @@ python3 cli.py dns add --type AAAA --name SUBDOMAIN --content IPV6
 
 ```bash
 mkdir -p acme
-docker-compose up -d
+docker compose up -d
 docker logs -f hysteria2
 ```
 
-Wait for `server up and running` in logs.
+Wait for `server up and running` with `listen: ":443"`.
 
 ---
 
@@ -121,7 +130,7 @@ proxies:
   - name: "NAME"
     type: hysteria2
     server: SUBDOMAIN.hyas.site
-    port: PORT
+    port: 443
     password: PASSWORD
     sni: SUBDOMAIN.hyas.site
 ```
@@ -129,7 +138,7 @@ proxies:
 ### Hysteria 2 Client
 
 ```yaml
-server: SUBDOMAIN.hyas.site:PORT
+server: SUBDOMAIN.hyas.site:443
 
 auth: PASSWORD
 
@@ -143,7 +152,7 @@ http:
 ### URI (mobile apps)
 
 ```
-hysteria2://PASSWORD@SUBDOMAIN.hyas.site:PORT?sni=SUBDOMAIN.hyas.site#NAME
+hysteria2://PASSWORD@SUBDOMAIN.hyas.site:443?sni=SUBDOMAIN.hyas.site#NAME
 ```
 
 ### NekoBox / Sing-box
@@ -153,7 +162,7 @@ hysteria2://PASSWORD@SUBDOMAIN.hyas.site:PORT?sni=SUBDOMAIN.hyas.site#NAME
   "type": "hysteria2",
   "tag": "NAME",
   "server": "SUBDOMAIN.hyas.site",
-  "server_port": PORT,
+  "server_port": 443,
   "password": "PASSWORD",
   "tls": {
     "enabled": true,
@@ -167,12 +176,12 @@ hysteria2://PASSWORD@SUBDOMAIN.hyas.site:PORT?sni=SUBDOMAIN.hyas.site#NAME
 ## Operations
 
 ```bash
-docker logs -f hysteria2        # View logs
-docker-compose restart          # Restart
-docker-compose down             # Stop
-docker-compose pull && docker-compose up -d   # Update
-docker ps | grep hysteria       # Check status
-ss -ulnp | grep PORT            # Check port
+docker logs -f hysteria2
+docker compose restart
+docker compose down
+docker compose pull && docker compose up -d
+docker ps | grep hysteria
+ss -ulnp | grep 443
 ```
 
 ---
@@ -180,14 +189,14 @@ ss -ulnp | grep PORT            # Check port
 ## Troubleshooting
 
 ### ACME cert failed
-- DNS record must point to server IP
-- Ports 80/443 must be open for ACME challenge
+- DNS must point to this server
+- TCP **80** (HTTP-01) must be reachable
 - Check: `dig SUBDOMAIN.hyas.site`
 
 ### Connection refused
-- Open UDP port in firewall: `ufw allow PORT/udp`
-- Check cloud security group allows UDP inbound
+- Open **UDP 443** in firewall / cloud SG
+- Confirm: `ss -ulnp | grep 443` and logs show `listen: ":443"`
 
 ### Container restarting
-- Check logs: `docker logs hysteria2`
-- Verify config.yaml syntax
+- `docker logs hysteria2`
+- Verify `config.yaml` uses `listen: :443`

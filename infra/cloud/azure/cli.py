@@ -73,7 +73,7 @@ def _build_cost_query(date_from, date_to, granularity="None", group_by=None):
 
 def cmd_status(args):
     """Show VM status."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     vms = list(clients.compute.virtual_machines.list_all())
     
     if not vms:
@@ -122,7 +122,7 @@ def cmd_status(args):
 
 def cmd_start(args):
     """Start all VMs."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     vms = list(clients.compute.virtual_machines.list_all())
     if not vms:
         print("No VMs found.")
@@ -136,7 +136,7 @@ def cmd_start(args):
 
 def cmd_stop(args):
     """Deallocate all VMs (stops billing)."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     vms = list(clients.compute.virtual_machines.list_all())
     if not vms:
         print("No VMs found.")
@@ -150,7 +150,7 @@ def cmd_stop(args):
 
 def cmd_restart(args):
     """Restart all VMs."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     vms = list(clients.compute.virtual_machines.list_all())
     if not vms:
         print("No VMs found.")
@@ -164,12 +164,13 @@ def cmd_restart(args):
 
 def cmd_sub(args):
     """Show subscription information."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     sub = clients.subscription.subscriptions.get(clients.subscription_id)
     
     print(f"\n{'='*50}")
     print("Subscription")
     print(f"{'='*50}")
+    print(f"  Account:        {clients.account}")
     print(f"  Name:           {sub.display_name}")
     print(f"  ID:             {sub.subscription_id}")
     print(f"  State:          {sub.state}")
@@ -184,7 +185,7 @@ def cmd_sub(args):
 
 def cmd_resources(args):
     """List all resources."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     
     print(f"\n{'='*50}")
     print("Resource Groups")
@@ -238,7 +239,7 @@ def _usage_detail_fields(item):
 
 def cmd_cost(args):
     """Show cost information."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     sub_id = clients.subscription_id
     today = datetime.now(timezone.utc)
 
@@ -356,11 +357,20 @@ def cmd_cost(args):
             print(f"  Error: {e}")
 
 
-def _billing_free_egress_mtd(clients):
-    """Sum calendar-month MTD qty for Standard Data Transfer Out - Free (GB).
+def _billing_internet_egress_mtd(clients):
+    """Calendar-month MTD internet egress from Consumption usageDetails.
 
-    This is the meter Azure uses for the 100 GB/month internet-egress allowance.
-    Monitor Network Out Total is NOT the same thing and overstates free-tier burn.
+    Rule (Bandwidth pricing): first 100 GB/month internet egress is free.
+    That is the only ceiling — NOT 100+15. The free-services "15 GB / 12 months"
+    line is not an extra pool on top of the 100 GB internet band.
+
+    Azure splits the same internet-egress usage across two meters (UoM = 1 GB):
+      - Standard Data Transfer Out - Free  (named free meter; often hard-stops
+        near 15 GB, then spills — labeling only, not +15 GB allowance)
+      - Standard Data Transfer Out         (spillover; Cost $0 while watched ≤ 100)
+
+    Unbilled watch = free_gb + standard_gb against 100 GB.
+    Monitor Network Out Total is NOT the bill and overstates free-tier burn.
     """
     today = datetime.now(timezone.utc)
     month_start = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -377,17 +387,22 @@ def _billing_free_egress_mtd(clients):
         )
     )
     free_gb = 0.0
+    standard_gb = 0.0
+    standard_cost = 0.0
     other_bw = {}  # meter -> [qty, cost]
     for it in items:
         _name, meter, cost = _usage_detail_fields(it)
-        meter_l = (meter or "").lower()
+        meter_l = (meter or "").strip().lower()
         qty = float(
             getattr(it, "quantity", None)
             or getattr(it, "usage_quantity", None)
             or 0
         )
-        if "standard data transfer out - free" in meter_l:
+        if meter_l == "standard data transfer out - free":
             free_gb += qty
+        elif meter_l == "standard data transfer out":
+            standard_gb += qty
+            standard_cost += cost
         elif "data transfer" in meter_l or "bandwidth" in meter_l:
             if qty or cost:
                 q, c = other_bw.get(meter, [0.0, 0.0])
@@ -395,6 +410,8 @@ def _billing_free_egress_mtd(clients):
     other_list = [(m, q, c) for m, (q, c) in other_bw.items()]
     return (
         free_gb,
+        standard_gb,
+        standard_cost,
         month_start.strftime("%Y-%m-%d"),
         today.strftime("%Y-%m-%d"),
         other_list,
@@ -402,35 +419,51 @@ def _billing_free_egress_mtd(clients):
 
 
 def cmd_traffic(args):
-    """Show network traffic usage for VMs + billing free-egress allowance."""
+    """Show VM NIC traffic + internet-egress billing vs the 100 GB free ceiling."""
     from azure.mgmt.monitor import MonitorManagementClient
 
-    clients = get_clients()
+    clients = get_clients(args.account)
     vms = list(clients.compute.virtual_machines.list_all())
 
-    if not vms:
-        print("No VMs found.")
-        return
-
-    # Subscription-wide free internet egress (billing meter), calendar month MTD
+    # Subscription-wide internet egress (billing meters), calendar month MTD
+    # Ceiling = 100 GB only (not 100+15). See _billing_internet_egress_mtd docstring.
     print(f"\n{'='*50}")
-    print("Free Tier — Internet Egress (billing meter)")
+    print("Internet Egress — stay unbilled (billing meters)")
     print(f"{'='*50}")
-    free_limit_gb = 100
+    free_limit_gb = 100.0  # always-free internet egress; NOT 100+15
     try:
-        free_gb, d_from, d_to, other_bw = _billing_free_egress_mtd(clients)
-        remaining = max(0.0, free_limit_gb - free_gb)
-        pct_used = (free_gb / free_limit_gb) * 100
-        print(f"  Meter:     Standard Data Transfer Out - Free")
-        print(f"  Period:    {d_from} -> {d_to} (calendar month MTD)")
-        print(f"  Used:      {free_gb:.3f} GB ({pct_used:.1f}% of {free_limit_gb} GB)")
-        print(f"  Remaining: {remaining:.3f} GB")
+        free_gb, standard_gb, standard_cost, d_from, d_to, other_bw = (
+            _billing_internet_egress_mtd(clients)
+        )
+        watched = free_gb + standard_gb
+        remaining = max(0.0, free_limit_gb - watched)
+        pct_used = (watched / free_limit_gb) * 100 if free_limit_gb else 0.0
+        print(f"  Period:     {d_from} -> {d_to} (calendar month MTD)")
+        print(f"  Rule:       first {free_limit_gb:.0f} GB/month internet egress free")
+        print(f"              (ceiling is {free_limit_gb:.0f} GB total — NOT 100+15)")
+        print()
+        print(f"  Free meter (Standard Data Transfer Out - Free):")
+        print(f"    {free_gb:.3f} GB")
+        print(f"    (labeling only; often hard-stops ~15 GB then spills — not +15 allowance)")
+        print(f"  Spillover (Standard Data Transfer Out):")
+        print(f"    {standard_gb:.3f} GB  ${standard_cost:.6f}")
+        print(f"    ($0 = not charged yet; still counts toward the {free_limit_gb:.0f} GB ceiling)")
+        print()
+        print(f"  Watched (Free + Spillover): {watched:.3f} GB ({pct_used:.1f}% of {free_limit_gb:.0f})")
+        print(f"  Headroom to stay unbilled:  {remaining:.3f} GB")
+        if standard_cost > 0 or watched > free_limit_gb:
+            print("  WARNING: internet egress may be billing — check Cost / invoice")
         if other_bw:
-            print("  Other bandwidth meters (not free-tier):")
-            for meter, qty, cost in sorted(other_bw, key=lambda x: -x[2]):
+            print()
+            print("  Other bandwidth meters (NOT part of the 100 GB internet ceiling):")
+            for meter, qty, cost in sorted(other_bw, key=lambda x: (-x[2], -x[1])):
                 print(f"    {meter}: {qty:.6f} GB  ${cost:.6f}")
     except Exception as e:
-        print(f"  Error reading billing free meter: {e}")
+        print(f"  Error reading billing meters: {e}")
+
+    if not vms:
+        print("\nNo VMs found.")
+        return
 
     monitor = MonitorManagementClient(clients.credential, clients.subscription_id)
     end_time = datetime.now(timezone.utc)
@@ -512,7 +545,7 @@ def cmd_traffic(args):
 
 def cmd_quota(args):
     """Check compute quota for a location."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     location = args.location
     
     print(f"\n{'='*60}")
@@ -537,7 +570,7 @@ def cmd_quota(args):
 
 def cmd_delete_all(args):
     """Delete all resource groups (removes all resources)."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     
     if not args.confirm:
         print("WARNING: This will delete ALL resources!")
@@ -567,7 +600,7 @@ def cmd_proxy_deploy(args):
         ResourceRequests, IpAddress, Port, EnvironmentVariable, OperatingSystemTypes
     )
     
-    clients = get_clients()
+    clients = get_clients(args.account)
     location = args.location
     rg_name = f"socks5-{location[:3]}"
     cg_name = f"socks5-{location[:3]}"
@@ -610,7 +643,7 @@ def cmd_proxy_deploy(args):
 
 def cmd_proxy_status(args):
     """Show SOCKS5 proxy status."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     
     print(f"\n{'='*50}")
     print("SOCKS5 Proxy Containers")
@@ -638,7 +671,7 @@ def cmd_proxy_status(args):
 
 def cmd_proxy_delete(args):
     """Delete SOCKS5 proxy."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     
     for rg in list(clients.resource.resource_groups.list()):
         if rg.name.startswith("socks5-"):
@@ -658,7 +691,7 @@ def _iter_nsgs(clients):
 
 def cmd_nsg(args):
     """List NSGs and inbound rules, or open a port."""
-    clients = get_clients()
+    clients = get_clients(args.account)
     from azure.mgmt.network.models import SecurityRule
 
     if args.action == "open":
@@ -739,7 +772,7 @@ def cmd_create_free(args):
         NetworkSecurityGroup, SecurityRule
     )
     
-    clients = get_clients()
+    clients = get_clients(args.account)
     location = args.location
     rg_name = args.name
     vm_name = args.name
@@ -953,8 +986,13 @@ def cmd_create_free(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Azure manager", formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument(
+        "--account", "-a",
+        default="azure",
+        help="cred.json key: azure (default), azure2, or aliases az / az2",
+    )
     subparsers = parser.add_subparsers(dest="command", help="Commands")
-    
+
     # VM commands
     subparsers.add_parser("status", help="Show VM status")
     subparsers.add_parser("start", help="Start all VMs")
@@ -975,7 +1013,10 @@ def main():
         action="store_true",
         help="Show per-resource line items from the Consumption usageDetails API",
     )
-    subparsers.add_parser("traffic", help="Show network traffic usage")
+    subparsers.add_parser(
+        "traffic",
+        help="Show internet egress vs 100 GB free ceiling (Free+Spillover) and VM NIC stats",
+    )
     
     # Quota
     quota_p = subparsers.add_parser("quota", help="Check compute quota")

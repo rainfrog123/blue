@@ -40,19 +40,28 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
-  - name: 🇸🇬do_singapore_tj
-    type: trojan
-    server: 162.159.23.222
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
+  # Aliyun Singapore ECS (replaced Digi/DO SG for SS + Hy2) — 2026-07-15
+  - name: 🇸🇬ali_singapore
+    type: ss
+    server: 47.237.141.29
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
     udp: true
+
+  # - name: 🇸🇬do_singapore_tj
+  #   type: trojan
+  #   server: 162.159.23.222
+  #   port: 443
+  #   password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+  #   sni: x.hyas.space
+  #   skip-cert-verify: false
+  #   network: ws
+  #   ws-opts:
+  #     path: /x7f9k2m4p8
+  #     headers:
+  #       Host: x.hyas.space
+  #   udp: true
 
   - name: 🇯🇵do_japan_tj
     type: trojan
@@ -68,47 +77,56 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: 🇸🇬do_singapore
-    type: ss
-    server: 188.166.252.16
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: bxsnucrgk6hfish
-    udp: true
+  # Digi/DO Singapore SS — unpaid / dead (kept for restore)
+  # - name: 🇸🇬do_singapore
+  #   type: ss
+  #   server: 188.166.252.16
+  #   port: 12033
+  #   cipher: chacha20-ietf-poly1305
+  #   password: bxsnucrgk6hfish
+  #   udp: true
 
-  # DIGI VPS - VLESS with WARP Outbound (Clean IP)
-  - name: 🇸🇬do_singapore_reality
-    type: vless
-    server: 188.166.252.16
-    port: 8443
-    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
-    network: tcp
-    tls: true
-    udp: true
-    flow: xtls-rprx-vision
-    servername: www.microsoft.com
-    reality-opts:
-      public-key: w7QKHjzAPCl6_V_HlezcQGCe4dkntvOo3JGpc-7tZQo
-      short-id: 32eedaf295ce60a8
-    client-fingerprint: chrome
+  # DIGI VPS - VLESS with WARP Outbound (Clean IP) — unpaid / dead
+  # - name: 🇸🇬do_singapore_reality
+  #   type: vless
+  #   server: 188.166.252.16
+  #   port: 8443
+  #   uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+  #   network: tcp
+  #   tls: true
+  #   udp: true
+  #   flow: xtls-rprx-vision
+  #   servername: www.microsoft.com
+  #   reality-opts:
+  #     public-key: w7QKHjzAPCl6_V_HlezcQGCe4dkntvOo3JGpc-7tZQo
+  #     short-id: 32eedaf295ce60a8
+  #   client-fingerprint: chrome
 
-  - name: 🇸🇬do_singapore_vless_warp
-    type: vless
-    server: r.hyas.space
-    port: 443
-    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
-    network: ws
-    tls: true
-    udp: true
-    servername: r.hyas.space
-    ws-opts:
-      path: /vless-warp
+  # - name: 🇸🇬do_singapore_vless_warp
+  #   type: vless
+  #   server: r.hyas.space
+  #   port: 443
+  #   uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+  #   network: ws
+  #   tls: true
+  #   udp: true
+  #   servername: r.hyas.space
+  #   ws-opts:
+  #     path: /vless-warp
 
-  # Hysteria 2 (DO Singapore - Direct UDP)
-  - name: 🇸🇬do_singapore_hy2
+  # Hysteria 2 (Digi SG) — unpaid / dead; was :5333, policy is now :443 forever
+  # - name: 🇸🇬do_singapore_hy2
+  #   type: hysteria2
+  #   server: hy.hyas.site
+  #   port: 443
+  #   password: jEdTlnZe2q2nv1N0lmmXHCp2
+  #   sni: hy.hyas.site
+
+  # Hysteria 2 (Aliyun SG — hy.hyas.site on 443, same password as Digi)
+  - name: 🇸🇬ali_singapore_hy2
     type: hysteria2
     server: hy.hyas.site
-    port: 5333
+    port: 443
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
 
@@ -631,8 +649,10 @@ proxy-groups:
       - ☁️ Azure Nodes
       - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
-      - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore
+      # - 🇸🇬do_singapore_tj
+      # - 🇸🇬do_singapore
+      - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_hy2
       - DIRECT
 
   - name: ☁️ Azure Nodes
@@ -660,7 +680,12 @@ proxy-groups:
   - name: 🌊 Digital Ocean Nodes
     type: select
     proxies:
-      - 🇸🇬do_singapore_tj
+      # Digi/DO SG direct (unpaid) — replaced by Aliyun SS below
+      # - 🇸🇬do_singapore_tj
+      # - 🇸🇬do_singapore
+      # - 🇸🇬do_singapore_reality
+      # - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬ali_singapore
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
@@ -668,9 +693,6 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_6
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
       - 🇯🇵do_japan_tj
       - 🇯🇵do_japan_tj_2
       - 🇯🇵do_japan_tj_3
@@ -684,7 +706,8 @@ proxy-groups:
   - name: 🚀 Hysteria Nodes
     type: select
     proxies:
-      - 🇸🇬do_singapore_hy2
+      # - 🇸🇬do_singapore_hy2
+      - 🇸🇬ali_singapore_hy2
       - 🇸🇬azure_sg_hy2
       - DIRECT
 
@@ -766,16 +789,20 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇸🇬do_singapore_tj
+      # - 🇸🇬do_singapore_reality
+      # - 🇸🇬do_singapore_vless_warp
+      # - 🇸🇬do_singapore_tj
+      - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_hy2
       - DIRECT
 
   - name: 🧠 Claude Nodes
     type: select
     proxies:
       - 🚀 Node Selection
-      - 🇸🇬do_singapore_tj
+      # - 🇸🇬do_singapore_tj
+      - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_hy2
       - DIRECT
 
   - name: 🖥️ Cursor Website Nodes
@@ -803,7 +830,7 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_6
       - 🇯🇵azure_japan_tj_7
       - 🇯🇵azure_japan_tj_8
-      - 🇸🇬do_singapore_tj
+      # - 🇸🇬do_singapore_tj
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
@@ -811,8 +838,9 @@ proxy-groups:
       - 🇸🇬do_singapore_tj_6
       - 🇸🇬do_singapore_tj_7
       - 🇸🇬do_singapore_tj_8
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
+      # - 🇸🇬do_singapore_reality
+      # - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬ali_singapore
       - 🇯🇵do_japan_tj
       - 🇯🇵do_japan_tj_2
       - 🇯🇵do_japan_tj_3

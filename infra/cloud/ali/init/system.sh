@@ -53,8 +53,9 @@ print_success "System updated successfully"
 # ============================================================================
 print_header "INSTALLING PACKAGES"
 
-print_step "Installing Docker, Docker Compose, and Git..."
-sudo apt install -y docker.io docker-compose git
+print_step "Installing Docker, Docker Compose plugin, and Git..."
+# Ubuntu 26.04+ (Resolute): classic `docker-compose` package is gone; use v2 plugin.
+sudo apt install -y docker.io docker-compose-v2 git
 
 print_step "Installing utilities (tmux, htop, x11-apps)..."
 sudo apt install -y tmux htop x11-apps
@@ -172,7 +173,7 @@ sudo sed -i 's/^#*PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
 print_step "Disabling password authentication (key-only)..."
 sudo sed -i 's/^#*PasswordAuthentication .*/PasswordAuthentication no/' /etc/ssh/sshd_config
 
-print_step "Creating drop-in config for Ubuntu 24.04 compatibility..."
+print_step "Creating drop-in config for Ubuntu 24.04+ / 26.04 compatibility..."
 sudo mkdir -p /etc/ssh/sshd_config.d/
 echo -e "PermitRootLogin yes\nPasswordAuthentication no" | sudo tee /etc/ssh/sshd_config.d/99-custom.conf > /dev/null
 

@@ -1,5 +1,5 @@
 # Trojan + Cloudflare Tunnel Setup
-# Location: /allah/blue/infra/cloud/ali/init/
+# Location: infra/cloud/ali/init/
 # Zone: hyas.space (separate from hyas.site for multi-tunnel support)
 
 ## Deployment Commands
