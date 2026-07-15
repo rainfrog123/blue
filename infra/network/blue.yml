@@ -72,19 +72,19 @@ proxies:
   #       Host: x.hyas.space
   #   udp: true
 
-  - name: 🇯🇵do_japan_tj
-    type: trojan
-    server: 162.159.38.58
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj
+    # type: trojan
+    # server: 162.159.38.58
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
   # Digi/DO Singapore SS — unpaid / dead (kept for restore)
   # - name: 🇸🇬do_singapore
@@ -375,261 +375,261 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵do_japan_tj_2
-    type: trojan
-    server: 162.159.39.248
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_2
+    # type: trojan
+    # server: 162.159.39.248
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_3
-    type: trojan
-    server: 172.64.53.144
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_3
+    # type: trojan
+    # server: 172.64.53.144
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_4
-    type: trojan
-    server: 108.162.198.99
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_4
+    # type: trojan
+    # server: 108.162.198.99
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_5
-    type: trojan
-    server: 162.159.44.202
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_5
+    # type: trojan
+    # server: 162.159.44.202
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_6
-    type: trojan
-    server: 172.64.229.84
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_6
+    # type: trojan
+    # server: 172.64.229.84
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_2
-    type: trojan
-    server: 172.64.148.125
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_2
+    # type: trojan
+    # server: 172.64.148.125
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_3
-    type: trojan
-    server: 172.64.158.77
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_3
+    # type: trojan
+    # server: 172.64.158.77
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_4
-    type: trojan
-    server: 172.64.145.176
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_4
+    # type: trojan
+    # server: 172.64.145.176
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_5
-    type: trojan
-    server: 162.159.33.135
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_5
+    # type: trojan
+    # server: 162.159.33.135
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_6
-    type: trojan
-    server: 104.18.46.191
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_6
+    # type: trojan
+    # server: 104.18.46.191
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_7
-    type: trojan
-    server: 104.18.35.160
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_7
+    # type: trojan
+    # server: 104.18.35.160
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇸🇬do_singapore_tj_8
-    type: trojan
-    server: 172.64.40.7
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇸🇬do_singapore_tj_8
+    # type: trojan
+    # server: 172.64.40.7
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_7
-    type: trojan
-    server: 162.159.45.212
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_7
+    # type: trojan
+    # server: 162.159.45.212
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
-  - name: 🇯🇵do_japan_tj_8
-    type: trojan
-    server: 172.64.52.153
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # - name: 🇯🇵do_japan_tj_8
+    # type: trojan
+    # server: 172.64.52.153
+    # port: 443
+    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    # sni: x.hyas.space
+    # skip-cert-verify: false
+    # network: ws
+    # ws-opts:
+      # path: /x7f9k2m4p8
+      # headers:
+        # Host: x.hyas.space
+    # udp: true
 
   # Naiyun Subscription Nodes (with ny_ prefix)
   # Trojan Netflix/Direct Nodes
-  - {name: 🇭🇰ny_hongkong_direct, type: trojan, server: 3683d10597c0bb048bb308edf9ac49f0.node.tro.cac.cab, port: 41223, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇭🇰ny_hongkong_netflix, type: trojan, server: 61e3c0d9c8fd05317fcaf264324e3065.node.tro.cac.cab, port: 47584, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇹🇼ny_taiwan_netflix, type: trojan, server: 304b7b6ed0a8d5500368f9a6c39c35eb.node.tro.cac.cab, port: 48989, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tw.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇸🇬ny_singapore_netflix, type: trojan, server: 6077acde2304835660f867e810b38e93.node.tro.cac.cab, port: 40043, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: sg.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇯🇵ny_japan_netflix, type: trojan, server: 557c8002820ae2fb5246392fe26a499f.node.tro.cac.cab, port: 46878, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: jp.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇺🇸ny_usa_netflix, type: trojan, server: 2022c20ed23cd987c35d90df430ab6bb.node.tro.cac.cab, port: 43678, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: us.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇹🇭ny_thailand_netflix, type: trojan, server: 3dbfd5ae6f3b996589154626deaaaa36.node.tro.cac.cab, port: 44773, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: th.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇷🇺ny_russia, type: trojan, server: e8f529858d5103f2cefe4ece607b0d76.node.tro.cac.cab, port: 47048, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ru.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇭🇰ny_hongkong_direct, type: trojan, server: 3683d10597c0bb048bb308edf9ac49f0.node.tro.cac.cab, port: 41223, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇭🇰ny_hongkong_netflix, type: trojan, server: 61e3c0d9c8fd05317fcaf264324e3065.node.tro.cac.cab, port: 47584, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: hk.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇹🇼ny_taiwan_netflix, type: trojan, server: 304b7b6ed0a8d5500368f9a6c39c35eb.node.tro.cac.cab, port: 48989, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tw.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇸🇬ny_singapore_netflix, type: trojan, server: 6077acde2304835660f867e810b38e93.node.tro.cac.cab, port: 40043, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: sg.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇯🇵ny_japan_netflix, type: trojan, server: 557c8002820ae2fb5246392fe26a499f.node.tro.cac.cab, port: 46878, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: jp.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇺🇸ny_usa_netflix, type: trojan, server: 2022c20ed23cd987c35d90df430ab6bb.node.tro.cac.cab, port: 43678, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: us.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇹🇭ny_thailand_netflix, type: trojan, server: 3dbfd5ae6f3b996589154626deaaaa36.node.tro.cac.cab, port: 44773, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: th.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇷🇺ny_russia, type: trojan, server: e8f529858d5103f2cefe4ece607b0d76.node.tro.cac.cab, port: 47048, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ru.01.naiun.bilibili.com, skip-cert-verify: true}
   # IPLC Shadowsocks Nodes
-  - {name: 🇭🇰ny_hongkong_ss_b, type: ss, server: b.naiun.cac.cab, port: 30301, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇭🇰ny_hongkong_ss_d, type: ss, server: d.naiun.cac.cab, port: 30301, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇹🇼ny_taiwan_ss_b, type: ss, server: b.naiun.cac.cab, port: 30302, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇹🇼ny_taiwan_ss_d, type: ss, server: d.naiun.cac.cab, port: 30302, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇸🇬ny_singapore_ss_b, type: ss, server: b.naiun.cac.cab, port: 30303, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇸🇬ny_singapore_ss_d, type: ss, server: d.naiun.cac.cab, port: 30303, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇯🇵ny_japan_ss_b, type: ss, server: b.naiun.cac.cab, port: 30304, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇯🇵ny_japan_ss_d, type: ss, server: d.naiun.cac.cab, port: 30304, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇺🇸ny_usa_ss_b, type: ss, server: b.naiun.cac.cab, port: 30305, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇺🇸ny_usa_ss_d, type: ss, server: d.naiun.cac.cab, port: 30305, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇹🇭ny_thailand_ss_b, type: ss, server: b.naiun.cac.cab, port: 30306, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
-  - {name: 🇹🇭ny_thailand_ss_d, type: ss, server: d.naiun.cac.cab, port: 30306, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇭🇰ny_hongkong_ss_b, type: ss, server: b.naiun.cac.cab, port: 30301, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇭🇰ny_hongkong_ss_d, type: ss, server: d.naiun.cac.cab, port: 30301, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇹🇼ny_taiwan_ss_b, type: ss, server: b.naiun.cac.cab, port: 30302, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇹🇼ny_taiwan_ss_d, type: ss, server: d.naiun.cac.cab, port: 30302, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇸🇬ny_singapore_ss_b, type: ss, server: b.naiun.cac.cab, port: 30303, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇸🇬ny_singapore_ss_d, type: ss, server: d.naiun.cac.cab, port: 30303, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇯🇵ny_japan_ss_b, type: ss, server: b.naiun.cac.cab, port: 30304, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇯🇵ny_japan_ss_d, type: ss, server: d.naiun.cac.cab, port: 30304, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇺🇸ny_usa_ss_b, type: ss, server: b.naiun.cac.cab, port: 30305, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇺🇸ny_usa_ss_d, type: ss, server: d.naiun.cac.cab, port: 30305, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇹🇭ny_thailand_ss_b, type: ss, server: b.naiun.cac.cab, port: 30306, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
+  # - {name: 🇹🇭ny_thailand_ss_d, type: ss, server: d.naiun.cac.cab, port: 30306, cipher: chacha20-ietf-poly1305, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true}
   # IPLC VMess Nodes
-  - {name: 🇭🇰ny_hongkong_vmess_b, type: vmess, server: b.naiun.cac.cab, port: 30201, uuid: bb553795-6a8f-493c-960c-12a6f2f65eee, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: {path: /, headers: {Host: live.bilibili.com}}}
-  - {name: 🇭🇰ny_hongkong_vmess_d, type: vmess, server: d.naiun.cac.cab, port: 30201, uuid: bb553795-6a8f-493c-960c-12a6f2f65eee, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: {path: /, headers: {Host: live.bilibili.com}}}
+  # - {name: 🇭🇰ny_hongkong_vmess_b, type: vmess, server: b.naiun.cac.cab, port: 30201, uuid: bb553795-6a8f-493c-960c-12a6f2f65eee, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: {path: /, headers: {Host: live.bilibili.com}}}
+  # - {name: 🇭🇰ny_hongkong_vmess_d, type: vmess, server: d.naiun.cac.cab, port: 30201, uuid: bb553795-6a8f-493c-960c-12a6f2f65eee, alterId: 0, cipher: auto, udp: true, network: ws, ws-opts: {path: /, headers: {Host: live.bilibili.com}}}
   # Trojan IDC Nodes
-  - {name: 🇰🇷ny_korea, type: trojan, server: e01c0dedf4f37cdc2a735480fadb74cb.node.tro.cac.cab, port: 42340, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kr.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇬🇧ny_uk, type: trojan, server: ad05e00e420b29c3114d510927ccdff6.node.tro.cac.cab, port: 46178, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gb.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇲🇾ny_malaysia, type: trojan, server: b3d5818be14c37e41261c0f283f0c129.node.tro.cac.cab, port: 47644, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: my.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇵🇭ny_philippines, type: trojan, server: 324e5d7d8154850b3f58e1767914c7d7.node.tro.cac.cab, port: 42436, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ph.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇨🇦ny_canada, type: trojan, server: 6c3c02f086fa0911e6423a1498d888c3.node.tro.cac.cab, port: 42029, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ca.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇦🇷ny_argentina, type: trojan, server: 028c63b6ce558658f24a6ec8bec4ef37.node.tro.cac.cab, port: 47809, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ar.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇮🇳ny_india, type: trojan, server: c56bdf4c328e490635ac4fd292f3e22f.node.tro.cac.cab, port: 49203, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: in.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇲🇽ny_mexico, type: trojan, server: ba1e08634440a86d77eccec1cd648ad6.node.tro.cac.cab, port: 45913, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: mx.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇦🇺ny_australia, type: trojan, server: e49cfd2ca72cb999e3d9feef5fd8535e.node.tro.cac.cab, port: 48652, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: au.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇹🇷ny_turkey, type: trojan, server: e8e7e08f146aeaa015063a8acad35ee9.node.tro.cac.cab, port: 44087, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tr.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇳🇬ny_nigeria, type: trojan, server: 3613fd232f70247b807e2713fc0620ac.node.tro.cac.cab, port: 48816, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ng.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇻🇳ny_vietnam, type: trojan, server: 1679eb32455ba83c2d7d90bbf97051dd.node.tro.cac.cab, port: 48850, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: vn.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇧🇷ny_brazil, type: trojan, server: 5cbda6959650b7a5a0bb79a02f00f8e2.node.tro.cac.cab, port: 47554, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: br.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇿🇦ny_southafrica, type: trojan, server: 075eea1cbf92934d45416948f1f42e91.node.tro.cac.cab, port: 45089, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: za.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇦🇪ny_uae, type: trojan, server: cd17d3af0124d7b28ae0a46f5795ed6a.node.tro.cac.cab, port: 49764, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ae.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇲🇲ny_myanmar, type: trojan, server: 6b82f72bf140389ab8bdef2ffc662773.node.tro.cac.cab, port: 42534, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: mm.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇺🇦ny_ukraine, type: trojan, server: 62ff97d990a894fdba49273dde6369d4.node.tro.cac.cab, port: 43991, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ua.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇵🇰ny_pakistan, type: trojan, server: d3b0cbe76d859c2e74fdce7f0a8c1c7e.node.tro.cac.cab, port: 46911, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: pk.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇳🇿ny_newzealand, type: trojan, server: be67e1dfd7abdd25217f9cf386654c22.node.tro.cac.cab, port: 46595, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: nz.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇮🇱ny_israel, type: trojan, server: dfab10e5d49fa4ed1a7ef8eacb847c9a.node.tro.cac.cab, port: 49709, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: il.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇰🇿ny_kazakhstan, type: trojan, server: 6aa6b7495256337b85b8b115c557c909.node.tro.cac.cab, port: 40960, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kz.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇮🇩ny_indonesia, type: trojan, server: 70c9ba66c85c07116ddded094c102c34.node.tro.cac.cab, port: 40825, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: id.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇬🇱ny_greenland, type: trojan, server: e517304017f170c9125eeb6431d5f5e6.node.tro.cac.cab, port: 48657, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gl.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇮🇹ny_italy, type: trojan, server: 6b26cf432d082ac804c08449be5d941b.node.tro.cac.cab, port: 43494, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: it.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇪🇬ny_egypt, type: trojan, server: 4a94e143e844d37c938d4d65d557a895.node.tro.cac.cab, port: 40249, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: eg.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇵🇪ny_peru, type: trojan, server: 85d57fedd0d6cd6f7581fb0acb6c04b4.node.tro.cac.cab, port: 41520, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: pe.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇮🇸ny_iceland, type: trojan, server: e53867c6158240fd905b3c5793cad96c.node.tro.cac.cab, port: 47909, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: is.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇬🇭ny_ghana, type: trojan, server: 1e1fd7526e06613291b6dc418c535c1b.node.tro.cac.cab, port: 42503, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gh.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇦🇿ny_azerbaijan, type: trojan, server: 92fe27d155673e1c262302afc7e384e8.node.tro.cac.cab, port: 43203, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: az.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇨🇭ny_switzerland, type: trojan, server: 8c9f7d5802b2fc08d58205b222413523.node.tro.cac.cab, port: 49748, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ch.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇩🇪ny_germany, type: trojan, server: 27b1f609302182b51114f7ceb3316871.node.tro.cac.cab, port: 45951, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
-  - {name: 🇫🇷ny_france, type: trojan, server: a25640a97d01ac9372899c961849b8b7.node.tro.cac.cab, port: 42710, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇰🇷ny_korea, type: trojan, server: e01c0dedf4f37cdc2a735480fadb74cb.node.tro.cac.cab, port: 42340, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kr.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇬🇧ny_uk, type: trojan, server: ad05e00e420b29c3114d510927ccdff6.node.tro.cac.cab, port: 46178, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gb.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇲🇾ny_malaysia, type: trojan, server: b3d5818be14c37e41261c0f283f0c129.node.tro.cac.cab, port: 47644, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: my.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇵🇭ny_philippines, type: trojan, server: 324e5d7d8154850b3f58e1767914c7d7.node.tro.cac.cab, port: 42436, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ph.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇨🇦ny_canada, type: trojan, server: 6c3c02f086fa0911e6423a1498d888c3.node.tro.cac.cab, port: 42029, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ca.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇦🇷ny_argentina, type: trojan, server: 028c63b6ce558658f24a6ec8bec4ef37.node.tro.cac.cab, port: 47809, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ar.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇮🇳ny_india, type: trojan, server: c56bdf4c328e490635ac4fd292f3e22f.node.tro.cac.cab, port: 49203, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: in.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇲🇽ny_mexico, type: trojan, server: ba1e08634440a86d77eccec1cd648ad6.node.tro.cac.cab, port: 45913, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: mx.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇦🇺ny_australia, type: trojan, server: e49cfd2ca72cb999e3d9feef5fd8535e.node.tro.cac.cab, port: 48652, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: au.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇹🇷ny_turkey, type: trojan, server: e8e7e08f146aeaa015063a8acad35ee9.node.tro.cac.cab, port: 44087, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: tr.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇳🇬ny_nigeria, type: trojan, server: 3613fd232f70247b807e2713fc0620ac.node.tro.cac.cab, port: 48816, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ng.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇻🇳ny_vietnam, type: trojan, server: 1679eb32455ba83c2d7d90bbf97051dd.node.tro.cac.cab, port: 48850, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: vn.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇧🇷ny_brazil, type: trojan, server: 5cbda6959650b7a5a0bb79a02f00f8e2.node.tro.cac.cab, port: 47554, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: br.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇿🇦ny_southafrica, type: trojan, server: 075eea1cbf92934d45416948f1f42e91.node.tro.cac.cab, port: 45089, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: za.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇦🇪ny_uae, type: trojan, server: cd17d3af0124d7b28ae0a46f5795ed6a.node.tro.cac.cab, port: 49764, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ae.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇲🇲ny_myanmar, type: trojan, server: 6b82f72bf140389ab8bdef2ffc662773.node.tro.cac.cab, port: 42534, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: mm.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇺🇦ny_ukraine, type: trojan, server: 62ff97d990a894fdba49273dde6369d4.node.tro.cac.cab, port: 43991, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ua.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇵🇰ny_pakistan, type: trojan, server: d3b0cbe76d859c2e74fdce7f0a8c1c7e.node.tro.cac.cab, port: 46911, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: pk.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇳🇿ny_newzealand, type: trojan, server: be67e1dfd7abdd25217f9cf386654c22.node.tro.cac.cab, port: 46595, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: nz.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇮🇱ny_israel, type: trojan, server: dfab10e5d49fa4ed1a7ef8eacb847c9a.node.tro.cac.cab, port: 49709, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: il.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇰🇿ny_kazakhstan, type: trojan, server: 6aa6b7495256337b85b8b115c557c909.node.tro.cac.cab, port: 40960, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: kz.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇮🇩ny_indonesia, type: trojan, server: 70c9ba66c85c07116ddded094c102c34.node.tro.cac.cab, port: 40825, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: id.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇬🇱ny_greenland, type: trojan, server: e517304017f170c9125eeb6431d5f5e6.node.tro.cac.cab, port: 48657, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gl.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇮🇹ny_italy, type: trojan, server: 6b26cf432d082ac804c08449be5d941b.node.tro.cac.cab, port: 43494, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: it.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇪🇬ny_egypt, type: trojan, server: 4a94e143e844d37c938d4d65d557a895.node.tro.cac.cab, port: 40249, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: eg.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇵🇪ny_peru, type: trojan, server: 85d57fedd0d6cd6f7581fb0acb6c04b4.node.tro.cac.cab, port: 41520, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: pe.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇮🇸ny_iceland, type: trojan, server: e53867c6158240fd905b3c5793cad96c.node.tro.cac.cab, port: 47909, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: is.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇬🇭ny_ghana, type: trojan, server: 1e1fd7526e06613291b6dc418c535c1b.node.tro.cac.cab, port: 42503, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: gh.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇦🇿ny_azerbaijan, type: trojan, server: 92fe27d155673e1c262302afc7e384e8.node.tro.cac.cab, port: 43203, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: az.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇨🇭ny_switzerland, type: trojan, server: 8c9f7d5802b2fc08d58205b222413523.node.tro.cac.cab, port: 49748, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: ch.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇩🇪ny_germany, type: trojan, server: 27b1f609302182b51114f7ceb3316871.node.tro.cac.cab, port: 45951, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: de.01.naiun.bilibili.com, skip-cert-verify: true}
+  # - {name: 🇫🇷ny_france, type: trojan, server: a25640a97d01ac9372899c961849b8b7.node.tro.cac.cab, port: 42710, password: bb553795-6a8f-493c-960c-12a6f2f65eee, udp: true, sni: fr.01.naiun.bilibili.com, skip-cert-verify: true}
 
   # Version reference (display only)
   - {name: "🔖 11:43-08/06 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
@@ -642,7 +642,7 @@ proxy-groups:
     proxies:
       - DIRECT
       - ☁️ Azure Nodes
-      - 🌊 Digital Ocean Nodes
+      # - 🌊 Digital Ocean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       # - 🔄 CF WARP Outbound
@@ -668,7 +668,7 @@ proxy-groups:
       - 🚀 Node Selection
       - 🚀 Hysteria Nodes
       - ☁️ Azure Nodes
-      - 🌊 Digital Ocean Nodes
+      # - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       # - 🇸🇬do_singapore_tj
       # - 🇸🇬do_singapore
@@ -710,21 +710,21 @@ proxy-groups:
       # - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
-      - 🇸🇬do_singapore_tj_2
-      - 🇸🇬do_singapore_tj_3
-      - 🇸🇬do_singapore_tj_4
-      - 🇸🇬do_singapore_tj_5
-      - 🇸🇬do_singapore_tj_6
-      - 🇸🇬do_singapore_tj_7
-      - 🇸🇬do_singapore_tj_8
-      - 🇯🇵do_japan_tj
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇯🇵do_japan_tj_8
+      # - 🇸🇬do_singapore_tj_2
+      # - 🇸🇬do_singapore_tj_3
+      # - 🇸🇬do_singapore_tj_4
+      # - 🇸🇬do_singapore_tj_5
+      # - 🇸🇬do_singapore_tj_6
+      # - 🇸🇬do_singapore_tj_7
+      # - 🇸🇬do_singapore_tj_8
+      # - 🇯🇵do_japan_tj
+      # - 🇯🇵do_japan_tj_2
+      # - 🇯🇵do_japan_tj_3
+      # - 🇯🇵do_japan_tj_4
+      # - 🇯🇵do_japan_tj_5
+      # - 🇯🇵do_japan_tj_6
+      # - 🇯🇵do_japan_tj_7
+      # - 🇯🇵do_japan_tj_8
       - DIRECT
 
   - name: 🚀 Hysteria Nodes
@@ -740,10 +740,10 @@ proxy-groups:
     type: select
     proxies:
       - ☁️ Azure Nodes
-      - 🌊 Digital Ocean Nodes
+      # - 🌊 Digital Ocean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
-      - 🌐 Naiyun
+      # - 🌐 Naiyun
       - DIRECT
 
   # Naiyun Subscription Group
@@ -752,63 +752,63 @@ proxy-groups:
     proxies:
       - DIRECT
       # Netflix/Direct Trojan
-      - 🇭🇰ny_hongkong_direct
-      - 🇭🇰ny_hongkong_netflix
-      - 🇹🇼ny_taiwan_netflix
-      - 🇸🇬ny_singapore_netflix
-      - 🇯🇵ny_japan_netflix
-      - 🇺🇸ny_usa_netflix
-      - 🇹🇭ny_thailand_netflix
-      - 🇷🇺ny_russia
+      # - 🇭🇰ny_hongkong_direct
+      # - 🇭🇰ny_hongkong_netflix
+      # - 🇹🇼ny_taiwan_netflix
+      # - 🇸🇬ny_singapore_netflix
+      # - 🇯🇵ny_japan_netflix
+      # - 🇺🇸ny_usa_netflix
+      # - 🇹🇭ny_thailand_netflix
+      # - 🇷🇺ny_russia
       # IPLC Shadowsocks
-      - 🇭🇰ny_hongkong_ss_b
-      - 🇭🇰ny_hongkong_ss_d
-      - 🇹🇼ny_taiwan_ss_b
-      - 🇹🇼ny_taiwan_ss_d
-      - 🇸🇬ny_singapore_ss_b
-      - 🇸🇬ny_singapore_ss_d
-      - 🇯🇵ny_japan_ss_b
-      - 🇯🇵ny_japan_ss_d
-      - 🇺🇸ny_usa_ss_b
-      - 🇺🇸ny_usa_ss_d
-      - 🇹🇭ny_thailand_ss_b
-      - 🇹🇭ny_thailand_ss_d
+      # - 🇭🇰ny_hongkong_ss_b
+      # - 🇭🇰ny_hongkong_ss_d
+      # - 🇹🇼ny_taiwan_ss_b
+      # - 🇹🇼ny_taiwan_ss_d
+      # - 🇸🇬ny_singapore_ss_b
+      # - 🇸🇬ny_singapore_ss_d
+      # - 🇯🇵ny_japan_ss_b
+      # - 🇯🇵ny_japan_ss_d
+      # - 🇺🇸ny_usa_ss_b
+      # - 🇺🇸ny_usa_ss_d
+      # - 🇹🇭ny_thailand_ss_b
+      # - 🇹🇭ny_thailand_ss_d
       # IPLC VMess
-      - 🇭🇰ny_hongkong_vmess_b
-      - 🇭🇰ny_hongkong_vmess_d
+      # - 🇭🇰ny_hongkong_vmess_b
+      # - 🇭🇰ny_hongkong_vmess_d
       # IDC Trojan
-      - 🇰🇷ny_korea
-      - 🇬🇧ny_uk
-      - 🇲🇾ny_malaysia
-      - 🇵🇭ny_philippines
-      - 🇨🇦ny_canada
-      - 🇦🇷ny_argentina
-      - 🇮🇳ny_india
-      - 🇲🇽ny_mexico
-      - 🇦🇺ny_australia
-      - 🇹🇷ny_turkey
-      - 🇳🇬ny_nigeria
-      - 🇻🇳ny_vietnam
-      - 🇧🇷ny_brazil
-      - 🇿🇦ny_southafrica
-      - 🇦🇪ny_uae
-      - 🇲🇲ny_myanmar
-      - 🇺🇦ny_ukraine
-      - 🇵🇰ny_pakistan
-      - 🇳🇿ny_newzealand
-      - 🇮🇱ny_israel
-      - 🇰🇿ny_kazakhstan
-      - 🇮🇩ny_indonesia
-      - 🇬🇱ny_greenland
-      - 🇮🇹ny_italy
-      - 🇪🇬ny_egypt
-      - 🇵🇪ny_peru
-      - 🇮🇸ny_iceland
-      - 🇬🇭ny_ghana
-      - 🇦🇿ny_azerbaijan
-      - 🇨🇭ny_switzerland
-      - 🇩🇪ny_germany
-      - 🇫🇷ny_france
+      # - 🇰🇷ny_korea
+      # - 🇬🇧ny_uk
+      # - 🇲🇾ny_malaysia
+      # - 🇵🇭ny_philippines
+      # - 🇨🇦ny_canada
+      # - 🇦🇷ny_argentina
+      # - 🇮🇳ny_india
+      # - 🇲🇽ny_mexico
+      # - 🇦🇺ny_australia
+      # - 🇹🇷ny_turkey
+      # - 🇳🇬ny_nigeria
+      # - 🇻🇳ny_vietnam
+      # - 🇧🇷ny_brazil
+      # - 🇿🇦ny_southafrica
+      # - 🇦🇪ny_uae
+      # - 🇲🇲ny_myanmar
+      # - 🇺🇦ny_ukraine
+      # - 🇵🇰ny_pakistan
+      # - 🇳🇿ny_newzealand
+      # - 🇮🇱ny_israel
+      # - 🇰🇿ny_kazakhstan
+      # - 🇮🇩ny_indonesia
+      # - 🇬🇱ny_greenland
+      # - 🇮🇹ny_italy
+      # - 🇪🇬ny_egypt
+      # - 🇵🇪ny_peru
+      # - 🇮🇸ny_iceland
+      # - 🇬🇭ny_ghana
+      # - 🇦🇿ny_azerbaijan
+      # - 🇨🇭ny_switzerland
+      # - 🇩🇪ny_germany
+      # - 🇫🇷ny_france
 
   - name: 🤖 AI / IDE Nodes
     type: select
@@ -860,32 +860,32 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_7
       - 🇯🇵azure_japan_tj_8
       # - 🇸🇬do_singapore_tj
-      - 🇸🇬do_singapore_tj_2
-      - 🇸🇬do_singapore_tj_3
-      - 🇸🇬do_singapore_tj_4
-      - 🇸🇬do_singapore_tj_5
-      - 🇸🇬do_singapore_tj_6
-      - 🇸🇬do_singapore_tj_7
-      - 🇸🇬do_singapore_tj_8
+      # - 🇸🇬do_singapore_tj_2
+      # - 🇸🇬do_singapore_tj_3
+      # - 🇸🇬do_singapore_tj_4
+      # - 🇸🇬do_singapore_tj_5
+      # - 🇸🇬do_singapore_tj_6
+      # - 🇸🇬do_singapore_tj_7
+      # - 🇸🇬do_singapore_tj_8
       # - 🇸🇬do_singapore_reality
       # - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
-      - 🇯🇵do_japan_tj
-      - 🇯🇵do_japan_tj_2
-      - 🇯🇵do_japan_tj_3
-      - 🇯🇵do_japan_tj_4
-      - 🇯🇵do_japan_tj_5
-      - 🇯🇵do_japan_tj_6
-      - 🇯🇵do_japan_tj_7
-      - 🇯🇵do_japan_tj_8
+      # - 🇯🇵do_japan_tj
+      # - 🇯🇵do_japan_tj_2
+      # - 🇯🇵do_japan_tj_3
+      # - 🇯🇵do_japan_tj_4
+      # - 🇯🇵do_japan_tj_5
+      # - 🇯🇵do_japan_tj_6
+      # - 🇯🇵do_japan_tj_7
+      # - 🇯🇵do_japan_tj_8
       - DIRECT
 
   - name: 🎰 Stake Nodes
     type: select
     proxies:
       - 🚀 Node Selection
-      - 🌐 Naiyun
+      # - 🌐 Naiyun
       - 🔑 Manual Selection
       - DIRECT
 
@@ -901,7 +901,7 @@ proxy-groups:
     proxies:
       - ☁️ Azure Nodes
       - 🚀 Node Selection
-      - 🌊 Digital Ocean Nodes
+      # - 🌊 Digital Ocean Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
 
@@ -1159,7 +1159,7 @@ proxy-groups:
   - name: 🇩🇪 Germany Nodes
     type: select
     proxies:
-      - 🇩🇪ny_germany
+      # - 🇩🇪ny_germany
       - 🚀 Node Selection
       - DIRECT
 
