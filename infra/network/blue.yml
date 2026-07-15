@@ -49,6 +49,15 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
+  # Aliyun Singapore SS — IPv6 only
+  - name: 🇸🇬ali_singapore_v6
+    type: ss
+    server: "240b:4000:20:ee00:eb99:2357:52aa:50a9"
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
+
   # - name: 🇸🇬do_singapore_tj
   #   type: trojan
   #   server: 162.159.23.222
@@ -660,6 +669,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_tj
       # - 🇸🇬do_singapore
       - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
@@ -695,6 +705,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_reality
       # - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
       - 🇸🇬do_singapore_tj_2
       - 🇸🇬do_singapore_tj_3
       - 🇸🇬do_singapore_tj_4
@@ -803,6 +814,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_vless_warp
       # - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
@@ -813,6 +825,7 @@ proxy-groups:
       - 🚀 Node Selection
       # - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
@@ -853,6 +866,7 @@ proxy-groups:
       # - 🇸🇬do_singapore_reality
       # - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
+      - 🇸🇬ali_singapore_v6
       - 🇯🇵do_japan_tj
       - 🇯🇵do_japan_tj_2
       - 🇯🇵do_japan_tj_3
