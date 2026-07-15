@@ -1,9 +1,11 @@
 #!/bin/bash
 #
 # VPS Initial Setup Script
-# Configures a fresh Ubuntu server with Docker, Shadowsocks, BBR, and SSH hardening
+# Configures a fresh Ubuntu server with Docker, Shadowsocks, BBR/fq tweaks, and SSH hardening
 #
-
+# Tweaks included: BBR + fq qdisc, tcp_mtu_probing, SS --network host / listen ::,
+#                  Hy2 from repo (bandwidth 100 mbps), netplan dhcp6
+#
 set -e
 
 # ============================================================================
@@ -87,7 +89,7 @@ sudo mkdir -p /etc/shadowsocks-rust/
 print_step "Writing configuration file..."
 sudo bash -c 'cat > /etc/shadowsocks-rust/config.json <<EOF
 {
-    "server": "0.0.0.0",
+    "server": "::",
     "server_port": 12033,
     "password": "bxsnucrgk6hfish",
     "timeout": 300,
@@ -97,16 +99,16 @@ sudo bash -c 'cat > /etc/shadowsocks-rust/config.json <<EOF
 }
 EOF'
 
-print_step "Starting shadowsocks-rust container..."
+print_step "Starting shadowsocks-rust container (host network)..."
+sudo docker rm -f ss-rust 2>/dev/null || true
 sudo docker run -d \
-    -p 12033:12033 \
-    -p 12033:12033/udp \
     --name ss-rust \
     --restart=always \
+    --network host \
     -v /etc/shadowsocks-rust:/etc/shadowsocks-rust \
     teddysun/shadowsocks-rust
 
-print_success "Shadowsocks-rust running on port 12033"
+print_success "Shadowsocks-rust running on port 12033 (host network, listen ::)"
 print_info "Method: chacha20-ietf-poly1305 | Mode: tcp_and_udp"
 
 # ============================================================================
@@ -136,13 +138,43 @@ net.ipv4.tcp_wmem = 4096 1048576 16777216
 
 # TCP Fast Open (both directions)
 net.ipv4.tcp_fastopen = 3
+
+# MTU probing (path MTU blackholes)
+net.ipv4.tcp_mtu_probing = 1
 EOF
 
 print_step "Applying sysctl settings..."
 sudo sysctl --system
 
+print_step "Setting primary NIC qdisc to fq (persist via systemd)..."
+sudo apt install -y iproute2 >/dev/null
+sudo tee /usr/local/sbin/set-nic-fq.sh > /dev/null <<'SCRIPT'
+#!/bin/bash
+NIC="$(ip -o route get 1.1.1.1 2>/dev/null | awk '{for (i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')"
+NIC="${NIC:-eth0}"
+/sbin/tc qdisc replace dev "$NIC" root fq
+SCRIPT
+sudo chmod +x /usr/local/sbin/set-nic-fq.sh
+sudo /usr/local/sbin/set-nic-fq.sh || true
+sudo tee /etc/systemd/system/eth0-fq.service > /dev/null <<'EOF'
+[Unit]
+Description=Set primary NIC qdisc to fq for BBR
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/set-nic-fq.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable --now eth0-fq.service
+
 print_success "BBR and network optimizations enabled"
-print_info "Buffer sizes: 16MB max | TCP Fast Open: bidirectional"
+print_info "Buffer sizes: 16MB max | TFO | mtu_probing=1 | NIC qdisc=fq"
 
 # ============================================================================
 # GIT REPOSITORY SETUP
@@ -161,6 +193,37 @@ cd /allah
 git clone https://github.com/rainfrog123/blue.git
 
 print_success "Repository cloned to /allah/blue"
+
+# ============================================================================
+# HYSTERIA2 (from cloned repo)
+# ============================================================================
+print_header "HYSTERIA2 PROXY SERVER"
+
+print_step "Starting Hysteria2 (host network, :443, bandwidth 100 mbps)..."
+sudo mkdir -p /allah/blue/infra/cloud/ali/hysteria/acme
+cd /allah/blue/infra/cloud/ali/hysteria
+sudo docker compose up -d
+
+print_success "Hysteria2 started (check: docker logs hysteria2)"
+print_info "ACME domain must already point at this host (hy.hyas.site)"
+
+# ============================================================================
+# IPv6 NETPLAN (dhcp6)
+# ============================================================================
+print_header "IPv6 NETPLAN"
+
+print_step "Enabling dhcp6 on eth* in netplan (if present)..."
+if ls /etc/netplan/*.yaml >/dev/null 2>&1; then
+  for f in /etc/netplan/*.yaml; do
+    if grep -qE 'eth[0-9]|ens[0-9]' "$f" && ! grep -q 'dhcp6:' "$f"; then
+      sudo sed -i '/dhcp4:\s*true/a\            dhcp6: true' "$f" || true
+    fi
+  done
+  sudo netplan apply || true
+  print_success "dhcp6 enabled (netplan apply attempted)"
+else
+  print_info "No netplan YAML found — skip dhcp6"
+fi
 
 # ============================================================================
 # SSH HARDENING
@@ -226,8 +289,10 @@ print_success "All configurations applied successfully!"
 echo ""
 print_info "Summary:"
 print_info "  • Hostname: blue"
-print_info "  • Shadowsocks: port 12033 (chacha20-ietf-poly1305)"
-print_info "  • TCP BBR: enabled"
+print_info "  • Shadowsocks: port 12033 (chacha20-ietf-poly1305, host net, ::)"
+print_info "  • Hysteria2: :443 (repo compose, bandwidth 100 mbps)"
+print_info "  • TCP BBR + fq qdisc + mtu_probing: enabled"
+print_info "  • IPv6: dhcp6 via netplan (if YAML present)"
 print_info "  • SSH: root login enabled, password auth disabled"
 print_info "  • Repository: /allah/blue"
 echo ""

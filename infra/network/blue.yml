@@ -138,6 +138,8 @@ proxies:
     port: 443
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
+    up: 100
+    down: 100
 
   # Hysteria 2 (Aliyun SG — IPv6 only)
   - name: 🇸🇬ali_singapore_hy2_v6
@@ -146,6 +148,8 @@ proxies:
     port: 443
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
+    up: 100
+    down: 100
 
   # Hysteria 2 (Azure SG - Direct UDP, IPv6 Only)
   - name: 🇸🇬azure_sg_hy2
