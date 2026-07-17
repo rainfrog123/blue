@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stake Blackjack DOM Automation
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3.1
 // @description  Automate blackjack on Stake.com using pure DOM observation (no API interception)
 // @author       You
 // @match        https://stake.com/casino/games/blackjack*
@@ -49,7 +49,14 @@
         strategy: 'basic',
         bettingSystem: 'flat',
         maxMartingaleBet: 100,
-        takeInsurance: false // Basic strategy: always decline insurance
+        takeInsurance: false, // Basic strategy: always decline insurance
+        // Session bankroll guards (0 = disabled)
+        stopLoss: 0,
+        takeProfit: 0,
+        maxHands: 0,
+        // Stuck-state recovery
+        stuckTimeoutMs: 15000,
+        maxActionRetries: 3
     };
 
     const STRATEGIES = {
@@ -81,6 +88,11 @@
     let lastGameStatus = 'none';
     let lastPlayerCards = [];
     let observer = null;
+    let lastProgressAt = Date.now();
+    let actionRetryCount = 0;
+    let stopReason = '';
+    let handBetUnits = 1; // 2 after double on the active hand
+    let lastActiveHandKey = '';
 
     let stats = {
         hands: 0,
@@ -429,17 +441,29 @@
         const { value: playerValue, soft } = calculateHandValue(playerCards);
         const dealerValue = getDealerValue(dealerUpcard);
 
-        // Pairs
+        // Pairs (same rank, or any two 10-value cards if UI allows)
         if (playerCards.length === 2 && canSplit) {
             const rank1 = playerCards[0].rank;
             const rank2 = playerCards[1].rank;
-            if (rank1 === rank2) {
-                if (rank1 === 'A' || rank1 === '8') return 'split';
-                if (rank1 === '9' && ![7, 10, 11].includes(dealerValue)) return 'split';
-                if (rank1 === '7' && dealerValue <= 7) return 'split';
-                if (rank1 === '6' && dealerValue <= 6) return 'split';
-                if (['2', '3'].includes(rank1) && dealerValue <= 7) return 'split';
-                if (rank1 === '4' && [5, 6].includes(dealerValue)) return 'split';
+            const isTen = (r) => ['10', 'J', 'Q', 'K'].includes(r);
+            const samePair = rank1 === rank2 || (isTen(rank1) && isTen(rank2));
+            if (samePair) {
+                // Never split 5s (treat as hard 10) or 10-value cards
+                if (rank1 === '5' || isTen(rank1)) {
+                    // fall through to hard/soft logic
+                } else if (rank1 === 'A' || rank1 === '8') {
+                    return 'split';
+                } else if (rank1 === '9' && ![7, 10, 11].includes(dealerValue)) {
+                    return 'split';
+                } else if (rank1 === '7' && dealerValue <= 7) {
+                    return 'split';
+                } else if (rank1 === '6' && dealerValue <= 6) {
+                    return 'split';
+                } else if (['2', '3'].includes(rank1) && dealerValue <= 7) {
+                    return 'split';
+                } else if (rank1 === '4' && [5, 6].includes(dealerValue)) {
+                    return 'split';
+                }
             }
         }
 
@@ -447,20 +471,21 @@
         if (soft) {
             if (playerValue >= 19) return 'stand';
             if (playerValue === 18) {
+                // S17 chart: stand vs 2,7,8; double vs 3-6; hit vs 9,10,A
                 if (dealerValue >= 9) return 'hit';
-                if ([3,4,5,6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
+                if ([3, 4, 5, 6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
                 return 'stand';
             }
             if (playerValue === 17) {
-                if ([3,4,5,6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
+                if ([3, 4, 5, 6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
                 return 'hit';
             }
             if ([15, 16].includes(playerValue)) {
-                if ([4,5,6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
+                if ([4, 5, 6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
                 return 'hit';
             }
             if ([13, 14].includes(playerValue)) {
-                if ([5,6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
+                if ([5, 6].includes(dealerValue) && canDouble && playerCards.length === 2) return 'double';
                 return 'hit';
             }
             return 'hit';
@@ -567,8 +592,75 @@
     let gameLoopInterval = null;
     let handEndedAt = 0;
 
+    function markProgress() {
+        lastProgressAt = Date.now();
+        actionRetryCount = 0;
+        updateStatusLine();
+    }
+
+    function checkSessionLimits() {
+        if (!isPlaying) return false;
+        if (CONFIG.stopLoss > 0 && stats.profit <= -CONFIG.stopLoss) {
+            stopReason = `Stop-loss hit (−${CONFIG.stopLoss})`;
+            log(stopReason);
+            stopAutoPlay();
+            return true;
+        }
+        if (CONFIG.takeProfit > 0 && stats.profit >= CONFIG.takeProfit) {
+            stopReason = `Take-profit hit (+${CONFIG.takeProfit})`;
+            log(stopReason);
+            stopAutoPlay();
+            return true;
+        }
+        if (CONFIG.maxHands > 0 && stats.hands >= CONFIG.maxHands) {
+            stopReason = `Max hands reached (${CONFIG.maxHands})`;
+            log(stopReason);
+            stopAutoPlay();
+            return true;
+        }
+        return false;
+    }
+
+    async function recoverStuckHand(actions) {
+        if (!isHandInProgress) return false;
+        const idleMs = Date.now() - lastProgressAt;
+        if (idleMs < CONFIG.stuckTimeoutMs) return false;
+
+        debugLog('STUCK_RECOVERY', { idleMs, actions, actionRetryCount, status: getGameStatus() });
+        log(`Stuck ${Math.round(idleMs / 1000)}s — recovering…`);
+        actionInProgress = true;
+        actionRetryCount++;
+
+        try {
+            if (actions.stand) {
+                await clickAction('stand');
+            } else if (actions.hit) {
+                await clickAction('hit');
+            } else if (actions.bet && isPlaying) {
+                // UI thinks hand ended but our flag is stuck
+                isHandInProgress = false;
+                lastPlayerCards = [];
+                lastGameStatus = 'none';
+                markProgress();
+            }
+        } catch (e) {
+            debugLog('STUCK_RECOVERY_ERROR', { error: e.message });
+        }
+
+        await sleep(500);
+        actionInProgress = false;
+
+        if (actionRetryCount >= CONFIG.maxActionRetries) {
+            stopReason = 'Stuck too many times — auto-stopped';
+            log(stopReason);
+            stopAutoPlay();
+        }
+        return true;
+    }
+
     async function handleGameState() {
         if (actionInProgress) return;
+        if (checkSessionLimits()) return;
 
         const status = getGameStatus();
         const actions = getAvailableActions();
@@ -595,6 +687,8 @@
             handleGameEnd(status, isSplit);
             lastGameStatus = status;
             handEndedAt = Date.now();
+            markProgress();
+            checkSessionLimits();
             // Don't return - check if we should start next hand
         }
 
@@ -609,6 +703,7 @@
             await sleep(CONFIG.delayBetweenActions);
             try {
                 await clickAction(action);
+                markProgress();
             } catch (e) {
                 debugLog('INSURANCE_ERROR', { error: e.message });
             }
@@ -620,17 +715,30 @@
         // Handle active game - need to take action (hit/stand/double/split)
         if ((actions.hit || actions.stand) && !actionInProgress && isHandInProgress) {
             if (playerCards.length >= 2 && dealerCards.length >= 1) {
+                // New split hand → reset double units for that hand
+                const activeKey = playerCards.map(c => c.rank + c.suit).join('') + '|' + getSplitHandCount();
+                if (activeKey !== lastActiveHandKey) {
+                    if (lastActiveHandKey) handBetUnits = 1;
+                    lastActiveHandKey = activeKey;
+                }
+
                 const cardsKey = playerCards.map(c => c.rank).join('');
                 if (cardsKey !== lastPlayerCards.join('')) {
                     lastPlayerCards = playerCards.map(c => c.rank);
+                    markProgress();
                     await takeStrategyAction(playerCards, dealerCards, actions);
+                } else {
+                    await recoverStuckHand(actions);
                 }
+            } else {
+                await recoverStuckHand(actions);
             }
             return;
         }
 
         // Handle bet phase - start next hand if auto-playing
         if (actions.bet && !isHandInProgress && isPlaying) {
+            if (checkSessionLimits()) return;
             // Wait a bit after hand ends before starting next
             const timeSinceEnd = Date.now() - handEndedAt;
             if (timeSinceEnd < CONFIG.delayBetweenHands) {
@@ -641,7 +749,14 @@
             debugLog('STARTING_NEXT_HAND', { status, timeSinceEnd });
             lastGameStatus = 'none';
             lastPlayerCards = [];
+            markProgress();
             await startNewHand();
+            return;
+        }
+
+        // Mid-hand with no actionable buttons for too long
+        if (isHandInProgress) {
+            await recoverStuckHand(actions);
         }
     }
 
@@ -696,10 +811,17 @@
 
         try {
             await clickAction(action);
+            markProgress();
+
+            if (action === 'double') {
+                handBetUnits = 2;
+            }
 
             // After split, reset card tracking and wait longer for UI update
             if (action === 'split') {
                 lastPlayerCards = [];
+                handBetUnits = 1;
+                lastActiveHandKey = '';
                 log('Split! Playing first hand...');
                 await sleep(800); // Extra delay for split animation
             }
@@ -707,6 +829,7 @@
             if (action !== 'stand' && actions.stand) {
                 log('Action failed, trying STAND');
                 await clickAction('stand');
+                markProgress();
             }
         }
 
@@ -724,8 +847,10 @@
 
         if (isSplit) {
             // Handle split results - status is like "win,lose"
+            // Note: if one hand was doubled, DOM doesn't always tell which; use base bet per hand
+            // (double on a split hand still understates that hand's P/L slightly)
             const splitResults = getSplitResults();
-            const betPerHand = currentBet; // Each split hand has the same bet
+            const betPerHand = currentBet;
 
             let wins = 0, losses = 0, pushes = 0;
 
@@ -760,18 +885,21 @@
             updateStats(netResult, profit);
 
         } else {
-            // Normal single hand
+            // Normal single hand — honor double (2x stake)
             const playerValue = readHandValue('player');
             const resultClass = getResultClass();
+            const stake = currentBet * handBetUnits;
 
             let result = status;
             if (resultClass) result = resultClass;
 
             // Calculate profit
-            if (result === 'win' || result === 'blackjack') {
-                profit = result === 'blackjack' ? currentBet * 1.5 : currentBet;
+            if (result === 'blackjack') {
+                profit = currentBet * 1.5; // naturals are never doubled
+            } else if (result === 'win') {
+                profit = stake;
             } else if (result === 'lose' || result === 'bust') {
-                profit = -currentBet;
+                profit = -stake;
             }
             // push = 0
 
@@ -781,16 +909,19 @@
                 playerValue,
                 dealerValue,
                 bet: currentBet,
+                handBetUnits,
                 isPlaying
             });
 
-            log(`Result: ${result.toUpperCase()} | P:${playerValue} D:${dealerValue} | ${profit >= 0 ? '+' : ''}${profit.toFixed(4)}`);
+            log(`Result: ${result.toUpperCase()} | P:${playerValue} D:${dealerValue} | ${profit >= 0 ? '+' : ''}${profit.toFixed(4)}${handBetUnits > 1 ? ' (doubled)' : ''}`);
 
             updateStats(result, profit);
         }
 
         isHandInProgress = false;
         actionInProgress = false;
+        handBetUnits = 1;
+        lastActiveHandKey = '';
 
         // If auto-playing, log that next hand will start soon
         if (isPlaying) {
@@ -809,6 +940,9 @@
         isHandInProgress = true;
         handNumber++;
         lastPlayerCards = [];
+        handBetUnits = 1;
+        lastActiveHandKey = '';
+        markProgress();
 
         const balance = getBalance();
         let betToUse;
@@ -1031,15 +1165,18 @@
         if (isPlaying) return;
 
         isPlaying = true;
+        stopReason = '';
         lastGameStatus = 'none';
         lastPlayerCards = [];
         handEndedAt = 0;
+        markProgress();
 
         debugLog('AUTOPLAY_START', { config: CONFIG });
         log('Auto-play started');
 
         const btn = document.getElementById('bjdom-play-btn');
         if (btn) btn.textContent = 'Stop';
+        updateStatusLine();
 
         startObserver();
         startGameLoop();  // Start polling loop
@@ -1058,11 +1195,12 @@
         stopObserver();
         stopGameLoop();  // Stop polling loop
 
-        debugLog('AUTOPLAY_STOP', { stats });
-        log('Auto-play stopped');
+        debugLog('AUTOPLAY_STOP', { stats, stopReason });
+        log(stopReason ? `Auto-play stopped: ${stopReason}` : 'Auto-play stopped');
 
         const btn = document.getElementById('bjdom-play-btn');
-        if (btn) btn.textContent = 'Start Auto-Play';
+        if (btn) btn.textContent = 'Start';
+        updateStatusLine();
     }
 
     async function playSingleHand() {
@@ -1229,63 +1367,93 @@
             <style>
                 #bjdom-panel {
                     position: fixed;
-                    top: 80px;
-                    right: 10px;
-                    width: 280px;
+                    top: 72px;
+                    right: 8px;
+                    width: 200px;
+                    max-height: calc(100vh - 90px);
+                    overflow-y: auto;
                     background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
-                    border: 2px solid #3d5a80;
-                    border-radius: 12px;
-                    padding: 15px;
+                    border: 1px solid #3d5a80;
+                    border-radius: 8px;
+                    padding: 8px 10px;
                     z-index: 99999;
                     font-family: 'Segoe UI', Arial, sans-serif;
                     color: #e0e1dd;
-                    font-size: 13px;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+                    font-size: 11px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+                    line-height: 1.25;
                 }
                 #bjdom-panel h3 {
-                    margin: 0 0 12px 0;
+                    margin: 0 0 6px 0;
                     color: #98c1d9;
-                    font-size: 16px;
+                    font-size: 12px;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 4px;
                 }
                 #bjdom-panel .badge {
                     background: #ee6c4d;
                     color: #fff;
-                    padding: 2px 8px;
-                    border-radius: 4px;
-                    font-size: 10px;
+                    padding: 1px 5px;
+                    border-radius: 3px;
+                    font-size: 8px;
                     font-weight: bold;
                 }
                 #bjdom-panel .row {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    margin: 6px 0;
+                    margin: 3px 0;
+                    gap: 4px;
                 }
+                #bjdom-panel label { font-size: 10px; white-space: nowrap; }
                 #bjdom-panel input, #bjdom-panel select {
                     background: #293241;
                     border: 1px solid #3d5a80;
                     color: #e0e1dd;
-                    padding: 6px 10px;
-                    border-radius: 6px;
-                    width: 110px;
+                    padding: 3px 5px;
+                    border-radius: 4px;
+                    width: 96px;
+                    font-size: 11px;
+                    box-sizing: border-box;
+                }
+                #bjdom-panel .guards {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    gap: 4px;
+                    margin: 4px 0;
+                }
+                #bjdom-panel .guards label {
+                    display: block;
+                    font-size: 9px;
+                    color: #778da9;
+                    margin-bottom: 1px;
+                }
+                #bjdom-panel .guards input {
+                    width: 100%;
+                    padding: 2px 3px;
+                    font-size: 10px;
+                }
+                #bjdom-panel .btns {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 3px;
+                    margin-top: 4px;
                 }
                 #bjdom-panel button {
                     background: linear-gradient(135deg, #98c1d9 0%, #3d5a80 100%);
                     color: #0d1b2a;
                     border: none;
-                    padding: 10px 14px;
-                    border-radius: 6px;
+                    padding: 5px 7px;
+                    border-radius: 4px;
                     cursor: pointer;
                     font-weight: bold;
-                    margin: 4px 4px 4px 0;
-                    transition: all 0.15s;
+                    font-size: 10px;
+                    margin: 0;
+                    flex: 1 1 auto;
                 }
                 #bjdom-panel button:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(152, 193, 217, 0.3);
+                    filter: brightness(1.08);
                 }
                 #bjdom-panel button.secondary {
                     background: linear-gradient(135deg, #3d5a80 0%, #293241 100%);
@@ -1293,37 +1461,38 @@
                 }
                 #bjdom-panel .stats {
                     background: rgba(0,0,0,0.3);
-                    padding: 10px;
-                    border-radius: 8px;
-                    margin: 10px 0;
+                    padding: 5px 6px;
+                    border-radius: 5px;
+                    margin: 5px 0;
                 }
                 #bjdom-panel .profit-positive { color: #52b788; font-weight: bold; }
                 #bjdom-panel .profit-negative { color: #e63946; font-weight: bold; }
                 #bjdom-log {
-                    max-height: 100px;
+                    max-height: 56px;
                     overflow-y: auto;
                     background: rgba(0,0,0,0.4);
-                    padding: 8px;
-                    border-radius: 6px;
-                    font-size: 10px;
-                    margin-top: 10px;
+                    padding: 4px 5px;
+                    border-radius: 4px;
+                    font-size: 9px;
+                    margin-top: 5px;
                 }
                 #bjdom-log div {
-                    padding: 2px 0;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                    padding: 1px 0;
+                    border-bottom: 1px solid rgba(255,255,255,0.08);
                 }
                 #bjdom-panel .minimize {
                     position: absolute;
-                    top: 10px;
-                    right: 15px;
+                    top: 4px;
+                    right: 8px;
                     cursor: pointer;
-                    font-size: 20px;
+                    font-size: 14px;
                     opacity: 0.7;
                 }
-                .desc { font-size: 9px; color: #778da9; margin: 2px 0 6px 0; font-style: italic; }
+                #bjdom-panel .desc { font-size: 8px; color: #778da9; margin: 1px 0 3px 0; font-style: italic; }
+                #bjdom-current-bet { font-size: 9px; color: #ffaa00; margin: 2px 0; }
             </style>
             <span class="minimize" id="bjdom-minimize">−</span>
-            <h3>🎴 BJ DOM Bot <span class="badge">DOM-ONLY</span></h3>
+            <h3>🎴 BJ DOM <span class="badge">DOM</span></h3>
             <div id="bjdom-content">
                 <div class="row">
                     <label>Bet:</label>
@@ -1346,9 +1515,25 @@
                         ).join('')}
                     </select>
                 </div>
-                <div id="bjdom-current-bet" style="font-size:11px;color:#ffaa00;margin:5px 0;display:none;">
+                <div id="bjdom-current-bet" style="display:none;">
                     Next bet: ${CONFIG.betAmount.toFixed(4)}
                 </div>
+
+                <div class="guards">
+                    <div>
+                        <label>Stop−</label>
+                        <input type="number" id="bjdom-stoploss" value="${CONFIG.stopLoss}" step="0.1" min="0" title="Stop when session profit ≤ −this (0=off)">
+                    </div>
+                    <div>
+                        <label>Take+</label>
+                        <input type="number" id="bjdom-takeprofit" value="${CONFIG.takeProfit}" step="0.1" min="0" title="Stop when session profit ≥ this (0=off)">
+                    </div>
+                    <div>
+                        <label>Max</label>
+                        <input type="number" id="bjdom-maxhands" value="${CONFIG.maxHands}" step="1" min="0" title="Stop after N hands (0=off)">
+                    </div>
+                </div>
+                <div class="desc" id="bjdom-status-line">Idle</div>
 
                 <div class="stats">
                     <div class="row"><span>Hands:</span><span id="bjdom-stat-hands">0</span></div>
@@ -1356,8 +1541,8 @@
                     <div class="row"><span>Profit:</span><span id="bjdom-stat-profit">0.0000</span></div>
                 </div>
 
-                <div>
-                    <button id="bjdom-play-btn">Start Auto-Play</button>
+                <div class="btns">
+                    <button id="bjdom-play-btn">Start</button>
                     <button id="bjdom-single-btn" class="secondary">Play 1</button>
                     <button id="bjdom-resume-btn" class="secondary">Resume</button>
                 </div>
@@ -1376,6 +1561,9 @@
                 CONFIG.betAmount = parseFloat(document.getElementById('bjdom-bet').value);
                 CONFIG.strategy = document.getElementById('bjdom-strategy').value;
                 CONFIG.bettingSystem = document.getElementById('bjdom-betting').value;
+                CONFIG.stopLoss = parseFloat(document.getElementById('bjdom-stoploss').value) || 0;
+                CONFIG.takeProfit = parseFloat(document.getElementById('bjdom-takeprofit').value) || 0;
+                CONFIG.maxHands = parseInt(document.getElementById('bjdom-maxhands').value, 10) || 0;
                 // Reset martingale state on start
                 currentBet = CONFIG.betAmount;
                 consecutiveLosses = 0;
@@ -1400,8 +1588,19 @@
             document.getElementById('bjdom-strategy-desc').textContent = STRATEGIES[CONFIG.strategy].description;
         });
 
+        document.getElementById('bjdom-bet').addEventListener('change', (e) => {
+            const v = parseFloat(e.target.value);
+            if (!Number.isFinite(v) || v <= 0) return;
+            CONFIG.betAmount = v;
+            if (CONFIG.bettingSystem === 'flat' || consecutiveLosses === 0) {
+                currentBet = v;
+            }
+            updateBetDisplay();
+        });
+
         document.getElementById('bjdom-betting').addEventListener('change', (e) => {
             CONFIG.bettingSystem = e.target.value;
+            CONFIG.betAmount = parseFloat(document.getElementById('bjdom-bet').value) || CONFIG.betAmount;
             currentBet = CONFIG.betAmount;
             consecutiveLosses = 0;
             fifthMartingaleBaseBet = 0;
@@ -1429,6 +1628,27 @@
         }, 500);
     }
 
+    function updateStatusLine() {
+        const el = document.getElementById('bjdom-status-line');
+        if (!el) return;
+        if (stopReason) {
+            el.textContent = stopReason;
+            el.style.color = '#e63946';
+            return;
+        }
+        if (isPlaying) {
+            const guards = [];
+            if (CONFIG.stopLoss > 0) guards.push(`SL −${CONFIG.stopLoss}`);
+            if (CONFIG.takeProfit > 0) guards.push(`TP +${CONFIG.takeProfit}`);
+            if (CONFIG.maxHands > 0) guards.push(`${stats.hands}/${CONFIG.maxHands} hands`);
+            el.textContent = guards.length ? `Running · ${guards.join(' · ')}` : 'Running';
+            el.style.color = '#52b788';
+        } else {
+            el.textContent = 'Idle';
+            el.style.color = '#778da9';
+        }
+    }
+
     function updateUI() {
         const el = (id) => document.getElementById(id);
         if (el('bjdom-stat-hands')) el('bjdom-stat-hands').textContent = stats.hands;
@@ -1439,6 +1659,7 @@
             profitEl.textContent = (stats.profit >= 0 ? '+' : '') + stats.profit.toFixed(4);
             profitEl.className = stats.profit >= 0 ? 'profit-positive' : 'profit-negative';
         }
+        updateStatusLine();
     }
 
     function updateBetDisplay() {
