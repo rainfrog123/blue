@@ -26,6 +26,7 @@ ali/
 ```bash
 # ECS (Singapore by default)
 python infra/cloud/ali/ecs/cli.py status
+python infra/cloud/ali/ecs/cli.py traffic
 python infra/cloud/ali/ecs/cli.py spot-prices
 
 # SWAS (Singapore)
@@ -39,5 +40,5 @@ Both CLIs load keys via `infra/scripts/cred_loader.py` (`get_alibaba()`), throug
 ## Packages
 
 ```bash
-pip install alibabacloud_ecs20140526 alibabacloud_vpc20160428 alibabacloud_swas_open20200601 alibabacloud_tea_openapi
+pip install alibabacloud_ecs20140526 alibabacloud_vpc20160428 alibabacloud_bssopenapi20171214 alibabacloud_swas_open20200601 alibabacloud_tea_openapi
 ```

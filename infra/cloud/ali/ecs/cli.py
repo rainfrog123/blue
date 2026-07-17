@@ -505,6 +505,265 @@ def cmd_status(args):
             print(f"  {inst.instance_name}: {inst.status} ({ip})")
 
 
+def _bss_client():
+    """BSS OpenAPI client (global billing endpoint)."""
+    from aliyun_client import ACCESS_KEY_ID, ACCESS_KEY_SECRET, open_api_models
+    from alibabacloud_bssopenapi20171214.client import Client as BssClient
+
+    cfg = open_api_models.Config(
+        access_key_id=ACCESS_KEY_ID,
+        access_key_secret=ACCESS_KEY_SECRET,
+    )
+    cfg.endpoint = "business.aliyuncs.com"
+    return BssClient(cfg)
+
+
+# CDT public-traffic free quota (account-wide, since 2025-06-01).
+# Docs: https://help.aliyun.com/zh/cdt/internet-data-transfers/
+# Only BGP (多线) pay-by-traffic egress; BGP 精品 is excluded.
+CDT_FREE_CN_GB = 20.0        # China mainland regions
+CDT_FREE_OVERSEAS_GB = 200.0  # non-China (e.g. Singapore)
+CDT_FREE_TOTAL_GB = CDT_FREE_CN_GB + CDT_FREE_OVERSEAS_GB  # 220 GB/month
+
+# CDT BGP (多线) list price after free tier — first step (0~10 TB], ¥/GB.
+# Full ladder: https://help.aliyun.com/zh/cdt/internet-data-transfers/
+CDT_PRICE_CN_YUAN_PER_GB = 0.80       # 中国内地 0~10 TB
+CDT_PRICE_APAC_YUAN_PER_GB = 0.70     # 亚太 (Singapore, HK, …) 0~10 TB
+CDT_PRICE_EU_NA_YUAN_PER_GB = 0.50    # 欧洲 / 北美 0~10 TB
+
+# IPv6 gateway pay-by-traffic list price when billed on the gateway product
+# (not yet rolled into CDT free/ladder on the bill). Singapore = 0.8 ¥/GB.
+# Docs: https://help.aliyun.com/zh/ipv6-gateway/product-overview/ipv6-gateway-billing/
+# Under CDT, SG IPv6 would use the APAC ladder (0.70 ¥/GB after free) instead.
+IPV6_PRICE_SG_YUAN_PER_GB = 0.80
+
+
+def _cdt_region_bucket(region: str | None) -> str:
+    """Map a BSS region label to CDT free-quota bucket: 'cn' or 'overseas'."""
+    r = (region or "").strip().lower()
+    if not r:
+        # Default client region: Singapore → overseas
+        return "cn" if REGION_ID.startswith("cn-") else "overseas"
+    cn_markers = (
+        "中国", "华北", "华东", "华南", "西南", "西北", "华中",
+        "cn-", "beijing", "hangzhou", "shanghai", "shenzhen",
+        "guangzhou", "chengdu", "qingdao", "zhangjiakou", "huhehaote",
+        "wulanchabu", "heyuan", "guangzhou", "nanjing", "fuzhou",
+        "wuhan", "xi'an", "zhengzhou", "乌兰察布", "张家口", "呼和浩特",
+        "河源", "南京", "福州", "武汉", "西安", "郑州", "成都", "青岛",
+        "北京", "杭州", "上海", "深圳", "广州",
+    )
+    if any(m in r for m in cn_markers):
+        return "cn"
+    return "overseas"
+
+
+def _bss_traffic_items(bss, billing_cycle: str, *, billing_date: str | None = None):
+    """Return CDT + IPv6 public-traffic billing items for a cycle (or one day)."""
+    from alibabacloud_bssopenapi20171214 import models as bss_models
+
+    kwargs = {
+        "billing_cycle": billing_cycle,
+        "is_billing_item": True,
+        "page_size": 100,
+        "page_num": 1,
+    }
+    if billing_date:
+        kwargs["billing_date"] = billing_date
+        kwargs["granularity"] = "DAILY"
+
+    resp = bss.query_instance_bill(bss_models.QueryInstanceBillRequest(**kwargs))
+    items = []
+    if resp.body and resp.body.data and resp.body.data.items:
+        items = resp.body.data.items.item or []
+
+    traffic = []
+    for it in items:
+        code = (it.product_code or "").lower()
+        detail = it.product_detail or ""
+        billing_item = it.billing_item or ""
+        if code in ("cdt", "ipv6gateway") or "流量" in billing_item or "流量" in detail:
+            traffic.append(it)
+    return traffic
+
+
+def cmd_traffic(args):
+    """Show calendar-month public traffic from BSS (CDT IPv4 + IPv6 gateway)."""
+    from calendar import monthrange
+    from datetime import date
+
+    print_header("TRAFFIC")
+
+    instances = list_instances(verbose=False)
+    if instances:
+        print("\nInstances:")
+        for inst in instances:
+            ips = inst.public_ip_address.ip_address if inst.public_ip_address else []
+            ip = ips[0] if ips else "N/A"
+            charge = getattr(inst, "internet_charge_type", None) or "?"
+            bw = getattr(inst, "internet_max_bandwidth_out", None)
+            bw_s = f"{bw} Mbps" if bw is not None else "?"
+            print(f"  {inst.instance_name} ({inst.instance_id})")
+            print(f"    {inst.status} | {ip} | {charge} | max out {bw_s}")
+    else:
+        print("\nNo ECS instances in this region.")
+
+    today = date.today()
+    billing_cycle = args.month or today.strftime("%Y-%m")
+    try:
+        year, month = map(int, billing_cycle.split("-"))
+    except ValueError:
+        print(f"\nInvalid --month {billing_cycle!r}; use YYYY-MM")
+        return
+
+    print(f"\n{'=' * 50}")
+    print("Public traffic — BSS billing (calendar month MTD)")
+    print(f"{'=' * 50}")
+    print(f"  Period:  {billing_cycle}")
+    print("  Source:  CDT (IPv4 fixed public IP) + IPv6 gateway")
+    print("  Note:    ECS compute bill lines do not include egress")
+
+    print(f"\n{'=' * 50}")
+    print("CDT free quota (account-wide, BGP 多线 only)")
+    print(f"{'=' * 50}")
+    print(f"  Total:      {CDT_FREE_TOTAL_GB:.0f} GB/month")
+    print(f"  China:      {CDT_FREE_CN_GB:.0f} GB/month")
+    print(f"  Overseas:   {CDT_FREE_OVERSEAS_GB:.0f} GB/month  (Singapore uses this)")
+    print("  Policy:     since 2025-06-01; auto if on CDT billing")
+
+    print(f"\n{'=' * 50}")
+    print("List prices (¥/GB, BGP 多线, after free tier)")
+    print(f"{'=' * 50}")
+    print(f"  CDT China 0~10 TB:     ¥{CDT_PRICE_CN_YUAN_PER_GB:.2f}/GB")
+    print(f"  CDT APAC 0~10 TB:      ¥{CDT_PRICE_APAC_YUAN_PER_GB:.2f}/GB  (Singapore)")
+    print(f"  CDT EU/NA 0~10 TB:     ¥{CDT_PRICE_EU_NA_YUAN_PER_GB:.2f}/GB")
+    print(f"  IPv6 gateway (SG):     ¥{IPV6_PRICE_SG_YUAN_PER_GB:.2f}/GB  (product bill)")
+    print(f"  IPv6 via CDT (APAC):   ¥{CDT_PRICE_APAC_YUAN_PER_GB:.2f}/GB  (if billed under CDT)")
+    print("  Inside free tier:      ¥0/GB on CDT (list price 0 on bill)")
+
+    try:
+        bss = _bss_client()
+        month_items = _bss_traffic_items(bss, billing_cycle)
+    except Exception as e:
+        print(f"\n  Error reading BSS bills: {e}")
+        return
+
+    ipv4_gb = ipv6_gb = 0.0
+    ipv4_cost = ipv6_cost = 0.0
+    cdt_cn_gb = cdt_overseas_gb = 0.0
+
+    if not month_items:
+        print("\n  No CDT/IPv6 traffic line items for this month yet.")
+    else:
+        print()
+        for it in month_items:
+            usage = float(it.usage or 0)
+            amount = float(it.pretax_amount or 0)
+            gross = float(getattr(it, "pretax_gross_amount", None) or 0)
+            coupons = float(getattr(it, "deducted_by_coupons", None) or 0)
+            unit = it.usage_unit or "GB"
+            code = (it.product_code or "").lower()
+            label = it.billing_item or it.product_detail or code
+            price = it.list_price or "?"
+            price_unit = it.list_price_unit or ""
+            region = getattr(it, "region", None) or ""
+            print(f"  {label}")
+            print(f"    Product:  {it.product_name} ({it.product_code})")
+            if region:
+                print(f"    Region:   {region}")
+            print(f"    Usage:    {usage:.3f} {unit}")
+            print(f"    List:     {price} {price_unit}".rstrip())
+            print(f"    Charged:  ¥{amount:.4f}", end="")
+            if gross and amount == 0 and coupons:
+                print(f"  (gross ¥{gross:.4f}, coupons ¥{coupons:.4f})")
+            else:
+                print()
+            if code == "cdt" or "公网IP" in label:
+                ipv4_gb += usage
+                ipv4_cost += amount
+                if _cdt_region_bucket(region) == "cn":
+                    cdt_cn_gb += usage
+                else:
+                    cdt_overseas_gb += usage
+            elif code == "ipv6gateway" or "IPv6" in (it.product_name or ""):
+                ipv6_gb += usage
+                ipv6_cost += amount
+
+        total_gb = ipv4_gb + ipv6_gb
+        total_cost = ipv4_cost + ipv6_cost
+        print()
+        print(f"  IPv4 (CDT):     {ipv4_gb:.3f} GB   ¥{ipv4_cost:.4f}")
+        print(f"  IPv6 gateway:   {ipv6_gb:.3f} GB   ¥{ipv6_cost:.4f}")
+        print(f"  Total watched:  {total_gb:.3f} GB   ¥{total_cost:.4f}")
+
+    # Remaining free CDT (IPv4 CDT bill lines only; IPv6 may bill separately)
+    cn_left = max(0.0, CDT_FREE_CN_GB - cdt_cn_gb)
+    ov_left = max(0.0, CDT_FREE_OVERSEAS_GB - cdt_overseas_gb)
+    cn_pct = (cdt_cn_gb / CDT_FREE_CN_GB * 100) if CDT_FREE_CN_GB else 0.0
+    ov_pct = (cdt_overseas_gb / CDT_FREE_OVERSEAS_GB * 100) if CDT_FREE_OVERSEAS_GB else 0.0
+    print(f"\n{'=' * 50}")
+    print("CDT free remaining (vs IPv4 CDT usage)")
+    print(f"{'=' * 50}")
+    print(f"  China:     {cdt_cn_gb:.3f} / {CDT_FREE_CN_GB:.0f} GB  "
+          f"({cn_pct:.1f}%)  left {cn_left:.3f} GB")
+    print(f"  Overseas:  {cdt_overseas_gb:.3f} / {CDT_FREE_OVERSEAS_GB:.0f} GB  "
+          f"({ov_pct:.1f}%)  left {ov_left:.3f} GB")
+    if cdt_overseas_gb > CDT_FREE_OVERSEAS_GB or cdt_cn_gb > CDT_FREE_CN_GB:
+        print("  WARNING: over free tier — CDT tiered ¥/GB will apply")
+    print("  Note:     IPv6 gateway usage is billed separately (not in these pools)")
+
+    # Implied / projected cost at list prices (Singapore-focused)
+    ipv6_list_cost = ipv6_gb * IPV6_PRICE_SG_YUAN_PER_GB
+    cdt_over_cn = max(0.0, cdt_cn_gb - CDT_FREE_CN_GB)
+    cdt_over_ov = max(0.0, cdt_overseas_gb - CDT_FREE_OVERSEAS_GB)
+    cdt_over_cost = (
+        cdt_over_cn * CDT_PRICE_CN_YUAN_PER_GB
+        + cdt_over_ov * CDT_PRICE_APAC_YUAN_PER_GB
+    )
+    print(f"\n{'=' * 50}")
+    print("Cost at list price (this month)")
+    print(f"{'=' * 50}")
+    print(f"  CDT over free (CN×{CDT_PRICE_CN_YUAN_PER_GB:.2f} + "
+          f"APAC×{CDT_PRICE_APAC_YUAN_PER_GB:.2f}):  ¥{cdt_over_cost:.4f}")
+    print(f"  IPv6 @ ¥{IPV6_PRICE_SG_YUAN_PER_GB:.2f}/GB × {ipv6_gb:.3f} GB:  "
+          f"¥{ipv6_list_cost:.4f}  (bill may use coupons)")
+    print(f"  CDT charged (BSS pretax):     ¥{ipv4_cost:.4f}")
+    print(f"  IPv6 charged (BSS pretax):    ¥{ipv6_cost:.4f}")
+
+    # Daily breakdown for days that exist in the month (through today if current month)
+    last_day = monthrange(year, month)[1]
+    if year == today.year and month == today.month:
+        last_day = today.day
+    start_day = 1
+    if args.days:
+        start_day = max(1, last_day - args.days + 1)
+
+    print(f"\nDaily breakdown ({billing_cycle}-{start_day:02d} -> {billing_cycle}-{last_day:02d}):")
+    print(f"  {'Date':<12} {'IPv4 GB':>10} {'IPv6 GB':>10} {'Total GB':>10}")
+    print(f"  {'-' * 44}")
+    month_ipv4 = month_ipv6 = 0.0
+    try:
+        for day in range(start_day, last_day + 1):
+            billing_date = f"{billing_cycle}-{day:02d}"
+            day_items = _bss_traffic_items(bss, billing_cycle, billing_date=billing_date)
+            d4 = d6 = 0.0
+            for it in day_items:
+                usage = float(it.usage or 0)
+                code = (it.product_code or "").lower()
+                if code == "cdt" or "公网IP" in (it.billing_item or ""):
+                    d4 += usage
+                elif code == "ipv6gateway" or "IPv6" in (it.product_name or ""):
+                    d6 += usage
+            month_ipv4 += d4
+            month_ipv6 += d6
+            if d4 or d6 or day == last_day:
+                print(f"  {billing_date:<12} {d4:>10.3f} {d6:>10.3f} {d4 + d6:>10.3f}")
+        if start_day > 1:
+            print(f"  (sum shown window: IPv4 {month_ipv4:.3f} + IPv6 {month_ipv6:.3f} = {month_ipv4 + month_ipv6:.3f} GB)")
+    except Exception as e:
+        print(f"  Error reading daily bills: {e}")
+
+
 def cmd_diagnose(args):
     """Handle diagnose subcommand."""
     diagnose_firewall(instance_ip=args.ip, check_port=args.port)
@@ -808,6 +1067,7 @@ def main():
         epilog="""
 Examples:
   %(prog)s status                  Show resource summary
+  %(prog)s traffic                 Public egress this month (CDT + IPv6)
   %(prog)s list instances          List all instances
   %(prog)s list images             List custom images
   %(prog)s provision --spot        Create spot instance from latest image
@@ -832,6 +1092,21 @@ Examples:
     # status
     status_parser = subparsers.add_parser('status', aliases=['st'], help='Show status summary')
     status_parser.set_defaults(func=cmd_status)
+
+    # traffic
+    traffic_parser = subparsers.add_parser(
+        'traffic', aliases=['bw', 'egress'],
+        help='Show public traffic this month (BSS CDT IPv4 + IPv6 gateway)',
+    )
+    traffic_parser.add_argument(
+        '--month', default=None,
+        help='Billing month YYYY-MM (default: current calendar month)',
+    )
+    traffic_parser.add_argument(
+        '--days', type=int, default=None,
+        help='Only show the last N days in the daily breakdown',
+    )
+    traffic_parser.set_defaults(func=cmd_traffic)
     
     # provision
     prov_parser = subparsers.add_parser('provision', aliases=['prov', 'new'], help='Create new instance')
