@@ -764,6 +764,133 @@ def cmd_traffic(args):
         print(f"  Error reading daily bills: {e}")
 
 
+def cmd_coupon(args):
+    """Show account cash balance, cash coupons, and prepaid cards (BSS)."""
+    from datetime import date
+    from alibabacloud_bssopenapi20171214 import models as bss_models
+
+    print_header("COUPON / BALANCE")
+
+    bss = _bss_client()
+
+    print("\n==================================================")
+    print("Account balance")
+    print("==================================================")
+    try:
+        bal = bss.query_account_balance()
+        d = bal.body.data if bal.body else None
+        if not d:
+            print("  (no balance data)")
+        else:
+            currency = getattr(d, "currency", None) or "CNY"
+            print(f"  Available amount:       {getattr(d, 'available_amount', None)} {currency}")
+            print(f"  Available cash:         {getattr(d, 'available_cash_amount', None)} {currency}")
+            print(f"  Credit amount:          {getattr(d, 'credit_amount', None)} {currency}")
+            print(f"  MyBank credit:          {getattr(d, 'mybank_credit_amount', None)} {currency}")
+    except Exception as e:
+        print(f"  [ERROR] QueryAccountBalance: {e}")
+
+    print("\n==================================================")
+    print("Cash coupons" + (" (all returned)" if args.all else " (effective only)"))
+    print("==================================================")
+    total_balance = 0.0
+    try:
+        resp = bss.query_cash_coupons(
+            bss_models.QueryCashCouponsRequest(
+                effective_or_not=False if args.all else True,
+            )
+        )
+        data = resp.body.data if resp.body else None
+        coupons = getattr(data, "cash_coupon", None) or [] if data else []
+        if not coupons:
+            print("  (none)")
+        else:
+            for c in coupons:
+                bal_amt = float(getattr(c, "balance", None) or 0)
+                nominal = getattr(c, "nominal_value", None)
+                status = getattr(c, "status", None)
+                no = getattr(c, "cash_coupon_no", None) or getattr(c, "cash_coupon_id", None)
+                desc = (getattr(c, "description", None) or "")[:80]
+                products = getattr(c, "applicable_products", None) or ""
+                effective = getattr(c, "effective_time", None)
+                expiry = getattr(c, "expiry_time", None)
+                total_balance += bal_amt
+                print(f"  #{no}  [{status}]")
+                print(f"    Balance:   ¥{bal_amt:.2f} / ¥{nominal}")
+                print(f"    Effective: {effective}  →  Expiry: {expiry}")
+                if products:
+                    print(f"    Products:  {products}")
+                if desc:
+                    print(f"    Note:      {desc}")
+            print(f"\n  Total coupon balance:  ¥{total_balance:.2f}")
+    except Exception as e:
+        print(f"  [ERROR] QueryCashCoupons: {e}")
+
+    print("\n==================================================")
+    print("Prepaid cards" + (" (all returned)" if args.all else " (effective only)"))
+    print("==================================================")
+    try:
+        resp = bss.query_prepaid_cards(
+            bss_models.QueryPrepaidCardsRequest(
+                effective_or_not=False if args.all else True,
+            )
+        )
+        data = resp.body.data if resp.body else None
+        cards = getattr(data, "prepaid_card", None) or [] if data else []
+        if not cards:
+            print("  (none)")
+        else:
+            for c in cards:
+                print(
+                    f"  {getattr(c, 'prepaid_card_no', None)}  "
+                    f"balance ¥{getattr(c, 'balance', None)} / "
+                    f"¥{getattr(c, 'denomination', None)}  "
+                    f"[{getattr(c, 'status', None)}]  "
+                    f"exp {getattr(c, 'expiry_time', None)}"
+                )
+    except Exception as e:
+        print(f"  [ERROR] QueryPrepaidCards: {e}")
+
+    billing_cycle = args.month or date.today().strftime("%Y-%m")
+    print("\n==================================================")
+    print(f"Coupon deductions on bill ({billing_cycle})")
+    print("==================================================")
+    try:
+        resp = bss.query_account_bill(
+            bss_models.QueryAccountBillRequest(
+                billing_cycle=billing_cycle,
+                is_group_by_product=True,
+                page_size=50,
+                page_num=1,
+            )
+        )
+        data = resp.body.data if resp.body else None
+        items = data.items.item if data and data.items else []
+        if not items:
+            print("  (no bill lines yet)")
+        else:
+            coupon_total = 0.0
+            cash_total = 0.0
+            for it in items:
+                name = getattr(it, "product_name", None) or getattr(it, "product_code", None)
+                code = getattr(it, "product_code", None)
+                coupons = float(getattr(it, "deducted_by_coupons", None) or 0)
+                pretax = float(getattr(it, "pretax_amount", None) or 0)
+                gross = float(getattr(it, "pretax_gross_amount", None) or 0)
+                coupon_total += coupons
+                cash_total += pretax
+                if coupons or pretax or gross:
+                    print(
+                        f"  {name} ({code}):  "
+                        f"gross ¥{gross:.4f}  coupons ¥{coupons:.4f}  "
+                        f"cash ¥{pretax:.4f}"
+                    )
+            print(f"\n  Month coupon burn:  ¥{coupon_total:.4f}")
+            print(f"  Month cash billed:  ¥{cash_total:.4f}")
+    except Exception as e:
+        print(f"  [ERROR] QueryAccountBill: {e}")
+
+
 def cmd_diagnose(args):
     """Handle diagnose subcommand."""
     diagnose_firewall(instance_ip=args.ip, check_port=args.port)
@@ -1068,6 +1195,7 @@ def main():
 Examples:
   %(prog)s status                  Show resource summary
   %(prog)s traffic                 Public egress this month (CDT + IPv6)
+  %(prog)s coupon                  Cash coupons + balance + month burn
   %(prog)s list instances          List all instances
   %(prog)s list images             List custom images
   %(prog)s provision --spot        Create spot instance from latest image
@@ -1107,6 +1235,21 @@ Examples:
         help='Only show the last N days in the daily breakdown',
     )
     traffic_parser.set_defaults(func=cmd_traffic)
+
+    # coupon / balance
+    coupon_parser = subparsers.add_parser(
+        'coupon', aliases=['coupons', 'balance', 'bss'],
+        help='Show cash balance, cash coupons, prepaid cards, month coupon burn',
+    )
+    coupon_parser.add_argument(
+        '--all', action='store_true',
+        help='Include non-effective / expired coupons & cards if API returns them',
+    )
+    coupon_parser.add_argument(
+        '--month', default=None,
+        help='Billing month YYYY-MM for coupon burn (default: current month)',
+    )
+    coupon_parser.set_defaults(func=cmd_coupon)
     
     # provision
     prov_parser = subparsers.add_parser('provision', aliases=['prov', 'new'], help='Create new instance')

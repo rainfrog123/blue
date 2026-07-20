@@ -27,6 +27,7 @@ ali/
 # ECS (Singapore by default)
 python infra/cloud/ali/ecs/cli.py status
 python infra/cloud/ali/ecs/cli.py traffic
+python infra/cloud/ali/ecs/cli.py coupon
 python infra/cloud/ali/ecs/cli.py spot-prices
 
 # SWAS (Singapore)
