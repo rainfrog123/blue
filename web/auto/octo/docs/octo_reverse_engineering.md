@@ -39,7 +39,7 @@ Tools and documentation for reverse engineering OctoBrowser internals.
 
 | Area | Discovery |
 |------|-----------|
-| **HID** | Machine ID from `/etc/machine-id` used for encryption key derivation |
+| **HID** | Linux: `/etc/machine-id`. Windows: `get_windows_hid()` via pwsh/powershell/wmic (`Win32_ComputerSystemProduct.UUID`). Used for storage passphrase + license binding. Windows spoof: `hid/spoof_win_appdir.py` |
 | **Encryption** | Fernet (AES-128-CBC + HMAC-SHA256) with PBKDF2 key derivation |
 | **Secret** | `"TeNtAcLeShErE___"` used in key derivation |
 | **API Tier** | Feature checks in `octo/fastapi/dependencies.pyc` |

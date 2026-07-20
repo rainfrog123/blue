@@ -113,10 +113,30 @@ rm -f ~/.Octo\ Browser/localpersist.data
 
 ### Windows
 
+SMBIOS UUID cannot be changed from inside the guest. From `config.pyc` `get_windows_hid()`, Octo tries in order:
+
+1. `pwsh … Get-CimInstance Win32_ComputerSystemProduct … UUID`
+2. `powershell …` same
+3. `wmic csproduct get uuid`
+
+`CreateProcess` searches the **application directory** before `PATH`, so the working spoof copies Octo to a writable folder and drops `pwsh.exe` / `powershell.exe` shims + `hid_override.txt` beside the exe.
+
 ```powershell
-# Windows UUID is from SMBIOS - cannot change without BIOS modification
-# Alternative: Binary patch the PowerShell/WMI calls
+# Build shim + launch spoofed copy (clears storage; forces re-login)
+python reverse_engineering/hid/spoof_win_appdir.py 00000000-0000-4000-8000-0000000000AB
+
+# Or open the spoofed tree directly after first run:
+#   …\OctoBrowser-spoofed\Octo Browser.exe
 ```
+
+| Launch | HID |
+| --- | --- |
+| Spoofed copy (`spoof_win_appdir.py` / `OctoBrowser-spoofed\`) | Override UUID from `hid_override.txt` |
+| Stock `Program Files\Octo Browser` / Start Menu | Real SMBIOS UUID |
+
+Proof: after spoofed launch, `localpersist.data` decrypts with the **fake** HID only (see `storage_decryption/octo_storage_decryptor.py`).
+
+Helpers: `spoof_win.py` (csc shim build / PATH helpers), `shim_powershell.cs` (shim source).
 
 ### macOS
 
@@ -129,8 +149,10 @@ rm -f ~/.Octo\ Browser/localpersist.data
 
 | File | Purpose |
 |------|---------|
-| `hid_spoofer.sh` | **One-go HID spoofing script (bash)** |
-| `hid_spoofer.py` | **One-go HID spoofing script (python)** |
+| `hid.sh` / `spoof.py` | Linux HID spoof (`/etc/machine-id`) |
+| `spoof_win_appdir.py` | **Windows HID spoof (app-dir pwsh/powershell shim)** |
+| `spoof_win.py` | Windows shim build / PATH helpers |
+| `shim_powershell.cs` | C# source for `powershell.exe` / `pwsh.exe` shim |
 | `ghidra_hid_analyzer.py` | Main HID analysis and documentation |
 | `ghidra_hid_headless_script.py` | Ghidra headless analysis script |
 | [octo_ghidra_guides.md](octo_ghidra_guides.md) | Ghidra tutorials: HID discovery + storage decryption |
