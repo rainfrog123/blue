@@ -2,7 +2,7 @@ listen: :443
 
 acme:
   domains:
-    - hy.hyas.site
+    - hyd.hyas.site
   email: admin@hyas.site
 
 auth:

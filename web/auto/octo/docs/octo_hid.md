@@ -153,6 +153,7 @@ Helpers: `spoof_win.py` (csc shim build / PATH helpers), `shim_powershell.cs` (s
 | `spoof_win_appdir.py` | **Windows HID spoof (app-dir pwsh/powershell shim)** |
 | `spoof_win.py` | Windows shim build / PATH helpers |
 | `shim_powershell.cs` | C# source for `powershell.exe` / `pwsh.exe` shim |
+| `WINDOWS_SPOOF.md` | Teach-me: how the Windows spoof works |
 | `ghidra_hid_analyzer.py` | Main HID analysis and documentation |
 | `ghidra_hid_headless_script.py` | Ghidra headless analysis script |
 | [octo_ghidra_guides.md](octo_ghidra_guides.md) | Ghidra tutorials: HID discovery + storage decryption |

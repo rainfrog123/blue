@@ -1,161 +1,101 @@
-# Decodo SmartProxy Client
+# Decodo proxy toolkit
 
-Python client for Decodo residential proxy service with IPQS fraud scoring.
+Python client for Decodo (ex-Smartproxy) — sticky/rotating proxies over **HTTPS** or **SOCKS5(h)**, plus IPQS scanning.
 
-## Installation
+## Install
 
 ```bash
+cd web/proxy/decodo
 pip install -r requirements.txt
 ```
 
-## Configuration
+## Credentials
 
-Credentials are loaded from `/allah/blue/cred.json`:
+Via shared `infra/scripts/cred_loader.py` → `get_proxy_decodo()` / `get_ipqs()`
+(`blue/cred.json`). Env overrides: `DECODO_USERNAME`, `DECODO_PASSWORD`,
+`DECODO_PROTOCOL`, `DECODO_API_KEY`, `IPQS_API_KEY`.
 
 ```json
 {
   "proxy": {
     "decodo": {
-      "username": "sp19qgy7m9",
-      "password": "+26iSboeQ0wUyx4qEw"
+      "username": "spe3v7zeu6",
+      "password": "…",
+      "api_key": "…"
     }
   },
-  "ipqs": {
-    "default_key": "your-ipqs-api-key"
-  }
+  "ipqs": { "default_key": "…", "api_keys": ["…"] }
 }
 ```
 
-## CLI Usage
+Protocol is chosen per call / CLI (`-p socks5h|https|…`), not stored in creds.
+Optional env: `DECODO_PROTOCOL` for a process-wide default.
 
-### Scan for Clean IPs
-
-```bash
-# Scan 10 sessions in GB
-python cli.py scan -c gb -n 10
-
-# Scan 20 sessions in US with 60 min duration
-python cli.py scan -c us -n 20 -d 60
-```
-
-### Check IP Reputation
+## CLI
 
 ```bash
-python cli.py check 8.8.8.8
-python cli.py check 1.1.1.1 8.8.8.8
+# Probe exit IP (default protocol: socks5h)
+python cli.py test -c gb -s apple
+
+# Print URL only
+python cli.py url -c gb -s banana -p socks5h
+
+# Sticky sessions + IPQS (many exits)
+python cli.py ips-check -c gb -n 10 -p socks5h
+
+# IPQS for known IP(s)
+python cli.py ip-check 8.8.8.8
 ```
 
-### Test Proxy Connection
-
-```bash
-# Random rotating IP
-python cli.py test -c gb
-
-# Sticky session
-python cli.py test -c us -s mysession
-```
-
-## Library Usage
-
-### Basic Proxy Client
+## Library
 
 ```python
-from decodo import DecodoClient
+from decodo import DecodoClient, build_proxy_url, SessionScanner
 
-# Create client for GB proxies
-client = DecodoClient(country="gb")
+url = build_proxy_url(country="gb", session="apple", protocol="socks5h")
+# socks5h://user-…-session-apple-sessionduration-60-country-gb:…@gate.decodo.com:10000
 
-# Make request through rotating proxy
-response = client.get("https://example.com")
+client = DecodoClient(country="gb", protocol="socks5h")
+info = client.get_current_ip(session="apple")
 
-# Get current proxy IP info
-info = client.get_current_ip()
-print(f"IP: {info.ip}, City: {info.city}")
+with client.session("banana") as s:   # or omit name → fruit+suffix
+    r = s.get("https://example.com")
+    print(s.get_ip().ip)
 ```
 
-### Sticky Sessions
+### Session ids
 
-```python
-from decodo import DecodoClient
+Opaque sticky labels — digits, fruit names (`apple`), uuid hex, etc. Same id within `sessionduration` keeps the same exit IP. Must be `[A-Za-z0-9_]+` (no `: @ / -`).
 
-client = DecodoClient(country="us")
+### URL shapes
 
-# All requests use same IP within session
-with client.session("my_session") as session:
-    r1 = session.get("https://example.com/login")
-    r2 = session.get("https://example.com/dashboard")
-    
-    ip_info = session.get_ip()
-    print(f"Session IP: {ip_info.ip}")
-```
+| Protocol | Host / port |
+| --- | --- |
+| `socks5` / `socks5h` | `gate.decodo.com:10000` |
+| `http` / `https` | `{cc}.decodo.com` + random port `30001–50000` |
 
-### IP Fraud Checking
+Username: `user-{user}-session-{id}-sessionduration-{mins}-country-{cc}`
 
-```python
-from decodo import IPQSChecker
-
-checker = IPQSChecker()
-result = checker.check("8.8.8.8")
-
-print(f"Score: {result.fraud_score}")
-print(f"Clean: {result.is_clean}")
-print(f"Risk: {result.risk_level}")
-```
-
-### Session Scanner
-
-```python
-from decodo import SessionScanner
-
-scanner = SessionScanner(
-    country="gb",
-    num_sessions=20,
-    session_duration=60,
-)
-
-summary = scanner.scan()
-
-print(f"Clean IPs: {summary.clean_ips}")
-
-if summary.best_result:
-    print(f"Best IP: {summary.best_result.session.ip}")
-    print(f"Score: {summary.best_result.ipqs.fraud_score}")
-    print(f"Proxy URL: {summary.best_result.session.proxy_url}")
-```
-
-## Proxy URL Format
-
-```
-https://user-{username}-session-{session}-sessionduration-{duration}:{password}@{country}.decodo.com:{port}
-```
-
-- **Port Range**: 10001-49999 (39,999 rotating sessions)
-- **Countries**: Use 2-letter codes (`gb`, `us`, `de`, etc.)
-
-## Project Structure
+## Layout
 
 ```
 decodo/
-├── decodo/           # Python package
-│   ├── __init__.py
-│   ├── client.py     # Proxy client
-│   ├── config.py     # Configuration
-│   ├── ipqs.py       # IPQS checker
-│   └── scanner.py    # Session scanner
-├── cli.py            # CLI interface
+├── decodo/           # package
+│   ├── config.py     # creds + build_proxy_url
+│   ├── client.py     # DecodoClient / StickySession
+│   ├── ipqs.py
+│   └── scanner.py
+├── cli.py
+├── proxy_forwarder.py   # local :5566 → Decodo HTTPS sticky
+├── api/                 # Public API scratch (separate)
 ├── data/
-│   └── countries.txt
-├── _history/         # Old shell scripts
-├── requirements.txt
-└── README.md
+├── _history/            # old shell scripts
+└── requirements.txt
 ```
 
-## Fraud Score Interpretation
+## Forwarder
 
-| Score | Emoji | Risk Level |
-|-------|-------|------------|
-| 0 | ✅✅✅ | Excellent |
-| 1-19 | ✅✅ | Low |
-| 20-39 | ✅ | Moderate |
-| 40-69 | ⚠️ | High |
-| 70+ | 🚨 | Critical |
+```bash
+python proxy_forwarder.py -c gb -s apple          # builds HTTPS upstream from creds
+python proxy_forwarder.py --upstream 'https://…'  # or pass full URL
+```

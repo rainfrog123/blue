@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 """
-Local proxy forwarder that redirects traffic to an upstream Decodo proxy.
+Local HTTP proxy that forwards to an upstream Decodo sticky session.
+
+Builds upstream from cred.json (no hardcoded secrets). HTTP CONNECT only
+to Decodo HTTPS gateways — for SOCKS upstream use a dedicated SOCKS forwarder.
 
 Usage:
-    python proxy_forwarder.py [--port 5566]
-
-Anyone connecting to this VPS's public IP:5566 will be routed through the upstream proxy.
+    python proxy_forwarder.py --country gb --session apple
+    python proxy_forwarder.py --upstream 'https://user-…:pass@gb.decodo.com:37143'
 """
+
+from __future__ import annotations
 
 import argparse
 import asyncio
 import base64
 import logging
-import ssl
 import sys
-from urllib.parse import urlparse
+from typing import Optional
+from urllib.parse import unquote, urlparse
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,26 +26,18 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-# Default upstream proxy configuration
-DEFAULT_UPSTREAM = {
-    "host": "gb.decodo.com",
-    "port": 37143,
-    "username": "user-sp19qgy7m9-country-gb-session-365d58c1dfbd-sessionduration-60",
-    "password": "+26iSboeQ0wUyx4qEw",
-}
-
 
 class ProxyForwarder:
-    """Async proxy server that forwards to an upstream proxy."""
+    """Async local HTTP proxy → upstream HTTP(S) CONNECT proxy."""
 
     def __init__(
         self,
-        listen_host: str = "0.0.0.0",
-        listen_port: int = 5566,
-        upstream_host: str = DEFAULT_UPSTREAM["host"],
-        upstream_port: int = DEFAULT_UPSTREAM["port"],
-        upstream_user: str = DEFAULT_UPSTREAM["username"],
-        upstream_pass: str = DEFAULT_UPSTREAM["password"],
+        listen_host: str,
+        listen_port: int,
+        upstream_host: str,
+        upstream_port: int,
+        upstream_user: str,
+        upstream_pass: str,
     ):
         self.listen_host = listen_host
         self.listen_port = listen_port
@@ -52,31 +48,29 @@ class ProxyForwarder:
         ).decode()
 
     async def handle_client(
-        self, client_reader: asyncio.StreamReader, client_writer: asyncio.StreamWriter
-    ):
-        """Handle incoming client connection."""
-        client_addr = client_writer.get_extra_info("peername")
-        log.info(f"New connection from {client_addr}")
+        self,
+        client_reader: asyncio.StreamReader,
+        client_writer: asyncio.StreamWriter,
+    ) -> None:
+        peer = client_writer.get_extra_info("peername")
+        log.info("New connection from %s", peer)
+        upstream_writer: Optional[asyncio.StreamWriter] = None
 
         try:
-            # Read the initial request line
-            request_line = await asyncio.wait_for(
-                client_reader.readline(), timeout=30.0
-            )
+            request_line = await asyncio.wait_for(client_reader.readline(), timeout=30.0)
             if not request_line:
                 return
 
             request_str = request_line.decode("utf-8", errors="ignore").strip()
             parts = request_str.split()
             if len(parts) < 3:
-                log.warning(f"Invalid request: {request_str}")
+                log.warning("Invalid request: %s", request_str)
                 return
 
             method, target, version = parts[0], parts[1], parts[2]
-            log.info(f"Request: {method} {target[:80]}...")
+            log.info("Request: %s %s", method, target[:80])
 
-            # Read headers
-            headers = []
+            headers: list[bytes] = []
             while True:
                 header_line = await asyncio.wait_for(
                     client_reader.readline(), timeout=30.0
@@ -85,14 +79,12 @@ class ProxyForwarder:
                     break
                 headers.append(header_line)
 
-            # Connect to upstream proxy
             upstream_reader, upstream_writer = await asyncio.wait_for(
                 asyncio.open_connection(self.upstream_host, self.upstream_port),
                 timeout=30.0,
             )
 
             if method == "CONNECT":
-                # HTTPS tunnel via CONNECT
                 await self._handle_connect(
                     client_reader,
                     client_writer,
@@ -102,7 +94,6 @@ class ProxyForwarder:
                     version,
                 )
             else:
-                # Regular HTTP proxy request
                 await self._handle_http(
                     client_reader,
                     client_writer,
@@ -113,19 +104,20 @@ class ProxyForwarder:
                     version,
                     headers,
                 )
-
         except asyncio.TimeoutError:
-            log.warning(f"Timeout handling {client_addr}")
+            log.warning("Timeout handling %s", peer)
         except ConnectionResetError:
-            log.debug(f"Connection reset by {client_addr}")
-        except Exception as e:
-            log.error(f"Error handling {client_addr}: {e}")
+            log.debug("Connection reset by %s", peer)
+        except Exception as exc:  # noqa: BLE001
+            log.error("Error handling %s: %s", peer, exc)
         finally:
             client_writer.close()
             try:
                 await client_writer.wait_closed()
             except Exception:
                 pass
+            if upstream_writer is not None:
+                upstream_writer.close()
 
     async def _handle_connect(
         self,
@@ -135,9 +127,7 @@ class ProxyForwarder:
         upstream_writer: asyncio.StreamWriter,
         target: str,
         version: str,
-    ):
-        """Handle CONNECT method for HTTPS tunneling."""
-        # Send CONNECT to upstream with auth
+    ) -> None:
         connect_request = (
             f"CONNECT {target} {version}\r\n"
             f"Host: {target}\r\n"
@@ -147,36 +137,23 @@ class ProxyForwarder:
         upstream_writer.write(connect_request.encode())
         await upstream_writer.drain()
 
-        # Read upstream response
-        response_line = await asyncio.wait_for(
-            upstream_reader.readline(), timeout=30.0
-        )
-
-        # Read response headers
+        response_line = await asyncio.wait_for(upstream_reader.readline(), timeout=30.0)
         while True:
-            header_line = await asyncio.wait_for(
-                upstream_reader.readline(), timeout=30.0
-            )
+            header_line = await asyncio.wait_for(upstream_reader.readline(), timeout=30.0)
             if header_line in (b"\r\n", b"\n", b""):
                 break
 
-        # Check if upstream accepted
         response_str = response_line.decode("utf-8", errors="ignore").strip()
         if "200" in response_str:
-            # Send success to client
             client_writer.write(b"HTTP/1.1 200 Connection Established\r\n\r\n")
             await client_writer.drain()
-
-            # Start bidirectional relay
             await self._relay(
                 client_reader, client_writer, upstream_reader, upstream_writer
             )
         else:
-            log.warning(f"Upstream rejected CONNECT: {response_str}")
+            log.warning("Upstream rejected CONNECT: %s", response_str)
             client_writer.write(response_line)
             await client_writer.drain()
-
-        upstream_writer.close()
 
     async def _handle_http(
         self,
@@ -187,48 +164,36 @@ class ProxyForwarder:
         method: str,
         target: str,
         version: str,
-        headers: list,
-    ):
-        """Handle regular HTTP proxy request."""
-        # Build request to upstream
-        request = f"{method} {target} {version}\r\n"
-        upstream_writer.write(request.encode())
-
-        # Add proxy auth header
-        upstream_writer.write(f"Proxy-Authorization: Basic {self.upstream_auth}\r\n".encode())
-
-        # Forward original headers (except existing proxy-auth)
+        headers: list[bytes],
+    ) -> None:
+        upstream_writer.write(f"{method} {target} {version}\r\n".encode())
+        upstream_writer.write(
+            f"Proxy-Authorization: Basic {self.upstream_auth}\r\n".encode()
+        )
+        content_length = 0
         for header in headers:
-            header_lower = header.decode("utf-8", errors="ignore").lower()
-            if not header_lower.startswith("proxy-authorization:"):
-                upstream_writer.write(header)
-
+            text = header.decode("utf-8", errors="ignore")
+            lower = text.lower()
+            if lower.startswith("proxy-authorization:"):
+                continue
+            if lower.startswith("content-length:"):
+                content_length = int(text.split(":", 1)[1].strip())
+            upstream_writer.write(header)
         upstream_writer.write(b"\r\n")
         await upstream_writer.drain()
 
-        # Check for request body (Content-Length or chunked)
-        content_length = 0
-        for header in headers:
-            header_str = header.decode("utf-8", errors="ignore").lower()
-            if header_str.startswith("content-length:"):
-                content_length = int(header_str.split(":")[1].strip())
-
         if content_length > 0:
-            body = await client_reader.read(content_length)
+            body = await client_reader.readexactly(content_length)
             upstream_writer.write(body)
             await upstream_writer.drain()
 
-        # Relay response back to client
         await self._relay_response(client_writer, upstream_reader)
-
-        upstream_writer.close()
 
     async def _relay_response(
         self,
         client_writer: asyncio.StreamWriter,
         upstream_reader: asyncio.StreamReader,
-    ):
-        """Relay HTTP response from upstream to client."""
+    ) -> None:
         while True:
             data = await upstream_reader.read(8192)
             if not data:
@@ -242,10 +207,8 @@ class ProxyForwarder:
         client_writer: asyncio.StreamWriter,
         upstream_reader: asyncio.StreamReader,
         upstream_writer: asyncio.StreamWriter,
-    ):
-        """Bidirectional relay for CONNECT tunnels."""
-
-        async def forward(reader, writer, name):
+    ) -> None:
+        async def forward(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
             try:
                 while True:
                     data = await reader.read(8192)
@@ -262,68 +225,59 @@ class ProxyForwarder:
                     pass
 
         await asyncio.gather(
-            forward(client_reader, upstream_writer, "client->upstream"),
-            forward(upstream_reader, client_writer, "upstream->client"),
+            forward(client_reader, upstream_writer),
+            forward(upstream_reader, client_writer),
         )
 
-    async def start(self):
-        """Start the proxy server."""
+    async def start(self) -> None:
         server = await asyncio.start_server(
-            self.handle_client,
-            self.listen_host,
-            self.listen_port,
+            self.handle_client, self.listen_host, self.listen_port
         )
-
         addr = server.sockets[0].getsockname()
-        log.info(f"Proxy forwarder listening on {addr[0]}:{addr[1]}")
-        log.info(f"Forwarding to upstream: {self.upstream_host}:{self.upstream_port}")
-        log.info(f"Use this proxy: http://<your-vps-ip>:{self.listen_port}")
-
+        log.info("Listening on %s:%s", addr[0], addr[1])
+        log.info("Upstream %s:%s", self.upstream_host, self.upstream_port)
         async with server:
             await server.serve_forever()
 
 
-def parse_proxy_url(url: str) -> dict:
-    """Parse a proxy URL into components."""
-    if not url.startswith(("http://", "https://")):
+def _parse_upstream(url: str) -> dict:
+    if "://" not in url:
         url = "http://" + url
-    
     parsed = urlparse(url)
+    if not parsed.hostname or not parsed.port:
+        raise SystemExit(f"upstream URL needs host and port: {url}")
     return {
         "host": parsed.hostname,
-        "port": parsed.port or 43905,
-        "username": parsed.username or "",
-        "password": parsed.password or "",
+        "port": parsed.port,
+        "username": unquote(parsed.username or ""),
+        "password": unquote(parsed.password or ""),
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Local proxy forwarder to upstream Decodo proxy"
-    )
-    parser.add_argument(
-        "-p", "--port",
-        type=int,
-        default=5566,
-        help="Local port to listen on (default: 5566)",
-    )
-    parser.add_argument(
-        "-H", "--host",
-        default="0.0.0.0",
-        help="Host to bind to (default: 0.0.0.0)",
-    )
-    parser.add_argument(
-        "--upstream",
-        type=str,
-        help="Upstream proxy URL (default: built-in Decodo config)",
-    )
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Local forwarder → Decodo HTTPS proxy")
+    parser.add_argument("-p", "--port", type=int, default=5566)
+    parser.add_argument("-H", "--host", default="0.0.0.0")
+    parser.add_argument("--upstream", help="Full upstream proxy URL")
+    parser.add_argument("-c", "--country", default="gb")
+    parser.add_argument("-s", "--session", help="Sticky session id")
+    parser.add_argument("-d", "--duration", type=int, default=60)
     args = parser.parse_args()
 
-    # Parse upstream if provided
     if args.upstream:
-        upstream = parse_proxy_url(args.upstream)
+        upstream = _parse_upstream(args.upstream)
     else:
-        upstream = DEFAULT_UPSTREAM
+        # Local forwarder speaks HTTP CONNECT to Decodo's HTTPS gateway.
+        from decodo import build_proxy_url
+
+        built = build_proxy_url(
+            country=args.country,
+            session=args.session,
+            session_duration=args.duration,
+            protocol="https",
+        )
+        upstream = _parse_upstream(built)
+        log.info("Built upstream from creds: %s:%s", upstream["host"], upstream["port"])
 
     forwarder = ProxyForwarder(
         listen_host=args.host,
@@ -333,11 +287,11 @@ def main():
         upstream_user=upstream["username"],
         upstream_pass=upstream["password"],
     )
-
     try:
         asyncio.run(forwarder.start())
     except KeyboardInterrupt:
         log.info("Shutting down...")
+        sys.exit(0)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,28 @@
-"""
-Decodo SmartProxy Client Library
+"""Decodo proxy toolkit — client, sticky sessions, IPQS scanner."""
 
-A Python client for Decodo residential proxy service with IPQS fraud scoring.
-"""
+from .client import DecodoClient, ExitInfo, ProxySession, StickySession
+from .config import (
+    build_proxy_url,
+    get_decodo_api_key,
+    get_proxy_config,
+    validate_session_id,
+)
+from .ipqs import IPQSChecker, IPQSResult
+from .scanner import ScanResult, ScanSummary, SessionScanner
 
-from .client import DecodoClient
-from .scanner import SessionScanner
-from .ipqs import IPQSChecker
-
-__version__ = "1.0.0"
-__all__ = ["DecodoClient", "SessionScanner", "IPQSChecker"]
+__version__ = "2.0.0"
+__all__ = [
+    "DecodoClient",
+    "ExitInfo",
+    "ProxySession",
+    "StickySession",
+    "build_proxy_url",
+    "get_proxy_config",
+    "get_decodo_api_key",
+    "validate_session_id",
+    "IPQSChecker",
+    "IPQSResult",
+    "SessionScanner",
+    "ScanResult",
+    "ScanSummary",
+]

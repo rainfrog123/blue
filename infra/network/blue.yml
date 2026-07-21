@@ -58,78 +58,87 @@ proxies:
     password: bxsnucrgk6hfish
     udp: true
 
-  # - name: 🇸🇬do_singapore_tj
-  #   type: trojan
-  #   server: 162.159.23.222
-  #   port: 443
-  #   password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-  #   sni: x.hyas.space
-  #   skip-cert-verify: false
-  #   network: ws
-  #   ws-opts:
-  #     path: /x7f9k2m4p8
-  #     headers:
-  #       Host: x.hyas.space
-  #   udp: true
+  # Digi/DO SG — Trojan via CF tunnel (x.hyas.space → xray-trojan)
+  - name: 🇸🇬do_singapore_tj
+    type: trojan
+    server: 162.159.23.222
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇯🇵do_japan_tj
-    # type: trojan
-    # server: 162.159.38.58
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  # Digi/DO Singapore SS (direct)
+  - name: 🇸🇬do_singapore
+    type: ss
+    server: 188.166.252.16
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
 
-  # Digi/DO Singapore SS — unpaid / dead (kept for restore)
-  # - name: 🇸🇬do_singapore
-  #   type: ss
-  #   server: 188.166.252.16
-  #   port: 12033
-  #   cipher: chacha20-ietf-poly1305
-  #   password: bxsnucrgk6hfish
-  #   udp: true
+  # Digi/DO Singapore SS — IPv6 only
+  - name: 🇸🇬do_singapore_v6
+    type: ss
+    server: "2400:6180:0:d2:0:2:c7ec:0"
+    port: 12033
+    cipher: chacha20-ietf-poly1305
+    password: bxsnucrgk6hfish
+    udp: true
 
-  # DIGI VPS - VLESS with WARP Outbound (Clean IP) — unpaid / dead
-  # - name: 🇸🇬do_singapore_reality
-  #   type: vless
-  #   server: 188.166.252.16
-  #   port: 8443
-  #   uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
-  #   network: tcp
-  #   tls: true
-  #   udp: true
-  #   flow: xtls-rprx-vision
-  #   servername: www.microsoft.com
-  #   reality-opts:
-  #     public-key: w7QKHjzAPCl6_V_HlezcQGCe4dkntvOo3JGpc-7tZQo
-  #     short-id: 32eedaf295ce60a8
-  #   client-fingerprint: chrome
+  # Digi/DO — VLESS REALITY (direct :8443)
+  - name: 🇸🇬do_singapore_reality
+    type: vless
+    server: 188.166.252.16
+    port: 8443
+    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.microsoft.com
+    reality-opts:
+      public-key: w7QKHjzAPCl6_V_HlezcQGCe4dkntvOo3JGpc-7tZQo
+      short-id: 32eedaf295ce60a8
+    client-fingerprint: chrome
 
-  # - name: 🇸🇬do_singapore_vless_warp
-  #   type: vless
-  #   server: r.hyas.space
-  #   port: 443
-  #   uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
-  #   network: ws
-  #   tls: true
-  #   udp: true
-  #   servername: r.hyas.space
-  #   ws-opts:
-  #     path: /vless-warp
+  # Digi/DO — VLESS+WS via CF tunnel (r.hyas.space → xray-reality)
+  - name: 🇸🇬do_singapore_vless_warp
+    type: vless
+    server: r.hyas.space
+    port: 443
+    uuid: 061527a1-af84-4688-87d1-f08edf0dc8b4
+    network: ws
+    tls: true
+    udp: true
+    servername: r.hyas.space
+    ws-opts:
+      path: /vless-warp
 
-  # Hysteria 2 (Digi SG) — unpaid / dead; was :5333, policy is now :443 forever
-  # - name: 🇸🇬do_singapore_hy2
-  #   type: hysteria2
-  #   server: hy.hyas.site
-  #   port: 443
-  #   password: jEdTlnZe2q2nv1N0lmmXHCp2
-  #   sni: hy.hyas.site
+  # Hysteria 2 (Digi SG — hyd.hyas.site on 443)
+  - name: 🇸🇬do_singapore_hy2
+    type: hysteria2
+    server: hyd.hyas.site
+    port: 443
+    password: jEdTlnZe2q2nv1N0lmmXHCp2
+    sni: hyd.hyas.site
+    up: 100
+    down: 100
+
+  # Hysteria 2 (Digi SG — IPv6 only)
+  - name: 🇸🇬do_singapore_hy2_v6
+    type: hysteria2
+    server: "2400:6180:0:d2:0:2:c7ec:0"
+    port: 443
+    password: jEdTlnZe2q2nv1N0lmmXHCp2
+    sni: hyd.hyas.site
+    up: 100
+    down: 100
 
   # Hysteria 2 (Aliyun SG — hy.hyas.site on 443, same password as Digi)
   - name: 🇸🇬ali_singapore_hy2
@@ -445,103 +454,103 @@ proxies:
         # Host: x.hyas.space
     # udp: true
 
-  # - name: 🇸🇬do_singapore_tj_2
-    # type: trojan
-    # server: 172.64.148.125
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_2
+    type: trojan
+    server: 172.64.148.125
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_3
-    # type: trojan
-    # server: 172.64.158.77
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_3
+    type: trojan
+    server: 172.64.158.77
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_4
-    # type: trojan
-    # server: 172.64.145.176
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_4
+    type: trojan
+    server: 172.64.145.176
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_5
-    # type: trojan
-    # server: 162.159.33.135
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_5
+    type: trojan
+    server: 162.159.33.135
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_6
-    # type: trojan
-    # server: 104.18.46.191
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_6
+    type: trojan
+    server: 104.18.46.191
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_7
-    # type: trojan
-    # server: 104.18.35.160
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_7
+    type: trojan
+    server: 104.18.35.160
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
-  # - name: 🇸🇬do_singapore_tj_8
-    # type: trojan
-    # server: 172.64.40.7
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  - name: 🇸🇬do_singapore_tj_8
+    type: trojan
+    server: 172.64.40.7
+    port: 443
+    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+    sni: x.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: x.hyas.space
+    udp: true
 
   # - name: 🇯🇵do_japan_tj_7
     # type: trojan
@@ -583,9 +592,10 @@ proxy-groups:
       - DIRECT
       - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
-      # - 🔄 CF WARP Outbound
+      - 🔄 CF WARP Outbound
       - 🔑 Manual Selection
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
@@ -609,9 +619,8 @@ proxy-groups:
       - 🚀 Hysteria Nodes
       - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - ☁️ Cloudflare CF Nodes
-      # - 🇸🇬do_singapore_tj
-      # - 🇸🇬do_singapore
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
@@ -648,31 +657,31 @@ proxy-groups:
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
-      # former DigitalOcean members (commented)
-      # - 🇸🇬do_singapore_tj
-      # - 🇸🇬do_singapore
-      # - 🇸🇬do_singapore_reality
-      # - 🇸🇬do_singapore_vless_warp
-      # - 🇸🇬do_singapore_tj_2
-      # - 🇸🇬do_singapore_tj_3
-      # - 🇸🇬do_singapore_tj_4
-      # - 🇸🇬do_singapore_tj_5
-      # - 🇸🇬do_singapore_tj_6
-      # - 🇸🇬do_singapore_tj_7
-      # - 🇸🇬do_singapore_tj_8
-      # - 🇯🇵do_japan_tj
-      # - 🇯🇵do_japan_tj_2
-      # - 🇯🇵do_japan_tj_3
-      # - 🇯🇵do_japan_tj_4
-      # - 🇯🇵do_japan_tj_5
-      # - 🇯🇵do_japan_tj_6
-      # - 🇯🇵do_japan_tj_7
-      # - 🇯🇵do_japan_tj_8
+
+  - name: ☁️ DigitalOcean Nodes
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore_tj_2
+      - 🇸🇬do_singapore_tj_3
+      - 🇸🇬do_singapore_tj_4
+      - 🇸🇬do_singapore_tj_5
+      - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_v6
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬do_singapore_hy2
+      - 🇸🇬do_singapore_hy2_v6
+      - DIRECT
 
   - name: 🚀 Hysteria Nodes
     type: select
     proxies:
-      # - 🇸🇬do_singapore_hy2
+      - 🇸🇬do_singapore_hy2
+      - 🇸🇬do_singapore_hy2_v6
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - 🇸🇬azure_sg_hy2
@@ -683,6 +692,7 @@ proxy-groups:
     proxies:
       - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
@@ -691,9 +701,9 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
-      # - 🇸🇬do_singapore_reality
-      # - 🇸🇬do_singapore_vless_warp
-      # - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore_reality
+      - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
@@ -704,7 +714,7 @@ proxy-groups:
     type: select
     proxies:
       - 🚀 Node Selection
-      # - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore_tj
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
       - 🇸🇬ali_singapore_hy2
@@ -736,26 +746,17 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_6
       - 🇯🇵azure_japan_tj_7
       - 🇯🇵azure_japan_tj_8
-      # - 🇸🇬do_singapore_tj
-      # - 🇸🇬do_singapore_tj_2
-      # - 🇸🇬do_singapore_tj_3
-      # - 🇸🇬do_singapore_tj_4
-      # - 🇸🇬do_singapore_tj_5
-      # - 🇸🇬do_singapore_tj_6
-      # - 🇸🇬do_singapore_tj_7
-      # - 🇸🇬do_singapore_tj_8
-      # - 🇸🇬do_singapore_reality
-      # - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬do_singapore_tj
+      - 🇸🇬do_singapore_tj_2
+      - 🇸🇬do_singapore_tj_3
+      - 🇸🇬do_singapore_tj_4
+      - 🇸🇬do_singapore_tj_5
+      - 🇸🇬do_singapore_tj_6
+      - 🇸🇬do_singapore_tj_7
+      - 🇸🇬do_singapore_tj_8
+      - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
-      # - 🇯🇵do_japan_tj
-      # - 🇯🇵do_japan_tj_2
-      # - 🇯🇵do_japan_tj_3
-      # - 🇯🇵do_japan_tj_4
-      # - 🇯🇵do_japan_tj_5
-      # - 🇯🇵do_japan_tj_6
-      # - 🇯🇵do_japan_tj_7
-      # - 🇯🇵do_japan_tj_8
       - DIRECT
 
   - name: 🎰 Stake Nodes
@@ -765,18 +766,18 @@ proxy-groups:
       - 🔑 Manual Selection
       - DIRECT
 
-  # CF Endpoint with WARP Outbound (Clean IP)
-  # - name: 🔄 CF WARP Outbound
-  #   type: select
-  #   proxies:
-  #     - 🇸🇬do_singapore_vless_warp
-  #     - DIRECT
+  - name: 🔄 CF WARP Outbound
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_vless_warp
+      - DIRECT
 
   - name: 🎮 Riot Games
     type: select
     proxies:
       - ☁️ Aliyun Nodes
       - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Node Selection
       - ☁️ Cloudflare CF Nodes
       - DIRECT

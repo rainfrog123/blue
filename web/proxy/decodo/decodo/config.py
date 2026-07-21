@@ -1,144 +1,196 @@
-"""
-Configuration for Decodo proxy and IPQS services.
+"""Decodo credentials, constants, and proxy URL builder.
 
-Loads credentials from environment variables or ~/Documents/cred.json
+Credentials come from ``infra/scripts/cred_loader.get_proxy_decodo()``
+(``blue/cred.json`` → ``proxy.decodo``). Env vars still override.
 """
 
-import json
+from __future__ import annotations
+
 import os
+import random
+import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
-
-
-# ============================================
-# Constants
-# ============================================
+from typing import Any, Optional
+from urllib.parse import quote, unquote
 
 DECODO_IP_API = "https://ip.decodo.com/json"
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+GATE_HOST = "gate.decodo.com"
+SOCKS_PORT = 10000
+HTTPS_PORT_MIN = 30001
+HTTPS_PORT_MAX = 50000
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/126.0.0.0 Safari/537.36"
+)
+
+SUPPORTED_PROTOCOLS = ("http", "https", "socks5", "socks5h")
+
+# Session id is an opaque sticky label (digits, fruit names, uuid hex, ...).
+# Avoid characters that break URL auth or Decodo's `-`-joined username params.
+_SESSION_SAFE = re.compile(r"^[A-Za-z0-9_]+$")
 
 
-# ============================================
-# Configuration Classes
-# ============================================
+def _ensure_cred_loader() -> None:
+    scripts = Path(__file__).resolve().parents[4] / "infra" / "scripts"
+    scripts_str = str(scripts)
+    if scripts_str not in sys.path:
+        sys.path.insert(0, scripts_str)
 
-@dataclass
+
+def _proxy_block() -> dict[str, Any]:
+    _ensure_cred_loader()
+    from cred_loader import get_proxy_decodo
+
+    return dict(get_proxy_decodo())
+
+
+@dataclass(frozen=True)
 class ProxyConfig:
-    """Decodo proxy configuration."""
-    host: str = "gate.decodo.com"
-    port_min: int = 30001
-    port_max: int = 50000
     username: str = ""
     password: str = ""
-
-
-@dataclass
-class IPQSConfig:
-    """IPQS API configuration."""
-    base_url: str = "https://ipqualityscore.com/api/json/ip"
+    protocol: str = "socks5h"
     api_key: str = ""
+    host: str = GATE_HOST
+    port_min: int = HTTPS_PORT_MIN
+    port_max: int = HTTPS_PORT_MAX
+    socks_port: int = SOCKS_PORT
+
+
+@dataclass(frozen=True)
+class IPQSConfig:
+    api_key: str = ""
+    base_url: str = "https://ipqualityscore.com/api/json/ip"
     strictness: int = 1
 
 
-# ============================================
-# Credential Loading
-# ============================================
-
-def _load_cred_json() -> Optional[Dict[str, Any]]:
-    """Load credentials from standard locations."""
-    cred_paths = [
-        Path("/allah/blue/cred.json"),
-        Path.home() / "blue" / "cred.json",
-        Path.home() / "Documents" / "cred.json",
-        Path.home() / ".config" / "cred.json",
-    ]
-    
-    for cred_path in cred_paths:
-        if cred_path.exists():
-            with open(cred_path) as f:
-                return json.load(f)
-    
-    return None
-
-
 def get_proxy_config() -> ProxyConfig:
-    """Get Decodo proxy configuration with credentials."""
-    creds = _load_cred_json()
-    
-    username = os.environ.get("DECODO_USERNAME")
-    password = os.environ.get("DECODO_PASSWORD")
-    
-    if not username and creds:
-        username = creds.get("proxy", {}).get("decodo", {}).get("username", "")
-    if not password and creds:
-        password = creds.get("proxy", {}).get("decodo", {}).get("password", "")
-    
+    """Load Decodo proxy settings via cred_loader (+ env overrides).
+
+    Protocol is not stored in cred.json — pass it per call / CLI
+    (``socks5h``, ``https``, …). Env ``DECODO_PROTOCOL`` still works
+    as a process-wide default when set.
+    """
+    block = _proxy_block()
+
+    username = os.environ.get("DECODO_USERNAME") or block.get("username", "")
+    password = os.environ.get("DECODO_PASSWORD") or block.get("password", "")
+    # Prefer explicit env; otherwise leave empty so callers/CLI pick a protocol.
+    protocol = (os.environ.get("DECODO_PROTOCOL") or "").lower()
+    api_key = os.environ.get("DECODO_API_KEY") or block.get("api_key", "")
+
     return ProxyConfig(
         username=username or "",
         password=password or "",
-    )
-
-
-def get_ipqs_config() -> IPQSConfig:
-    """Get IPQS API configuration with credentials."""
-    creds = _load_cred_json()
-    
-    api_key = os.environ.get("IPQS_API_KEY")
-    
-    if not api_key and creds:
-        api_key = creds.get("ipqs", {}).get("default_key", "")
-    
-    return IPQSConfig(
+        protocol=protocol or "socks5h",
         api_key=api_key or "",
     )
 
 
-# ============================================
-# Proxy URL Builder
-# ============================================
+def get_decodo_api_key() -> str:
+    """Public / management API key from ``proxy.decodo.api_key``."""
+    key = get_proxy_config().api_key
+    if not key:
+        raise ValueError("proxy.decodo.api_key missing in cred.json")
+    return key
+
+
+def get_ipqs_config() -> IPQSConfig:
+    """IPQS key via cred_loader.get_ipqs()."""
+    _ensure_cred_loader()
+    from cred_loader import get_ipqs
+
+    api_key = os.environ.get("IPQS_API_KEY") or get_ipqs()
+    return IPQSConfig(api_key=api_key or "")
+
+
+def validate_session_id(session: str) -> str:
+    """Raise if session id is empty or unsafe for Decodo username params."""
+    if not session:
+        raise ValueError("session id must be non-empty")
+    if not _SESSION_SAFE.match(session):
+        raise ValueError(
+            "session id must be alphanumeric/underscore only "
+            f"(no : @ / - spaces); got {session!r}"
+        )
+    return session
+
 
 def build_proxy_url(
     country: Optional[str] = None,
     session_duration: int = 60,
     session: Optional[str] = None,
     port: Optional[int] = None,
+    protocol: Optional[str] = None,
+    host: Optional[str] = None,
+    *,
+    config: Optional[ProxyConfig] = None,
 ) -> str:
     """
-    Build HTTPS proxy URL with authentication.
-    
-    Args:
-        country: Country code (e.g., "gb", "us")
-        session_duration: Session duration in minutes
-        session: Session name for sticky sessions
-        port: Specific port (random if not provided)
-        
-    Returns:
-        Proxy URL in format: https://user-{username}-...:{password}@{country}.decodo.com:{port}
+    Build a Decodo proxy URL.
+
+    Username shape (``-`` joined)::
+
+        user-{user}-session-{id}-sessionduration-{mins}-country-{cc}
+
+    ``session`` is an opaque sticky label — numbers, fruit names, uuid hex,
+    etc. Same id within ``session_duration`` keeps the same exit IP.
+
+    Defaults:
+      - SOCKS → ``gate.decodo.com:10000``
+      - HTTP(S) → ``{cc}.decodo.com`` + random sticky port in 30001–50000
     """
-    import random
-    
-    config = get_proxy_config()
-    
-    # Build username with options: user-{username}-country-{country}-session-{session}-sessionduration-{duration}
-    username = config.username.removeprefix("user-")
-    auth_parts = [f"user-{username}"]
-    
+    cfg = config or get_proxy_config()
+    proto = (protocol or cfg.protocol or "socks5h").lower()
+    if proto not in SUPPORTED_PROTOCOLS:
+        raise ValueError(f"protocol must be one of {SUPPORTED_PROTOCOLS}, got {proto!r}")
+
+    username = cfg.username.removeprefix("user-")
+    if not username or not cfg.password:
+        raise ValueError("Decodo username/password missing (cred.json or env)")
+
+    parts = [f"user-{username}"]
+    if session is not None:
+        parts.append(f"session-{validate_session_id(session)}")
+    parts.append(f"sessionduration-{session_duration}")
     if country:
-        auth_parts.append(f"country-{country}")
-    
-    if session:
-        auth_parts.append(f"session-{session}")
-    
-    auth_parts.append(f"sessionduration-{session_duration}")
-    
-    auth_string = "-".join(auth_parts)
-    
-    # Use random port if not specified
+        parts.append(f"country-{country.lower()}")
+
+    auth_user = "-".join(parts)
+    auth_pass = quote(cfg.password, safe="")
+
+    is_socks = proto.startswith("socks")
+    if host:
+        proxy_host = host
+    elif is_socks:
+        proxy_host = GATE_HOST
+    elif country:
+        proxy_host = f"{country.lower()}.decodo.com"
+    else:
+        proxy_host = GATE_HOST
+
     if port is None:
-        port = random.randint(config.port_min, config.port_max)
-    
-    # Host format: {country}.decodo.com
-    host = f"{country}.decodo.com" if country else "gate.decodo.com"
-    
-    return f"https://{auth_string}:{config.password}@{host}:{port}"
+        if is_socks:
+            port = cfg.socks_port
+        else:
+            port = random.randint(cfg.port_min, cfg.port_max)
+
+    return f"{proto}://{auth_user}:{auth_pass}@{proxy_host}:{port}"
+
+
+def parse_proxy_url(url: str) -> dict[str, Any]:
+    """Split a proxy URL into host/port/user/pass (pass is URL-decoded)."""
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    if not parsed.hostname:
+        raise ValueError(f"invalid proxy URL: {url!r}")
+    return {
+        "scheme": parsed.scheme,
+        "host": parsed.hostname,
+        "port": parsed.port,
+        "username": unquote(parsed.username or ""),
+        "password": unquote(parsed.password or ""),
+    }
