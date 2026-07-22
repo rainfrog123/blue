@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 11:10-07/22 (UTC+8)
+# Version: 🔖 13:34-07/22 (UTC+8)
 proxies:
   # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬azure_singapore_tj
@@ -525,7 +525,7 @@ proxies:
     udp: true
 
   # Version reference (display only)
-  - {name: "🔖 11:10-07/22 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 13:34-07/22 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -542,7 +542,7 @@ proxy-groups:
       - 🔄 CF WARP Outbound
       - 🇹🇷 Decodo TR
       - 🔑 Manual Selection
-      - "🔖 11:10-07/22 (UTC+8)"
+      - "🔖 13:34-07/22 (UTC+8)"
 
   # --- Node pools / apps ---
   - name: 📺 YouTube Nodes
