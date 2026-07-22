@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 11:43-08/06 (UTC+8)
+# Version: 🔖 11:10-07/22 (UTC+8)
 proxies:
   # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬azure_singapore_tj
@@ -580,8 +580,46 @@ proxies:
         # Host: x.hyas.space
     # udp: true
 
+  # Decodo Residential TR (SOCKS5) — dial through 🔗 Decodo Dialer (GFW)
+  # Scan 2026-07-22 · IPQS clean stickies · gate.decodo.com is GFW-blocked direct
+  - name: decodo-tr-grapefn2fe
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-grapefn2fe-sessionduration-60-country-tr
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-tr-lemonnakgn
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-lemonnakgn-sessionduration-60-country-tr
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-tr-orangecvttp
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-orangecvttp-sessionduration-60-country-tr
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-tr-bananav9yb3
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-bananav9yb3-sessionduration-60-country-tr
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
   # Version reference (display only)
-  - {name: "🔖 11:43-08/06 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 11:10-07/22 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -596,6 +634,7 @@ proxy-groups:
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - 🔄 CF WARP Outbound
+      - 🇹🇷 Decodo TR
       - 🔑 Manual Selection
       # - ⚡️IPLC/IEPL
       # - 🎠Trojan
@@ -609,7 +648,7 @@ proxy-groups:
       # - 🇪🇺 Europe Nodes
       # - 🇹🇼 Taiwan Nodes
       # - 🍁 Other Regions
-      - "🔖 11:43-08/06 (UTC+8)"
+      - "🔖 11:10-07/22 (UTC+8)"
 
   # Special Purpose Groups
   - name: 📺 YouTube Nodes
@@ -657,6 +696,30 @@ proxy-groups:
       - 🇸🇬ali_singapore_hy2
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
+
+  # GFW hop for Decodo. Default: 🇸🇬do_singapore_v6 — switch here if that node dies.
+  - name: 🔗 Decodo Dialer (GFW)
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_v6
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_hy2
+      - 🇸🇬do_singapore_hy2_v6
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
+      - 🚀 Hysteria Nodes
+
+  # TR residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
+  # + 🇸🇬do_singapore_v6 bare for cross-check (exit should be SG, not TR)
+  - name: 🇹🇷 Decodo TR
+    type: select
+    proxies:
+      - decodo-tr-grapefn2fe
+      - decodo-tr-lemonnakgn
+      - decodo-tr-orangecvttp
+      - decodo-tr-bananav9yb3
+      - 🇸🇬do_singapore_v6
 
   - name: ☁️ DigitalOcean Nodes
     type: select
@@ -1212,6 +1275,10 @@ rules:
   - DOMAIN-KEYWORD,translate.googleapis,🤖 AI / IDE Nodes
   - PROCESS-NAME,cursor.exe,🤖 AI / IDE Nodes
   - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
+
+  # 🇹🇷 Kliq → Decodo TR chain (GFW dialer → Decodo SOCKS5). Needs TUN on Android FLClash.
+  - PROCESS-NAME,tr.com.kliq.app,🇹🇷 Decodo TR
+  - PROCESS-NAME,Kliq,🇹🇷 Decodo TR
 
   # 🎮 Riot Games
   - PROCESS-NAME,com.riotgames.league.teamfighttactics,🎮 Riot Games
