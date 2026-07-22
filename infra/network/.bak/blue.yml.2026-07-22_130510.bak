@@ -636,6 +636,18 @@ proxy-groups:
       - 🔄 CF WARP Outbound
       - 🇹🇷 Decodo TR
       - 🔑 Manual Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - ☁️ Cloudflare CF Nodes
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
       - "🔖 11:10-07/22 (UTC+8)"
 
   # Special Purpose Groups
@@ -833,11 +845,155 @@ proxy-groups:
       - ☁️ Cloudflare CF Nodes
       - DIRECT
 
+  # Streaming & Social Media Groups
+  - name: ☎️ Telegram
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  - name: 📺 BiliBili
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+
+  - name: 🎬 YouTube
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  - name: 📷 TikTok
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  - name: 🎥 Netflix
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  - name: 📹 Disney+
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  - name: 🎼 Emby
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      # - 🇭🇰 Hong Kong Nodes
+      # - 🇸🇬 Singapore Nodes
+      # - 🇯🇵 Japan Nodes
+      # - 🇰🇷 Korea Nodes
+      # - 🇺🇸 United States Nodes
+      # - 🇮🇩 Indonesia Nodes
+      # - 🇪🇺 Europe Nodes
+      # - 🇹🇼 Taiwan Nodes
+      # - 🍁 Other Regions
+      - DIRECT
+
+  # Utility Groups
+  - name: 🛡️ Privacy Protection
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - 🚀 Node Selection
+
+  - name: 🎮 Gaming Platform
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+
+  - name: ⏬ Download Platform
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+
+  - name: 🌲 BT Torrent
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+
   - name: 🇨🇳 China Traffic
     type: select
     proxies:
       - DIRECT
       - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
 
   - name: 🚫 Ad Blocking
     type: select
@@ -846,64 +1002,225 @@ proxy-groups:
       - 🚀 Node Selection
       - DIRECT
 
+  - name: 📱 MIUI
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
+      - 🚀 Node Selection
+
+  - name: 🚩 Social Media IP Location
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+
   - name: 🐟 Final
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      # - ⚡️IPLC/IEPL
+      # - 🎠Trojan
+      - DIRECT
+
+  - name: 🛠️ Fallback
+    type: fallback
+    proxies:
+      # - 🎠Trojan
+      # - ⚡️IPLC/IEPL
+      - 🚀 Node Selection
+    url: https://i.ytimg.com/generate_204
+    interval: 500
+
+  # Protocol Groups
+  - name: ⚡️IPLC/IEPL
     type: select
     proxies:
       - 🚀 Node Selection
       - DIRECT
 
-  # Regional groups (commented out — rules that targeted them are commented too)
-  # - name: 🇯🇵 Japan Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇺🇸 United States Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇹🇼 Taiwan Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇪🇺 Europe Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇩🇪 Germany Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
+  - name: 🎠Trojan
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
 
-# Rule Providers (minimal)
-# Keep: Lan, ChinaMax, Advertising (full Classical ~9 MB) — blackmatrix7 via ghproxy.
-# Full Advertising already includes Privacy + Hijacking; no separate BanEasyPrivacy.
-# YouTube/Telegram omitted: YT has hand keywords → YouTube Nodes; else Final → Node Selection.
+  # Regional Groups
+  - name: 🇭🇰 Hong Kong Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇯🇵 Japan Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇰🇷 Korea Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇮🇩 Indonesia Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇺🇸 United States Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇹🇼 Taiwan Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇸🇬 Singapore Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇪🇺 Europe Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🇩🇪 Germany Nodes
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+  - name: 🍁 Other Regions
+    type: select
+    proxies:
+      - 🚀 Node Selection
+      - DIRECT
+
+# Rule Providers
 rule-providers:
+  IPfake:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/IPfake.yaml
+    path: ./Rules/IPfake.yaml
+    interval: 1386400
+
+  BiliBili:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/bilibili.yaml
+    path: ./Rules/bilibili.yaml
+    interval: 1386400
+
+  Disney:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Disney.yaml
+    path: ./Rules/Disney.yaml
+    interval: 1386400
+
+  Netflix:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Netflix.yaml
+    path: ./Rules/Netflix.yaml
+    interval: 1386400
+
+  TikTok:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/TikTok.yaml
+    path: ./Rules/TikTok.yaml
+    interval: 1386400
+
+  YouTube:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/YouTube.yaml
+    path: ./Rules/YouTube.yaml
+    interval: 1386400
+
+  Telegram:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Telegram.yaml
+    path: ./Rules/Telegram.yaml
+    interval: 1386400
+
+  Emby:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Emby.yaml
+    path: ./Rules/Emby.yaml
+    interval: 1386400
+
+  Game:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Game.yaml
+    path: ./Rules/Game.yaml
+    interval: 1386400
+
+  BanEasyPrivacy:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/BanEasyPrivacy.yaml
+    path: ./Rules/BanEasyPrivacy.yaml
+    interval: 1386400
+
   Advertising:
     type: http
     behavior: classical
-    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Advertising/Advertising_Classical.yaml
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Advertising.yaml
     path: ./Rules/Advertising.yaml
-    interval: 86400
+    interval: 1386400
+
+  Download:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Download.yaml
+    path: ./Rules/Download.yaml
+    interval: 1386400
+
+  PrivateTracker:
+    type: http
+    behavior: domain
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/PrivateTracker.yaml
+    path: ./Rules/PrivateTracker.yaml
+    interval: 1386400
 
   ChinaMax:
     type: http
-    behavior: domain
-    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Domain.yaml
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/ChinaMax.yaml
     path: ./Rules/ChinaMax.yaml
-    interval: 86400
+    interval: 1386400
+
+  Global:
+    type: http
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Global.yaml
+    path: ./Rules/Global.yaml
+    interval: 1386400
 
   Lan:
     type: http
     behavior: classical
-    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Lan/Lan.yaml
+    url: https://ghproxy.net/https://raw.githubusercontent.com/rainfrog123/blue/master/infra/network/clash_rules/Lan.yaml
     path: ./Rules/Lan.yaml
-    interval: 86400
+    interval: 1386400
 
 # Rules
 rules:
@@ -926,6 +1243,9 @@ rules:
   - DOMAIN-KEYWORD,trading212,🚀 Node Selection
   - DOMAIN-KEYWORD,windowsup,🚀 Node Selection
 
+  # 📱 MIUI (DOMAIN-KEYWORD → policy: group 📱 MIUI)
+  - DOMAIN-KEYWORD,miui,📱 MIUI
+
   # 🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,hcaptcha,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,oracle,🖥️ Cursor Website Nodes
@@ -933,8 +1253,8 @@ rules:
   - DOMAIN-KEYWORD,stripe,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,workos,🖥️ Cursor Website Nodes
 
-  # 🇺🇸 United States Nodes (group commented out)
-  # - SRC-IP-CIDR,100.125.223.72/32,🇺🇸 United States Nodes
+  # 🇺🇸 United States Nodes
+  - SRC-IP-CIDR,100.125.223.72/32,🇺🇸 United States Nodes
 
   # 🧠 Claude Nodes
   - DOMAIN-KEYWORD,anthropic,🧠 Claude Nodes
@@ -978,17 +1298,17 @@ rules:
   - DOMAIN-KEYWORD,instagram,📺 YouTube Nodes
   - DOMAIN-KEYWORD,youtube,📺 YouTube Nodes
 
-  # 🌏 Regional Nodes (groups commented out)
-  # - DOMAIN-KEYWORD,certipedia,🇹🇼 Taiwan Nodes
-  # - DOMAIN-KEYWORD,bybit,🇯🇵 Japan Nodes
-  # - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
-  # - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
-  # - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
-  # - DOMAIN-KEYWORD,n26,🇩🇪 Germany Nodes
-  # - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,links.com,🇺🇸 United States Nodes
+  # 🌏 Regional Nodes
+  - DOMAIN-KEYWORD,certipedia,🇹🇼 Taiwan Nodes
+  - DOMAIN-KEYWORD,bybit,🇯🇵 Japan Nodes
+  - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
+  - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
+  - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
+  - DOMAIN-KEYWORD,n26,🇩🇪 Germany Nodes
+  - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
+  - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
+  - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
+  - DOMAIN-KEYWORD,links.com,🇺🇸 United States Nodes
 
   # ✅ DIRECT
   - DOMAIN-SUFFIX,bijiago.com,DIRECT
@@ -1014,10 +1334,23 @@ rules:
   - DOMAIN-SUFFIX,jd.com,🇨🇳 China Traffic
   - DOMAIN-KEYWORD,jdcloud,🇨🇳 China Traffic
 
-  # 📦 Rule Sets (minimal; full Advertising includes Privacy)
+  # 📦 Rule Sets
+  - RULE-SET,BiliBili,📺 BiliBili
+  - RULE-SET,YouTube,🎬 YouTube
+  - RULE-SET,Netflix,🎥 Netflix
+  - RULE-SET,Disney,📹 Disney+
+  - RULE-SET,TikTok,📷 TikTok
+  - RULE-SET,Emby,🎼 Emby
+  - RULE-SET,Telegram,☎️ Telegram
+  - RULE-SET,Game,🎮 Gaming Platform
+  - RULE-SET,BanEasyPrivacy,🛡️ Privacy Protection
   - RULE-SET,Advertising,🚫 Ad Blocking
+  - RULE-SET,Download,⏬ Download Platform
+  - RULE-SET,PrivateTracker,🌲 BT Torrent
+  - RULE-SET,IPfake,🚩 Social Media IP Location
   - RULE-SET,Lan,🇨🇳 China Traffic
   - RULE-SET,ChinaMax,🇨🇳 China Traffic
+  - RULE-SET,Global,🚀 Node Selection
 
   # 🏁 Final
   - GEOIP,CN,🇨🇳 China Traffic
