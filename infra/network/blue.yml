@@ -880,7 +880,7 @@ proxy-groups:
   #     - DIRECT
 
 # Rule Providers (minimal)
-# Keep: Lan, ChinaMax, Advertising (full Classical ~9 MB) — blackmatrix7 via ghproxy.
+# Keep: Lan, ChinaMax_Classical, Advertising (full Classical ~9 MB) — blackmatrix7 via ghproxy.
 # Full Advertising already includes Privacy + Hijacking; no separate BanEasyPrivacy.
 # YouTube/Telegram omitted: YT has hand keywords → YouTube Nodes; else Final → Node Selection.
 rule-providers:
@@ -893,8 +893,8 @@ rule-providers:
 
   ChinaMax:
     type: http
-    behavior: domain
-    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Domain.yaml
+    behavior: classical
+    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Classical.yaml
     path: ./Rules/ChinaMax.yaml
     interval: 86400
 
