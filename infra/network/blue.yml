@@ -786,8 +786,8 @@ rule-providers:
 
   ChinaMax:
     type: http
-    behavior: classical
-    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Classical.yaml
+    behavior: domain
+    url: https://ghproxy.net/https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/ChinaMax/ChinaMax_Domain.yaml
     path: ./Rules/ChinaMax.yaml
     interval: 86400
 
