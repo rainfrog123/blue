@@ -75,10 +75,13 @@ web/patchright/test/
 web/patchright/test_report.json
 
 # ─────────────────────────────────────────────────────────────────────────────
-# iOS app packages
+# iOS app packages / local RE scratch
 # ─────────────────────────────────────────────────────────────────────────────
 *.ipa
 *.tipa
+.tmp-ipatool/
+analysis/ios/**/Payload/
+analysis/ios/**/*.app/
 
 # Windows-reserved filename not stageable on Windows
 infra/cloud/digi/nul
