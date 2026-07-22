@@ -1277,8 +1277,8 @@ rules:
   - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
 
   # 🇹🇷 Kliq → Decodo TR chain (GFW dialer → Decodo SOCKS5). Needs TUN on Android FLClash.
-  - PROCESS-NAME,tr.com.kliq.app,🇹🇷 Decodo TR
-  - PROCESS-NAME,Kliq,🇹🇷 Decodo TR
+  # - PROCESS-NAME,tr.com.kliq.app,🇹🇷 Decodo TR
+  # - PROCESS-NAME,Kliq,🇹🇷 Decodo TR
 
   # 🎮 Riot Games
   - PROCESS-NAME,com.riotgames.league.teamfighttactics,🎮 Riot Games
