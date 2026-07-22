@@ -697,30 +697,6 @@ proxy-groups:
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
-  # GFW hop for Decodo. Default: 🇸🇬do_singapore_v6 — switch here if that node dies.
-  - name: 🔗 Decodo Dialer (GFW)
-    type: select
-    proxies:
-      - 🇸🇬do_singapore_v6
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_hy2
-      - 🇸🇬do_singapore_hy2_v6
-      - ☁️ Aliyun Nodes
-      - ☁️ Azure Nodes
-      - ☁️ DigitalOcean Nodes
-      - 🚀 Hysteria Nodes
-
-  # TR residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
-  # + 🇸🇬do_singapore_v6 bare for cross-check (exit should be SG, not TR)
-  - name: 🇹🇷 Decodo TR
-    type: select
-    proxies:
-      - decodo-tr-grapefn2fe
-      - decodo-tr-lemonnakgn
-      - decodo-tr-orangecvttp
-      - decodo-tr-bananav9yb3
-      - 🇸🇬do_singapore_v6
-
   - name: ☁️ DigitalOcean Nodes
     type: select
     proxies:
@@ -759,6 +735,30 @@ proxy-groups:
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
+
+  # GFW hop for Decodo. Default: 🇸🇬do_singapore_v6 — switch here if that node dies.
+  - name: 🔗 Decodo Dialer (GFW)
+    type: select
+    proxies:
+      - 🇸🇬do_singapore_v6
+      - 🇸🇬do_singapore
+      - 🇸🇬do_singapore_hy2
+      - 🇸🇬do_singapore_hy2_v6
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
+      - 🚀 Hysteria Nodes
+
+  # TR residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
+  # + 🇸🇬do_singapore_v6 bare for cross-check (exit should be SG, not TR)
+  - name: 🇹🇷 Decodo TR
+    type: select
+    proxies:
+      - decodo-tr-grapefn2fe
+      - decodo-tr-lemonnakgn
+      - decodo-tr-orangecvttp
+      - decodo-tr-bananav9yb3
+      - 🇸🇬do_singapore_v6
 
   - name: 🤖 AI / IDE Nodes
     type: select
