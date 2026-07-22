@@ -384,75 +384,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  # - name: 🇯🇵do_japan_tj_2
-    # type: trojan
-    # server: 162.159.39.248
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
-
-  # - name: 🇯🇵do_japan_tj_3
-    # type: trojan
-    # server: 172.64.53.144
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
-
-  # - name: 🇯🇵do_japan_tj_4
-    # type: trojan
-    # server: 108.162.198.99
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
-
-  # - name: 🇯🇵do_japan_tj_5
-    # type: trojan
-    # server: 162.159.44.202
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
-
-  # - name: 🇯🇵do_japan_tj_6
-    # type: trojan
-    # server: 172.64.229.84
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  # Commented out: 🇯🇵do_japan_tj_2..8 (CF NRT IPs). Restore from git history / bak if needed.
 
   - name: 🇸🇬do_singapore_tj_2
     type: trojan
@@ -552,33 +484,7 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  # - name: 🇯🇵do_japan_tj_7
-    # type: trojan
-    # server: 162.159.45.212
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
-
-  # - name: 🇯🇵do_japan_tj_8
-    # type: trojan
-    # server: 172.64.52.153
-    # port: 443
-    # password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    # sni: x.hyas.space
-    # skip-cert-verify: false
-    # network: ws
-    # ws-opts:
-      # path: /x7f9k2m4p8
-      # headers:
-        # Host: x.hyas.space
-    # udp: true
+  # Commented out: 🇯🇵do_japan_tj_2..8 (CF NRT IPs). Restore from git history / bak if needed.
 
   # Decodo Residential TR (SOCKS5) — dial through 🔗 Decodo Dialer (GFW)
   # Scan 2026-07-22 · IPQS clean stickies · gate.decodo.com is GFW-blocked direct
@@ -623,7 +529,7 @@ proxies:
 
 # Proxy Groups
 proxy-groups:
-  # Primary Selection Groups
+  # --- Primary ---
   - name: 🚀 Node Selection
     type: select
     proxies:
@@ -638,7 +544,7 @@ proxy-groups:
       - 🔑 Manual Selection
       - "🔖 11:10-07/22 (UTC+8)"
 
-  # Special Purpose Groups
+  # --- Node pools / apps ---
   - name: 📺 YouTube Nodes
     type: select
     proxies:
@@ -852,37 +758,10 @@ proxy-groups:
       - 🚀 Node Selection
       - DIRECT
 
-  # Regional groups (commented out — rules that targeted them are commented too)
-  # - name: 🇯🇵 Japan Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇺🇸 United States Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇹🇼 Taiwan Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇪🇺 Europe Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
-  # - name: 🇩🇪 Germany Nodes
-  #   type: select
-  #   proxies:
-  #     - 🚀 Node Selection
-  #     - DIRECT
+  # Regional groups (JP/US/TW/EU/DE) commented out — see bak or Clash Ruleset Reorg note to restore.
 
-# Rule Providers (minimal)
-# Keep: Lan, ChinaMax_Classical, Advertising (full Classical ~9 MB) — blackmatrix7 via ghproxy.
-# Full Advertising already includes Privacy + Hijacking; no separate BanEasyPrivacy.
-# YouTube/Telegram omitted: YT has hand keywords → YouTube Nodes; else Final → Node Selection.
+# Rule Providers (minimal — blackmatrix7 via ghproxy, interval 86400)
+# Advertising Classical includes Privacy/Hijacking. YT via hand keywords; else Final.
 rule-providers:
   Advertising:
     type: http
@@ -906,11 +785,9 @@ rule-providers:
     interval: 86400
 
 # Rules
+# Order: hand pins → RULE-SET → GEOIP → MATCH
 rules:
-  # 🔄 CF WARP Outbound
-  # - DOMAIN-KEYWORD,archive,🔄 CF WARP Outbound
-
-  # 🚀 Node Selection
+  # --- Node Selection ---
   - DOMAIN,ouo.io,🚀 Node Selection
   - DOMAIN-SUFFIX,amd.com,🚀 Node Selection
   - DOMAIN-SUFFIX,connectivitycheck.gstatic.com,🚀 Node Selection
@@ -926,44 +803,37 @@ rules:
   - DOMAIN-KEYWORD,trading212,🚀 Node Selection
   - DOMAIN-KEYWORD,windowsup,🚀 Node Selection
 
-  # 🖥️ Cursor Website Nodes
+  # --- Cursor Website ---
   - DOMAIN-KEYWORD,hcaptcha,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,oracle,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,px-cloud,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,stripe,🖥️ Cursor Website Nodes
   - DOMAIN-KEYWORD,workos,🖥️ Cursor Website Nodes
 
-  # 🇺🇸 United States Nodes (group commented out)
-  # - SRC-IP-CIDR,100.125.223.72/32,🇺🇸 United States Nodes
-
-  # 🧠 Claude Nodes
+  # --- Claude ---
   - DOMAIN-KEYWORD,anthropic,🧠 Claude Nodes
   - DOMAIN-KEYWORD,claude,🧠 Claude Nodes
   - DOMAIN-KEYWORD,namecheap,🧠 Claude Nodes
 
-  # 🤖 AI / IDE Nodes
+  # --- AI / IDE ---
   - DOMAIN-SUFFIX,challenges.cloudflare.com,🤖 AI / IDE Nodes
-  # - DOMAIN-SUFFIX,cursor.com,🤖 AI / IDE Nodes
   - DOMAIN-SUFFIX,ft.com,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,booking,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,chatgpt,🤖 AI / IDE Nodes
-  # - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,cursor,🤖 AI / IDE Nodes
-  # - DOMAIN-KEYWORD,heytap,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,oai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,openai,🤖 AI / IDE Nodes
   - DOMAIN-KEYWORD,translate.googleapis,🤖 AI / IDE Nodes
   - PROCESS-NAME,cursor.exe,🤖 AI / IDE Nodes
   - PROCESS-NAME,proxifier.exe,🤖 AI / IDE Nodes
 
-  # 🇹🇷 Kliq → Decodo TR chain (GFW dialer → Decodo SOCKS5). Needs TUN on Android FLClash.
+  # --- Apps ---
+  # Kliq → Decodo TR (needs TUN on Android FLClash)
   # - PROCESS-NAME,tr.com.kliq.app,🇹🇷 Decodo TR
   # - PROCESS-NAME,Kliq,🇹🇷 Decodo TR
-
-  # 🎮 Riot Games
   - PROCESS-NAME,com.riotgames.league.teamfighttactics,🎮 Riot Games
 
-  # 🎰 Stake Nodes
+  # --- Stake ---
   - DOMAIN-KEYWORD,cidbopixq,🎰 Stake Nodes
   - DOMAIN-KEYWORD,evo-games,🎰 Stake Nodes
   - DOMAIN-KEYWORD,gcmlgxrmkp,🎰 Stake Nodes
@@ -973,53 +843,37 @@ rules:
   - DOMAIN-KEYWORD,qpidreoxcc,🎰 Stake Nodes
   - DOMAIN-KEYWORD,stake,🎰 Stake Nodes
 
-  # 📺 YouTube Nodes
+  # --- YouTube / IG ---
   - DOMAIN-KEYWORD,googlevideo,📺 YouTube Nodes
   - DOMAIN-KEYWORD,instagram,📺 YouTube Nodes
   - DOMAIN-KEYWORD,youtube,📺 YouTube Nodes
 
-  # 🌏 Regional Nodes (groups commented out)
-  # - DOMAIN-KEYWORD,certipedia,🇹🇼 Taiwan Nodes
-  # - DOMAIN-KEYWORD,bybit,🇯🇵 Japan Nodes
-  # - DOMAIN-KEYWORD,zhizzz,🇯🇵 Japan Nodes
-  # - DOMAIN-KEYWORD,okx,🇪🇺 Europe Nodes
-  # - DOMAIN-KEYWORD,paddypower,🇪🇺 Europe Nodes
-  # - DOMAIN-KEYWORD,n26,🇩🇪 Germany Nodes
-  # - DOMAIN-KEYWORD,bonify,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,cloudfront,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,digitalocean,🇺🇸 United States Nodes
-  # - DOMAIN-KEYWORD,links.com,🇺🇸 United States Nodes
-
-  # ✅ DIRECT
+  # --- DIRECT ---
   - DOMAIN-SUFFIX,bijiago.com,DIRECT
   - DOMAIN-SUFFIX,showmyip.com,DIRECT
   - DOMAIN-KEYWORD,aws-latency-test,DIRECT
   - DOMAIN-KEYWORD,bendibao,DIRECT
   - DOMAIN-KEYWORD,ipqualityscore,DIRECT
   - IP-CIDR,101.124.19.122/32,DIRECT,no-resolve
-  # - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,DIRECT
   - PROCESS-NAME,VNC-Viewer-7.15.1-Windows-64bit.exe,🚀 Node Selection
   - PROCESS-NAME,cfst.exe,DIRECT
   - PROCESS-NAME,com.sankai.meituan.takeoutnew,DIRECT
 
-  # 🚫 REJECT
+  # --- REJECT ---
   - DOMAIN-SUFFIX,gjfzpt.cn,REJECT
-  # - DST-PORT,34089,REJECT
-  # - DST-PORT,36033,REJECT
-  # - DST-PORT,46871,REJECT
   - SRC-IP-CIDR,219.143.187.136/32,REJECT
 
-  # 🛒 JD
+  # --- China hand pins ---
   - DOMAIN-SUFFIX,360buyimg.com,🇨🇳 China Traffic
   - DOMAIN-SUFFIX,jd.com,🇨🇳 China Traffic
   - DOMAIN-KEYWORD,jdcloud,🇨🇳 China Traffic
 
-  # 📦 Rule Sets (minimal; full Advertising includes Privacy)
+  # --- Rule providers ---
   - RULE-SET,Advertising,🚫 Ad Blocking
   - RULE-SET,Lan,🇨🇳 China Traffic
   - RULE-SET,ChinaMax,🇨🇳 China Traffic
 
-  # 🏁 Final
+  # --- Final ---
   - GEOIP,CN,🇨🇳 China Traffic
   - MATCH,🐟 Final
 
@@ -1044,123 +898,5 @@ rules:
 # 104.18.35.160     4     4     0.00    94.83        0.71         SIN
 # 172.64.40.7       4     4     0.00    98.57        0.58         SIN
 
-# DNS Configuration — previous (Alibaba/Tencent + mixed fallback); disabled
-# dns:
-#   enable: true
-#   listen: 0.0.0.0:53
-#   ipv6: false
-#   use-hosts: true
-#   enhanced-mode: fake-ip
-#   fake-ip-range: 198.18.0.1/16
-#   fake-ip-filter:
-#     - "*.lan"
-#     - "*.local"
-#     - "*.localhost"
-#     - "localhost.ptlogin2.qq.com"
-#     - "+.ntp.org"
-#     - "ntp.org"
-#     - "+.stun.*.*"
-#     - "+.stun.*.*.*"
-#     - "+.stun.*.*.*.*"
-#     - "+.stun.*.*.*.*.*"
-#     - "*.nintendo.net"
-#     - "+.stun.playstation.net"
-#     - "xbox.*.*.microsoft.com"
-#     - "*.*.xboxlive.com"
-#     - "*.msftncsi.com"
-#     - "*.msftconnecttest.com"
-#     - "WORKGROUP"
-#
-#   # Bootstrap DNS
-#   default-nameserver:
-#     - 223.5.5.5
-#     - 119.29.29.29
-#
-#   # Primary DNS (China - Alibaba & Tencent)
-#   nameserver:
-#     - 223.5.5.5
-#     - 223.6.6.6
-#     - 119.29.29.29
-#
-#   # Fallback DNS (foreign - for GFW-blocked domains, goes through proxy)
-#   fallback:
-#     - 1.1.1.1
-#     - 8.8.8.8
-#     - 8.8.4.4
-#
-#   # DNS for proxy servers
-#   proxy-server-nameserver:
-#     - 223.5.5.5
-#     - 119.29.29.29
-#
-#   # Fallback filter - route China IPs to nameserver, others to fallback
-#   fallback-filter:
-#     geoip: true
-#     geoip-code: CN
-#     ipcidr:
-#       - 240.0.0.0/4
-#       - 0.0.0.0/32
-#       - 127.0.0.1/32
-#     domain:
-#       - "+.google.com"
-#       - "+.facebook.com"
-#       - "+.youtube.com"
-#       - "+.twitter.com"
-#       - "+.github.com"
-#       - "+.googleapis.com"
-#       - "+.gstatic.com"
-
-# DNS disabled for now — last active profile was 1.1.1.1 + 8.8.8.8 only
-# dns:
-#   enable: true
-#   listen: 0.0.0.0:53
-#   ipv6: false
-#   use-hosts: true
-#   enhanced-mode: fake-ip
-#   fake-ip-range: 198.18.0.1/16
-#   fake-ip-filter:
-#     - "*.lan"
-#     - "*.local"
-#     - "*.localhost"
-#     - "localhost.ptlogin2.qq.com"
-#     - "+.ntp.org"
-#     - "ntp.org"
-#     - "+.stun.*.*"
-#     - "+.stun.*.*.*"
-#     - "+.stun.*.*.*.*"
-#     - "+.stun.*.*.*.*.*"
-#     - "*.nintendo.net"
-#     - "+.stun.playstation.net"
-#     - "xbox.*.*.microsoft.com"
-#     - "*.*.xboxlive.com"
-#     - "*.msftncsi.com"
-#     - "*.msftconnecttest.com"
-#     - "WORKGROUP"
-#   default-nameserver:
-#     - 1.1.1.1
-#     - 8.8.8.8
-#   nameserver:
-#     - 1.1.1.1
-#     - 8.8.8.8
-#   fallback:
-#     - 1.1.1.1
-#     - 8.8.8.8
-#   proxy-server-nameserver:
-#     - 1.1.1.1
-#     - 8.8.8.8
-#   fallback-filter:
-#     geoip: true
-#     geoip-code: CN
-#     ipcidr:
-#       - 240.0.0.0/4
-#       - 0.0.0.0/32
-#       - 127.0.0.1/32
-#     domain:
-#       - "+.google.com"
-#       - "+.facebook.com"
-#       - "+.youtube.com"
-#       - "+.twitter.com"
-#       - "+.github.com"
-#       - "+.googleapis.com"
-#       - "+.gstatic.com"
-
+# DNS: disabled in this profile (managed by client / previous blocks removed).
+# Restore DNS snippets from git history if needed.
