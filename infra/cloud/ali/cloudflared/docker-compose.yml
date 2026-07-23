@@ -1,4 +1,4 @@
-# Thin alias — token in ./.env only. Prefer: bash ../../common/cloudflared/up.sh digi
+# Thin alias — Prefer: bash ../../common/cloudflared/up.sh ali
 
 services:
   cloudflared:

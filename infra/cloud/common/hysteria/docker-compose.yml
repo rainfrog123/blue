@@ -1,6 +1,12 @@
+# Canonical Hy2 compose for digi / ali / azure.
+# bash infra/cloud/common/hysteria/up.sh digi
+#
+# Shared: defaults.yaml (listen / masquerade / Brutal bandwidth)
+# Per-VPS: <vps>/hysteria/site.yaml + acme/
+
 services:
   hysteria:
-    image: tobyxdd/hysteria:v2
+    image: ${HY2_IMAGE:-tobyxdd/hysteria:v2}
     container_name: hysteria2
     restart: always
     network_mode: host

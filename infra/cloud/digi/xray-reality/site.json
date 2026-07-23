@@ -1,0 +1,10 @@
+{
+  "uuid": "061527a1-af84-4688-87d1-f08edf0dc8b4",
+  "privateKey": "AMqY4RjPM6NnKQ56WUZ0pdsUy7b3Q8M0UyPFxr8SmnY",
+  "shortIds": ["", "32eedaf295ce60a8"],
+  "warpSecretKey": "ALaljxCONL1RWyt41XIqR81TxB+CovAf0A1k6GGXWXA=",
+  "reality_port": 8443,
+  "ws_port": 8080,
+  "ws_path": "/vless-warp",
+  "loglevel": "debug"
+}

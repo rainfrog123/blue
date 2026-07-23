@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Start Hysteria for one VPS (compose merges common defaults + site.yaml).
 # Usage: bash infra/cloud/common/hysteria/up.sh digi|ali|azure
 set -euo pipefail
 SITE="${1:-}"
@@ -8,7 +7,8 @@ if [[ -z "$SITE" || ! "$SITE" =~ ^(digi|ali|azure)$ ]]; then
   exit 2
 fi
 CLOUD="$(cd "$(dirname "$0")/../.." && pwd)"
-SITE_DIR="$CLOUD/$SITE/hysteria"
-mkdir -p "$SITE_DIR/acme"
-docker compose -f "$SITE_DIR/docker-compose.yml" up -d
-docker compose -f "$SITE_DIR/docker-compose.yml" ps
+DIR="$CLOUD/$SITE/hysteria"
+mkdir -p "$DIR/acme"
+test -f "$DIR/site.yaml" || { echo "missing $DIR/site.yaml" >&2; exit 1; }
+docker compose --project-directory "$DIR" -f "$(dirname "$0")/docker-compose.yml" up -d
+docker compose --project-directory "$DIR" -f "$(dirname "$0")/docker-compose.yml" ps

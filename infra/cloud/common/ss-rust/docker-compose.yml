@@ -1,5 +1,5 @@
-# Thin alias — defaults: ../../common/ss-rust/defaults.json · secrets: ./site.json
-# Prefer: bash ../../common/ss-rust/up.sh digi
+# Shared SS-rust wiring. Prefer: bash infra/cloud/common/ss-rust/up.sh <site>
+# Host network so IPv6 (::) from defaults.json works on every VPS.
 
 services:
   ss-rust:

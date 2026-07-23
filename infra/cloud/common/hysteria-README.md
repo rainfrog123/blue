@@ -5,7 +5,7 @@
 
 > [!tip] Shared defaults
 > Brutal bandwidth, listen, and masquerade live in **one** file: `infra/cloud/common/hysteria/defaults.yaml`.
-> Each VPS only has `site.yaml` (ACME domain + password). `up.sh` merges them into `config.yaml` before compose.
+> Each VPS only has `site.yaml` (ACME domain + password). Compose mounts both and `cat`s them at container start.
 
 ## Deployed Servers
 
@@ -50,13 +50,14 @@ Formerly `hy.hyas.site` on Digi `129.212.209.177` (Hy2 used to listen on **5333*
 ## Layout
 
 ```
-infra/cloud/common/hysteria/defaults.yaml   # listen, masquerade, bandwidth (Brutal 100/100)
-infra/cloud/common/hysteria/render.py       # merges → config.yaml
-infra/cloud/common/hysteria/up.sh           # render + docker compose
-infra/cloud/<vps>/hysteria/site.yaml        # acme + auth only
-infra/cloud/<vps>/hysteria/docker-compose.yml
-infra/cloud/<vps>/hysteria/config.yaml      # generated (gitignored)
+infra/cloud/common/hysteria/defaults.yaml        # listen, masquerade, bandwidth (Brutal 100/100)
+infra/cloud/common/hysteria/docker-compose.yml   # canonical compose (cat defaults+site at boot)
+infra/cloud/common/hysteria/up.sh                # --project-directory <vps> + common compose
+infra/cloud/common/hysteria/render.py            # preview merge on stdout
+infra/cloud/<vps>/hysteria/site.yaml             # acme + auth only
+infra/cloud/<vps>/hysteria/docker-compose.yml    # same as common (for local `compose up`)
 ```
+
 
 ### defaults.yaml (shared — edit once)
 
@@ -119,16 +120,16 @@ curl -6 -s ifconfig.me && echo    # IPv6
 
 ```bash
 mkdir -p acme
-bash /allah/blue/infra/cloud/common/hysteria/up.sh ali up -d
+bash /allah/blue/infra/cloud/common/hysteria/up.sh ali
 docker logs -f hysteria2
 ```
 
 Wait for `server up and running` with `listen: ":443"`.
 
-Preview merged config without writing:
+Preview merged config:
 
 ```bash
-python3 infra/cloud/common/hysteria/render.py ali --stdout
+python3 infra/cloud/common/hysteria/render.py ali
 ```
 
 ### Add DNS Records
@@ -202,13 +203,13 @@ hysteria2://PASSWORD@SUBDOMAIN.hyas.site:443?sni=SUBDOMAIN.hyas.site#NAME
 ## Operations
 
 ```bash
-bash infra/cloud/common/hysteria/up.sh ali up -d
+bash infra/cloud/common/hysteria/up.sh ali
 docker logs -f hysteria2
 docker compose -f infra/cloud/ali/hysteria/docker-compose.yml restart
 docker ps | grep hysteria
 ss -ulnp | grep 443
 # Confirm Brutal defaults landed:
-python3 infra/cloud/common/hysteria/render.py ali --stdout | grep -A2 bandwidth
+python3 infra/cloud/common/hysteria/render.py ali | grep -A2 bandwidth
 ```
 
 ---
@@ -226,5 +227,6 @@ python3 infra/cloud/common/hysteria/render.py ali --stdout | grep -A2 bandwidth
 
 ### Container restarting
 - `docker logs hysteria2`
-- Re-render: `python3 infra/cloud/common/hysteria/render.py ali`
-- Confirm `config.yaml` contains both `bandwidth` and site `acme`/`auth`
+- Confirm mounts: `defaults.yaml` + `site.yaml`
+- Preview: `python3 infra/cloud/common/hysteria/render.py ali`
+- Inside container: `docker exec hysteria2 cat /tmp/hy2.yaml`

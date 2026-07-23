@@ -76,40 +76,38 @@ sudo hostnamectl set-hostname --static blue
 print_success "Hostname set to 'blue'"
 
 # ============================================================================
-# SHADOWSOCKS-RUST SETUP
+# SHARED PROXIES + GIT (clone blue, then common stacks)
 # ============================================================================
-print_header "SHADOWSOCKS-RUST PROXY SERVER"
+print_header "GIT REPOSITORY SETUP"
 
-print_step "Pulling shadowsocks-rust Docker image..."
-sudo docker pull teddysun/shadowsocks-rust
+print_step "Creating /allah directory..."
+sudo mkdir -p /allah
 
-print_step "Creating configuration directory..."
-sudo mkdir -p /etc/shadowsocks-rust/
+print_step "Setting anonymous Git identity..."
+git config --global user.name "$(openssl rand -hex 12)"
+git config --global user.email "$(openssl rand -hex 12)@example.com"
 
-print_step "Writing configuration file..."
-sudo bash -c 'cat > /etc/shadowsocks-rust/config.json <<EOF
-{
-    "server": "::",
-    "server_port": 12033,
-    "password": "bxsnucrgk6hfish",
-    "timeout": 300,
-    "method": "chacha20-ietf-poly1305",
-    "mode": "tcp_and_udp",
-    "fast_open": true
-}
-EOF'
+print_step "Cloning blue repository..."
+cd /allah
+git clone https://github.com/rainfrog123/blue.git
 
-print_step "Starting shadowsocks-rust container (host network)..."
-sudo docker rm -f ss-rust 2>/dev/null || true
-sudo docker run -d \
-    --name ss-rust \
-    --restart=always \
-    --network host \
-    -v /etc/shadowsocks-rust:/etc/shadowsocks-rust \
-    teddysun/shadowsocks-rust
+print_success "Repository cloned to /allah/blue"
 
-print_success "Shadowsocks-rust running on port 12033 (host network, listen ::)"
-print_info "Method: chacha20-ietf-poly1305 | Mode: tcp_and_udp"
+# ============================================================================
+# SHARED PROXY STACKS (common/* — do not copy per-VPS configs)
+# ============================================================================
+print_header "SHARED PROXY STACKS"
+
+print_step "Starting ss-rust from common..."
+bash /allah/blue/infra/cloud/common/ss-rust/up.sh ali
+
+print_step "Starting Hysteria2 from common (Brutal defaults + ali site.yaml)..."
+sudo mkdir -p /allah/blue/infra/cloud/ali/hysteria/acme
+bash /allah/blue/infra/cloud/common/hysteria/up.sh ali
+
+print_success "Proxies up (ss-rust :12033, hy2 :443)"
+print_info "Shared configs: infra/cloud/common/{ss-rust,hysteria}/"
+print_info "ACME domain must already point at this host (hy.hyas.site)"
 
 # ============================================================================
 # TCP BBR & NETWORK OPTIMIZATION
@@ -175,37 +173,6 @@ sudo systemctl enable --now eth0-fq.service
 
 print_success "BBR and network optimizations enabled"
 print_info "Buffer sizes: 16MB max | TFO | mtu_probing=1 | NIC qdisc=fq"
-
-# ============================================================================
-# GIT REPOSITORY SETUP
-# ============================================================================
-print_header "GIT REPOSITORY SETUP"
-
-print_step "Creating /allah directory..."
-sudo mkdir -p /allah
-
-print_step "Setting anonymous Git identity..."
-git config --global user.name "$(openssl rand -hex 12)"
-git config --global user.email "$(openssl rand -hex 12)@example.com"
-
-print_step "Cloning blue repository..."
-cd /allah
-git clone https://github.com/rainfrog123/blue.git
-
-print_success "Repository cloned to /allah/blue"
-
-# ============================================================================
-# HYSTERIA2 (from cloned repo)
-# ============================================================================
-print_header "HYSTERIA2 PROXY SERVER"
-
-print_step "Starting Hysteria2 (host network, :443; Brutal from common/hysteria/defaults.yaml)..."
-sudo mkdir -p /allah/blue/infra/cloud/ali/hysteria/acme
-sudo bash /allah/blue/infra/cloud/common/hysteria/up.sh ali up -d
-
-print_success "Hysteria2 started (check: docker logs hysteria2)"
-print_info "ACME domain must already point at this host (hy.hyas.site)"
-print_info "Shared defaults: infra/cloud/common/hysteria/defaults.yaml (bandwidth 100 mbps)"
 
 # ============================================================================
 # IPv6 NETPLAN (dhcp6)

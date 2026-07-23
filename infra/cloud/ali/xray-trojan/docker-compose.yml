@@ -1,6 +1,4 @@
-# Thin alias — defaults: ../../common/xray-trojan/defaults.json · secrets: ./site.json
-# Prefer: bash ../../common/xray-trojan/up.sh digi
-# Shares init_tunnel-net with cloudflared / xray-reality.
+# Thin alias — Prefer: bash ../../common/xray-trojan/up.sh ali
 
 services:
   xray-trojan:

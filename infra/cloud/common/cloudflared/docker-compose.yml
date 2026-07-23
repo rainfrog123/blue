@@ -1,13 +1,13 @@
-# Thin alias — token in ./.env only. Prefer: bash ../../common/cloudflared/up.sh digi
+# Shared cloudflared wiring. Prefer: bash infra/cloud/common/cloudflared/up.sh <site>
+# Per-VPS secret: ./site.env  →  CF_TUNNEL_TOKEN=...
 
 services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: cloudflared
     restart: always
+    env_file: ./site.env
     command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
-    env_file:
-      - .env
     networks:
       - tunnel-net
 

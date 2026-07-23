@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Preview merged Hy2 config: common defaults + <vps>/site.yaml.
-
-Runtime merge is in docker-compose (cat defaults + site). Use --stdout or
-default write is disabled — this only prints unless --write is passed.
-"""
+"""Preview merged Hy2 config (common defaults.yaml + <vps>/site.yaml) on stdout."""
 from __future__ import annotations
 
 import argparse
@@ -21,8 +17,9 @@ def merge_text(site: str) -> str:
         raise FileNotFoundError(f"missing {site_file}")
     defaults = (COMMON / "defaults.yaml").read_text(encoding="utf-8").rstrip() + "\n"
     overlay = site_file.read_text(encoding="utf-8").strip() + "\n"
+    # Keys must not overlap between defaults and site (compose cats the two files).
     return (
-        f"# merged: common/hysteria/defaults.yaml + {site}/hysteria/site.yaml\n"
+        f"# preview: common/hysteria/defaults.yaml + {site}/hysteria/site.yaml\n"
         f"{defaults}\n{overlay}"
     )
 
@@ -30,18 +27,8 @@ def merge_text(site: str) -> str:
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("site", choices=SITES)
-    p.add_argument(
-        "--write",
-        action="store_true",
-        help="also write <vps>/hysteria/config.yaml (optional; compose does not need it)",
-    )
     args = p.parse_args()
-    text = merge_text(args.site)
-    sys.stdout.buffer.write(text.encode("utf-8"))
-    if args.write:
-        out = ROOT / args.site / "hysteria" / "config.yaml"
-        out.write_text(text, encoding="utf-8", newline="\n")
-        print(f"\n# wrote {out}", file=sys.stderr)
+    sys.stdout.write(merge_text(args.site))
     return 0
 
 

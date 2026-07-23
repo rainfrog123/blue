@@ -1,5 +1,6 @@
-# Thin alias — defaults: ../../common/xray-reality/defaults.json · secrets: ./site.json
-# Prefer: bash ../../common/xray-reality/up.sh digi
+# Shared xray-reality (direct :8443 + CF WS :8080 + WARP outbound).
+# Run: bash infra/cloud/common/xray-reality/up.sh digi
+# Config is shared in common (only digi deploys today).
 
 services:
   xray-reality:
@@ -7,8 +8,8 @@ services:
     container_name: xray-reality
     restart: always
     volumes:
-      - ./config.json:/etc/xray/config.json:ro
-    command: run -c /etc/xray/config.json
+      - ../../common/xray-reality/config.json:/etc/xray/config.json:ro
+    command: ["run", "-c", "/etc/xray/config.json"]
     ports:
       - "8443:8443"
     cap_add:

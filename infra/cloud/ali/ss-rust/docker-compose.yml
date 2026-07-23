@@ -1,5 +1,4 @@
-# Thin alias — defaults: ../../common/ss-rust/defaults.json · secrets: ./site.json
-# Prefer: bash ../../common/ss-rust/up.sh digi
+# Thin alias — Prefer: bash ../../common/ss-rust/up.sh ali
 
 services:
   ss-rust:
