@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 09:50-07/23 (UTC+8)
+# Version: 🔖 09:40-07/23 (UTC+8)
 proxies:
   # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬az_01
@@ -179,7 +179,7 @@ proxies:
   # 172.64.229.84     89ms     35.33        NRT
   # 162.159.45.212    81ms     33.64        NRT
   # 172.64.52.153     86ms     14.93        NRT
-  # SIN (Singapore) - 24 IPs — CFST result_v4v6.csv (2026-07-23)
+  # SIN (Singapore) - 8 IPs — CFST v2.3.5 result_v4v6.csv (2026-07-23)
   # IP Address         Latency  Speed(MB/s)  Region
   # 162.159.40.88      78.95ms   51.32        SIN
   # 172.64.144.187     78.54ms   46.16        SIN
@@ -188,23 +188,7 @@ proxies:
   # 172.64.48.109      78.79ms   41.47        SIN
   # 162.159.33.250     75.94ms   40.71        SIN
   # 108.162.194.20     79.02ms   39.28        SIN
-  # 162.159.25.200     79.2ms   39.14        SIN
-  # 172.64.49.167      79.19ms   38.76        SIN
-  # 162.159.26.96      78.66ms   38.36        SIN
-  # 108.162.196.123    78.59ms   37.13        SIN
-  # 162.159.41.0       78.04ms   34.75        SIN
-  # 162.159.24.198     77.2ms   33.48        SIN
-  # 172.64.148.82      79.12ms   31.2         SIN
-  # 162.159.58.181     77.13ms   25.42        SIN
-  # 162.159.34.149     76.75ms   25.42        SIN
-  # 172.64.32.18       75.89ms   24.56        SIN
-  # 162.159.27.89      77.76ms   16.27        SIN
-  # 198.41.211.239     77.12ms   14.06        SIN
-  # 172.64.41.44       77.56ms   13.06        SIN
-  # 162.159.32.72      77.71ms   12.02        SIN
-  # 162.159.49.155     78.17ms   11.47        SIN
-  # 162.159.43.22      78.44ms   11.32        SIN
-  # 172.64.40.70       77.36ms   11.2         SIN
+  # 162.159.25.200     79.20ms   39.14        SIN
 
   - name: 🇯🇵azure_japan_tj_2
     type: trojan
@@ -374,230 +358,6 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇸🇬az_09
-    type: trojan
-    server: 172.64.49.167
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_10
-    type: trojan
-    server: 162.159.26.96
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_11
-    type: trojan
-    server: 108.162.196.123
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_12
-    type: trojan
-    server: 162.159.41.0
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_13
-    type: trojan
-    server: 162.159.24.198
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_14
-    type: trojan
-    server: 172.64.148.82
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_15
-    type: trojan
-    server: 162.159.58.181
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_16
-    type: trojan
-    server: 162.159.34.149
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_17
-    type: trojan
-    server: 172.64.32.18
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_18
-    type: trojan
-    server: 162.159.27.89
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_19
-    type: trojan
-    server: 198.41.211.239
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_20
-    type: trojan
-    server: 172.64.41.44
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_21
-    type: trojan
-    server: 162.159.32.72
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_22
-    type: trojan
-    server: 162.159.49.155
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_23
-    type: trojan
-    server: 162.159.43.22
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
-  - name: 🇸🇬az_24
-    type: trojan
-    server: 172.64.40.70
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: a.hyas.site
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: a.hyas.site
-    udp: true
-
   - name: 🇯🇵azure_japan_tj_7
     type: trojan
     server: 162.159.45.212
@@ -726,230 +486,10 @@ proxies:
         Host: x.hyas.space
     udp: true
 
-  - name: 🇸🇬do_09
-    type: trojan
-    server: 172.64.49.167
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
+  # Commented out: 🇯🇵do_japan_tj_2..8 (CF NRT IPs). Restore from git history / bak if needed.
 
-  - name: 🇸🇬do_10
-    type: trojan
-    server: 162.159.26.96
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_11
-    type: trojan
-    server: 108.162.196.123
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_12
-    type: trojan
-    server: 162.159.41.0
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_13
-    type: trojan
-    server: 162.159.24.198
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_14
-    type: trojan
-    server: 172.64.148.82
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_15
-    type: trojan
-    server: 162.159.58.181
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_16
-    type: trojan
-    server: 162.159.34.149
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_17
-    type: trojan
-    server: 172.64.32.18
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_18
-    type: trojan
-    server: 162.159.27.89
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_19
-    type: trojan
-    server: 198.41.211.239
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_20
-    type: trojan
-    server: 172.64.41.44
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_21
-    type: trojan
-    server: 162.159.32.72
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_22
-    type: trojan
-    server: 162.159.49.155
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_23
-    type: trojan
-    server: 162.159.43.22
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
-  - name: 🇸🇬do_24
-    type: trojan
-    server: 172.64.40.70
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: x.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: x.hyas.space
-    udp: true
-
+  # Decodo Residential TR (SOCKS5) — dial through 🔗 Decodo Dialer (GFW)
+  # Scan 2026-07-22 · IPQS clean stickies · gate.decodo.com is GFW-blocked direct
   - name: decodo-tr-grapefn2fe
     type: socks5
     server: gate.decodo.com
@@ -996,9 +536,9 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
-      - 🟥 Aliyun Nodes
-      - 🔷 Azure Nodes
-      - 🐬 DigitalOcean Nodes
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - 🔄 CF WARP Outbound
@@ -1012,9 +552,9 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - 🚀 Hysteria Nodes
-      - 🟥 Aliyun Nodes
-      - 🔷 Azure Nodes
-      - 🐬 DigitalOcean Nodes
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - ☁️ Cloudflare CF Nodes
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
@@ -1022,7 +562,7 @@ proxy-groups:
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
-  - name: 🔷 Azure Nodes
+  - name: ☁️ Azure Nodes
     type: select
     proxies:
       - 🇸🇬az_01
@@ -1033,22 +573,6 @@ proxy-groups:
       - 🇸🇬az_06
       - 🇸🇬az_07
       - 🇸🇬az_08
-      - 🇸🇬az_09
-      - 🇸🇬az_10
-      - 🇸🇬az_11
-      - 🇸🇬az_12
-      - 🇸🇬az_13
-      - 🇸🇬az_14
-      - 🇸🇬az_15
-      - 🇸🇬az_16
-      - 🇸🇬az_17
-      - 🇸🇬az_18
-      - 🇸🇬az_19
-      - 🇸🇬az_20
-      - 🇸🇬az_21
-      - 🇸🇬az_22
-      - 🇸🇬az_23
-      - 🇸🇬az_24
       - 🇸🇬azure_singapore
       - 🇯🇵azure_japan_tj
       - 🇯🇵azure_japan_tj_2
@@ -1060,7 +584,7 @@ proxy-groups:
       - 🇯🇵azure_japan_tj_8
       - DIRECT
 
-  - name: 🟥 Aliyun Nodes
+  - name: ☁️ Aliyun Nodes
     type: select
     proxies:
       - 🇸🇬ali_singapore
@@ -1069,7 +593,7 @@ proxy-groups:
       - 🇸🇬ali_singapore_hy2_v6
       - DIRECT
 
-  - name: 🐬 DigitalOcean Nodes
+  - name: ☁️ DigitalOcean Nodes
     type: select
     proxies:
       - 🇸🇬do_01
@@ -1080,22 +604,6 @@ proxy-groups:
       - 🇸🇬do_06
       - 🇸🇬do_07
       - 🇸🇬do_08
-      - 🇸🇬do_09
-      - 🇸🇬do_10
-      - 🇸🇬do_11
-      - 🇸🇬do_12
-      - 🇸🇬do_13
-      - 🇸🇬do_14
-      - 🇸🇬do_15
-      - 🇸🇬do_16
-      - 🇸🇬do_17
-      - 🇸🇬do_18
-      - 🇸🇬do_19
-      - 🇸🇬do_20
-      - 🇸🇬do_21
-      - 🇸🇬do_22
-      - 🇸🇬do_23
-      - 🇸🇬do_24
       - 🇸🇬do_singapore
       - 🇸🇬do_singapore_v6
       - 🇸🇬do_singapore_reality
@@ -1117,9 +625,9 @@ proxy-groups:
   - name: 🔑 Manual Selection
     type: select
     proxies:
-      - 🟥 Aliyun Nodes
-      - 🔷 Azure Nodes
-      - 🐬 DigitalOcean Nodes
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
@@ -1132,9 +640,9 @@ proxy-groups:
       - 🇸🇬do_singapore
       - 🇸🇬do_singapore_hy2
       - 🇸🇬do_singapore_hy2_v6
-      - 🟥 Aliyun Nodes
-      - 🔷 Azure Nodes
-      - 🐬 DigitalOcean Nodes
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Hysteria Nodes
 
   # TR residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
@@ -1189,22 +697,6 @@ proxy-groups:
       - 🇸🇬az_06
       - 🇸🇬az_07
       - 🇸🇬az_08
-      - 🇸🇬az_09
-      - 🇸🇬az_10
-      - 🇸🇬az_11
-      - 🇸🇬az_12
-      - 🇸🇬az_13
-      - 🇸🇬az_14
-      - 🇸🇬az_15
-      - 🇸🇬az_16
-      - 🇸🇬az_17
-      - 🇸🇬az_18
-      - 🇸🇬az_19
-      - 🇸🇬az_20
-      - 🇸🇬az_21
-      - 🇸🇬az_22
-      - 🇸🇬az_23
-      - 🇸🇬az_24
       - 🇯🇵azure_japan_tj
       - 🇯🇵azure_japan_tj_2
       - 🇯🇵azure_japan_tj_3
@@ -1221,22 +713,6 @@ proxy-groups:
       - 🇸🇬do_06
       - 🇸🇬do_07
       - 🇸🇬do_08
-      - 🇸🇬do_09
-      - 🇸🇬do_10
-      - 🇸🇬do_11
-      - 🇸🇬do_12
-      - 🇸🇬do_13
-      - 🇸🇬do_14
-      - 🇸🇬do_15
-      - 🇸🇬do_16
-      - 🇸🇬do_17
-      - 🇸🇬do_18
-      - 🇸🇬do_19
-      - 🇸🇬do_20
-      - 🇸🇬do_21
-      - 🇸🇬do_22
-      - 🇸🇬do_23
-      - 🇸🇬do_24
       - 🇸🇬do_singapore_vless_warp
       - 🇸🇬ali_singapore
       - 🇸🇬ali_singapore_v6
@@ -1258,9 +734,9 @@ proxy-groups:
   - name: 🎮 Riot Games
     type: select
     proxies:
-      - 🟥 Aliyun Nodes
-      - 🔷 Azure Nodes
-      - 🐬 DigitalOcean Nodes
+      - ☁️ Aliyun Nodes
+      - ☁️ Azure Nodes
+      - ☁️ DigitalOcean Nodes
       - 🚀 Node Selection
       - ☁️ Cloudflare CF Nodes
       - DIRECT
@@ -1429,30 +905,15 @@ rules:
 # 172.64.229.84     4     4     0.00    88.81        35.33        NRT
 # 162.159.45.212    4     4     0.00    81.47        33.64        NRT
 # 172.64.52.153     4     4     0.00    86.40        14.93        NRT
-# SIN (Singapore) — CFST 2026-07-23 (24 IPs)
-# 162.159.40.88     4     4     0.00    78.95      51.32        SIN
-# 172.64.144.187    4     4     0.00    78.54      46.16        SIN
-# 162.159.42.142    4     4     0.00    77.52      45.95        SIN
-# 162.159.48.54     4     4     0.00    75.18      45.08        SIN
-# 172.64.48.109     4     4     0.00    78.79      41.47        SIN
-# 162.159.33.250    4     4     0.00    75.94      40.71        SIN
-# 108.162.194.20    4     4     0.00    79.02      39.28        SIN
-# 162.159.25.200    4     4     0.00    79.2       39.14        SIN
-# 172.64.49.167     4     4     0.00    79.19      38.76        SIN
-# 162.159.26.96     4     4     0.00    78.66      38.36        SIN
-# 108.162.196.123   4     4     0.00    78.59      37.13        SIN
-# 162.159.41.0      4     4     0.00    78.04      34.75        SIN
-# 162.159.24.198    4     4     0.00    77.2       33.48        SIN
-# 172.64.148.82     4     4     0.00    79.12      31.2         SIN
-# 162.159.58.181    4     4     0.00    77.13      25.42        SIN
-# 162.159.34.149    4     4     0.00    76.75      25.42        SIN
-# 172.64.32.18      4     4     0.00    75.89      24.56        SIN
-# 162.159.27.89     4     4     0.00    77.76      16.27        SIN
-# 198.41.211.239    4     4     0.00    77.12      14.06        SIN
-# 172.64.41.44      4     4     0.00    77.56      13.06        SIN
-# 162.159.32.72     4     4     0.00    77.71      12.02        SIN
-# 162.159.49.155    4     4     0.00    78.17      11.47        SIN
-# 162.159.43.22     4     4     0.00    78.44      11.32        SIN
-# 172.64.40.70      4     4     0.00    77.36      11.2         SIN
+# SIN (Singapore) — CFST v2.3.5 result_v4v6.csv 2026-07-23
+# 162.159.40.88     4     4     0.00    78.95        51.32        SIN
+# 172.64.144.187    4     4     0.00    78.54        46.16        SIN
+# 162.159.42.142    4     4     0.00    77.52        45.95        SIN
+# 162.159.48.54     4     4     0.00    75.18        45.08        SIN
+# 172.64.48.109     4     4     0.00    78.79        41.47        SIN
+# 162.159.33.250    4     4     0.00    75.94        40.71        SIN
+# 108.162.194.20    4     4     0.00    79.02        39.28        SIN
+# 162.159.25.200    4     4     0.00    79.20        39.14        SIN
+
 # DNS: disabled in this profile (managed by client / previous blocks removed).
 # Restore DNS snippets from git history if needed.
