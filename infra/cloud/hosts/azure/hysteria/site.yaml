@@ -1,12 +1,8 @@
-# Azure — acme + auth only (listen/masquerade/bandwidth from common defaults)
-# ca: zerossl — LE rate-limited for this hostname until ~2026-07-24
-# dir: persist certs on the host bind-mount (survive container recreate)
-acme:
-  domains:
-    - hyaz.hyas.site
-  email: admin@hyas.site
-  ca: zerossl
-  dir: /etc/hysteria/acme
+# Azure — TLS files on host (acme/manual/). Currently self-signed until
+# Lets Encrypt rate limit lifts (~2026-07-24); Clash needs skip-cert-verify.
+tls:
+  cert: /etc/hysteria/acme/manual/hyaz.hyas.site.crt
+  key: /etc/hysteria/acme/manual/hyaz.hyas.site.key
 
 auth:
   type: password

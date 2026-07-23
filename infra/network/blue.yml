@@ -183,6 +183,7 @@ proxies:
     port: 443
     password: NzPY5nTKThLxUb1MOJTuu6B0
     sni: hyaz.hyas.site
+    skip-cert-verify: true
     up: 200
     down: 200
     brutal-opts:
