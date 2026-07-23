@@ -166,15 +166,10 @@ run tee /etc/sysctl.d/99-network-tuning.conf >/dev/null <<'EOF'
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
 net.ipv4.tcp_slow_start_after_idle = 0
-# UDP/QUIC (Hy2) — 32 MiB caps; defaults raised for bursty flows
-net.core.rmem_max = 33554432
-net.core.wmem_max = 33554432
-net.core.rmem_default = 16777216
-net.core.wmem_default = 16777216
-net.ipv4.tcp_rmem = 4096 1048576 33554432
-net.ipv4.tcp_wmem = 4096 1048576 33554432
-net.ipv4.udp_rmem_min = 16384
-net.ipv4.udp_wmem_min = 16384
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 1048576 16777216
+net.ipv4.tcp_wmem = 4096 1048576 16777216
 net.ipv4.tcp_fastopen = 3
 net.ipv4.tcp_mtu_probing = 1
 net.ipv4.tcp_fin_timeout = 15

@@ -71,14 +71,8 @@ masquerade:
     rewriteHost: true
 
 bandwidth:
-  up: 200 mbps
-  down: 200 mbps
-
-quic:
-  initStreamReceiveWindow: 16777216
-  maxStreamReceiveWindow: 16777216
-  initConnReceiveWindow: 41943040
-  maxConnReceiveWindow: 41943040
+  up: 100 mbps
+  down: 100 mbps
 ```
 
 ### site.yaml (per box)
