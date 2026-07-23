@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 17:30-07/23 (UTC+8)
+# Version: 🔖 17:40-07/23 (UTC+8)
 proxies:
   # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬az_01
@@ -127,8 +127,12 @@ proxies:
     port: 443
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hyd.hyas.site
-    up: 100
-    down: 100
+    up: 200
+    down: 200
+    brutal-opts:
+      enabled: true
+      up: 200
+      down: 200
 
   # Hysteria 2 (Digi SG — IPv6 only)
   - name: 🇸🇬do_hy2_v6
@@ -137,8 +141,12 @@ proxies:
     port: 443
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hyd.hyas.site
-    up: 100
-    down: 100
+    up: 200
+    down: 200
+    brutal-opts:
+      enabled: true
+      up: 200
+      down: 200
 
   # Hysteria 2 (Aliyun SG — hy.hyas.site on 443, same password as Digi)
   - name: 🇸🇬ali_hy2
@@ -148,8 +156,12 @@ proxies:
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
     skip-cert-verify: true
-    up: 100
-    down: 100
+    up: 200
+    down: 200
+    brutal-opts:
+      enabled: true
+      up: 200
+      down: 200
 
   # Hysteria 2 (Aliyun SG — IPv6 only)
   - name: 🇸🇬ali_hy2_v6
@@ -159,8 +171,12 @@ proxies:
     password: jEdTlnZe2q2nv1N0lmmXHCp2
     sni: hy.hyas.site
     skip-cert-verify: true
-    up: 100
-    down: 100
+    up: 200
+    down: 200
+    brutal-opts:
+      enabled: true
+      up: 200
+      down: 200
 
   # Hysteria 2 (Azure SG - Direct UDP, IPv6 Only)
   - name: 🇸🇬az_hy2
@@ -170,8 +186,12 @@ proxies:
     password: NzPY5nTKThLxUb1MOJTuu6B0
     sni: hyaz.hyas.site
     skip-cert-verify: true
-    up: 100
-    down: 100
+    up: 200
+    down: 200
+    brutal-opts:
+      enabled: true
+      up: 200
+      down: 200
 
   # Cloudflare Custom IP Variants (Trojan)
   # NRT (Japan) - unchanged (no NRT in 2026-07-23 CFST run; still Apr 2026 list)

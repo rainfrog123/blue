@@ -1,6 +1,10 @@
 # Shared Hysteria 2 defaults for every host (digi / ali / azure).
 # Per-box domain + password: infra/cloud/hosts/<host>/hysteria/site.yaml
 # Preview: python3 infra/cloud/common/stacks/hysteria/render.py digi
+#
+# Brutal ceiling calibrated 2026-07-23 from VPS uplink probes
+# (ali≈191 / azure≈466 / digi≈564 Mbps). Shared value tracks the
+# weakest box so one defaults.yaml stays safe everywhere.
 
 listen: :443
 
@@ -10,7 +14,16 @@ masquerade:
     url: https://www.bing.com
     rewriteHost: true
 
-# Brutal CC hint (Clash client should also set up/down ~= path capacity)
 bandwidth:
-  up: 100 mbps
-  down: 100 mbps
+  up: 200 mbps
+  down: 200 mbps
+
+# Larger QUIC windows help high-RTT CN↔SG (keep ~2:5 stream:conn ratio)
+quic:
+  initStreamReceiveWindow: 16777216
+  maxStreamReceiveWindow: 16777216
+  initConnReceiveWindow: 41943040
+  maxConnReceiveWindow: 41943040
+  maxIdleTimeout: 30s
+  maxIncomingStreams: 1024
+  disablePathMTUDiscovery: false
