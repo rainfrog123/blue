@@ -3,6 +3,7 @@ acme:
   domains:
     - hy.hyas.site
   email: admin@hyas.site
+  dir: /etc/hysteria/acme
 
 auth:
   type: password
