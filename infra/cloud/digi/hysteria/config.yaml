@@ -14,3 +14,8 @@ masquerade:
   proxy:
     url: https://www.bing.com
     rewriteHost: true
+
+# Brutal CC hint (Clash client should also set up/down ≈ path capacity)
+bandwidth:
+  up: 100 mbps
+  down: 100 mbps

@@ -167,6 +167,8 @@ proxies:
     port: 443
     password: NzPY5nTKThLxUb1MOJTuu6B0
     sni: hyaz.hyas.site
+    up: 100
+    down: 100
 
   # Cloudflare Custom IP Variants (Trojan)
   # NRT (Japan) - unchanged (no NRT in 2026-07-23 CFST run; still Apr 2026 list)

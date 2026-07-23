@@ -63,7 +63,7 @@ curl -6 -s ifconfig.me && echo    # IPv6
 
 ### config.yaml
 
-**Always** `listen: :443`:
+**Always** `listen: :443`. Default **Brutal** bandwidth hint is `100 mbps` up/down (match Clash `up`/`down`):
 
 ```yaml
 listen: :443
@@ -82,6 +82,11 @@ masquerade:
   proxy:
     url: https://www.bing.com
     rewriteHost: true
+
+# Brutal CC hint (Clash client should also set up/down ≈ path capacity)
+bandwidth:
+  up: 100 mbps
+  down: 100 mbps
 ```
 
 ### docker-compose.yml
@@ -133,6 +138,8 @@ proxies:
     port: 443
     password: PASSWORD
     sni: SUBDOMAIN.hyas.site
+    up: 100
+    down: 100
 ```
 
 ### Hysteria 2 Client
