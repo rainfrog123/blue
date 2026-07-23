@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 09:50-07/23 (UTC+8)
+# Version: 🔖 10:25-07/23 (UTC+8)
 proxies:
   # Personal Servers (Azure / Aliyun / Hy2)
   - name: 🇸🇬az_01
@@ -17,7 +17,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj
+  - name: 🇯🇵jp_01
     type: trojan
     server: 162.159.38.58
     # server: 108.162.198.20
@@ -32,7 +32,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇸🇬azure_singapore
+  - name: 🇸🇬az_ss
     type: ss
     server: 2603:1040:0:3::52
     port: 12033
@@ -41,7 +41,7 @@ proxies:
     udp: true
 
   # Aliyun Singapore ECS (replaced Digi/DO SG for SS + Hy2) — 2026-07-15
-  - name: 🇸🇬ali_singapore
+  - name: 🇸🇬ali
     type: ss
     server: 47.237.141.29
     port: 12033
@@ -50,7 +50,7 @@ proxies:
     udp: true
 
   # Aliyun Singapore SS — IPv6 only
-  - name: 🇸🇬ali_singapore_v6
+  - name: 🇸🇬ali_v6
     type: ss
     server: "240b:4000:20:ee00:eb99:2357:52aa:50a9"
     port: 12033
@@ -74,7 +74,7 @@ proxies:
     udp: true
 
   # Digi/DO Singapore SS (direct)
-  - name: 🇸🇬do_singapore
+  - name: 🇸🇬do_ss
     type: ss
     server: 188.166.252.16
     port: 12033
@@ -83,7 +83,7 @@ proxies:
     udp: true
 
   # Digi/DO Singapore SS — IPv6 only
-  - name: 🇸🇬do_singapore_v6
+  - name: 🇸🇬do_ss_v6
     type: ss
     server: "2400:6180:0:d2:0:2:c7ec:0"
     port: 12033
@@ -92,7 +92,7 @@ proxies:
     udp: true
 
   # Digi/DO — VLESS REALITY (direct :8443)
-  - name: 🇸🇬do_singapore_reality
+  - name: 🇸🇬do_reality
     type: vless
     server: 188.166.252.16
     port: 8443
@@ -108,7 +108,7 @@ proxies:
     client-fingerprint: chrome
 
   # Digi/DO — VLESS+WS via CF tunnel (r.hyas.space → xray-reality)
-  - name: 🇸🇬do_singapore_vless_warp
+  - name: 🇸🇬do_warp
     type: vless
     server: r.hyas.space
     port: 443
@@ -121,7 +121,7 @@ proxies:
       path: /vless-warp
 
   # Hysteria 2 (Digi SG — hyd.hyas.site on 443)
-  - name: 🇸🇬do_singapore_hy2
+  - name: 🇸🇬do_hy2
     type: hysteria2
     server: hyd.hyas.site
     port: 443
@@ -131,7 +131,7 @@ proxies:
     down: 100
 
   # Hysteria 2 (Digi SG — IPv6 only)
-  - name: 🇸🇬do_singapore_hy2_v6
+  - name: 🇸🇬do_hy2_v6
     type: hysteria2
     server: "2400:6180:0:d2:0:2:c7ec:0"
     port: 443
@@ -141,7 +141,7 @@ proxies:
     down: 100
 
   # Hysteria 2 (Aliyun SG — hy.hyas.site on 443, same password as Digi)
-  - name: 🇸🇬ali_singapore_hy2
+  - name: 🇸🇬ali_hy2
     type: hysteria2
     server: hy.hyas.site
     port: 443
@@ -151,7 +151,7 @@ proxies:
     down: 100
 
   # Hysteria 2 (Aliyun SG — IPv6 only)
-  - name: 🇸🇬ali_singapore_hy2_v6
+  - name: 🇸🇬ali_hy2_v6
     type: hysteria2
     server: "240b:4000:20:ee00:eb99:2357:52aa:50a9"
     port: 443
@@ -161,7 +161,7 @@ proxies:
     down: 100
 
   # Hysteria 2 (Azure SG - Direct UDP, IPv6 Only)
-  - name: 🇸🇬azure_sg_hy2
+  - name: 🇸🇬az_hy2
     type: hysteria2
     server: hyaz.hyas.site
     port: 443
@@ -206,7 +206,7 @@ proxies:
   # 162.159.43.22      78.44ms   11.32        SIN
   # 172.64.40.70       77.36ms   11.2         SIN
 
-  - name: 🇯🇵azure_japan_tj_2
+  - name: 🇯🇵jp_02
     type: trojan
     server: 162.159.39.248
     port: 443
@@ -220,7 +220,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_3
+  - name: 🇯🇵jp_03
     type: trojan
     server: 172.64.53.144
     port: 443
@@ -234,7 +234,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_4
+  - name: 🇯🇵jp_04
     type: trojan
     server: 108.162.198.99
     port: 443
@@ -248,7 +248,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_5
+  - name: 🇯🇵jp_05
     type: trojan
     server: 162.159.44.202
     port: 443
@@ -262,7 +262,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_6
+  - name: 🇯🇵jp_06
     type: trojan
     server: 172.64.229.84
     port: 443
@@ -598,7 +598,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_7
+  - name: 🇯🇵jp_07
     type: trojan
     server: 162.159.45.212
     port: 443
@@ -612,7 +612,7 @@ proxies:
         Host: a.hyas.site
     udp: true
 
-  - name: 🇯🇵azure_japan_tj_8
+  - name: 🇯🇵jp_08
     type: trojan
     server: 172.64.52.153
     port: 443
@@ -996,7 +996,7 @@ proxy-groups:
     type: select
     proxies:
       - DIRECT
-      - 🟥 Aliyun Nodes
+      - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🐬 DigitalOcean Nodes
       - 🚀 Hysteria Nodes
@@ -1012,14 +1012,14 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - 🚀 Hysteria Nodes
-      - 🟥 Aliyun Nodes
+      - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🐬 DigitalOcean Nodes
       - ☁️ Cloudflare CF Nodes
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
-      - 🇸🇬ali_singapore_hy2
-      - 🇸🇬ali_singapore_hy2_v6
+      - 🇸🇬ali
+      - 🇸🇬ali_v6
+      - 🇸🇬ali_hy2
+      - 🇸🇬ali_hy2_v6
       - DIRECT
 
   - name: 🔷 Azure Nodes
@@ -1049,24 +1049,24 @@ proxy-groups:
       - 🇸🇬az_22
       - 🇸🇬az_23
       - 🇸🇬az_24
-      - 🇸🇬azure_singapore
-      - 🇯🇵azure_japan_tj
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
-      - 🇯🇵azure_japan_tj_7
-      - 🇯🇵azure_japan_tj_8
+      - 🇸🇬az_ss
+      - 🇯🇵jp_01
+      - 🇯🇵jp_02
+      - 🇯🇵jp_03
+      - 🇯🇵jp_04
+      - 🇯🇵jp_05
+      - 🇯🇵jp_06
+      - 🇯🇵jp_07
+      - 🇯🇵jp_08
       - DIRECT
 
-  - name: 🟥 Aliyun Nodes
+  - name: 🔵 Aliyun Nodes
     type: select
     proxies:
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
-      - 🇸🇬ali_singapore_hy2
-      - 🇸🇬ali_singapore_hy2_v6
+      - 🇸🇬ali
+      - 🇸🇬ali_v6
+      - 🇸🇬ali_hy2
+      - 🇸🇬ali_hy2_v6
       - DIRECT
 
   - name: 🐬 DigitalOcean Nodes
@@ -1096,49 +1096,49 @@ proxy-groups:
       - 🇸🇬do_22
       - 🇸🇬do_23
       - 🇸🇬do_24
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_v6
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
-      - 🇸🇬do_singapore_hy2
-      - 🇸🇬do_singapore_hy2_v6
+      - 🇸🇬do_ss
+      - 🇸🇬do_ss_v6
+      - 🇸🇬do_reality
+      - 🇸🇬do_warp
+      - 🇸🇬do_hy2
+      - 🇸🇬do_hy2_v6
       - DIRECT
 
   - name: 🚀 Hysteria Nodes
     type: select
     proxies:
-      - 🇸🇬do_singapore_hy2
-      - 🇸🇬do_singapore_hy2_v6
-      - 🇸🇬ali_singapore_hy2
-      - 🇸🇬ali_singapore_hy2_v6
-      - 🇸🇬azure_sg_hy2
+      - 🇸🇬do_hy2
+      - 🇸🇬do_hy2_v6
+      - 🇸🇬ali_hy2
+      - 🇸🇬ali_hy2_v6
+      - 🇸🇬az_hy2
       - DIRECT
 
   - name: 🔑 Manual Selection
     type: select
     proxies:
-      - 🟥 Aliyun Nodes
+      - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🐬 DigitalOcean Nodes
       - 🚀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
       - DIRECT
 
-  # GFW hop for Decodo. Default: 🇸🇬do_singapore_v6 — switch here if that node dies.
+  # GFW hop for Decodo. Default: 🇸🇬do_ss_v6 — switch here if that node dies.
   - name: 🔗 Decodo Dialer (GFW)
     type: select
     proxies:
-      - 🇸🇬do_singapore_v6
-      - 🇸🇬do_singapore
-      - 🇸🇬do_singapore_hy2
-      - 🇸🇬do_singapore_hy2_v6
-      - 🟥 Aliyun Nodes
+      - 🇸🇬do_ss_v6
+      - 🇸🇬do_ss
+      - 🇸🇬do_hy2
+      - 🇸🇬do_hy2_v6
+      - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🐬 DigitalOcean Nodes
       - 🚀 Hysteria Nodes
 
   # TR residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
-  # + 🇸🇬do_singapore_v6 bare for cross-check (exit should be SG, not TR)
+  # + 🇸🇬do_ss_v6 bare for cross-check (exit should be SG, not TR)
   - name: 🇹🇷 Decodo TR
     type: select
     proxies:
@@ -1146,19 +1146,19 @@ proxy-groups:
       - decodo-tr-lemonnakgn
       - decodo-tr-orangecvttp
       - decodo-tr-bananav9yb3
-      - 🇸🇬do_singapore_v6
+      - 🇸🇬do_ss_v6
 
   - name: 🤖 AI / IDE Nodes
     type: select
     proxies:
       - 🚀 Node Selection
-      - 🇸🇬do_singapore_reality
-      - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬do_reality
+      - 🇸🇬do_warp
       - 🇸🇬do_01
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
-      - 🇸🇬ali_singapore_hy2
-      - 🇸🇬ali_singapore_hy2_v6
+      - 🇸🇬ali
+      - 🇸🇬ali_v6
+      - 🇸🇬ali_hy2
+      - 🇸🇬ali_hy2_v6
       - DIRECT
 
   - name: 🧠 Claude Nodes
@@ -1166,10 +1166,10 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - 🇸🇬do_01
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
-      - 🇸🇬ali_singapore_hy2
-      - 🇸🇬ali_singapore_hy2_v6
+      - 🇸🇬ali
+      - 🇸🇬ali_v6
+      - 🇸🇬ali_hy2
+      - 🇸🇬ali_hy2_v6
       - DIRECT
 
   - name: 🖥️ Cursor Website Nodes
@@ -1205,14 +1205,14 @@ proxy-groups:
       - 🇸🇬az_22
       - 🇸🇬az_23
       - 🇸🇬az_24
-      - 🇯🇵azure_japan_tj
-      - 🇯🇵azure_japan_tj_2
-      - 🇯🇵azure_japan_tj_3
-      - 🇯🇵azure_japan_tj_4
-      - 🇯🇵azure_japan_tj_5
-      - 🇯🇵azure_japan_tj_6
-      - 🇯🇵azure_japan_tj_7
-      - 🇯🇵azure_japan_tj_8
+      - 🇯🇵jp_01
+      - 🇯🇵jp_02
+      - 🇯🇵jp_03
+      - 🇯🇵jp_04
+      - 🇯🇵jp_05
+      - 🇯🇵jp_06
+      - 🇯🇵jp_07
+      - 🇯🇵jp_08
       - 🇸🇬do_01
       - 🇸🇬do_02
       - 🇸🇬do_03
@@ -1237,9 +1237,9 @@ proxy-groups:
       - 🇸🇬do_22
       - 🇸🇬do_23
       - 🇸🇬do_24
-      - 🇸🇬do_singapore_vless_warp
-      - 🇸🇬ali_singapore
-      - 🇸🇬ali_singapore_v6
+      - 🇸🇬do_warp
+      - 🇸🇬ali
+      - 🇸🇬ali_v6
       - DIRECT
 
   - name: 🎰 Stake Nodes
@@ -1252,13 +1252,13 @@ proxy-groups:
   - name: 🔄 CF WARP Outbound
     type: select
     proxies:
-      - 🇸🇬do_singapore_vless_warp
+      - 🇸🇬do_warp
       - DIRECT
 
   - name: 🎮 Riot Games
     type: select
     proxies:
-      - 🟥 Aliyun Nodes
+      - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🐬 DigitalOcean Nodes
       - 🚀 Node Selection
