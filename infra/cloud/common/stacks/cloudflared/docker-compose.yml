@@ -1,0 +1,18 @@
+# Shared cloudflared.
+# Run: bash infra/cloud/common/stacks/cloudflared/up.sh digi|ali|azure
+# Per-host secret: hosts/<host>/cloudflared/site.env (or .env) → CF_TUNNEL_TOKEN
+
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    restart: always
+    env_file: .env
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true

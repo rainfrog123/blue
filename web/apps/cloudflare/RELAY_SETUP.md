@@ -237,7 +237,7 @@ networks:
 
 ### Deploy
 ```bash
-cd /allah/blue/infra/cloud/ali/init
+cd /allah/blue/infra/cloud/providers/alibaba/init
 docker-compose up -d
 docker-compose logs -f
 ```

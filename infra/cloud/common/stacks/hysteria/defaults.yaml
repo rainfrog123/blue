@@ -1,0 +1,16 @@
+# Shared Hysteria 2 defaults for every host (digi / ali / azure).
+# Per-box domain + password: infra/cloud/hosts/<host>/hysteria/site.yaml
+# Preview: python3 infra/cloud/common/stacks/hysteria/render.py digi
+
+listen: :443
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bing.com
+    rewriteHost: true
+
+# Brutal CC hint (Clash client should also set up/down ~= path capacity)
+bandwidth:
+  up: 100 mbps
+  down: 100 mbps

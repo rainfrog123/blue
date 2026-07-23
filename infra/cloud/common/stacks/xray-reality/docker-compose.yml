@@ -1,0 +1,25 @@
+# Shared xray-reality (direct :8443 + CF WS :8080 + WARP outbound).
+# Run: bash infra/cloud/common/stacks/xray-reality/up.sh digi
+# --project-directory = hosts/<host>/xray-reality (config.json rendered there)
+
+services:
+  xray-reality:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-reality
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json:ro
+    command: ["run", "-c", "/etc/xray/config.json"]
+    ports:
+      - "8443:8443"
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true

@@ -1,0 +1,14 @@
+# Shared ss-rust.
+# Run: bash infra/cloud/common/stacks/ss-rust/up.sh digi|ali|azure
+# --project-directory = hosts/<host>/ss-rust (config.json rendered there)
+# Host network so IPv6 (::) from defaults.json works on every VPS.
+
+services:
+  ss-rust:
+    image: teddysun/shadowsocks-rust
+    container_name: ss-rust
+    restart: always
+    network_mode: host
+    volumes:
+      - ./config.json:/etc/shadowsocks-rust/config.json:ro
+    command: ["ssserver", "-c", "/etc/shadowsocks-rust/config.json"]

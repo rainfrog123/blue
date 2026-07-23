@@ -111,24 +111,27 @@ alias wi='cd "$BLUE_DIR/infra/scripts/window"'
 alias mb='cd "$BLUE_DIR/infra/mobile"'
 alias se='cd "$BLUE_DIR/infra/security"'
 
-# blue/infra/cloud/*
-alias ali='cd "$BLUE_DIR/infra/cloud/ali"'
-alias aw='cd "$BLUE_DIR/infra/cloud/aws"'
-alias az='cd "$BLUE_DIR/infra/cloud/azure"'
-alias dg='cd "$BLUE_DIR/infra/cloud/digi"'
-alias gcp='cd "$BLUE_DIR/infra/cloud/gcp"'
-alias li='cd "$BLUE_DIR/infra/cloud/linode"'
-alias vu='cd "$BLUE_DIR/infra/cloud/vultr"'
+# blue/infra/cloud/*  (hosts = site secrets, providers = CLIs)
+alias ali='cd "$BLUE_DIR/infra/cloud/providers/alibaba"'
+alias aw='cd "$BLUE_DIR/infra/cloud/providers/aws"'
+alias az='cd "$BLUE_DIR/infra/cloud/providers/azure"'
+alias dg='cd "$BLUE_DIR/infra/cloud/hosts/digi"'
+alias gcp='cd "$BLUE_DIR/infra/cloud/providers/gcp"'
+alias li='cd "$BLUE_DIR/infra/cloud/providers/linode"'
+alias vu='cd "$BLUE_DIR/infra/cloud/providers/vultr"'
 alias cs='cd "$BLUE_DIR/infra/cloud/common/setup"'
+alias cst='cd "$BLUE_DIR/infra/cloud/common/stacks"'
+alias hali='cd "$BLUE_DIR/infra/cloud/hosts/ali"'
+alias haz='cd "$BLUE_DIR/infra/cloud/hosts/azure"'
 
-# blue/infra/cloud/ali/*
-alias acf='cd "$BLUE_DIR/infra/cloud/ali/config"'
-alias ec='cd "$BLUE_DIR/infra/cloud/ali/ecs"'
-alias ai='cd "$BLUE_DIR/infra/cloud/ali/init"'
+# blue/infra/cloud/providers/alibaba/*
+alias acf='cd "$BLUE_DIR/infra/cloud/providers/alibaba/config"'
+alias ec='cd "$BLUE_DIR/infra/cloud/providers/alibaba/ecs"'
+alias ai='cd "$BLUE_DIR/infra/cloud/providers/alibaba/init"'
 
-# blue/infra/cloud/linode/*
-alias lm='cd "$BLUE_DIR/infra/cloud/linode/manager"'
-alias lsc='cd "$BLUE_DIR/infra/cloud/linode/scripts"'
+# blue/infra/cloud/providers/linode/*
+alias lm='cd "$BLUE_DIR/infra/cloud/providers/linode/manager"'
+alias lsc='cd "$BLUE_DIR/infra/cloud/providers/linode/scripts"'
 
 # blue/infra/cloud/common/setup/*
 alias ssr='cd "$BLUE_DIR/infra/cloud/common/setup/ssr-deploy"'
@@ -217,6 +220,6 @@ alias open='start'
 alias clash='cd "$HOME/.config/clash/profiles"'
 
 # Azure VM
-alias azde='python "$BLUE_DIR/infra/cloud/azure/cli.py" deallocate'
-alias azstart='python "$BLUE_DIR/infra/cloud/azure/cli.py" start'
-alias azstatus='python "$BLUE_DIR/infra/cloud/azure/cli.py" status'
+alias azde='python "$BLUE_DIR/infra/cloud/providers/azure/cli.py" deallocate'
+alias azstart='python "$BLUE_DIR/infra/cloud/providers/azure/cli.py" start'
+alias azstatus='python "$BLUE_DIR/infra/cloud/providers/azure/cli.py" status'

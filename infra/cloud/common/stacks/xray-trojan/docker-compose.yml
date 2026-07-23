@@ -1,0 +1,20 @@
+# Shared xray-trojan (CF tunnel origin).
+# Run: bash infra/cloud/common/stacks/xray-trojan/up.sh digi|ali|azure
+# --project-directory = hosts/<host>/xray-trojan (config.json rendered there)
+# Requires external docker network: init_tunnel-net
+
+services:
+  xray-trojan:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-trojan
+    restart: always
+    volumes:
+      - ./config.json:/etc/xray/config.json:ro
+    command: ["run", "-c", "/etc/xray/config.json"]
+    networks:
+      - tunnel-net
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true
