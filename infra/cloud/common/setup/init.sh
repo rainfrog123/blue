@@ -3,7 +3,7 @@
 # Usage:
 #   bash infra/cloud/common/setup/init.sh digi|ali|azure
 #   bash infra/cloud/providers/digitalocean/init.sh   # thin → digi
-#   bash infra/cloud/providers/alibaba/init/init.sh   # thin → ali
+#   bash infra/cloud/providers/alibaba/init.sh        # thin → ali
 #   bash infra/cloud/providers/azure/init.sh          # thin → azure
 #
 # Env overrides:

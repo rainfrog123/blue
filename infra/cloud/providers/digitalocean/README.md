@@ -10,8 +10,6 @@ bash infra/cloud/providers/digitalocean/init.sh
 bash infra/cloud/common/setup/init.sh digi
 ```
 
-`os.sh` is a deprecated alias → `init.sh`.
-
 ## Proxies
 
 ```bash

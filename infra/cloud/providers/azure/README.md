@@ -10,8 +10,6 @@ bash infra/cloud/providers/azure/init.sh
 bash infra/cloud/common/setup/init.sh azure
 ```
 
-`setup.sh` is a deprecated alias → `init.sh`.
-
 ## Proxies
 
 ```bash

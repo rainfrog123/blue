@@ -6,7 +6,7 @@ Shared proxy stacks in `common/stacks`, per-box secrets in `hosts`, provider CLI
 infra/cloud/
   README.md
   common/
-    lib/                 # helpers (os.sh → setup/init.sh)
+    lib/                 # ipv6.sh, jsonutil.py
     stacks/              # hysteria, ss-rust, xray-*, cloudflared + up-all.sh
     setup/               # **init.sh** (shared bootstrap), ssr-deploy, …
     vnc/
@@ -54,11 +54,9 @@ Same name on every provider — all call the shared script:
 ```bash
 bash infra/cloud/common/setup/init.sh digi          # or ali / azure
 bash infra/cloud/providers/digitalocean/init.sh     # digi
-bash infra/cloud/providers/alibaba/init/init.sh     # ali
+bash infra/cloud/providers/alibaba/init.sh          # ali
 bash infra/cloud/providers/azure/init.sh            # azure
 ```
-
-Old aliases still work: `os.sh` / `system.sh` / `setup.sh` / `server-init.sh` → `init.sh`.
 
 ## Provider CLIs
 

@@ -10,7 +10,8 @@ providers/alibaba/
 ├── common.py          # shared cred_loader path + CLI banner
 ├── ecs/               # Elastic Compute Service
 ├── swas/              # Simple Application Server
-├── init/              # on-host bootstrap (apt, vnc, proxy stacks)
+├── init.sh            # thin → common/setup/init.sh ali
+├── init/              # on-host extras (vnc, apt sources, …)
 └── config/            # cloud-init + service config templates
 ```
 
@@ -21,7 +22,7 @@ python infra/cloud/providers/alibaba/ecs/cli.py status
 python infra/cloud/providers/alibaba/swas/cli.py info
 
 # on the Ali host
-bash infra/cloud/providers/alibaba/init/init.sh
+bash infra/cloud/providers/alibaba/init.sh
 # or shared:
 bash infra/cloud/common/setup/init.sh ali
 bash infra/cloud/common/stacks/up-all.sh ali

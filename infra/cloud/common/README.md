@@ -2,7 +2,7 @@
 
 | Path | Role |
 | --- | --- |
-| `lib/` | `ipv6.sh`, `jsonutil.py`; `os.sh` redirects to `setup/init.sh` |
+| `lib/` | `ipv6.sh`, `jsonutil.py` |
 | `stacks/` | hysteria / ss-rust / xray-* / cloudflared (+ `up-all.sh`) |
 | `setup/` | **`init.sh`** (shared VPS bootstrap), ssr-deploy, volume transfer |
 | `vnc/` | VNC notes |
@@ -11,9 +11,9 @@ Bootstrap any host:
 
 ```bash
 bash infra/cloud/common/setup/init.sh digi   # or ali / azure
-# thin wrappers (same name everywhere):
+# thin wrappers (same path shape everywhere):
 bash infra/cloud/providers/digitalocean/init.sh
-bash infra/cloud/providers/alibaba/init/init.sh
+bash infra/cloud/providers/alibaba/init.sh
 bash infra/cloud/providers/azure/init.sh
 ```
 
