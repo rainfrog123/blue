@@ -6,9 +6,9 @@ Shared proxy stacks in `common/stacks`, per-box secrets in `hosts`, provider CLI
 infra/cloud/
   README.md
   common/
-    lib/                 # os.sh, ipv6.sh, jsonutil.py
+    lib/                 # helpers (os.sh → setup/init.sh)
     stacks/              # hysteria, ss-rust, xray-*, cloudflared + up-all.sh
-    setup/               # server-init, ssr-deploy, …
+    setup/               # **init.sh** (shared bootstrap), ssr-deploy, …
     vnc/
   hosts/
     digi|ali|azure/      # site.yaml / site.json / site.env + acme/ only
@@ -46,6 +46,19 @@ Generated `config.json` under hosts is gitignored — `up.sh` rebuilds it.
 | `infra/cloud/{aws,gcp,linode,vultr}/` | `infra/cloud/providers/{aws,gcp,linode,vultr}/` |
 
 Host short names stay `digi` / `ali` / `azure` in `up.sh` arguments.
+
+## Host bootstrap (`init.sh`)
+
+Same name on every provider — all call the shared script:
+
+```bash
+bash infra/cloud/common/setup/init.sh digi          # or ali / azure
+bash infra/cloud/providers/digitalocean/init.sh     # digi
+bash infra/cloud/providers/alibaba/init/init.sh     # ali
+bash infra/cloud/providers/azure/init.sh            # azure
+```
+
+Old aliases still work: `os.sh` / `system.sh` / `setup.sh` / `server-init.sh` → `init.sh`.
 
 ## Provider CLIs
 
