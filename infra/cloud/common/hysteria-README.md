@@ -3,6 +3,10 @@
 > [!important] Port policy
 > **Always use UDP `443`** for Hysteria 2 (Azure, Aliyun, and any new box). Do not use `5333` anymore.
 
+> [!tip] Shared defaults
+> Brutal bandwidth, listen, and masquerade live in **one** file: `infra/cloud/common/hysteria/defaults.yaml`.
+> Each VPS only has `site.yaml` (ACME domain + password). `up.sh` merges them into `config.yaml` before compose.
+
 ## Deployed Servers
 
 ### Azure (Singapore) - IPv6 Only
@@ -32,9 +36,56 @@ hysteria2://NzPY5nTKThLxUb1MOJTuu6B0@hyaz.hyas.site:443?sni=hyaz.hyas.site#Azure
 hysteria2://jEdTlnZe2q2nv1N0lmmXHCp2@hy.hyas.site:443?sni=hy.hyas.site#Ali-SG-hy2
 ```
 
-### Digi / DigitalOcean (Singapore) — archived
+### Digi / DigitalOcean (Singapore)
 
-Formerly `hy.hyas.site` on Digi `129.212.209.177` (Hy2 used to listen on **5333**; policy is now **443 only**). DNS and service moved to Aliyun above. Digi SS was on DO `188.166.252.16:12033`.
+| Setting | Value |
+|---------|-------|
+| **Hy2** | `hyd.hyas.site:**443**` · same password as Ali |
+| **Compose** | `infra/cloud/digi/hysteria/` |
+
+Formerly `hy.hyas.site` on Digi `129.212.209.177` (Hy2 used to listen on **5333**; policy is now **443 only**).
+
+---
+
+## Layout
+
+```
+infra/cloud/common/hysteria/defaults.yaml   # listen, masquerade, bandwidth (Brutal 100/100)
+infra/cloud/common/hysteria/render.py       # merges → config.yaml
+infra/cloud/common/hysteria/up.sh           # render + docker compose
+infra/cloud/<vps>/hysteria/site.yaml        # acme + auth only
+infra/cloud/<vps>/hysteria/docker-compose.yml
+infra/cloud/<vps>/hysteria/config.yaml      # generated (gitignored)
+```
+
+### defaults.yaml (shared — edit once)
+
+```yaml
+listen: :443
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bing.com
+    rewriteHost: true
+
+bandwidth:
+  up: 100 mbps
+  down: 100 mbps
+```
+
+### site.yaml (per box)
+
+```yaml
+acme:
+  domains:
+    - SUBDOMAIN.hyas.site
+  email: admin@hyas.site
+
+auth:
+  type: password
+  password: YOUR_PASSWORD
+```
 
 ---
 
@@ -50,58 +101,34 @@ Formerly `hy.hyas.site` on Digi `129.212.209.177` (Hy2 used to listen on **5333*
 ### Quick Deploy
 
 ```bash
-# 1. Create directory (example: ali)
-mkdir -p /allah/blue/infra/cloud/ali/hysteria && cd /allah/blue/infra/cloud/ali/hysteria
+# 1. Create directory (example: ali) — usually already in the blue repo
+mkdir -p /allah/blue/infra/cloud/NEWBOX/hysteria/acme
+cd /allah/blue/infra/cloud/NEWBOX/hysteria
 
 # 2. Generate password
 openssl rand -base64 24 | tr -d '/+=' | head -c 24 && echo
 
-# 3. Get server IPs
+# 3. Write site.yaml (domain + password only), copy docker-compose from digi/ali
+
+# 4. Get server IPs
 curl -4 -s ifconfig.me && echo    # IPv4
 curl -6 -s ifconfig.me && echo    # IPv6
 ```
 
-### config.yaml
+### Start Server
 
-**Always** `listen: :443`. Default **Brutal** bandwidth hint is `100 mbps` up/down (match Clash `up`/`down`):
-
-```yaml
-listen: :443
-
-acme:
-  domains:
-    - SUBDOMAIN.hyas.site
-  email: admin@hyas.site
-
-auth:
-  type: password
-  password: YOUR_PASSWORD
-
-masquerade:
-  type: proxy
-  proxy:
-    url: https://www.bing.com
-    rewriteHost: true
-
-# Brutal CC hint (Clash client should also set up/down ≈ path capacity)
-bandwidth:
-  up: 100 mbps
-  down: 100 mbps
+```bash
+mkdir -p acme
+bash /allah/blue/infra/cloud/common/hysteria/up.sh ali up -d
+docker logs -f hysteria2
 ```
 
-### docker-compose.yml
+Wait for `server up and running` with `listen: ":443"`.
 
-```yaml
-services:
-  hysteria:
-    image: tobyxdd/hysteria:v2
-    container_name: hysteria2
-    restart: always
-    network_mode: host
-    volumes:
-      - ./config.yaml:/etc/hysteria/config.yaml:ro
-      - ./acme:/etc/hysteria/acme
-    command: ["server", "-c", "/etc/hysteria/config.yaml"]
+Preview merged config without writing:
+
+```bash
+python3 infra/cloud/common/hysteria/render.py ali --stdout
 ```
 
 ### Add DNS Records
@@ -114,21 +141,13 @@ python3 cli.py dns add --type A --name SUBDOMAIN --content IPV4
 python3 cli.py dns add --type AAAA --name SUBDOMAIN --content IPV6
 ```
 
-### Start Server
-
-```bash
-mkdir -p acme
-docker compose up -d
-docker logs -f hysteria2
-```
-
-Wait for `server up and running` with `listen: ":443"`.
-
 ---
 
 ## Client Config Templates
 
 ### Clash Meta / Mihomo
+
+Always set `up`/`down` to match server Brutal hint (default **100**):
 
 ```yaml
 proxies:
@@ -183,12 +202,13 @@ hysteria2://PASSWORD@SUBDOMAIN.hyas.site:443?sni=SUBDOMAIN.hyas.site#NAME
 ## Operations
 
 ```bash
+bash infra/cloud/common/hysteria/up.sh ali up -d
 docker logs -f hysteria2
-docker compose restart
-docker compose down
-docker compose pull && docker compose up -d
+docker compose -f infra/cloud/ali/hysteria/docker-compose.yml restart
 docker ps | grep hysteria
 ss -ulnp | grep 443
+# Confirm Brutal defaults landed:
+python3 infra/cloud/common/hysteria/render.py ali --stdout | grep -A2 bandwidth
 ```
 
 ---
@@ -206,4 +226,5 @@ ss -ulnp | grep 443
 
 ### Container restarting
 - `docker logs hysteria2`
-- Verify `config.yaml` uses `listen: :443`
+- Re-render: `python3 infra/cloud/common/hysteria/render.py ali`
+- Confirm `config.yaml` contains both `bandwidth` and site `acme`/`auth`

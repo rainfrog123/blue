@@ -4,7 +4,7 @@
 # Configures a fresh Ubuntu server with Docker, Shadowsocks, BBR/fq tweaks, and SSH hardening
 #
 # Tweaks included: BBR + fq qdisc, tcp_mtu_probing, SS --network host / listen ::,
-#                  Hy2 from repo (bandwidth 100 mbps), netplan dhcp6
+#                  Hy2 from repo (Brutal via common/hysteria/defaults.yaml), netplan dhcp6
 #
 set -e
 
@@ -199,13 +199,13 @@ print_success "Repository cloned to /allah/blue"
 # ============================================================================
 print_header "HYSTERIA2 PROXY SERVER"
 
-print_step "Starting Hysteria2 (host network, :443, bandwidth 100 mbps)..."
+print_step "Starting Hysteria2 (host network, :443; Brutal from common/hysteria/defaults.yaml)..."
 sudo mkdir -p /allah/blue/infra/cloud/ali/hysteria/acme
-cd /allah/blue/infra/cloud/ali/hysteria
-sudo docker compose up -d
+sudo bash /allah/blue/infra/cloud/common/hysteria/up.sh ali up -d
 
 print_success "Hysteria2 started (check: docker logs hysteria2)"
 print_info "ACME domain must already point at this host (hy.hyas.site)"
+print_info "Shared defaults: infra/cloud/common/hysteria/defaults.yaml (bandwidth 100 mbps)"
 
 # ============================================================================
 # IPv6 NETPLAN (dhcp6)
@@ -290,7 +290,7 @@ echo ""
 print_info "Summary:"
 print_info "  • Hostname: blue"
 print_info "  • Shadowsocks: port 12033 (chacha20-ietf-poly1305, host net, ::)"
-print_info "  • Hysteria2: :443 (repo compose, bandwidth 100 mbps)"
+print_info "  • Hysteria2: :443 (common defaults + site.yaml)"
 print_info "  • TCP BBR + fq qdisc + mtu_probing: enabled"
 print_info "  • IPv6: dhcp6 via netplan (if YAML present)"
 print_info "  • SSH: root login enabled, password auth disabled"

@@ -1,0 +1,9 @@
+# Aliyun — acme + auth only (listen/masquerade/bandwidth from common defaults)
+acme:
+  domains:
+    - hy.hyas.site
+  email: admin@hyas.site
+
+auth:
+  type: password
+  password: jEdTlnZe2q2nv1N0lmmXHCp2

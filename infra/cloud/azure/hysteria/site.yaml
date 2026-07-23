@@ -1,0 +1,9 @@
+# Azure — acme + auth only (listen/masquerade/bandwidth from common defaults)
+acme:
+  domains:
+    - hyaz.hyas.site
+  email: admin@hyas.site
+
+auth:
+  type: password
+  password: NzPY5nTKThLxUb1MOJTuu6B0
