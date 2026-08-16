@@ -1189,6 +1189,44 @@ proxies:
     dialer-proxy: 🔗 Decodo Dialer (GFW)
     udp: true
 
+  # US residential sticky sessions (same Decodo user/pass as TR/GB; country-us)
+  # Generate more: python network/proxy/decodo/cli.py url -c us -s <session> -p socks5h
+  - name: decodo-us-cherryp4k2m
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-cherryp4k2m-sessionduration-60-country-us
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-us-kiwin7x3q
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-kiwin7x3q-sessionduration-60-country-us
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-us-mangob8w5t
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-mangob8w5t-sessionduration-60-country-us
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
+  - name: decodo-us-plumr2c9h
+    type: socks5
+    server: gate.decodo.com
+    port: 10000
+    username: user-spfeknjtjk-session-plumr2c9h-sessionduration-60-country-us
+    password: kz5Az4O_89OGtyehac
+    dialer-proxy: 🔗 Decodo Dialer (GFW)
+    udp: true
+
 
   # Version reference (display only) — name must match the bookmark entry in 🚀 Node Selection
   - {name: "🔖 22:57-08/10 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
@@ -1209,6 +1247,7 @@ proxy-groups:
       - 🔄 CF WARP Outbound
       - 🇹🇷 Decodo TR
       - 🇬🇧 Decodo GB
+      - 🇺🇸 Decodo US
       - 🔑 Manual Selection
       - "🔖 22:57-08/10 (UTC+8)"
       - 🎯 Direct
@@ -1404,6 +1443,15 @@ proxy-groups:
       - decodo-gb-peachaxdgz
       - decodo-gb-berry4rs3m
       - decodo-gb-melonn38zq
+
+  # US residential exit via dialer-proxy → 🔗 Decodo Dialer (GFW)
+  - name: 🇺🇸 Decodo US
+    type: select
+    proxies:
+      - decodo-us-cherryp4k2m
+      - decodo-us-kiwin7x3q
+      - decodo-us-mangob8w5t
+      - decodo-us-plumr2c9h
 
   - name: 🤖 AI / IDE Nodes
     type: select
