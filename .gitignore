@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets
+# ─────────────────────────────────────────────────────────────────────────────
+**/cred.json
+**/Cred.json
+secrets/cred.json
+trading/freqtrade/config/secrets.json
+**/.env
+**/auth.json
+**/id_rsa
+**/id_ed25519
+**/*.pem
+apps/tinder/data/*.json
+monitors/huayitong/iphone/phone_config.json
+monitors/huayitong/export.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Large / unpackable local artifacts
+# ─────────────────────────────────────────────────────────────────────────────
+*.ipa
+*.tipa
+*.feather
+*.npy
+*.pkl
+*.pt
+*.db
+.tmp-ipatool/
+analysis/ios/**/*.tar
+analysis/ios/**/Payload/
+analysis/ios/**/*.app/
+trading/ml/processed/
+trading/tools/realtime/tradingview/data/
+trading/freqtrade/backtest_results/
+trading/freqtrade/logs/
+trading/freqtrade/plot/
+trading/freqtrade/ml_datasets/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Caches / logs / generated junk
+# ─────────────────────────────────────────────────────────────────────────────
+*.cache
+*.log
+*.har
+*.pyc
+*.pyo
+__pycache__/
+.ruff_cache/
+**/.venv/
+node_modules/
+.wrangler/
+dist/
+.DS_Store
+*.tmp
+*.temp
+
+# Generated host proxy configs (defaults + site merge)
+cloud/hosts/*/hysteria/config.yaml
+cloud/hosts/*/ss-rust/config.json
+cloud/hosts/*/xray-trojan/config.json
+cloud/hosts/*/xray-reality/config.json
+cloud/hosts/*/cloudflared/.env
+cloud/hosts/*/cloudflared/site.env
+
+# Local dump (never commit)
+scratch/**
+
+# Misc local output
+cloud/providers/aws/nuke-output*.txt
+cloud/providers/aws/cloud-nuke
+tradesv3.sqlite*
+backtest-result*
+last_result.json

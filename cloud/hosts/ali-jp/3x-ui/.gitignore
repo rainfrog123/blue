@@ -1,0 +1,9 @@
+# Runtime / panel-only (generated). Proxy secrets live in tracked inbound.env.
+db/
+cert/
+acme/
+.env
+*.db
+*.db-journal
+site.env
+clash.snippet.yml

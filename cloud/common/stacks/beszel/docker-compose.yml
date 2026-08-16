@@ -1,0 +1,43 @@
+# Beszel Hub (+ local agent via unix socket).
+# Run: bash cloud/common/stacks/beszel/up.sh <host>
+# First-time: bash cloud/common/stacks/beszel/setup-hub.sh <host>
+# Marker: hosts/<host>/beszel/HUB
+# Site:   hosts/<host>/beszel/site.env  (APP_URL, TOKEN, KEY for local agent)
+
+services:
+  beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel
+    restart: unless-stopped
+    environment:
+      APP_URL: ${APP_URL:-http://127.0.0.1:8090}
+    ports:
+      - ${BESZEL_BIND:-127.0.0.1:8090}:8090
+    volumes:
+      - ./data:/beszel_data
+      - ./socket:/beszel_socket
+    networks:
+      - default
+      - tunnel-net
+
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    profiles:
+      - agent
+    volumes:
+      - ./agent-data:/var/lib/beszel-agent
+      - ./socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      HUB_URL: ${LOCAL_HUB_URL:-http://127.0.0.1:8090}
+      TOKEN: ${TOKEN:-}
+      KEY: ${KEY:-}
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true

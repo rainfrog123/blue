@@ -1,0 +1,9 @@
+# Azure — TLS files on host (acme/manual/). Currently self-signed until
+# Lets Encrypt rate limit lifts (~2026-07-24); Clash needs skip-cert-verify.
+tls:
+  cert: /etc/hysteria/acme/manual/hyaz.hyas.site.crt
+  key: /etc/hysteria/acme/manual/hyaz.hyas.site.key
+
+auth:
+  type: password
+  password: NzPY5nTKThLxUb1MOJTuu6B0

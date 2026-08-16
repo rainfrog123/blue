@@ -1,0 +1,19 @@
+# Shared Beszel agent — reports to fleet Hub (https://beszel.hyas.site).
+# Run: bash cloud/common/stacks/beszel-agent/up.sh <host>
+# Per-host: hosts/<host>/beszel-agent/site.env  (HUB_URL, TOKEN, KEY)
+# Skip on Hub host: touch hosts/<host>/beszel/HUB
+
+services:
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data:/var/lib/beszel-agent
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      LISTEN: ${LISTEN:-45876}
+      HUB_URL: ${HUB_URL}
+      TOKEN: ${TOKEN}
+      KEY: ${KEY}

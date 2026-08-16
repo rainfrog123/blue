@@ -1,0 +1,40 @@
+# Binance Perpetual Market Maker Configuration
+# Strategy: binance_perp_mm.py
+
+# =============================================================================
+# EXCHANGE SETTINGS
+# =============================================================================
+exchange: binance_perpetual
+trading_pair: ETH-USDT
+
+# =============================================================================
+# POSITION SETTINGS  
+# =============================================================================
+leverage: 125
+order_amount: 0.01  # ETH per order level
+
+# =============================================================================
+# SPREAD SETTINGS (as decimal, e.g., 0.0005 = 0.05%)
+# =============================================================================
+bid_spread: 0.0005   # 0.05% below mid price
+ask_spread: 0.0005   # 0.05% above mid price
+
+# =============================================================================
+# MULTI-LEVEL ORDER SETTINGS
+# =============================================================================
+order_levels: 3                # Number of orders on each side
+order_level_spread: 0.0003     # Additional spread per level (0.03%)
+order_level_amount: 1.0        # Amount multiplier per level
+
+# =============================================================================
+# ORDER MANAGEMENT
+# =============================================================================
+order_refresh_time: 15         # Seconds between order refresh
+price_type: mid                # Price source: mid or last
+
+# =============================================================================
+# RISK MANAGEMENT
+# =============================================================================
+max_position_size: 1.0         # Maximum position in ETH
+stop_loss_pct: 0.02            # 2% stop loss
+take_profit_pct: 0.01          # 1% take profit

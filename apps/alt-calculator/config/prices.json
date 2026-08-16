@@ -1,0 +1,68 @@
+{
+  "properties": {
+    "Alt_CM": {
+      "Flexie": {
+        "Rack": 1500,
+        "High": 1350,
+        "Medium": 1200,
+        "Low": 1050
+      },
+      "Flexie Plus": {
+        "Rack": 2100,
+        "High": 1890,
+        "Medium": 1680,
+        "Low": 1470
+      },
+      "Ensuite Single": {
+        "Rack": 2200,
+        "High": 1980,
+        "Medium": 1760,
+        "Low": 1540
+      },
+      "Ensuite": {
+        "Rack": 2500,
+        "High": 2250,
+        "Medium": 2000,
+        "Low": 1750
+      },
+      "Ensuite Plus": {
+        "Rack": 2900,
+        "High": 2610,
+        "Medium": 2320,
+        "Low": 1885
+      }
+    },
+    "Alt_PR": {
+      "Flexie": {
+        "Rack": 1700,
+        "High": 1530,
+        "Medium": 1360,
+        "Low": 1190
+      },
+      "Flexie XL": {
+        "Rack": 3300,
+        "High": 2970,
+        "Medium": 2640,
+        "Low": 2310
+      },
+      "Ensuite Single": {
+        "Rack": 2100,
+        "High": 1890,
+        "Medium": 1680,
+        "Low": 1470
+      },
+      "Ensuite": {
+        "Rack": 2500,
+        "High": 2250,
+        "Medium": 2000,
+        "Low": 1750
+      },
+      "Ensuite Twin/King": {
+        "Rack": 3335,
+        "High": 3002,
+        "Medium": 2668,
+        "Low": 2335
+      }
+    }
+  }
+} 

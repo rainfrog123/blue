@@ -1,0 +1,10 @@
+# Digi — acme + auth only (listen/masquerade/quic from common defaults; no bandwidth / BBR)
+acme:
+  domains:
+    - hyd.hyas.site
+  email: admin@hyas.site
+  dir: /etc/hysteria/acme
+
+auth:
+  type: password
+  password: jEdTlnZe2q2nv1N0lmmXHCp2

@@ -1,0 +1,9 @@
+# Aliyun Tokyo SWAS (ali-jp) - self-signed until DNS/ACME ready.
+# Clash: skip-cert-verify: true for this node.
+tls:
+  cert: /etc/hysteria/acme/manual/hyjp.hyas.site.crt
+  key: /etc/hysteria/acme/manual/hyjp.hyas.site.key
+
+auth:
+  type: password
+  password: u1YpCYtVWp8QWdA0WCF6yujW

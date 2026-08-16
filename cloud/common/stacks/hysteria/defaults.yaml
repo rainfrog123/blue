@@ -1,0 +1,24 @@
+# Shared Hysteria 2 defaults for every host (digi / ali / azure).
+# Per-box domain + password: cloud/hosts/<host>/hysteria/site.yaml
+# Preview: python3 cloud/common/stacks/hysteria/render.py digi
+#
+# No server `bandwidth` — Brutal off; Hy2 uses default CC (BBR).
+# Clash Hy2 nodes also omit up/down / brutal-opts (2026-08-08).
+
+listen: :443
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bing.com
+    rewriteHost: true
+
+# Larger QUIC windows help high-RTT CN↔SG (keep ~2:5 stream:conn ratio)
+quic:
+  initStreamReceiveWindow: 16777216
+  maxStreamReceiveWindow: 16777216
+  initConnReceiveWindow: 41943040
+  maxConnReceiveWindow: 41943040
+  maxIdleTimeout: 30s
+  maxIncomingStreams: 1024
+  disablePathMTUDiscovery: false

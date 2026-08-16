@@ -1,0 +1,73 @@
+// ==UserScript==
+// @name         Twitter UI Cleanup (Hide Pill + Remove Verified)
+// @namespace    http://tampermonkey.net/
+// @version      2.0.0
+// @description  Hide "New posts" pill and remove verified badges on Twitter/X
+// @author       You
+// @match        https://twitter.com/*
+// @match        https://x.com/*
+// @grant        GM_addStyle
+// @run-at       document-start
+// ==/UserScript==
+
+/*
+ * Merged from (see archive/*.bak):
+ *   - archive/hide-new-posts-pill.js.bak
+ *       Hide New Posts Pill — CSS hides "New posts are available" status pill.
+ *   - archive/remove-verified-badges.js.bak
+ *       Remove Verified Badges — CSS hides blue checks / authenticity labels.
+ *
+ * Unused (disabled in TM backup 2026-08-08):
+ *   - archive/timeline-only.js.bak
+ */
+
+(function () {
+  "use strict";
+
+  const LOG = "[Twitter UI Cleanup]";
+
+  function inject(css) {
+    if (typeof GM_addStyle !== "undefined") GM_addStyle(css);
+    else {
+      const style = document.createElement("style");
+      style.textContent = css;
+      (document.head || document.documentElement).appendChild(style);
+    }
+  }
+
+  // ========== Inherited: archive/hide-new-posts-pill.js.bak ==========
+  inject(`
+        [role="status"][data-keep-composer-open="true"] {
+            display: none !important;
+        }
+        button[aria-label*="New posts are available"] {
+            display: none !important;
+        }
+    `);
+
+  // ========== Inherited: archive/remove-verified-badges.js.bak ==========
+  inject(`
+        [data-testid="icon-verified"] {
+            display: none !important;
+        }
+        svg[aria-label="Verified account"] {
+            display: none !important;
+        }
+        span:has(> [data-testid="icon-verified"]),
+        span:has(> svg[aria-label="Verified account"]) {
+            display: none !important;
+        }
+        a[href*="rules-and-policies/authenticity"] {
+            display: none !important;
+        }
+        [style*="parody-mask"],
+        img[src*="parody-mask"] {
+            display: none !important;
+        }
+        div:has(> a[href*="rules-and-policies/authenticity"]) {
+            display: none !important;
+        }
+    `);
+
+  console.log(LOG, "loaded — hide new-posts pill + remove verified badges");
+})();

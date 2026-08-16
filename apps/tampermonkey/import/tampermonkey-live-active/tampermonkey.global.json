@@ -1,0 +1,5 @@
+{
+  "enabled": true,
+  "script_blacklist_server": [],
+  "userscript_search_mode": "action_menu"
+}

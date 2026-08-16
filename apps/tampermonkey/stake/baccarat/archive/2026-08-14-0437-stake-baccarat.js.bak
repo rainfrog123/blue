@@ -1,0 +1,3145 @@
+// ==UserScript==
+// @name         Stake Baccarat
+// @namespace    http://tampermonkey.net/
+// @version      6.0.0
+// @description  One script: PP WebSocket (pp) + table pick + on-page play HUD. multibaccarat only.
+// @author       You
+// @match        *://client.pragmaticplaylive.net/desktop/multibaccarat*
+// @grant        none
+// @run-at       document-start
+// ==/UserScript==
+
+/*
+ * Unified 6.0.0 — socks 3.2.5 + pick 4.0.5 + play 5.9.0
+ * Split sources archived as core/archive/2026-08-14-0435-*.js.bak
+ * @run-at document-start so the WS hook lands before PP connects.
+ */
+
+/* ── stake-baccarat-socks-websocket.js ── */
+
+/*
+ * Renamed live script (enabled in TM backup 2026-08-08).
+ * socks — Pragmatic Play WS interceptor (pp API)
+ * Snapshot: archive/socks.js.bak
+ * (Not merged with sibling baccarat scripts — socks → pick → play pipeline.)
+ */
+
+(function() {
+    'use strict';
+    // Counter abbreviations used in this file:
+    // P  = Player wins, B  = Banker wins, T  = Tie wins
+    // PP = Player Pairs, BP = Banker Pairs
+
+    const tables = new Map();           // gameId -> tableData
+    const configs = new Map();          // gameId -> raw tableconfig
+    const uidMap = new Map();           // uid -> gameId
+    const idToUid = new Map();          // gameId -> uid
+    const gameToLobby = new Map();      // gameId -> lobbyId (operator_game_id)
+    const lobbyToGame = new Map();      // lobbyId -> gameId
+    let nextUid = 1;
+    let tablesOrder = [];
+    let globalStats = null;
+    let lastPlayersCount = null;
+    let msgCount = 0;
+    let lastSeq = 0;
+    let suppressGoodRoadWarnings = true;
+
+    /** Outgoing <lpbet> wire sends (for play.js / confirmations). */
+    let lpbetCount = 0;
+    let lastLpbetEvent = null;
+    const lpbetHistory = [];
+    const lpbetListeners = new Set();
+    const LPBET_HISTORY_MAX = 40;
+
+    const parseLpbetXml = (raw) => {
+        const s = typeof raw === 'string' ? raw : '';
+        if (!s.includes('lpbet')) return null;
+        const ch = /channel="table-([^"]+)"/.exec(s);
+        const tableId = ch ? ch[1] : null;
+        const gM = /gId="([^"]+)"/.exec(s);
+        const uM = /uId="([^"]+)"/.exec(s);
+        const bets = [];
+        const betRe = /<bet\s+([^>]+)\/?>/g;
+        let bm;
+        while ((bm = betRe.exec(s)) !== null) {
+            const attrs = bm[1];
+            const am = /amt="([^"]+)"/.exec(attrs);
+            const bcm = /bc="([^"]+)"/.exec(attrs);
+            if (am && bcm) {
+                bets.push({
+                    amt: parseFloat(am[1]),
+                    bc: bcm[1],
+                });
+            }
+        }
+        if (!tableId && bets.length === 0) return null;
+        return {
+            tableId,
+            gameId: gM ? gM[1] : null,
+            userId: uM ? uM[1] : null,
+            bets,
+            time: Date.now(),
+        };
+    };
+
+    const emitLpbet = (rec) => {
+        if (!rec) return;
+        lpbetCount++;
+        lastLpbetEvent = rec;
+        lpbetHistory.push(rec);
+        if (lpbetHistory.length > LPBET_HISTORY_MAX) lpbetHistory.shift();
+        for (const fn of lpbetListeners) {
+            try {
+                fn(rec);
+            } catch (_) {}
+        }
+    };
+
+    const hookOutgoingSend = (data) => {
+        let s = '';
+        if (typeof data === 'string') s = data;
+        else return;
+        if (!s.includes('lpbet')) return;
+        const rec = parseLpbetXml(s);
+        if (rec && (rec.tableId || rec.bets.length)) emitLpbet(rec);
+    };
+
+    /** On `betsopen`, delay before `pp.get(id).canBet === true`. */
+    const CAN_BET_OPEN_DELAY_MS = 1000;
+
+    const _consoleWarn = console.warn.__ppOriginalWarn || console.warn.bind(console);
+    const isGoodRoadTablesOrderWarning = (args) => {
+        const line = args.map((x) => {
+            if (typeof x === 'string') return x;
+            if (x && typeof x.message === 'string') return x.message;
+            return '';
+        }).join(' ');
+        return line.includes('is not in tablesOrder') &&
+               line.includes('GoodRoadGameCommunicationProcessor');
+    };
+
+    const ppWarnProxy = (...args) => {
+        if (suppressGoodRoadWarnings && isGoodRoadTablesOrderWarning(args)) return;
+        _consoleWarn(...args);
+    };
+    ppWarnProxy.__ppOriginalWarn = _consoleWarn;
+    console.warn = ppWarnProxy;
+
+    const bumpSeq = (seq) => {
+        if (seq == null || seq === '') return;
+        const n = typeof seq === 'string' ? parseInt(seq, 10) : seq;
+        if (!Number.isFinite(n)) return;
+        if (n > lastSeq) lastSeq = n;
+    };
+
+    const resolveGameId = (tableOrLobbyId) => {
+        if (tableOrLobbyId == null) return null;
+        const s = String(tableOrLobbyId);
+        return lobbyToGame.get(s) || s;
+    };
+
+    function patchTable(gameId, partial, bumpUpdates = true) {
+        const gid = resolveGameId(gameId);
+        if (!gid) return;
+
+        const uid = assignUid(gid);
+        const prev = tables.get(gid) || {};
+        tables.set(gid, {
+            ...prev,
+            id: gid,
+            gameId: gid,
+            uid: prev.uid || uid,
+            ...partial,
+            updated: Date.now(),
+            updates: bumpUpdates ? (prev.updates || 0) + 1 : (prev.updates || 0)
+        });
+    }
+
+    // Assign simple numeric UID to table
+    const assignUid = (gameId, forceUid = null) => {
+        if (forceUid !== null) {
+            // Reassign existing UID to new gameId
+            const oldGameId = uidMap.get(forceUid);
+            if (oldGameId && oldGameId !== gameId) {
+                idToUid.delete(oldGameId);
+            }
+            uidMap.set(forceUid, gameId);
+            idToUid.set(gameId, forceUid);
+            return forceUid;
+        }
+        if (!idToUid.has(gameId)) {
+            const uid = nextUid++;
+            uidMap.set(uid, gameId);
+            idToUid.set(gameId, uid);
+        }
+        return idToUid.get(gameId);
+    };
+
+    // Resolve uid, gameId, or lobbyId to gameId
+    const resolveId = (uidOrId) => {
+        if (typeof uidOrId === 'number') {
+            // Could be UID or numeric lobby ID
+            if (uidMap.has(uidOrId)) return uidMap.get(uidOrId);
+            // Try as lobbyId string
+            const strId = String(uidOrId);
+            if (lobbyToGame.has(strId)) return lobbyToGame.get(strId);
+            return null;
+        }
+        // String ID - could be gameId or lobbyId
+        if (typeof uidOrId === 'string') {
+            if (tables.has(uidOrId)) return uidOrId;
+            if (lobbyToGame.has(uidOrId)) return lobbyToGame.get(uidOrId);
+        }
+        return uidOrId;
+    };
+
+    // Player count is known only when lobby provides totalSeatedPlayers for that table.
+    const hasKnownPlayers = (t) => !!(t && Number.isFinite(t.players) && t.players >= 0);
+
+    // Hook WebSocket
+    const _WS = window.WebSocket;
+    window.WebSocket = function(url, proto) {
+        const ws = proto ? new _WS(url, proto) : new _WS(url);
+        console.log('[PP] WS:', url);
+        hookWS(ws, url);
+        return ws;
+    };
+    window.WebSocket.prototype = _WS.prototype;
+    window.WebSocket.CONNECTING = 0;
+    window.WebSocket.OPEN = 1;
+    window.WebSocket.CLOSING = 2;
+    window.WebSocket.CLOSED = 3;
+
+    function gameIdFromWsUrl(url) {
+        if (!url || typeof url !== 'string') return null;
+        try {
+            const u = new URL(url.replace(/^ws/i, 'http'));
+            const t = u.searchParams.get('tableId');
+            return t ? decodeURIComponent(t) : null;
+        } catch (_) {
+            const m = url.match(/[?&]tableId=([^&]+)/i);
+            return m ? decodeURIComponent(m[1]) : null;
+        }
+    }
+
+    function hookWS(ws, url) {
+        const ctxGameId = gameIdFromWsUrl(url);
+        const _send = ws.send.bind(ws);
+        ws.send = function(data) {
+            try {
+                hookOutgoingSend(data);
+            } catch (_) {}
+            return _send(data);
+        };
+        ws.addEventListener('message', (e) => {
+            try {
+                const msg = JSON.parse(e.data);
+                msgCount++;
+                handleMessage(msg, ctxGameId);
+            } catch(err) {}
+        });
+    }
+
+    function handleMessage(msg, ctxGameId) {
+        if (msg.seq) bumpSeq(msg.seq);
+
+        // === LOBBY WEBSOCKET FORMAT (dga.pragmaticplaylive.net) ===
+        if (msg.globalStats) {
+            globalStats = msg.globalStats;
+        }
+
+        if (msg.playersCount) {
+            const pc = msg.playersCount;
+            lastPlayersCount = {
+                total_seated_players: pc.total_seated_players,
+                seq: pc.seq
+            };
+            bumpSeq(pc.seq);
+        }
+
+        if (msg.tableKey) {
+            tablesOrder = msg.tableKey;
+        }
+
+        if (msg.tableId) {
+            if (msg.baccaratShoeSummary || msg.tableName) {
+                updateFromLobby(msg);
+            } else if (msg.totalSeatedPlayers !== undefined) {
+                updateLobbyDelta(msg);
+            } else if (msg.statistics !== undefined || msg.gameResult !== undefined ||
+                       msg.goodRoadsMap !== undefined || msg.goodRoadsDepthMap !== undefined) {
+                updateFromLobbyPartial(msg);
+            }
+        }
+
+        // === GAME WEBSOCKET FORMAT (gs*.pragmaticplaylive.net/game) ===
+        if (msg.tablesorder) {
+            tablesOrder = msg.tablesorder;
+            bumpSeq(msg.seq);
+        }
+
+        if (msg.tableconfig) {
+            updateFromConfig(msg.tableconfig);
+            bumpSeq(msg.tableconfig.seq);
+        }
+
+        if (msg.statistic) {
+            updateFromStatistic(msg.statistic);
+            bumpSeq(msg.statistic.seq);
+        }
+
+        if (msg.statisticLA) {
+            updateFromStatisticLA(msg.statisticLA);
+            bumpSeq(msg.statisticLA.seq);
+        }
+
+        if (msg.betsopen) {
+            bumpSeq(msg.betsopen.seq);
+            updateBetStatus(msg.betsopen.table, true, msg.betsopen.game, msg.betsopen.seq);
+        }
+
+        if (msg.betsclosed) {
+            bumpSeq(msg.betsclosed.seq);
+            updateBetStatus(msg.betsclosed.table, false, msg.betsclosed.game, msg.betsclosed.seq);
+        }
+
+        if (msg.ShoeSummary) mergeShoeSummary(msg.ShoeSummary);
+        if (msg.goodroad) mergeGoodroad(msg.goodroad);
+        if (msg.game) mergeGameMeta(msg.game);
+        if (msg.timer) mergeTimer(msg.timer);
+        if (msg.dealer) mergeDealer(msg.dealer, ctxGameId);
+        if (msg.table && typeof msg.table === 'object' && 'value' in msg.table) {
+            mergeTableMeta(msg.table, ctxGameId);
+        }
+        if (msg.subscribe) mergeSubscribe(msg.subscribe);
+        if (msg.betstats) mergeBetstats(msg.betstats);
+        if (msg.disablesidebets) mergeDisableSidebets(msg.disablesidebets);
+        if (msg.gameresult) mergeGameresultPayload(msg.gameresult);
+        if (msg.winners) mergeWinnersPayload(msg.winners);
+        if (msg.betsclosingsoon) mergeBetsClosingSoon(msg.betsclosingsoon);
+        if (msg.startDealing) mergeStartDealing(msg.startDealing);
+        if (msg.startshuffling) mergeShuffling(msg.startshuffling, 'start');
+        if (msg.endshuffling) mergeShuffling(msg.endshuffling, 'end');
+        if (msg.currentShoe) mergeCurrentShoe(msg.currentShoe, ctxGameId);
+        if (msg.voip_cc) mergeVoip(msg.voip_cc, ctxGameId);
+        if (msg.pong) {
+            bumpSeq(msg.pong.seq);
+            mergePong(msg.pong, ctxGameId);
+        }
+        if (msg.seat) mergeSeat(msg.seat);
+        if (msg.card) mergeCard(msg.card);
+        if (msg.cardinc) mergeCardInc(msg.cardinc);
+    }
+
+    function updateFromLobbyPartial(msg) {
+        const lobbyId = msg.tableId;
+        let gameId = lobbyToGame.get(lobbyId);
+        if (!gameId) gameId = lobbyId;
+
+        const uid = assignUid(gameId);
+        const prev = tables.get(gameId) || {};
+        const next = {
+            ...prev,
+            id: gameId,
+            gameId,
+            lobbyId,
+            uid,
+            updated: Date.now(),
+            updates: (prev.updates || 0) + 1,
+            source: 'lobby-partial'
+        };
+
+        if (msg.statistics !== undefined) next.bigRoad = msg.statistics;
+        if (msg.gameResult !== undefined) next.games = msg.gameResult;
+        if (msg.goodRoadsMap !== undefined) next.roads = msg.goodRoadsMap;
+        if (msg.goodRoadsDepthMap !== undefined) next.goodRoadsDepthMap = msg.goodRoadsDepthMap;
+        if (msg.grTableCount !== undefined) next.grTableCount = msg.grTableCount;
+        if (msg.shuffle !== undefined) next.shuffle = msg.shuffle;
+
+        tables.set(gameId, next);
+        bumpSeq(msg.seq);
+    }
+
+    function mergeShoeSummary(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        const gid = resolveGameId(s.table);
+        const prev = tables.get(gid) || {};
+        patchTable(s.table, {
+            P: s.playerWinCounter != null ? +s.playerWinCounter : (prev.P ?? 0),
+            B: s.bankerWinCounter != null ? +s.bankerWinCounter : (prev.B ?? 0),
+            T: s.tieCounter != null ? +s.tieCounter : (prev.T ?? 0),
+            PP: s.playerPairCounter != null ? +s.playerPairCounter : (prev.PP ?? 0), // Player Pairs
+            BP: s.bankerPairCounter != null ? +s.bankerPairCounter : (prev.BP ?? 0), // Banker Pairs
+            total: s.totalGames != null ? +s.totalGames : (prev.total ?? 0),
+            seq: s.seq,
+            source: 'game-shoe'
+        });
+    }
+
+    function mergeGoodroad(g) {
+        const tid = g.sourcetableId || g.table;
+        if (!tid) return;
+        bumpSeq(g.seq);
+        patchTable(tid, { goodroadLive: g }, false);
+    }
+
+    function mergeGameMeta(g) {
+        if (!g?.table) return;
+        bumpSeq(g.seq);
+        patchTable(g.table, {
+            currentGame: g.id,
+            gameClock: g.value,
+            gameStartTime: g.starttime,
+            seq: g.seq
+        }, false);
+    }
+
+    function mergeTimer(t) {
+        if (!t?.table) return;
+        bumpSeq(t.seq);
+        patchTable(t.table, { bettingTimer: t.value, timerGameId: t.id, seq: t.seq }, false);
+    }
+
+    function mergeDealer(d, ctxGameId) {
+        if (!d) return;
+        const gameId = ctxGameId || [...tables.entries()].find(([, row]) => row.dealerId === d.id)?.[0];
+        if (!gameId) return;
+        bumpSeq(d.seq);
+        patchTable(gameId, { dealer: d.value, dealerId: d.id, seq: d.seq }, false);
+    }
+
+    function mergeTableMeta(t, ctxGameId) {
+        bumpSeq(t.seq);
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, {
+            tableLabel: t.value,
+            tableOpenTime: t.openTime,
+            tableNewTable: t.newTable,
+            tableMetaSeq: t.seq
+        }, false);
+    }
+
+    function mergeSubscribe(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { subscribeChannel: s.channel, subscribeStatus: s.status }, false);
+    }
+
+    function mergeBetstats(b) {
+        if (!b?.table) return;
+        bumpSeq(b.seq);
+        patchTable(b.table, { betstats: b }, false);
+    }
+
+    function mergeDisableSidebets(d) {
+        const gid = d.tableId;
+        if (!gid) return;
+        bumpSeq(d.seq);
+        patchTable(gid, { disabledSidebets: d.value, seq: d.seq }, false);
+    }
+
+    function mergeGameresultPayload(g) {
+        if (!g?.table) return;
+        bumpSeq(g.seq);
+        patchTable(g.table, { lastGameresult: g }, true);
+    }
+
+    function mergeWinnersPayload(w) {
+        if (!w?.table) return;
+        bumpSeq(w.seq);
+        patchTable(w.table, { lastWinners: w }, true);
+    }
+
+    function mergeBetsClosingSoon(b) {
+        if (!b?.table) return;
+        bumpSeq(b.seq);
+        patchTable(b.table, {
+            betsClosingSoon: true,
+            betsClosingSoonGame: b.game,
+            seq: b.seq
+        }, false);
+    }
+
+    function mergeStartDealing(s) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { dealing: true, dealingGame: s.game, seq: s.seq }, false);
+    }
+
+    function mergeShuffling(s, phase) {
+        if (!s?.table) return;
+        bumpSeq(s.seq);
+        patchTable(s.table, { shuffling: phase === 'start', shuffleGame: s.game || '', seq: s.seq }, false);
+    }
+
+    function mergeCurrentShoe(c, ctxGameId) {
+        bumpSeq(c.seq);
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { currentShoe: c }, false);
+    }
+
+    function mergeVoip(v, ctxGameId) {
+        bumpSeq(v.seq);
+        const gameId = v.table || ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { voip: true, seq: v.seq }, false);
+    }
+
+    function mergePong(p, ctxGameId) {
+        const gameId = ctxGameId;
+        if (!gameId) return;
+        patchTable(gameId, { lastPong: p }, false);
+    }
+
+    function mergeSeat(s) {
+        const tid = s.table_id || s.tableId;
+        if (!tid) return;
+        bumpSeq(s.seq);
+        patchTable(tid, { lastSeatEvent: s }, false);
+    }
+
+    function mergeCard(c) {
+        if (!c?.table) return;
+        bumpSeq(c.seq);
+        patchTable(c.table, { lastCard: c, seq: c.seq }, false);
+    }
+
+    function mergeCardInc(c) {
+        if (!c?.table) return;
+        bumpSeq(c.seq);
+        patchTable(c.table, { lastCardInc: c, seq: c.seq }, false);
+    }
+
+    // Lobby delta: just tableId + player count update
+    function updateLobbyDelta(msg) {
+        const lobbyId = msg.tableId;
+        let gameId = lobbyToGame.get(lobbyId) || lobbyId;
+
+        // Only update if table already exists
+        const prev = tables.get(gameId);
+        if (!prev) return;
+
+        tables.set(gameId, {
+            ...prev,
+            players: msg.totalSeatedPlayers ?? prev.players ?? null,
+            updated: Date.now()
+        });
+    }
+
+    // Lobby format: {tableId, baccaratShoeSummary, gameResult, statistics...}
+    // tableId here is the LOBBY ID (like "422")
+    function updateFromLobby(msg) {
+        const lobbyId = msg.tableId;
+        // Check if we have a mapping to gameId
+        let gameId = lobbyToGame.get(lobbyId);
+
+        // If no mapping yet, use lobbyId as the key (will be merged later)
+        if (!gameId) {
+            gameId = lobbyId;
+        }
+
+        const uid = assignUid(gameId);
+        const prev = tables.get(gameId) || {};
+
+        tables.set(gameId, {
+            ...prev,
+            id: gameId,
+            gameId: gameId,
+            lobbyId: lobbyId,
+            uid,
+            name: msg.tableName || prev.name || '',
+            type: msg.tableType || prev.type || '',
+            subtype: msg.tableSubtype || prev.subtype || '',
+            dealer: msg.dealer?.name || prev.dealer || '',
+            minBet: msg.tableLimits?.minBet ?? prev.minBet ?? 0,
+            maxBet: msg.tableLimits?.maxBet ?? prev.maxBet ?? 0,
+            players: msg.totalSeatedPlayers ?? prev.players ?? null,
+            P: msg.baccaratShoeSummary?.playerWinCounter != null ? +msg.baccaratShoeSummary.playerWinCounter : (prev.P ?? 0),
+            B: msg.baccaratShoeSummary?.bankerWinCounter != null ? +msg.baccaratShoeSummary.bankerWinCounter : (prev.B ?? 0),
+            T: msg.baccaratShoeSummary?.tieCounter != null ? +msg.baccaratShoeSummary.tieCounter : (prev.T ?? 0),
+            PP: msg.baccaratShoeSummary?.playerPairCounter != null ? +msg.baccaratShoeSummary.playerPairCounter : (prev.PP ?? 0), // Player Pairs
+            BP: msg.baccaratShoeSummary?.bankerPairCounter != null ? +msg.baccaratShoeSummary.bankerPairCounter : (prev.BP ?? 0), // Banker Pairs
+            total: msg.baccaratShoeSummary?.totalGames != null ? +msg.baccaratShoeSummary.totalGames : (prev.total ?? 0),
+            roads: msg.goodRoadsMap || prev.roads || {},
+            bigRoad: msg.statistics || prev.bigRoad || '',
+            games: msg.gameResult || prev.games || [],
+            open: msg.tableOpen ?? prev.open ?? true,
+            updated: Date.now(),
+            updates: (prev.updates || 0) + 1,
+            source: 'lobby'
+        });
+    }
+
+    // Game format: tableconfig
+    // Contains both tableId (gameId) and operator_game_id (lobbyId)
+    function updateFromConfig(cfg) {
+        const gameId = cfg.tableId;
+        const lobbyId = cfg.operator_game_id;
+        if (!gameId) return;
+
+        let existingUid = null;
+
+        // Create gameId <-> lobbyId mapping
+        if (lobbyId) {
+            gameToLobby.set(gameId, lobbyId);
+            lobbyToGame.set(lobbyId, gameId);
+
+            // Migrate any existing data from lobbyId key to gameId key
+            if (tables.has(lobbyId) && lobbyId !== gameId) {
+                const lobbyData = tables.get(lobbyId);
+                existingUid = lobbyData.uid; // Preserve the original UID
+                const gameData = tables.get(gameId) || {};
+                tables.set(gameId, { ...lobbyData, ...gameData, id: gameId, gameId, lobbyId });
+                tables.delete(lobbyId);
+            }
+        }
+
+        // Use existing UID from migrated data, or assign new one
+        const uid = existingUid ? assignUid(gameId, existingUid) : assignUid(gameId);
+        configs.set(gameId, cfg);
+        const prev = tables.get(gameId) || {};
+
+        tables.set(gameId, {
+            ...prev,
+            id: gameId,
+            gameId,
+            lobbyId: lobbyId || prev.lobbyId || '',
+            uid,
+            name: cfg.table_name || prev.name || '',
+            type: cfg.table_type || prev.type || '',
+            category: cfg.table_category || prev.category || '',
+            minBet: parseFloat(cfg.table_bet_min_limit) || prev.minBet || 0,
+            maxBet: parseFloat(cfg.table_bet_max_limit) || prev.maxBet || 0,
+            bettingTime: parseInt(cfg.betting_time) || prev.bettingTime || 15,
+            open: cfg.table_closed !== 'true',
+            mtbGroupId: cfg.mtb_groupId || prev.mtbGroupId || '',
+            updated: Date.now(),
+            source: 'game'
+        });
+    }
+
+    // Game format: statistic (full road data)
+    function updateFromStatistic(stat) {
+        const gameId = stat.table;
+        if (!gameId) return;
+
+        const uid = assignUid(gameId);
+        let data = {};
+        try {
+            data = JSON.parse(stat.value);
+        } catch(e) { return; }
+
+        const prev = tables.get(gameId) || {};
+
+        tables.set(gameId, {
+            ...prev,
+            id: gameId,
+            gameId,
+            uid,
+            P: data.playerWinCounter ?? prev.P ?? 0,
+            B: data.bankerWinCounter ?? prev.B ?? 0,
+            T: data.tieCounter ?? prev.T ?? 0,
+            PP: data.playerPairCounter ?? prev.PP ?? 0, // Player Pairs
+            BP: data.bankerPairCounter ?? prev.BP ?? 0, // Banker Pairs
+            total: (data.playerWinCounter || 0) + (data.bankerWinCounter || 0) + (data.tieCounter || 0),
+            bigRoad: data.bigRoad || prev.bigRoad || [],
+            beadPlate: data.beadPlate || prev.beadPlate || [],
+            bigEyeBoy: data.bigEyeBoy || prev.bigEyeBoy || [],
+            smallRoad: data.smallRoad || prev.smallRoad || [],
+            cockroachPig: data.cockroachPig || prev.cockroachPig || [],
+            playerEnhance: data.playerEnhancement || prev.playerEnhance || null,
+            bankerEnhance: data.bankerEnhancement || prev.bankerEnhance || null,
+            seq: stat.seq || prev.seq || 0,
+            updated: Date.now(),
+            updates: (prev.updates || 0) + 1,
+            source: 'game'
+        });
+    }
+
+    // Bet status: betsopen / betsclosed
+    function updateBetStatus(tableId, canBet, gameRoundId, seq) {
+        const gameId = tableId;
+        if (!gameId) return;
+
+        const apply = (flag) => {
+            const prev = tables.get(gameId) || {};
+            tables.set(gameId, {
+                ...prev,
+                id: gameId,
+                gameId,
+                uid: prev.uid || assignUid(gameId),
+                canBet: flag,
+                currentGame: gameRoundId,
+                betStatusTime: Date.now(),
+                seq: seq || prev.seq || 0
+            });
+        };
+
+        if (canBet) {
+            if (CAN_BET_OPEN_DELAY_MS <= 0) {
+                apply(true);
+            } else {
+                setTimeout(() => apply(true), CAN_BET_OPEN_DELAY_MS);
+            }
+        } else {
+            apply(false);
+        }
+    }
+
+    // Game format: statisticLA (last action - incremental)
+    function updateFromStatisticLA(stat) {
+        const gameId = stat.table;
+        if (!gameId) return;
+
+        const uid = assignUid(gameId);
+        let data = {};
+        try {
+            data = JSON.parse(stat.value);
+        } catch(e) { return; }
+
+        const prev = tables.get(gameId) || {};
+
+        // LA format uses short keys: bwc, pwc, tc, bpc, ppc
+        tables.set(gameId, {
+            ...prev,
+            id: gameId,
+            gameId,
+            uid,
+            P: data.pwc ?? prev.P ?? 0,
+            B: data.bwc ?? prev.B ?? 0,
+            T: data.tc ?? prev.T ?? 0,
+            PP: data.ppc ?? prev.PP ?? 0, // Player Pairs
+            BP: data.bpc ?? prev.BP ?? 0, // Banker Pairs
+            total: (data.pwc ?? prev.P ?? 0) + (data.bwc ?? prev.B ?? 0) + (data.tc ?? prev.T ?? 0),
+            lastBR: data.br || prev.lastBR,      // last big road position
+            lastBP: data.bp || prev.lastBP,      // last bead plate position
+            lastBEB: data.beb || prev.lastBEB,   // last big eye boy
+            lastSR: data.sr || prev.lastSR,      // last small road
+            lastCP: data.cp || prev.lastCP,      // last cockroach pig
+            playerEnhance: data.pE || prev.playerEnhance || null,
+            bankerEnhance: data.bE || prev.bankerEnhance || null,
+            seq: stat.seq || prev.seq || 0,
+            updated: Date.now(),
+            updates: (prev.updates || 0) + 1,
+            source: 'game-la'
+        });
+    }
+
+    // Calculate P/B ratio for filtering
+    const calcRatio = (t) => {
+        if (!t || !t.total || t.total === 0) return 999;
+        const diff = Math.abs((t.P || 0) - (t.B || 0));
+        return diff / t.total;
+    };
+
+    // Extract P/B/T sequence from table data
+    // Returns array like ['P','B','B','T','P',...] in chronological order (oldest first)
+    const getPBTSequence = (t) => {
+        if (!t) return [];
+
+        // Method 1: From beadPlate (game WebSocket) - most reliable
+        // beadPlate is 2D: [[col0row0, col0row1,...], [col1row0,...], ...]
+        // Fills column by column (top to bottom in each column, then next column)
+        // First char: R=Banker (red), B=Player (blue), G=Tie (green)
+        if (t.beadPlate && Array.isArray(t.beadPlate)) {
+            const seq = [];
+            const numRows = t.beadPlate[0]?.length || 6;
+            // Read column by column, top to bottom in each column
+            for (let col = 0; col < t.beadPlate.length; col++) {
+                for (let row = 0; row < numRows; row++) {
+                    const cell = t.beadPlate[col]?.[row];
+                    if (cell && cell !== '---') {
+                        const c = cell.charAt(0);
+                        if (c === 'R') seq.push('B');      // Red = Banker
+                        else if (c === 'B') seq.push('P'); // Blue = Player
+                        else if (c === 'G') seq.push('T'); // Green = Tie
+                    }
+                }
+            }
+            return seq;
+        }
+
+        // Method 2: From gameResult (lobby WebSocket)
+        // gameResult is array of {winner: "BANKER_WIN" | "PLAYER_WIN" | "TIE", ...}
+        if (t.games && Array.isArray(t.games)) {
+            return t.games.map(g => {
+                if (g.winner === 'PLAYER_WIN') return 'P';
+                if (g.winner === 'BANKER_WIN') return 'B';
+                if (g.winner === 'TIE') return 'T';
+                return '?';
+            }).filter(x => x !== '?');
+        }
+
+        // Method 3: From bigRoad string (lobby format) - parse the string
+        if (t.bigRoad && typeof t.bigRoad === 'string') {
+            try {
+                const road = JSON.parse(t.bigRoad);
+                if (Array.isArray(road)) {
+                    const seq = [];
+                    for (let col = 0; col < road.length; col++) {
+                        for (let row = 0; row < road[col].length; row++) {
+                            const cell = road[col][row];
+                            if (cell && cell !== '---') {
+                                const c = cell.charAt(0);
+                                if (c === 'P') seq.push('P');
+                                else if (c === 'B') seq.push('B');
+                                // Ties are embedded in P/B cells with numbers
+                            }
+                        }
+                    }
+                    return seq;
+                }
+            } catch (e) {}
+        }
+
+        return [];
+    };
+
+    /** Latest live-stream payloads merged onto a table row (card, timer, goodroad, …). */
+    const buildLiveSnapshot = (t) => {
+        const out = {};
+        if (t.lastCard) out.card = t.lastCard;
+        if (t.lastCardInc) out.cardInc = t.lastCardInc;
+        if (t.bettingTimer != null && t.bettingTimer !== '' || t.timerGameId) {
+            out.timer = { value: t.bettingTimer, gameId: t.timerGameId };
+        }
+        if (t.goodroadLive) out.goodroad = t.goodroadLive;
+        if (t.currentGame != null && t.currentGame !== '' || t.gameClock != null && t.gameClock !== '' || t.gameStartTime) {
+            out.game = { id: t.currentGame, clock: t.gameClock, startTime: t.gameStartTime };
+        }
+        if (t.lastGameresult) out.gameresult = t.lastGameresult;
+        if (t.lastWinners) out.winners = t.lastWinners;
+        if (t.betstats) out.betstats = t.betstats;
+        if (t.disabledSidebets != null && t.disabledSidebets !== '') {
+            out.disabledSidebets = t.disabledSidebets;
+        }
+        if (t.betsClosingSoon) {
+            out.betsClosingSoon = { game: t.betsClosingSoonGame };
+        }
+        if (t.dealing) {
+            out.dealing = { game: t.dealingGame };
+        }
+        if (t.shuffling || (t.shuffleGame !== undefined && t.shuffleGame !== '')) {
+            out.shuffling = { active: !!t.shuffling, game: t.shuffleGame };
+        }
+        if (t.subscribeChannel || t.subscribeStatus) {
+            out.subscribe = { channel: t.subscribeChannel, status: t.subscribeStatus };
+        }
+        if (t.lastSeatEvent) out.seat = t.lastSeatEvent;
+        if (t.lastPong) out.pong = t.lastPong;
+        if (t.voip) out.voip = true;
+        if (t.currentShoe) out.shoe = t.currentShoe;
+        if (t.tableLabel != null && t.tableLabel !== '' || t.tableOpenTime || t.tableNewTable != null) {
+            out.tableMeta = {
+                label: t.tableLabel,
+                openTime: t.tableOpenTime,
+                newTable: t.tableNewTable
+            };
+        }
+        if (t.dealer || t.dealerId) {
+            out.dealer = { name: t.dealer, id: t.dealerId };
+        }
+        return out;
+    };
+
+    const liveForId = (uidOrId) => {
+        const id = resolveId(uidOrId);
+        const t = id ? tables.get(id) : null;
+        if (!t) return null;
+        return buildLiveSnapshot(t);
+    };
+
+    // API
+    window.pp = {
+        tables: () => {
+            const obj = {};
+            for (const [id, t] of tables) {
+                obj[id] = { ...t, ratio: calcRatio(t) };
+            }
+            return obj;
+        },
+        configs: () => Object.fromEntries(configs),
+        get: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return t ? { ...t, ratio: calcRatio(t) } : null;
+        },
+        /** Grouped live-stream fields for one table (same ids as pp.get). Alias: lastEvents. */
+        live: liveForId,
+        lastEvents: liveForId,
+        count: () => tables.size,
+        msgs: () => msgCount,
+        order: () => tablesOrder,
+        stats: () => {
+            const out = {};
+            if (globalStats && typeof globalStats === 'object') Object.assign(out, globalStats);
+            if (lastPlayersCount) out.lobbyPlayersCount = lastPlayersCount;
+            return Object.keys(out).length ? out : null;
+        },
+        seq: () => lastSeq,
+
+        /** Last outgoing <lpbet> parsed from WS send, or null */
+        lastLpbet: () => lastLpbetEvent,
+        /** Recent outgoing lpbet records (newest last) */
+        lpbetHistory: () => lpbetHistory.slice(),
+        lpbetCount: () => lpbetCount,
+        /** Subscribe to each lpbet send; returns unsubscribe */
+        onLpbet: (fn) => {
+            if (typeof fn !== 'function') return () => {};
+            lpbetListeners.add(fn);
+            return () => lpbetListeners.delete(fn);
+        },
+        /**
+         * Wait until outgoing lpbet stake for this table matches side after `since`.
+         * bc on wire: "0" = Player, "1" = Banker (same as data-betcode).
+         * If `minTotal` is set, sums multiple chip-click lpbets until amount reached.
+         */
+        waitLpbet: (tableId, opts = {}) => {
+            const tid = resolveGameId(tableId) || String(tableId);
+            const timeoutMs = opts.timeoutMs ?? 8000;
+            const since = opts.since ?? 0;
+            const side = opts.side;
+            const wantBc = side === 'B' ? '1' : '0';
+            const minTotal = opts.minTotal;
+
+            const tableMatch = (rec) => {
+                if (!rec || !rec.tableId) return false;
+                const rt = resolveGameId(rec.tableId) || rec.tableId;
+                return rt === tid || rec.tableId === tid;
+            };
+
+            const stakeFromRec = (rec) => {
+                let s = 0;
+                for (const b of rec.bets) {
+                    if (b.bc === wantBc) s += b.amt;
+                }
+                return s;
+            };
+
+            const satisfied = (accumulated) => {
+                if (minTotal != null && Number(minTotal) > 0) {
+                    return accumulated >= Number(minTotal) - 1e-9;
+                }
+                return accumulated > 0;
+            };
+
+            return new Promise((resolve) => {
+                let accumulated = 0;
+                let lastRec = null;
+                for (const rec of lpbetHistory) {
+                    if (!tableMatch(rec) || rec.time < since) continue;
+                    const add = stakeFromRec(rec);
+                    if (add <= 0) continue;
+                    accumulated += add;
+                    lastRec = rec;
+                }
+                if (satisfied(accumulated)) {
+                    resolve(lastRec);
+                    return;
+                }
+
+                let timer = null;
+                const fn = (rec) => {
+                    if (!tableMatch(rec) || rec.time < since) return;
+                    const add = stakeFromRec(rec);
+                    if (add <= 0) return;
+                    accumulated += add;
+                    lastRec = rec;
+                    if (satisfied(accumulated)) {
+                        if (timer) clearTimeout(timer);
+                        lpbetListeners.delete(fn);
+                        resolve(lastRec);
+                    }
+                };
+                lpbetListeners.add(fn);
+                timer = setTimeout(() => {
+                    lpbetListeners.delete(fn);
+                    resolve(null);
+                }, timeoutMs);
+            });
+        },
+
+        setWarnFilter: (enabled = true) => {
+            suppressGoodRoadWarnings = !!enabled;
+            return suppressGoodRoadWarnings;
+        },
+        warnFilter: () => suppressGoodRoadWarnings,
+
+        help: () => {
+            const W = 62;
+            const line = (ch) => ch.repeat(W);
+            const row = (cmd, hint) =>
+                `  ${String(cmd).padEnd(26)} ${hint}`;
+            const title = 'pp — Pragmatic Play websocket intercept (tables + roads)';
+            const boxLine = () => `${line('═')}`;
+            const boxTitle = () => `║ ${title.padEnd(W - 4)} ║`;
+            const t = `
+${boxLine()}
+${boxTitle()}
+${boxLine()}
+
+ ▸ Table views
+${row('pp.help()', 'This cheat sheet')}
+${row('pp.status()', 'Print summary of all tracked tables')}
+${row('pp.tables()', 'Object: gameId → full row')}
+${row('pp.get(id)', 'One row · id = numeric uid OR gameId OR lobbyId')}
+${row('pp.list()', 'Compact array (total > 0) incl. playersKnown')}
+${row('pp.betting()', 'Subset with canBet and enough history')}
+${row('pp.players(id)', 'Seated players for table, or null if unknown')}
+${row('pp.playersKnown(id)', 'true when lobby sent totalSeatedPlayers')}
+
+ ▸ Live snapshots
+${row('pp.live(id)', 'Grouped recent stream fields (cards, timer, …)')}
+${row('pp.lastEvents(id)', 'Alias of pp.live')}
+
+ ▸ Road / PBT
+${row('pp.road(id)', 'bigRoad blob for table')}
+${row('pp.pbt(id)', "Chronological ['P','B','T',…]")}
+${row('pp.pbtStr(id)', 'Same sequence as string')}
+${row('pp.lastN(id, n)', 'Last n results')}
+${row('pp.sequences()', 'All tables + arrays')}
+${row('pp.seqAll()', 'Pretty-print sequences in console')}
+
+ ▸ ID mapping
+${row('pp.gameToLobby(g)', 'lobby id from game id')}
+${row('pp.lobbyToGame(l)', 'game id from lobby id')}
+
+ ▸ Global / meta
+${row('pp.stats()', 'Lobby global stats + playersCount blob')}
+${row('pp.order()', 'tableKey / tablesorder array')}
+${row('pp.seq()', 'Highest seq seen')}
+${row('pp.msgs()', 'Parsed JSON message count')}
+${row('pp.lpbetCount()', 'Outgoing <lpbet> sends observed')}
+${row('pp.lastLpbet()', 'Last parsed lpbet from WS send')}
+${row('pp.waitLpbet(id, {side,since,minTotal,timeoutMs})', 'Promise: wire stake sum for table + side')}
+${row('pp.onLpbet(fn)', 'Callback on each lpbet; returns unsubscribe')}
+${row('pp.count()', 'Tables in internal map')}
+${row('pp.setWarnFilter(v)', 'Suppress GoodRoad / tablesOrder noise')}
+${row('pp.warnFilter()', 'Current filter on/off')}
+
+ ▸ Raw dump
+${row('pp.configs()', 'Raw tableconfig by game id')}
+${row('pp.export()', 'JSON stringify of all table rows')}
+${row('pp.clear()', 'Clear all in-memory state')}
+
+${line('─')}
+  Tip: use a monospace console font so columns align.
+`.trimEnd();
+            console.log(t);
+        },
+
+        // ID mapping functions
+        gameToLobby: (gameId) => gameToLobby.get(gameId) || null,
+        lobbyToGame: (lobbyId) => lobbyToGame.get(String(lobbyId)) || null,
+
+        list: () => [...tables.values()]
+            .filter(t => t.total > 0)
+            .sort((a, b) => a.uid - b.uid)
+            .map(t => {
+                const seq = getPBTSequence(t);
+                return {
+                    uid: t.uid,
+                    id: t.id,
+                    gameId: t.gameId,
+                    lobbyId: t.lobbyId,
+                    name: t.name,
+                    players: hasKnownPlayers(t) ? t.players : null,
+                    playersKnown: hasKnownPlayers(t),
+                    P: t.P,
+                    B: t.B,
+                    T: t.T,
+                    total: t.total,
+                    canBet: t.canBet,
+                    ratio: calcRatio(t),
+                    upd: t.updates,
+                    last10: seq.slice(-10).join('')
+                };
+            }),
+
+        // Get tables that can currently bet
+        betting: () => [...tables.values()]
+            .filter(t => t.canBet === true && t.total >= 20)
+            .sort((a, b) => calcRatio(a) - calcRatio(b))
+            .map(t => ({
+                uid: t.uid,
+                gameId: t.gameId,
+                name: t.name,
+                P: t.P,
+                B: t.B,
+                T: t.T,
+                ratio: calcRatio(t)
+            })),
+
+        status: () => {
+            const active = [...tables.values()].filter(t => t.total > 0);
+            console.log(`\n═══ PP TABLES (${active.length}) | msgs:${msgCount} | seq:${lastSeq} ═══\n`);
+            active
+                .sort((a, b) => a.uid - b.uid)
+                .forEach(t => {
+                    const bet = t.canBet ? '✓' : ' ';
+                    const seq = getPBTSequence(t).slice(-8).join('');
+                    console.log(
+                        `#${String(t.uid).padStart(2)}${bet} ${(t.name || t.gameId || '?').slice(0,18).padEnd(18)} ` +
+                        `P:${String(t.P||0).padStart(2)} B:${String(t.B||0).padStart(2)} T:${t.T||0} ` +
+                        `(${String(t.total||0).padStart(2)}) ${seq.padEnd(8)}`
+                    );
+                });
+        },
+
+        road: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return t?.bigRoad || null;
+        },
+
+        // Get P/B/T sequence for a table
+        // Returns array like ['P','B','B','T','P',...] in chronological order
+        pbt: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return getPBTSequence(t);
+        },
+
+        // Get P/B/T sequence as string (e.g., "PBBPTBPBBB")
+        pbtStr: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return getPBTSequence(t).join('');
+        },
+
+        // Seated players count for a table. Returns null when unknown.
+        players: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return hasKnownPlayers(t) ? t.players : null;
+        },
+
+        playersKnown: (uidOrId) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            return hasKnownPlayers(t);
+        },
+
+        // Get last N results for a table
+        lastN: (uidOrId, n = 10) => {
+            const id = resolveId(uidOrId);
+            const t = id ? tables.get(id) : null;
+            const seq = getPBTSequence(t);
+            return seq.slice(-n);
+        },
+
+        // List all tables with full sequences
+        sequences: () => [...tables.values()]
+            .filter(t => t.total > 0)
+            .sort((a, b) => a.uid - b.uid)
+            .map(t => {
+                const seq = getPBTSequence(t);
+                return {
+                    uid: t.uid,
+                    name: t.name || t.gameId,
+                    total: t.total,
+                    P: t.P,
+                    B: t.B,
+                    T: t.T,
+                    sequence: seq,
+                    sequenceStr: seq.join('')
+                };
+            }),
+
+        // Print all tables with full sequences
+        seqAll: () => {
+            console.log(`\n═══ ALL TABLE SEQUENCES (${tables.size} tables) ═══\n`);
+            [...tables.values()]
+                .filter(t => t.total > 0)
+                .sort((a, b) => a.uid - b.uid)
+                .forEach(t => {
+                    const seq = getPBTSequence(t);
+                    const name = (t.name || t.gameId || '?').slice(0, 20).padEnd(20);
+                    console.log(`#${String(t.uid).padStart(2)} ${name} (${t.total})`);
+                    console.log(`    ${seq.join('')}`);
+                    console.log('');
+                });
+        },
+
+        export: () => JSON.stringify(Object.fromEntries(tables), null, 2),
+        clear: () => {
+            tables.clear();
+            configs.clear();
+            uidMap.clear();
+            idToUid.clear();
+            gameToLobby.clear();
+            lobbyToGame.clear();
+            nextUid = 1;
+            msgCount = 0;
+            lastSeq = 0;
+            tablesOrder = [];
+            globalStats = null;
+            lastPlayersCount = null;
+            lpbetCount = 0;
+            lastLpbetEvent = null;
+            lpbetHistory.length = 0;
+        }
+    };
+
+    console.log('[PP] v3.2.5 | + outgoing lpbet capture (pp.waitLpbet / pp.lastLpbet)');
+    console.log('[PP] API: pp.help() pp.status() pp.get(1) pp.live(1) …');
+})();
+
+/*
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     PP WEBSOCKET INTERCEPTOR API v3.2                        ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  Intercepts Pragmatic Play WebSocket data from lobby + multiplay game.       ║
+║  Data is available via window.pp API.                                        ║
+║                                                                              ║
+║  UPDATES IN v3.2:                                                            ║
+║  - pp.help() lists all public methods in the console                          ║
+║  - All PP game/lobby frame types from capture: ShoeSummary, goodroad, game,  ║
+║    timer, dealer, table meta, subscribe, betstats, sidebets, gameresult,     ║
+║    winners, dealing/shuffle/seat/pong/voip, card + cardinc, playersCount       ║
+║  - Lobby tableId partial updates (statistics/gameResult/roads without name)   ║
+║  - WS URL tableId context for dealer/table/shoe/pong when frame omits table  ║
+║  - pp.stats() adds lobbyPlayersCount; clear() resets global lobby stats       ║
+║  - pp.live(id) / pp.lastEvents(id) expose grouped live-stream snapshots      ║
+║                                                                              ║
+║  UPDATES IN v3.1:                                                            ║
+║  ────────────────                                                            ║
+║  - Fixed UID mapping during lobby→game table migration                       ║
+║  - Added P/B/T sequence extraction: pp.pbt(), pp.pbtStr(), pp.lastN()        ║
+║  - pp.status() and pp.list() now show last results                           ║
+║  - Delta updates (player count only) now handled correctly                   ║
+║                                                                              ║
+║  QUICK START                                                                 ║
+║  ───────────                                                                 ║
+║  pp.help()                Print API cheat sheet in the console                 ║
+║  pp.status()              Print all tables with stats and bet status         ║
+║  pp.list()                Array with full table info                         ║
+║  pp.betting()             Tables currently open for betting                  ║
+║  pp.count()               Number of tables                                   ║
+║  pp.msgs()                Total WebSocket messages received                  ║
+║  pp.seq()                 Last sequence number                               ║
+║                                                                              ║
+║  TABLE DATA                                                                  ║
+║  ──────────                                                                  ║
+║  pp.tables()              All tables as object {gameId: tableData, ...}      ║
+║  pp.get(1)                Get table by UID / gameId / lobbyId                 ║
+║  pp.live(1)               Grouped live stream: card, timer, goodroad, …      ║
+║  pp.lastEvents(1)         Same as pp.live                                    ║
+║  pp.configs()             Raw tableconfig data from game WebSocket           ║
+║  pp.order()               Table order array from WebSocket                   ║
+║  pp.stats()               Global stats {playerCount: N}                      ║
+║                                                                              ║
+║  ID MAPPING                                                                  ║
+║  ──────────                                                                  ║
+║  pp.gameToLobby("cbcf..") Get lobbyId from gameId                           ║
+║  pp.lobbyToGame("422")    Get gameId from lobbyId                           ║
+║                                                                              ║
+║  ROAD DATA                                                                   ║
+║  ─────────                                                                   ║
+║  pp.road(1)               Get bigRoad array by UID or ID                     ║
+║  pp.pbt(1)                Get P/B/T sequence as array ['P','B','T',...]      ║
+║  pp.pbtStr(1)             Get P/B/T sequence as string "PBTPBBPB..."         ║
+║  pp.lastN(1, 10)          Get last N results for a table                     ║
+║  pp.sequences()           All tables with full sequences as array            ║
+║  pp.seqAll()              Print all tables with full sequences               ║
+║                                                                              ║
+║  EXPORT                                                                      ║
+║  ──────                                                                      ║
+║  pp.export()              JSON string of all table data                      ║
+║  pp.clear()               Clear all stored data                              ║
+║                                                                              ║
+║  TABLE DATA STRUCTURE                                                        ║
+║  ────────────────────                                                        ║
+║  {                                                                           ║
+║    uid: 1,                           // Simple numeric ID (1,2,3...)         ║
+║    id: "cbcf6qas8fscb222",           // Same as gameId                       ║
+║    gameId: "cbcf6qas8fscb222",       // Game table ID                        ║
+║    lobbyId: "422",                   // Lobby/operator ID                    ║
+║    name: "BACCARAT_3",               // Display name                         ║
+║    type: "baccarat6",                // Table type                           ║
+║    category: "Regular",              // Table category                       ║
+║    minBet: 0.2, maxBet: 150000,      // Bet limits                          ║
+║    bettingTime: 18,                  // Betting window in seconds            ║
+║                                                                              ║
+║    // Win counts                                                             ║
+║    P: 17,                            // Player wins                          ║
+║    B: 21,                            // Banker wins                          ║
+║    T: 4,                             // Tie count                            ║
+║    PP: 2,                            // Player Pairs count                    ║
+║    BP: 4,                            // Banker Pairs count                    ║
+║    total: 42,                        // Total rounds                         ║
+║    ratio: 0.095,                     // |P-B|/total (lower = more balanced)  ║
+║                                                                              ║
+║    // Betting status                                                         ║
+║    canBet: true,                     // Currently open for betting           ║
+║    currentGame: "12057986217",       // Current game round ID                ║
+║    betStatusTime: 1733500000000,     // Last bet status change               ║
+║                                                                              ║
+║    // Road data                                                              ║
+║    bigRoad: [["PN0","---",...], ...],    // Big Road 2D array                ║
+║    beadPlate: [...],                     // Bead Plate                       ║
+║    bigEyeBoy: [...],                     // Big Eye Boy                      ║
+║    smallRoad: [...],                     // Small Road                       ║
+║    cockroachPig: [...],                  // Cockroach Pig                    ║
+║    playerEnhance: {...},                 // Next Player prediction           ║
+║    bankerEnhance: {...},                 // Next Banker prediction           ║
+║                                                                              ║
+║    // Meta                                                                   ║
+║    open: true,                       // Table open                           ║
+║    seq: 425,                         // Last message sequence                ║
+║    updated: 1733500000000,           // Last update timestamp                ║
+║    updates: 15,                      // Update count                         ║
+║    source: "game"                    // Data source: lobby/game/game-la      ║
+║  }                                                                           ║
+║                                                                              ║
+║  WEBSOCKET MESSAGE TYPES                                                     ║
+║  ───────────────────────                                                     ║
+║  LOBBY (dga.pragmaticplaylive.net/ws):                                       ║
+║    {globalStats}           → pp.stats()                                      ║
+║    {tableKey}              → pp.order()                                      ║
+║    {tableId, baccaratShoeSummary, gameResult, ...}  → pp.get(id)             ║
+║                                                                              ║
+║  GAME (gs17.pragmaticplaylive.net/game):                                     ║
+║    {tablesorder, seq}      → pp.order()                                      ║
+║    {tableconfig}           → pp.configs(), maps gameId <-> lobbyId           ║
+║    {statistic}             → pp.get(id) with full road data + counters       ║
+║    {statisticLA}           → pp.get(id) incremental update                   ║
+║    {betsopen}              → pp.get(id).canBet = true                        ║
+║    {betsclosed}            → pp.get(id).canBet = false                       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/* ── stake-baccarat-pick-scoring.js ── */
+
+/*
+ * Renamed live script (enabled in TM backup 2026-08-08).
+ * pick — table randomness scoring (pick API)
+ * Snapshot: archive/pick.js.bak
+ * (Not merged with sibling baccarat scripts — socks → pick → play pipeline.)
+ */
+
+(function() {
+    'use strict';
+
+    /**
+     * v4.0 — "Absurdity firewall" + chop signal from PP payloads
+     * Prefer: goodroadLive / goodRoadsDepthMap playerPingPongDepth & bankerPingPongDepth
+     * Prefer: betstats playerpercentage / bankerpercentage (crowd)
+     * Fallback: shallow alternations in last-12 when depths missing (labelled in diagnostics)
+     */
+
+    const Config = {
+        MIN_TOTAL: 30,              // Ghost tables — not enough rounds
+        MAX_TIE_RATIO: 0.12,        // ~12%+ ties ⇒ reject ("tie storm")
+        MAX_PB_GAP_RATIO: 0.10,     // |P-B|/total > 10% ⇒ reject ("gravity")
+        MAX_CROWD_PCT: 85,          // Either side ≥ 85% ⇒ reject (percent units 0..100)
+
+        REQUIRE_BETSTATS_FOR_CROWD: false,
+
+        MIN_EFFECTIVE_DEPTH: 0,     // Extra gate: chop depth gate (PP uses max of both depths); 0 = off
+
+        // Display score clamps
+        DISPLAY_SCORE_ELIGIBLE_MIN: 50,
+        DISPLAY_SCORE_ELIGIBLE_MAX: 100,
+    };
+
+    const getSequence = (t) => {
+        if (!window.pp) return [];
+        const id = t?.uid || t?.gameId || t?.id || t;
+        return window.pp.pbt(id) || [];
+    };
+
+    const getLive = (t) => {
+        if (!window.pp) return null;
+        const id = t?.uid || t?.gameId || t?.id || t;
+        return window.pp.live(id) || null;
+    };
+
+    const n = (v) => {
+        if (v == null || v === '') return null;
+        const x = typeof v === 'number' ? v : parseFloat(String(v).replace(/%/g, ''));
+        return Number.isFinite(x) ? x : null;
+    };
+
+    /** If value looks like ratio 0..1 convert to percentage for crowd compare */
+    const asPercentMaybe = (v) => {
+        const x = n(v);
+        if (x == null) return null;
+        if (x > 0 && x <= 1) return x * 100;
+        return x;
+    };
+
+    const countAlternations = (seq) => {
+        const filtered = (seq || []).filter(x => x !== 'T');
+        if (filtered.length < 2) return 0;
+        let alt = 0;
+        for (let i = 1; i < filtered.length; i++) {
+            if (filtered[i] !== filtered[i - 1]) alt++;
+        }
+        return alt;
+    };
+
+    const walkForCrowdPct = (obj, maxDepth = 6) => {
+        let player = null;
+        let banker = null;
+        const visit = (o, d) => {
+            if (!o || typeof o !== 'object' || d > maxDepth) return;
+            if (Array.isArray(o)) {
+                for (const it of o) visit(it, d + 1);
+                return;
+            }
+            for (const [key, val] of Object.entries(o)) {
+                const kl = key.toLowerCase().replace(/\s+/g, '');
+                if (/^playerperc/.test(kl) || kl === 'playerpercentage' || kl === 'pctplayer') {
+                    const p = asPercentMaybe(val);
+                    if (p != null) player = player == null ? p : Math.max(player, p);
+                }
+                if (/^bankerperc/.test(kl) || kl === 'bankerpercentage' || kl === 'pctbanker') {
+                    const b = asPercentMaybe(val);
+                    if (b != null) banker = banker == null ? b : Math.max(banker, b);
+                }
+                if (val != null && typeof val === 'object') visit(val, d + 1);
+            }
+        };
+        visit(obj, 0);
+        return { player, banker };
+    };
+
+    /** Pull ping-pong depth from known maps or deep-scan goodroad payload */
+    const extractPingPongDepths = (t) => {
+        let pp = 0;
+        let bp = 0;
+        let source = '';
+
+        // Game WS goodroad — same as working play.js / console snippet (parseInt on top-level keys)
+        const gl = t?.goodroadLive;
+        if (gl && typeof gl === 'object') {
+            const a = parseInt(gl.playerPingPongDepth || 0, 10);
+            const b = parseInt(gl.bankerPingPongDepth || 0, 10);
+            pp = Number.isFinite(a) ? a : 0;
+            bp = Number.isFinite(b) ? b : 0;
+            source = 'goodroadLive';
+        }
+
+        const takeMap = (m, label) => {
+            if (!m || typeof m !== 'object') return;
+            const a = n(m.playerPingPongDepth ?? m.playerpingpongdepth);
+            const b = n(m.bankerPingPongDepth ?? m.bankerpingpongdepth);
+            if (a != null) {
+                pp = Math.max(pp, a);
+                if (!source) source = label;
+            }
+            if (b != null) {
+                bp = Math.max(bp, b);
+                if (!source) source = label;
+            }
+        };
+
+        takeMap(t?.goodRoadsDepthMap, 'goodRoadsDepthMap');
+
+        const deepPing = (root, label) => {
+            if (!root || typeof root !== 'object') return;
+            const scan = (o, depth) => {
+                if (!o || typeof o !== 'object' || depth > 5) return;
+                for (const [k, v] of Object.entries(o)) {
+                    const kl = k.toLowerCase();
+                    if (/pingpong.*depth|ping_pong.*depth/.test(kl) ||
+                        (/pingpong/.test(kl) && /depth/.test(kl))) {
+                        const num = n(v);
+                        if (num != null) {
+                            if (/player/.test(kl)) pp = Math.max(pp, num);
+                            else if (/banker/.test(kl)) bp = Math.max(bp, num);
+                            else if (pp === 0 && bp === 0) {
+                                pp = num;
+                                source = source || label + '-ambiguous';
+                            }
+                        }
+                    } else if (v != null && typeof v === 'object') scan(v, depth + 1);
+                }
+            };
+            scan(root, 0);
+            if ((pp > 0 || bp > 0) && !source) source = label;
+        };
+
+        if (pp === 0 && bp === 0) deepPing(t?.goodroadLive, 'goodroadLive-scan');
+
+        const effective = Math.max(pp, bp);
+        const depthSource = effective > 0 ? (source || 'payload') : 'none';
+
+        return { pp, bp, effective, depthSource };
+    };
+
+    const scoreTable = (t) => {
+        if (!t) {
+            return {
+                score: 0,
+                eligible: false,
+                reasons: ['no-table'],
+                breakdown: {},
+                firewall: {},
+                diagnostics: {},
+            };
+        }
+
+        const total = t.total ?? 0;
+        const P = t.P ?? 0;
+        const B = t.B ?? 0;
+        const Tie = t.T ?? 0;
+        const pbGapRatio = total > 0 ? Math.abs(P - B) / total : 1;
+        const tieRatio = total > 0 ? Tie / total : 0;
+
+        const firewall = [];
+
+        // --- HARD REJECT ---
+        if (total < Config.MIN_TOTAL) {
+            firewall.push(`ghost: total=${total}<${Config.MIN_TOTAL}`);
+            return mkReject(firewall, { total, P, B, Tie, pbGapRatio, tieRatio }, t);
+        }
+
+        if (tieRatio > Config.MAX_TIE_RATIO + 1e-9) {
+            firewall.push(`tie-storm: ${(tieRatio * 100).toFixed(1)}% (> ${Config.MAX_TIE_RATIO * 100}%)`);
+        }
+
+        if (pbGapRatio > Config.MAX_PB_GAP_RATIO + 1e-9) {
+            firewall.push(`gravity: |P−B|/total=${(pbGapRatio * 100).toFixed(1)}% (> ${Config.MAX_PB_GAP_RATIO * 100}%)`);
+        }
+
+        const bs = t.betstats;
+        let crowd = { playerPct: null, bankerPct: null };
+        if (bs && typeof bs === 'object') {
+            crowd = walkForCrowdPct(bs);
+            const extremes = [];
+            if (crowd.playerPct != null && crowd.playerPct >= Config.MAX_CROWD_PCT + 1e-9)
+                extremes.push(`playerPct=${crowd.playerPct.toFixed(1)}%`);
+            if (crowd.bankerPct != null && crowd.bankerPct >= Config.MAX_CROWD_PCT + 1e-9)
+                extremes.push(`bankerPct=${crowd.bankerPct.toFixed(1)}%`);
+            if (extremes.length) {
+                firewall.push(`crowd: ${extremes.join(', ')} (≥ ${Config.MAX_CROWD_PCT}%)`);
+            }
+        } else if (Config.REQUIRE_BETSTATS_FOR_CROWD) {
+            firewall.push('crowd: no betstats payload');
+        }
+
+        const seq12 = countAlternations(getSequence(t).slice(-12));
+        const depthInfo = extractPingPongDepths(t);
+
+        if (Config.MIN_EFFECTIVE_DEPTH > 0 && depthInfo.effective < Config.MIN_EFFECTIVE_DEPTH) {
+            firewall.push(`chop-too-low: maxDepth=${depthInfo.effective} (< ${Config.MIN_EFFECTIVE_DEPTH})`);
+        }
+
+        if (firewall.length) return mkReject(firewall, { total, P, B, Tie, pbGapRatio, tieRatio }, t, seq12, depthInfo, crowd);
+
+        const notes = [];
+
+        let chopContribution = depthInfo.effective;
+        let chopFallback = false;
+        if (depthInfo.effective === 0 && seq12 > 0) {
+            chopContribution = seq12 / 11;
+            chopFallback = true;
+            notes.push('depth from last-12 alts (no PP depth yet)');
+        }
+
+        const tieQuality = Math.max(0, 25 - tieRatio * 200);
+        const balanceQuality = Math.max(0, 55 - pbGapRatio * 200);
+        const chopQuality = Math.min(40, chopContribution * (chopFallback ? 6 : 8));
+        const historyQuality = Math.min(15, (total / 60) * 15);
+
+        let displayScore =
+            chopQuality +
+            tieQuality +
+            balanceQuality +
+            historyQuality;
+
+        displayScore = Math.round(
+            Math.max(
+                Config.DISPLAY_SCORE_ELIGIBLE_MIN,
+                Math.min(Config.DISPLAY_SCORE_ELIGIBLE_MAX, displayScore)
+            )
+        );
+
+        let canBetBonus = 0;
+        // If stream says bets open, do not penalize for dealing/shuffle flags (PP often overlaps phases)
+        if (t.canBet === true) canBetBonus = 5;
+        displayScore = Math.round(Math.min(100, displayScore + canBetBonus));
+
+        return {
+            score: displayScore,
+            eligible: true,
+            firewall: [],
+            reasons: [],
+            notes,
+            breakdown: {
+                chop: Math.round(chopQuality),
+                balance: Math.round(balanceQuality),
+                ties: Math.round(tieQuality),
+                history: Math.round(historyQuality),
+                canBet: canBetBonus,
+            },
+            diagnostics: {
+                pbGapRatio,
+                tieRatio,
+                seqAlternations12: seq12,
+                chopFallback,
+                ...depthInfo,
+                crowd,
+            },
+        };
+
+        function mkReject(fw, sums, tbl, sq = 0, dpt = {}, cr = {}) {
+            return {
+                score: 0,
+                eligible: false,
+                reasons: [...fw],
+                firewall: [...fw],
+                notes: fw,
+                breakdown: {},
+                diagnostics: {
+                    total: sums.total,
+                    P: sums.P,
+                    B: sums.B,
+                    T: sums.Tie,
+                    pbGapRatio: sums.pbGapRatio,
+                    tieRatio: sums.tieRatio,
+                    seqAlternations12: sq,
+                    ...(dpt && typeof dpt === 'object' ? dpt : {}),
+                    crowd: cr,
+                    name: tbl.name,
+                    gameId: tbl.gameId,
+                },
+            };
+        }
+    };
+
+    const comparator = (a, b) => {
+        const ae = a.diagnostics?.effective ?? Math.max(a.diagnostics?.pp ?? 0, a.diagnostics?.bp ?? 0);
+        const be = b.diagnostics?.effective ?? Math.max(b.diagnostics?.pp ?? 0, b.diagnostics?.bp ?? 0);
+        if (be !== ae) return be - ae;
+
+        const ar = Math.abs(a.P - a.B) / (a.total || 1);
+        const br = Math.abs(b.P - b.B) / (b.total || 1);
+        if (ar !== br) return ar - br;
+
+        const at = (a.T || 0) / (a.total || 1);
+        const bt = (b.T || 0) / (b.total || 1);
+        if (at !== bt) return at - bt;
+
+        return (b.total || 0) - (a.total || 0);
+    };
+
+    const getAllScored = () => {
+        if (!window.pp) return [];
+        const tables = Object.values(window.pp.tables());
+        return tables.map(t => {
+            const result = scoreTable(t);
+            const seq = getSequence(t);
+            const live = getLive(t);
+            const total = t.total || 0;
+            const ratio = total > 0 ? Math.abs((t.P || 0) - (t.B || 0)) / total : 0;
+            const tieRatio = total > 0 ? (t.T || 0) / total : 0;
+            const diagnostics = result.diagnostics || {};
+            const currentStreak = (() => {
+                const fx = seq.filter(x => x !== 'T');
+                if (!fx.length) return { side: null, length: 0 };
+                const last = fx[fx.length - 1];
+                let len = 0;
+                for (let i = fx.length - 1; i >= 0; i--) {
+                    if (fx[i] !== last) break;
+                    len++;
+                }
+                return { side: last, length: len };
+            })();
+            const streak = currentStreak;
+            return {
+                ...t,
+                ...result,
+                ratio,
+                ratioStr: ratio.toFixed(3),
+                tieRatio,
+                tieRatioStr: `${(tieRatio * 100).toFixed(1)}%`,
+                live,
+                streak,
+                last12: seq.slice(-12).join(''),
+                altIn12: countAlternations(seq.slice(-12)),
+                pingPong: {
+                    pp: diagnostics.pp ?? null,
+                    bp: diagnostics.bp ?? null,
+                    effective: diagnostics.effective ?? 0,
+                    source: diagnostics.depthSource,
+                },
+            };
+        }).sort(comparator);
+    };
+
+    const getEligible = () => getAllScored().filter(x => x.eligible);
+
+    /** Everything sorted (eligible + rejected — rejected score 0) */
+    const getRankedAll = () => getAllScored();
+
+    const getBest = () => getEligible()[0] || null;
+
+    const pick = () => {
+        const table = getBest();
+        if (!table) return null;
+        return { table, score: table.score };
+    };
+
+    const topN = (n = 5) => getEligible().slice(0, n);
+
+    const scoreLabel = (s, eligible) => {
+        if (!eligible) return 'REJECT';
+        if (s < 58) return 'FAIR';
+        if (s < 68) return 'GOOD';
+        if (s < 80) return 'GREAT';
+        return 'IDEAL';
+    };
+
+    const scoreIcon = (s, eligible) => {
+        if (!eligible) return '🔴';
+        if (s < 58) return '🟡';
+        if (s < 68) return '🟢';
+        if (s < 80) return '💚';
+        return '⭐️';
+    };
+
+    const liveFlags = (live) => {
+        if (!live) return '-----';
+        return [
+            live.dealing ? 'D' : '-',
+            live.shuffling?.active ? 'S' : '-',
+            live.betsClosingSoon ? 'C' : '-',
+            live.voip ? 'V' : '-',
+            (live.card || live.cardInc) ? 'K' : '-',
+        ].join('');
+    };
+
+    /** Console display only — raw `name` from API may use underscores */
+    const displayTableName = (s) => String(s ?? '').replace(/_/g, ' ');
+
+    window.pick = {
+        config: Config,
+
+        score: scoreTable,
+        scoreAll: getAllScored,
+
+        eligible: getEligible,
+        all: getRankedAll,
+        ranked: getRankedAll,
+        best: getBest,
+        pick,
+        top: topN,
+
+        chop: (t) => extractPingPongDepths(t).effective || countAlternations(getSequence(t).slice(-12)),
+
+        status: () => {
+            const all = getRankedAll();
+            const eligible = all.filter(t => t.eligible);
+            const line = () => `${'═'.repeat(74)}`;
+
+            console.log(`
+${line()}
+║ TABLE PICKER v4 (${eligible.length} eligible / ${all.length} total) ${' '.repeat(Math.max(0, 74 - 44))} ║
+${line()}
+  Sort: PingPong depth (PP) ↑  →  balance |P−B|/total ↑  →  tie % ↑`);
+
+            eligible.slice(0, 22).forEach((t) => {
+                const icon = scoreIcon(t.score, true);
+                const bet = t.canBet ? '✓' : ' ';
+                const name = displayTableName(t.name || '?').slice(0, 16).padEnd(16);
+                const chop = `${t.pingPong.effective}`.padStart(3);
+                const gap = `${(Math.abs((t.P || 0) - (t.B || 0)) / (t.total || 1) * 100).toFixed(0)}%`;
+                console.log(`${icon}${bet} s:${String(t.score).padStart(3)} chop:${chop} gap:${gap.padStart(4)} ` +
+                    `T%:${parseFloat(String(t.tieRatioStr).replace('%', '')).toFixed(0).padStart(2)}% ` +
+                    `${name} #${t.uid} ${liveFlags(t.live)}`);
+            });
+            const bestPick = getBest();
+            console.log(`${line()}
+  Best: ${bestPick ? displayTableName(bestPick.name) : '(none)'} · pick.best() · pick.summary()
+${line()}
+`);
+        },
+
+        check: (uidOrId) => {
+            const t = window.pp?.get(uidOrId);
+            if (!t) {
+                console.log('Table not found');
+                return null;
+            }
+
+            const r = scoreTable(t);
+            const d = r.diagnostics || {};
+            console.log(`
+┌────────────────────────────────────────────────────────────
+│ ${displayTableName(t.name || t.gameId).slice(0, 54)}
+│ id ${t.uid} · game ${(t.gameId || '').slice(0, 32)}
+├────────────────────────────────────────────────────────────
+│ PASS firewall: ${r.eligible ? 'YES ✓' : 'NO ✗'}   display score: ${r.score}
+└────────────────────────────────────────────────────────────`);
+
+            console.log(`  Shoe   P:${t.P} B:${t.B} T:${t.T} total:${t.total}`);
+            console.log(`  |P−B|/total: ${((d.pbGapRatio ?? 0) * 100).toFixed(2)}%  (reject if > ${Config.MAX_PB_GAP_RATIO * 100}%)`);
+            console.log(`  ties/total:   ${((d.tieRatio ?? 0) * 100).toFixed(2)}%  (reject if > ${Config.MAX_TIE_RATIO * 100}%)`);
+            console.log(`  Chop depth   PP:${d.pp ?? '—'}  BP:${d.bp ?? '—'}  max:${d.effective ?? 0}  [${d.depthSource}]`);
+            const cr = d.crowd || {};
+            console.log(`  Crowd pct    Player:${cr.playerPct != null ? `${cr.playerPct.toFixed(1)}%` : '—'}  Banker:${cr.bankerPct != null ? `${cr.bankerPct.toFixed(1)}%` : '—'}  (reject ≥${Config.MAX_CROWD_PCT}% on loaded side)`);
+            console.log(`  Alt last-12: ${countAlternations(getSequence(t).slice(-12))} (fallback when depths missing)`);
+
+            if (r.firewall?.length) {
+                console.log('  REASONS:', r.firewall.join(' · '));
+            }
+            return r;
+        },
+
+        summary: () => {
+            const rows = topN(5);
+            console.log('\n═══ TOP 5 (eligible) ═══\n');
+            rows.forEach((t, i) => {
+                const chop = `${t.pingPong.effective}`.padStart(2);
+                const gap = `${(Math.abs((t.P || 0) - (t.B || 0)) / (t.total || 1) * 100).toFixed(0)}%`;
+                console.log(
+                    `${i + 1}. ${scoreIcon(t.score, true)} ${displayTableName(t.name || '').slice(0, 26).padEnd(26)} chop:${chop} gap:${gap} ` +
+                        `tie:${parseFloat(String(t.tieRatioStr).replace('%', '')).toFixed(0)}% uid:${t.uid}`
+                );
+            });
+            console.log('');
+        },
+
+        live: (uidOrId) => window.pp?.live(uidOrId) || null,
+
+        help: () => {
+            console.log(`
+╔════════════════════════════════════════════════════════════════════╗
+║  pick v4 — firewall + PingPong depth (goodroadLive / lobby map)          ║
+╠════════════════════════════════════════════════════════════════════╣
+║  HARD REJECT                                                          ║
+║  • total < ${Config.MIN_TOTAL}                                                         ║
+║  • T/total > ${Config.MAX_TIE_RATIO * 100}% (tie storm)                                  ║
+║  • |P−B|/total > ${Config.MAX_PB_GAP_RATIO * 100}% (gravity)                              ║
+║  • betstats: playerPct or bankerPct ≥ ${Config.MAX_CROWD_PCT}% (crowd herd)                       ║
+║                                                                       ║
+║  SORT (eligible rows)                                                  ║
+║  • max(playerPingPongDepth, bankerPingPongDepth) ↑ first              ║
+║  • then |P−B|/total lower better                                      ║
+║  • fallback chop signal: alternations in last 12                      ║
+║                                                                       ║
+║  COMMANDS pick.status · pick.summary · pick.check(uid) · pick.best() ║
+╚════════════════════════════════════════════════════════════════════╝
+`);
+        },
+    };
+
+    const waitForPP = () => new Promise(resolve => {
+        const check = () => window.pp ? resolve() : setTimeout(check, 100);
+        check();
+    });
+
+    waitForPP().then(() => {
+        console.log('[Pick] v4.0 | Firewall + PP ping-pong depth + crowd (betstats)');
+        console.log('[Pick] pick.help() · pick.status()');
+    });
+
+})();
+
+/* ── stake-baccarat-play-martingale.js ── */
+
+/*
+ * Renamed live script (enabled in TM backup 2026-08-08).
+ * play — Martingale betting (play API)
+ * Snapshot: archive/play.js.bak
+ * (Not merged with sibling baccarat scripts — socks → pick → play pipeline.)
+ */
+
+(function() {
+    'use strict';
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PROGRESSION CONFIGURATION (Martingale vs Paroli)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const Config = {
+        /** `'martingale'` · LOSE → double up ladder | `'paroli'` · WIN → double, reset after loss or PAROLI_MAX_WIN_STREAK wins */
+        PROGRESSION_MODE: 'paroli',
+        /** After this many consecutive wins (using STEPS lengths), reset to step 1u. Only used when PROGRESSION_MODE is `'paroli'`. */
+        PAROLI_MAX_WIN_STREAK: 3,
+
+        // Martingale ladder (same steps used as Paroli “rungs”: 1u → 2u → 4u)
+        STEPS: [1, 2, 4],           // Unit multipliers per step
+        UNIT_FRACTION: 1/8,         // Unit = balance / 8
+        MIN_UNIT: 0.2,              // Minimum unit size in dollars
+
+        // Exit rules (in units)
+        SESSION_STOP_LOSS: -6,      // Stop entire session
+        SESSION_STOP_WIN: 3,        // Take profit at +3 units, start new session
+
+        // Betting
+        SIDE: null,                 // null = fair P/B each bet (see RANDOM_SIDE_ENGINE), 'B' / 'P' = fixed
+        /**
+         * Used only when SIDE is null. Default `'math'` = `Math.random()` (non-crypto).
+         * `'crypto'` = Web Crypto `getRandomValues` (CSPRNG, uniform bit → P/B).
+         */
+        RANDOM_SIDE_ENGINE: 'math',
+        CHIP_VALUE: 0.20,           // Value per click ($0.20 chip)
+        BET_DELAY: 2000,            // Delay between bet attempts (ms)
+        /** After `canBet` is true, wait this long before clicking (ms) */
+        PRE_BET_DELAY_MS: 500,
+        WAIT_FOR_RESULT: 30000,     // Max wait for result (ms) - Speed Baccarat can be ~27s
+        /** After clicks, wait for socks `pp.waitLpbet` (real <lpbet> on WS); requires socks ≥ 3.2.5 */
+        LPBET_CONFIRM_MS: 3300,
+
+        // DOM — PP multibaccarat 1.3.30 / core 26.7.0 (see core/elements.txt)
+        PLAYER_BTN: '[data-betcode="0"]',
+        BANKER_BTN: '[data-betcode="1"]',
+        TILE_SEL: '[id^="TileHeight-"]',
+        /** Current wallet first; keep mobile chip selectors as fallback. */
+        WALLET_VALUE_SELS: [
+            '[data-testid="wallet-balance-value"] span',
+            '[data-testid="wallet-mobile-balance"] [data-testid="wallet-mobile-value"] span',
+            '[data-testid="wallet-mobile-balance-value"] span',
+        ],
+        POPUP_ROOT_SELS: [
+            '[data-testid="popup-content"]',
+            '[data-testid="blocking-popup-content"]',
+            '[data-testid="modal"]',
+        ],
+        POPUP_TITLE_SEL: '[data-testid="blocking-popup-title"]',
+        POPUP_BUTTON_SEL: 'button[data-testid="button"], button[data-testid="icon-button"]',
+
+        // Table order among pick.eligible(): chop depth (goodroadLive) first, then pick score
+        SORT_ELIGIBLE_BY_CHOP: true,
+
+        // PP game WS: startshuffling → leave this table, wait, pick.pick another (keeps progression step)
+        LEAVE_ON_SHUFFLE: true,
+        SHUFFLE_SWITCH_DELAY_MS: 2000,
+    };
+
+    /** PP goodroadLive chop depth — same formula as console snippet (player vs banker ping-pong depth). */
+    const getChopDepth = (t) => {
+        if (!t) return 0;
+        const gl = t.goodroadLive;
+        const a = parseInt(gl?.playerPingPongDepth ?? 0, 10);
+        const b = parseInt(gl?.bankerPingPongDepth ?? 0, 10);
+        const pa = Number.isFinite(a) ? a : 0;
+        const pb = Number.isFinite(b) ? b : 0;
+        return Math.max(pa, pb);
+    };
+
+    /** Log / status display — PP `name` often uses underscores */
+    const displayTableName = (s) => String(s ?? '').replace(/_/g, ' ');
+
+    /** Game WS reports shuffle (new shoe prep) — socks merges startshuffling/endshuffling. */
+    const tableIsShuffling = (tableId) => {
+        if (!tableId || !window.pp) return false;
+        const row = window.pp.get(tableId);
+        if (row?.shuffling) return true;
+        const live = window.pp.live(tableId);
+        return !!(live?.shuffling?.active);
+    };
+
+    /** Leave table when shuffle starts; keep progression step for the next table. */
+    const leaveTableForShuffle = (tableId) => {
+        State.usedTables.add(tableId);
+        State.focusedTable = null;
+        State.tableBetCount = 0;
+        log(
+            `Shuffle on ${tableId}: switching table after wait · progression step unchanged (step ${State.currentStep + 1})`,
+            'info'
+        );
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const State = {
+        // Session tracking (in units)
+        sessionUnits: 0,            // +/- units this session
+        sessionBets: 0,             // Total bets placed
+        sessionWins: 0,             // Winning bets
+        sessionLosses: 0,           // Losing bets
+        sessionUnitSize: 0,         // Unit size for this session (calculated at start)
+        sessionStartBalance: 0,     // Balance when session started
+
+        // Current sequence
+        currentStep: 0,             // Next STEPS index: Martingale advances on loss · Paroli advances on win (then cap reset)
+        sequenceUnits: 0,           // Units in current sequence
+
+        // Table focus (last / current bet target — multi mode picks open table each cycle)
+        focusedTable: null,
+        usedTables: new Set(),      // Skipped until play.clearUsed() (min bet, shuffle, etc.)
+        tableBetCount: 0,
+
+        // Execution
+        running: false,
+        waitingForResult: false,
+        lastBet: null,
+        lastResult: null,
+
+        // Timers
+        intervalId: null,
+        resultTimeout: null
+    };
+
+    // Calculate unit size: balance/8, rounded DOWN to nearest chip (0.2, 0.4, 0.6...)
+    const calcUnitSize = (balance) => {
+        const calculated = balance * Config.UNIT_FRACTION;
+        // Round DOWN to nearest chip value (must be multiple of CHIP_VALUE)
+        const rounded = Math.floor(calculated / Config.CHIP_VALUE) * Config.CHIP_VALUE;
+        return Math.max(Config.MIN_UNIT, rounded);
+    };
+
+    // Get current unit size (use session's fixed unit)
+    const getUnitSize = () => State.sessionUnitSize || Config.MIN_UNIT;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // UTILITIES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    const simulateClick = (el) => {
+        if (!el) return false;
+        ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'].forEach(type => {
+            el.dispatchEvent(new MouseEvent(type, {
+                bubbles: true, cancelable: true, view: window
+            }));
+        });
+        return true;
+    };
+
+    // Dark text + saturated labels — readable on DevTools light theme (avoid gray-200 / pastel on white)
+    const LOG_STYLES = {
+        info: { label: '[Play]', labelCss: 'color:#1d4ed8;font-weight:700;' },
+        bet: { label: '[BET]', labelCss: 'color:#0f766e;font-weight:700;' },
+        win: { label: '[WIN]', labelCss: 'color:#047857;font-weight:700;' },
+        loss: { label: '[LOSS]', labelCss: 'color:#c2410c;font-weight:700;' },
+        exit: {
+            label: '[EXIT]',
+            labelCss:
+                'color:#fefce8;font-weight:800;background:#a16207;padding:2px 8px;border-radius:4px;',
+        },
+        error: {
+            label: '[ERR]',
+            labelCss:
+                'color:#fef2f2;font-weight:800;background:#b91c1c;padding:2px 8px;border-radius:4px;',
+        },
+    };
+
+    const uiEvents = [];
+    let hudRefresh = null;
+
+    const log = (msg, type = 'info') => {
+        const cfg = LOG_STYLES[type] || LOG_STYLES.info;
+        const bodyCss =
+            type === 'exit'
+                ? 'color:#92400e;font-weight:600;'
+                : 'color:#0f172a;font-weight:500;';
+        console.log(`%c${cfg.label}%c ${msg}`, cfg.labelCss, bodyCss);
+        uiEvents.unshift({ at: Date.now(), type, msg: String(msg) });
+        if (uiEvents.length > 48) uiEvents.length = 48;
+        if (typeof hudRefresh === 'function') hudRefresh();
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BALANCE
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const parseMoney = (text) => {
+        const n = parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const getBalance = () => {
+        for (const sel of Config.WALLET_VALUE_SELS) {
+            const el = document.querySelector(sel);
+            if (!el?.textContent) continue;
+            return parseMoney(el.textContent);
+        }
+        return 0;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TILE FINDING
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const findTile = (tableId) => {
+        if (!tableId) return null;
+        const direct = document.getElementById(`TileHeight-${tableId}`);
+        if (direct) return direct;
+        const tiles = document.querySelectorAll(Config.TILE_SEL);
+        for (const tile of tiles) {
+            if (tile.id.includes(tableId)) return tile;
+        }
+        return null;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // TABLE SELECTION (from pick module) — multi-table: pick order, then first with canBet
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const buildOrderedEligible = () => {
+        if (!window.pick || !window.pp) return [];
+
+        let tables = window.pick.eligible().filter((t) => {
+            const id = t.gameId || t.id;
+            return id && !State.usedTables.has(id);
+        });
+
+        if (Config.SORT_ELIGIBLE_BY_CHOP) {
+            tables = tables
+                .map((t) => {
+                    const id = t.gameId || t.id;
+                    const full = window.pp.get(id) || t;
+                    const chop = getChopDepth(full);
+                    return { t, chop, score: t.score || 0 };
+                })
+                .sort((a, b) => {
+                    if (b.chop !== a.chop) return b.chop - a.chop;
+                    return b.score - a.score;
+                })
+                .map((x) => x.t);
+        }
+
+        return tables;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SIDE SELECTION — fair 50/50 Banker vs Player when SIDE is null
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const u32 = new Uint32Array(1);
+
+    /** Uniform P/B: default `math`; optional `crypto` via `getRandomValues` (falls back to `math` if missing). */
+    const randomSideFair = () => {
+        const engine = (Config.RANDOM_SIDE_ENGINE || 'math').toLowerCase();
+        if (engine === 'crypto') {
+            if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+                crypto.getRandomValues(u32);
+                return (u32[0] & 1) === 0 ? 'P' : 'B';
+            }
+        }
+        return Math.random() < 0.5 ? 'P' : 'B';
+    };
+
+    const chooseSide = () => {
+        if (Config.SIDE === 'B') return 'B';
+        if (Config.SIDE === 'P') return 'P';
+        return randomSideFair();
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BET EXECUTION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const placeBet = async (tile, betDollars, side) => {
+        const selector = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
+        // Calculate clicks: betDollars / chip value, rounded to nearest chip
+        const clicks = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE));
+
+        // Wait for button to appear
+        for (let i = 0; i < 60; i++) {
+            const btn = tile.querySelector(selector);
+            if (btn) {
+                for (let j = 0; j < clicks; j++) {
+                    simulateClick(btn);
+                    if (j < clicks - 1) await sleep(50);
+                }
+                log(`Placed ${clicks} clicks = $${(clicks * Config.CHIP_VALUE).toFixed(2)}`, 'info');
+                return true;
+            }
+            await sleep(50);
+        }
+        return false;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // RESULT DETECTION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const getTableLastResult = (tableId) => {
+        if (!window.pp) return null;
+        const t = window.pp.get(tableId);
+        if (!t) return null;
+
+        // Get the last result from PBT sequence
+        const pbt = window.pp.lastN(tableId, 1);
+        return pbt[0] || null; // 'P', 'B', or 'T'
+    };
+
+    const waitForResult = async (tableId, lastKnownCount) => {
+        const startTime = Date.now();
+        let lastLoggedTotal = null;
+
+        while (Date.now() - startTime < Config.WAIT_FOR_RESULT) {
+            const t = window.pp?.get(tableId);
+            if (!t) {
+                log(`Table ${tableId} not found in pp`, 'error');
+                await sleep(500);
+                continue;
+            }
+
+            // Log when total changes (for debugging)
+            if (t.total !== lastLoggedTotal) {
+                console.log(`[DEBUG] ${tableId}: total=${t.total} (waiting for >${lastKnownCount}), updates=${t.updates}`);
+                lastLoggedTotal = t.total;
+            }
+
+            // Detect shoe reset during wait (total dropped to 0 or 1)
+            if (lastKnownCount > 5 && t.total <= 1) {
+                log(`Shoe reset during wait (total: ${lastKnownCount} → ${t.total})`, 'info');
+                return 'SHOE_RESET';
+            }
+
+            if (Config.LEAVE_ON_SHUFFLE && tableIsShuffling(tableId)) {
+                log(
+                    'Shuffle started while waiting for result — leaving table (outcome not applied)',
+                    'info'
+                );
+                return 'SHUFFLE';
+            }
+
+            if (t.total > lastKnownCount) {
+                // New result arrived
+                const result = getTableLastResult(tableId);
+                log(`Result detected: ${result} (total: ${lastKnownCount} → ${t.total})`, 'info');
+                return result;
+            }
+            await sleep(200);
+        }
+        log(`Timeout after ${Config.WAIT_FOR_RESULT/1000}s - total still ${lastLoggedTotal}, needed >${lastKnownCount}`, 'error');
+        return null; // Timeout
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // EXIT CONDITIONS
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const checkExitConditions = () => {
+        // Session stop-loss / take-profit — disabled for now (uncomment to restore)
+        // if (State.sessionUnits <= Config.SESSION_STOP_LOSS) {
+        //     log(`SESSION STOP-LOSS reached: ${State.sessionUnits} units`, 'exit');
+        //     return { exit: true, reason: 'stop-loss' };
+        // }
+        // if (State.sessionUnits >= Config.SESSION_STOP_WIN) {
+        //     log(`TAKE PROFIT: +${State.sessionUnits} units`, 'win');
+        //     return { exit: true, reason: 'take-profit' };
+        // }
+
+        return { exit: false };
+    };
+
+    // Start a new session (after taking profit)
+    const startNewSession = () => {
+        const balance = getBalance();
+        const oldUnits = State.sessionUnits;
+        
+        // Reset session state
+        State.sessionUnits = 0;
+        State.sessionBets = 0;
+        State.sessionWins = 0;
+        State.sessionLosses = 0;
+        State.currentStep = 0;
+        State.sequenceUnits = 0;
+        State.focusedTable = null;
+        State.usedTables.clear();
+        State.tableBetCount = 0;
+        
+        // Recalculate unit size based on new balance
+        State.sessionStartBalance = balance;
+        State.sessionUnitSize = calcUnitSize(balance);
+        
+        console.log(`%c[NEW SESSION] Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} | Previous: ${oldUnits > 0 ? '+' : ''}${oldUnits}u`, 'background: #4CAF50; color: white; font-weight: bold; padding: 2px 6px; border-radius: 3px;');
+    };
+
+    /**
+     * @param resetProgression true only for sequence exit (max-loss path); false when switching tables mid-progression
+     */
+    const markTableDone = (tableId, reason, resetProgression = false) => {
+        State.usedTables.add(tableId);
+        log(
+            `Table ${tableId} DONE (${reason})${resetProgression ? ' · progression reset' : ' · step unchanged'}`,
+            'exit'
+        );
+        State.focusedTable = null;
+        if (resetProgression) {
+            State.currentStep = 0;
+            State.sequenceUnits = 0;
+        }
+        State.tableBetCount = 0;
+    };
+
+    /**
+     * Walk pick order; first table with bets open, OK shoe, not shuffling, meets min bet.
+     */
+    const findFirstOpenTableForBet = (ordered) => {
+        const betUnits = getCurrentBetUnits();
+        const betDollars = betUnits * getUnitSize();
+        const actualBet = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE)) * Config.CHIP_VALUE;
+
+        for (const row of ordered) {
+            const id = row.gameId || row.id;
+            if (!id) continue;
+
+            const fresh = window.pp?.get(id);
+            if (!fresh) continue;
+            if ((fresh.total || 0) <= 1) continue;
+            if (Config.LEAVE_ON_SHUFFLE && tableIsShuffling(id)) continue;
+            if (!fresh.canBet) continue;
+
+            const tableMinBetRaw = Number(fresh.minBet);
+            const tableMinBet = Number.isFinite(tableMinBetRaw) && tableMinBetRaw > 0 ? tableMinBetRaw : null;
+            const minRequiredBet = tableMinBet != null
+                ? Math.ceil(tableMinBet / Config.CHIP_VALUE) * Config.CHIP_VALUE
+                : null;
+            if (minRequiredBet != null && actualBet + 1e-9 < minRequiredBet) {
+                markTableDone(id, 'below-table-min', false);
+                continue;
+            }
+
+            return { freshTable: fresh, pickRow: row };
+        }
+        return null;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // PROGRESSION LOGIC (Martingale + Paroli)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const useParoli = () => Config.PROGRESSION_MODE === 'paroli';
+
+    const getCurrentBetUnits = () => {
+        const idx = Math.min(Math.max(0, State.currentStep), Config.STEPS.length - 1);
+        return Config.STEPS[idx] ?? Config.STEPS[0];
+    };
+
+    const processResult = (result) => {
+        const betUnits = getCurrentBetUnits();
+        const betSide = State.lastBet?.side || 'B';
+        const won = (result === betSide);
+        // Note: Tie returns stake, treating as push
+
+        if (result === 'T') {
+            // Tie - push (no change)
+            log(`TIE - push (no units change)`, 'info');
+            State.lastResult = 'T';
+            return;
+        }
+
+        if (useParoli()) {
+            if (won) {
+                State.sessionUnits += betUnits;
+                State.sessionWins++;
+                State.lastResult = 'W';
+                State.sequenceUnits = 0;
+                State.currentStep += 1;
+                const cap = Math.min(Config.PAROLI_MAX_WIN_STREAK, Config.STEPS.length);
+                if (State.currentStep >= cap) {
+                    log(
+                        `WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Paroli: ${cap} wins — reset → 1 unit next`,
+                        'win'
+                    );
+                    State.currentStep = 0;
+                } else {
+                    const nextU = Config.STEPS[State.currentStep] ?? Config.STEPS[0];
+                    log(
+                        `WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: ${nextU} unit (win ${State.currentStep}/${cap})`,
+                        'win'
+                    );
+                }
+            } else {
+                State.sessionUnits -= betUnits;
+                State.sequenceUnits -= betUnits;
+                State.sessionLosses++;
+                State.lastResult = 'L';
+                State.currentStep = 0;
+                log(
+                    `LOST -${betUnits} units | Session: ${State.sessionUnits} units | Paroli reset → next 1 unit`,
+                    'loss'
+                );
+            }
+            return;
+        }
+
+        if (won) {
+            State.sessionUnits += betUnits;
+            State.sessionWins++;
+            State.lastResult = 'W';
+            State.currentStep = 0;
+            State.sequenceUnits = 0;
+            log(`WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
+        } else {
+            State.sessionUnits -= betUnits;
+            State.sequenceUnits -= betUnits;
+            State.sessionLosses++;
+            State.currentStep++;
+            State.lastResult = 'L';
+
+            log(`LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
+
+            if (State.currentStep >= Config.STEPS.length) {
+                log(`Max step reached (lost 7 units) | Finding new table`, 'loss');
+                const tableId =
+                    State.focusedTable?.gameId || State.focusedTable?.id || State.lastBet?.tableId;
+                if (tableId) {
+                    markTableDone(tableId, 'max-loss', true);
+                }
+            } else {
+                log(`Next bet: ${getCurrentBetUnits()} units (doubling)`, 'info');
+            }
+        }
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // MAIN BETTING LOOP
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const betCycle = async () => {
+        if (!State.running) return;
+
+        // Check session exit conditions
+        const exit = checkExitConditions();
+        if (exit.exit) {
+            // Check if we can start a new session (have minimum unit)
+            const balance = getBalance();
+            const minUnit = calcUnitSize(balance);
+            if (balance >= minUnit) {
+                // Start new session
+                startNewSession();
+                scheduleNext();
+                return;
+            }
+            // Not enough balance - stop completely
+            stop();
+            return;
+        }
+
+        // Check balance (wait for UI to update after wins)
+        const neededUnits = getCurrentBetUnits();
+        const unitSize = getUnitSize();
+        const neededDollars = neededUnits * unitSize;
+
+        let balance = getBalance();
+        if (balance < neededDollars) {
+            log(`Balance low ($${balance.toFixed(2)}) - waiting 6s for UI update...`, 'info');
+            await sleep(6000);
+            balance = getBalance();
+            if (balance < neededDollars) {
+                // Can't afford current step - check if we can afford minimum unit
+                const minBet = unitSize; // 1 unit
+                if (balance >= minBet) {
+                    // Reset to step 1 and start new session
+                    log(
+                        `Can't cover next stake ($${balance.toFixed(2)} < $${neededDollars.toFixed(2)}) — reset to 1 unit, new table`,
+                        'info'
+                    );
+                    State.currentStep = 0;
+                    State.sequenceUnits = 0;
+                    if (State.focusedTable) {
+                        const tableId = State.focusedTable.gameId || State.focusedTable.id;
+                        markTableDone(tableId, 'cant-double', false);
+                    }
+                    scheduleNext();
+                    return;
+                }
+                log(`Balance too low: $${balance.toFixed(2)} < $${minBet.toFixed(2)} minimum`, 'exit');
+                stop();
+                return;
+            }
+            log(`Balance updated: $${balance.toFixed(2)} - continuing`, 'info');
+        }
+
+        // Multi-table: each cycle, first pick.eligible() row with canBet (progression state global)
+        const ordered = buildOrderedEligible();
+        if (!ordered.length) {
+            log('No eligible tables (pick empty or all in usedTables)', 'exit');
+            stop();
+            return;
+        }
+
+        const picked = findFirstOpenTableForBet(ordered);
+        if (!picked) {
+            scheduleNext(500);
+            return;
+        }
+
+        let freshTable = picked.freshTable;
+        const tableId = freshTable.gameId || freshTable.id;
+        State.focusedTable = freshTable;
+
+        const chop = getChopDepth(window.pp.get(tableId) || freshTable);
+        log(
+            `Open: ${displayTableName(freshTable.name || tableId)} | chop:${chop} | score:${picked.pickRow.score} | ` +
+                `P:${freshTable.P} B:${freshTable.B} T:${freshTable.T}`,
+            'info'
+        );
+
+        if (!tableId) {
+            log('Table has no valid ID', 'error');
+            State.focusedTable = null;
+            scheduleNext();
+            return;
+        }
+
+        if ((freshTable.total || 0) <= 1) {
+            markTableDone(tableId, 'new-shoe', false);
+            scheduleNext();
+            return;
+        }
+
+        if (Config.LEAVE_ON_SHUFFLE && tableIsShuffling(tableId)) {
+            leaveTableForShuffle(tableId);
+            scheduleNext(Config.SHUFFLE_SWITCH_DELAY_MS);
+            return;
+        }
+
+        await sleep(Config.PRE_BET_DELAY_MS);
+
+        freshTable = window.pp?.get(tableId) || freshTable;
+        if (!freshTable || !freshTable.canBet) {
+            scheduleNext(400);
+            return;
+        }
+        if (Config.LEAVE_ON_SHUFFLE && tableIsShuffling(tableId)) {
+            leaveTableForShuffle(tableId);
+            scheduleNext(Config.SHUFFLE_SWITCH_DELAY_MS);
+            return;
+        }
+
+        const tile = findTile(freshTable.gameId) || findTile(freshTable.lobbyId) || findTile(freshTable.id);
+        if (!tile) {
+            log(`Tile not found for ${displayTableName(freshTable.name || tableId)} (gameId:${freshTable.gameId}, lobbyId:${freshTable.lobbyId})`, 'error');
+            scheduleNext();
+            return;
+        }
+
+        const countBefore = freshTable.total || 0;
+        const betSide = chooseSide();
+        tile.scrollIntoView({ block: 'center' });
+        const betUnits = getCurrentBetUnits();
+        const betDollars = betUnits * getUnitSize();
+        const actualBet = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE)) * Config.CHIP_VALUE;
+
+        log(`${displayTableName(freshTable.name || tableId)} | Step ${State.currentStep + 1} | ${betSide} x${betUnits}u ($${actualBet.toFixed(2)})`, 'bet');
+
+        const wireSince = Date.now();
+        const placed = await placeBet(tile, betDollars, betSide);
+        if (!placed) {
+            log('Bet placement failed', 'error');
+            scheduleNext();
+            return;
+        }
+
+        if (typeof window.pp?.waitLpbet === 'function') {
+            const wire = await window.pp.waitLpbet(tableId, {
+                side: betSide,
+                since: wireSince,
+                minTotal: actualBet,
+                timeoutMs: Config.LPBET_CONFIRM_MS,
+            });
+            if (!wire) {
+                log('No matching lpbet on wire — stake may not have registered; skipping round', 'error');
+                scheduleNext();
+                return;
+            }
+        }
+
+        State.sessionBets++;
+        State.lastBet = {
+            table: displayTableName(freshTable.name || tableId),
+            tableId,
+            side: betSide,
+            units: betUnits,
+            step: State.currentStep + 1,
+            time: Date.now()
+        };
+
+        // Wait for result
+        State.waitingForResult = true;
+        log('Waiting for result...', 'info');
+
+        const result = await waitForResult(tableId, countBefore);
+
+        State.waitingForResult = false;
+
+        if (result === 'SHOE_RESET') {
+            // Shoe reset during wait - move to new table (bet voided)
+            log('Shoe reset - moving to new table (bet voided)', 'info');
+            markTableDone(tableId, 'shoe-reset', false);
+            scheduleNext();
+            return;
+        }
+        if (result === 'SHUFFLE') {
+            leaveTableForShuffle(tableId);
+            scheduleNext(Config.SHUFFLE_SWITCH_DELAY_MS);
+            return;
+        }
+        if (result === null) {
+            log('Result timeout - treating as loss', 'error');
+            processResult(State.lastBet?.side === 'B' ? 'P' : 'B'); // Opposite side = loss
+        } else {
+            processResult(result);
+        }
+
+        // Wait 3s then check if shoe reset (total dropped to 0 = new shoe)
+        await sleep(3000);
+        const tableAfter = window.pp?.get(tableId);
+        if (tableAfter && tableAfter.total === 0) {
+            log(`New shoe detected (total=0) - moving to new table`, 'info');
+            markTableDone(tableId, 'new-shoe', false);
+            scheduleNext();
+            return;
+        }
+
+        // Check exit conditions again after result
+        const exitAfter = checkExitConditions();
+        if (exitAfter.exit) {
+            // Check if we can start a new session (have minimum unit)
+            const balanceAfter = getBalance();
+            const minUnitAfter = calcUnitSize(balanceAfter);
+            if (balanceAfter >= minUnitAfter) {
+                // Start new session
+                startNewSession();
+                scheduleNext();
+                return;
+            }
+            // Not enough balance - stop completely
+            stop();
+            return;
+        }
+
+        scheduleNext();
+    };
+
+    const scheduleNext = (delay = Config.BET_DELAY) => {
+        if (!State.running) return;
+        State.intervalId = setTimeout(betCycle, delay);
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // POPUP HANDLING
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const handlePopup = () => {
+        const isInsufficient = (el) => /insufficient\s+funds/i.test(el?.textContent || '');
+
+        let root = null;
+        for (const sel of Config.POPUP_ROOT_SELS) {
+            const el = document.querySelector(sel);
+            if (el && isInsufficient(el)) {
+                root = el;
+                break;
+            }
+        }
+
+        const title = [...document.querySelectorAll(Config.POPUP_TITLE_SEL)].find(isInsufficient);
+        if (!root && !title) return;
+
+        log('Insufficient funds popup - stopping', 'exit');
+        const scope =
+            root ||
+            title.closest(Config.POPUP_ROOT_SELS.join(', ')) ||
+            document;
+        const btn = scope.querySelector(Config.POPUP_BUTTON_SEL);
+        if (btn) simulateClick(btn);
+        stop();
+    };
+
+    const watchForPopup = () => {
+        const attach = () => {
+            if (!document.body) {
+                setTimeout(attach, 50);
+                return;
+            }
+            const observer = new MutationObserver(handlePopup);
+            observer.observe(document.body, { childList: true, subtree: true });
+        };
+        attach();
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // CONTROL API
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const start = () => {
+        if (State.running) {
+            log('Already running');
+            return;
+        }
+
+        // Pre-flight checks
+        if (!window.pp) {
+            log('pp API not available - load socks.js first', 'error');
+            return;
+        }
+        if (!window.pick) {
+            log('pick API not available - load pick.js first', 'error');
+            return;
+        }
+
+        const balance = getBalance();
+        if (balance < Config.MIN_UNIT) {
+            log(`Balance too low: $${balance.toFixed(2)}`, 'error');
+            return;
+        }
+
+        // Calculate unit size for this session (1/8 of balance, min 0.2)
+        State.sessionStartBalance = balance;
+        State.sessionUnitSize = calcUnitSize(balance);
+
+        State.running = true;
+        const sideMode =
+            Config.SIDE === null
+                ? `RANDOM 50/50 (${(Config.RANDOM_SIDE_ENGINE || 'math').toLowerCase() === 'crypto' ? 'crypto.getRandomValues' : 'Math.random'})`
+                : Config.SIDE;
+        const paroliCap = Math.min(Config.PAROLI_MAX_WIN_STREAK, Config.STEPS.length);
+        const modeLine = useParoli()
+            ? `Paroli (${paroliCap} wins cap) WIN→raise rung · LOSE→reset`
+            : `Martingale WIN→1u · LOSE→double (${Config.STEPS.join('→')}u)`;
+        log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} (1/${Math.round(1/Config.UNIT_FRACTION)} of balance)`, 'info');
+        log(`${modeLine} | Side: ${sideMode} | Stop-loss: ${Config.SESSION_STOP_LOSS}u | Stop-win: +${Config.SESSION_STOP_WIN}u`);
+
+        betCycle();
+    };
+
+    const stop = () => {
+        State.running = false;
+        if (State.intervalId) {
+            clearTimeout(State.intervalId);
+            State.intervalId = null;
+        }
+        log(`STOPPED | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | W:${State.sessionWins} L:${State.sessionLosses}`, 'info');
+    };
+
+    const reset = () => {
+        stop();
+        State.sessionUnits = 0;
+        State.sessionBets = 0;
+        State.sessionWins = 0;
+        State.sessionLosses = 0;
+        State.sessionUnitSize = 0;
+        State.sessionStartBalance = 0;
+        State.currentStep = 0;
+        State.sequenceUnits = 0;
+        State.focusedTable = null;
+        State.usedTables.clear();
+        State.tableBetCount = 0;
+        State.lastBet = null;
+        State.lastResult = null;
+        log('Session RESET', 'info');
+    };
+
+    const snapshot = () => {
+        const balance = getBalance();
+        const unitSize = getUnitSize();
+        const profitDollars = State.sessionUnits * unitSize;
+        const nextUnits = getCurrentBetUnits();
+        const nextBetDollars = nextUnits * unitSize;
+        const table = State.focusedTable;
+        return {
+            running: State.running,
+            waiting: State.waitingForResult,
+            mode: useParoli() ? 'paroli' : 'martingale',
+            side: Config.SIDE,
+            balance,
+            startBalance: State.sessionStartBalance || balance,
+            unitSize,
+            sessionUnits: State.sessionUnits,
+            profitDollars,
+            bets: State.sessionBets,
+            wins: State.sessionWins,
+            losses: State.sessionLosses,
+            currentStep: State.currentStep,
+            nextUnits,
+            nextBetDollars,
+            sequenceUnits: State.sequenceUnits,
+            tableName: displayTableName(table?.name || table?.gameId || ''),
+            tableId: table?.gameId || table?.id || null,
+            lastBet: State.lastBet,
+            lastResult: State.lastResult,
+            usedTables: [...State.usedTables],
+            events: uiEvents.slice(0, 12),
+        };
+    };
+
+    const status = () => {
+        const s = snapshot();
+        console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║               PLAY STATUS: ${(s.mode === 'paroli' ? 'Paroli' : 'Martingale').padEnd(10)}                               ║
+╠══════════════════════════════════════════════════════════════╣
+║  Running: ${s.running ? 'YES' : 'NO '}                                              ║
+║  Balance: $${s.balance.toFixed(2).padEnd(8)}  Start: $${s.startBalance.toFixed(2).padEnd(8)}         ║
+║  Unit: $${s.unitSize.toFixed(2)} (1/${Math.round(1 / Config.UNIT_FRACTION)} of start balance, min $${Config.MIN_UNIT})          ║
+╠══════════════════════════════════════════════════════════════╣
+║  Session Units: ${String((s.sessionUnits > 0 ? '+' : '') + s.sessionUnits).padEnd(5)}  ($${(s.profitDollars > 0 ? '+' : '') + s.profitDollars.toFixed(2)})                    ║
+║  Bets: ${String(s.bets).padEnd(3)} Wins: ${String(s.wins).padEnd(3)} Losses: ${String(s.losses).padEnd(3)}                      ║
+╠══════════════════════════════════════════════════════════════╣
+║  Next Bet: ${s.nextUnits}u ($${s.nextBetDollars.toFixed(2)})                                    ║
+║  Sequence P/L: ${s.sequenceUnits} units                                   ║
+║  Table: ${String(s.tableName || 'None').slice(0, 25).padEnd(25)}                   ║
+╠══════════════════════════════════════════════════════════════╣
+║  Stop-Loss: ${Config.SESSION_STOP_LOSS} units | Stop-Win: +${Config.SESSION_STOP_WIN} units               ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+        return s;
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // API
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const setTable = (uidOrId) => {
+        const t = window.pp?.get(uidOrId);
+        if (t) {
+            State.focusedTable = t;
+            State.tableBetCount = 0;
+            log(`Manually set table: ${displayTableName(t.name || t.gameId)}`);
+        }
+        return t || null;
+    };
+
+    const clearUsed = () => {
+        State.usedTables.clear();
+        log('Cleared used tables list - can reuse all tables');
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ON-PAGE HUD
+    // ═══════════════════════════════════════════════════════════════════════
+
+    const HUD_POS_KEY = 'sb-play-hud-pos';
+    const HUD_MIN_KEY = 'sb-play-hud-min';
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+
+    const fmtSigned = (n, digits = 2) => {
+        const v = Number(n) || 0;
+        const sign = v > 0 ? '+' : '';
+        return `${sign}${v.toFixed(digits)}`;
+    };
+
+    const mountHud = () => {
+        if (document.getElementById('sb-play-hud')) return;
+
+        const host = document.createElement('div');
+        host.id = 'sb-play-hud';
+        const saved = (() => {
+            try { return JSON.parse(localStorage.getItem(HUD_POS_KEY) || 'null'); } catch { return null; }
+        })();
+        Object.assign(host.style, {
+            position: 'fixed',
+            zIndex: '2147483646',
+            top: saved?.top || '72px',
+            left: saved?.left || '',
+            right: saved?.left ? '' : '16px',
+            width: '328px',
+            fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
+        });
+        const shadow = host.attachShadow({ mode: 'open' });
+
+        shadow.innerHTML = `
+<style>
+  :host { display: block; }
+  * { box-sizing: border-box; }
+  .wrap {
+    background: linear-gradient(180deg, #132039 0%, #0b1527 100%);
+    color: #e8eef8;
+    border: 1px solid #2a3a56;
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.45);
+    overflow: hidden;
+    user-select: none;
+  }
+  .bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; cursor: move;
+    background: #0f1a2d; border-bottom: 1px solid #22314d;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; flex: 0 0 auto; }
+  .dot.on { background: #34d399; box-shadow: 0 0 8px #34d399; }
+  .dot.wait { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+  .title { font-size: 12px; font-weight: 700; letter-spacing: .3px; flex: 1; }
+  .phase { font-size: 11px; color: #9aa9c2; }
+  .icon {
+    background: #111a2c; color: #e8eef8; border: 1px solid #2a3a56;
+    border-radius: 6px; width: 24px; height: 22px; cursor: pointer; font-size: 12px;
+  }
+  .body { padding: 10px; }
+  .row { display: flex; gap: 6px; margin-bottom: 8px; }
+  button.act {
+    flex: 1; border: 1px solid #2a3a56; border-radius: 8px;
+    padding: 7px 8px; font-size: 12px; font-weight: 700; cursor: pointer; color: #e8eef8;
+    background: #111a2c;
+  }
+  button.start { background: #0d3d2b; border-color: #1f7b57; color: #8fffd0; }
+  button.stop { background: #3a1225; border-color: #7e2d4f; color: #ffc0db; }
+  button:disabled { opacity: .45; cursor: default; }
+  label.fld { flex: 1; font-size: 10px; color: #9aa9c2; display: flex; flex-direction: column; gap: 3px; }
+  select {
+    background: #111a2c; color: #e8eef8; border: 1px solid #2a3a56;
+    border-radius: 7px; padding: 5px 6px; font-size: 12px;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  .box { background: #0b1527; border: 1px solid #22314d; border-radius: 8px; padding: 6px 8px; }
+  .k { font-size: 10px; color: #9aa9c2; }
+  .v { font-size: 13px; font-weight: 700; }
+  .v.up { color: #8fffd0; }
+  .v.down { color: #ffc0db; }
+  .table { font-size: 12px; color: #d5e2f7; margin: 0 0 8px; min-height: 16px; }
+  .tables { max-height: 132px; overflow: auto; margin-bottom: 8px; }
+  .trow {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; padding: 4px 6px; border-radius: 6px; cursor: pointer;
+  }
+  .trow:hover, .trow.active { background: #17365f; }
+  .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { font-size: 10px; color: #9cd0ff; }
+  .ok { color: #8fffd0; }
+  .no { color: #9aa9c2; }
+  .log {
+    background: #081223; border: 1px solid #1d2d45; border-radius: 8px;
+    padding: 6px 8px; max-height: 118px; overflow: auto; font-size: 10px; line-height: 1.45;
+  }
+  .log div { color: #d5e2f7; }
+  .log .win { color: #8fffd0; }
+  .log .loss { color: #ffc3d1; }
+  .log .bet { color: #9cd0ff; }
+  .log .error, .log .exit { color: #ffd6a1; }
+  .ready { font-size: 10px; color: #9aa9c2; margin-top: 6px; }
+</style>
+<div class="wrap">
+  <div class="bar" id="bar">
+    <span class="dot" id="dot"></span>
+    <span class="title">Play HUD</span>
+    <span class="phase" id="phase">stopped</span>
+    <button class="icon" id="min" type="button" title="Minimize">–</button>
+  </div>
+  <div class="body" id="body">
+    <div class="row">
+      <button class="act start" id="start" type="button">Start</button>
+      <button class="act stop" id="stop" type="button">Stop</button>
+      <button class="act" id="reset" type="button">Reset</button>
+    </div>
+    <div class="row">
+      <label class="fld">Mode
+        <select id="mode">
+          <option value="paroli">Paroli</option>
+          <option value="martingale">Martingale</option>
+        </select>
+      </label>
+      <label class="fld">Side
+        <select id="side">
+          <option value="random">Random</option>
+          <option value="P">Player</option>
+          <option value="B">Banker</option>
+        </select>
+      </label>
+    </div>
+    <div class="grid">
+      <div class="box"><div class="k">Balance</div><div class="v" id="bal">$0.00</div></div>
+      <div class="box"><div class="k">Unit</div><div class="v" id="unit">$0.00</div></div>
+      <div class="box"><div class="k">Session</div><div class="v" id="units">0u</div></div>
+      <div class="box"><div class="k">P/L</div><div class="v" id="pl">$0.00</div></div>
+      <div class="box"><div class="k">W / L / Bets</div><div class="v" id="wlb">0 / 0 / 0</div></div>
+      <div class="box"><div class="k">Next</div><div class="v" id="next">1u</div></div>
+    </div>
+    <div class="table" id="table">Table: —</div>
+    <div class="tables" id="tables"></div>
+    <div class="log" id="log"></div>
+    <div class="ready" id="ready">Waiting for pp + pick…</div>
+  </div>
+</div>`;
+
+        const $ = (id) => shadow.getElementById(id);
+        const body = $('body');
+        const minBtn = $('min');
+        let minimized = localStorage.getItem(HUD_MIN_KEY) === '1';
+        const applyMin = () => {
+            body.style.display = minimized ? 'none' : '';
+            minBtn.textContent = minimized ? '+' : '–';
+            host.style.width = minimized ? '220px' : '328px';
+        };
+        applyMin();
+        minBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            minimized = !minimized;
+            localStorage.setItem(HUD_MIN_KEY, minimized ? '1' : '0');
+            applyMin();
+        });
+
+        $('start').addEventListener('click', () => start());
+        $('stop').addEventListener('click', () => stop());
+        $('reset').addEventListener('click', () => reset());
+        $('mode').addEventListener('change', (e) => {
+            Config.PROGRESSION_MODE = e.target.value === 'martingale' ? 'martingale' : 'paroli';
+            log(`Mode → ${Config.PROGRESSION_MODE}`, 'info');
+        });
+        $('side').addEventListener('change', (e) => {
+            Config.SIDE = e.target.value === 'random' ? null : e.target.value;
+            log(`Side → ${Config.SIDE || 'random'}`, 'info');
+        });
+
+        const bar = $('bar');
+        let drag = null;
+        bar.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return;
+            const r = host.getBoundingClientRect();
+            drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+            e.preventDefault();
+        });
+        const onMove = (e) => {
+            if (!drag) return;
+            const left = Math.max(8, e.clientX - drag.dx);
+            const top = Math.max(8, e.clientY - drag.dy);
+            host.style.left = `${left}px`;
+            host.style.top = `${top}px`;
+            host.style.right = '';
+        };
+        const onUp = () => {
+            if (!drag) return;
+            drag = null;
+            localStorage.setItem(HUD_POS_KEY, JSON.stringify({
+                left: host.style.left,
+                top: host.style.top,
+            }));
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+
+        const paint = () => {
+            const s = snapshot();
+            const ready = !!(window.pp && window.pick);
+            const phase = !s.running ? 'stopped' : s.waiting ? 'waiting' : 'running';
+            const dot = $('dot');
+            dot.className = `dot${s.running ? (s.waiting ? ' wait' : ' on') : ''}`;
+            $('phase').textContent = phase;
+            $('start').disabled = s.running;
+            $('stop').disabled = !s.running;
+            $('mode').value = s.mode;
+            $('side').value = s.side || 'random';
+            $('bal').textContent = `$${s.balance.toFixed(2)}`;
+            $('unit').textContent = `$${s.unitSize.toFixed(2)}`;
+            const unitsEl = $('units');
+            unitsEl.textContent = `${fmtSigned(s.sessionUnits, 0)}u`;
+            unitsEl.className = `v${s.sessionUnits > 0 ? ' up' : s.sessionUnits < 0 ? ' down' : ''}`;
+            const plEl = $('pl');
+            plEl.textContent = `$${fmtSigned(s.profitDollars)}`;
+            plEl.className = `v${s.profitDollars > 0 ? ' up' : s.profitDollars < 0 ? ' down' : ''}`;
+            $('wlb').textContent = `${s.wins} / ${s.losses} / ${s.bets}`;
+            $('next').textContent = `${s.nextUnits}u ($${s.nextBetDollars.toFixed(2)})`;
+            const last = s.lastResult ? ` · last ${s.lastResult}` : '';
+            const betSide = s.lastBet?.side ? ` · ${s.lastBet.side}` : '';
+            $('table').textContent = `Table: ${s.tableName || '—'} · step ${s.currentStep + 1}${betSide}${last}`;
+
+            let rows = [];
+            try { rows = window.pick?.top?.(6) || []; } catch { rows = []; }
+            $('tables').innerHTML = rows.length
+                ? rows.map((t) => {
+                    const id = t.gameId || t.id;
+                    const name = displayTableName(t.name || id || '?');
+                    const chop = t.pingPong?.effective ?? 0;
+                    const open = t.canBet ? 'open' : 'wait';
+                    const active = id && id === s.tableId ? ' active' : '';
+                    return `<div class="trow${active}" data-id="${esc(id)}">` +
+                        `<span class="tname">${esc(name)}</span>` +
+                        `<span class="chip">chop ${chop}</span>` +
+                        `<span class="${t.canBet ? 'ok' : 'no'}">${open}</span></div>`;
+                }).join('')
+                : '<div class="trow"><span class="tname">No eligible tables yet</span></div>';
+
+            $('log').innerHTML = (s.events || []).map((ev) =>
+                `<div class="${esc(ev.type)}">${esc(ev.msg)}</div>`
+            ).join('') || '<div>Ready — press Start</div>';
+
+            const ppN = typeof window.pp?.count === 'function' ? window.pp.count() : 0;
+            $('ready').textContent = ready
+                ? `pp ${ppN} tables · pick ${rows.length} eligible · ${s.usedTables.length} skipped`
+                : 'Waiting for pp + pick…';
+        };
+
+        shadow.getElementById('tables').addEventListener('click', (e) => {
+            const row = e.target.closest('[data-id]');
+            if (!row) return;
+            setTable(row.getAttribute('data-id'));
+            paint();
+        });
+
+        hudRefresh = paint;
+        paint();
+        setInterval(paint, 500);
+        document.documentElement.appendChild(host);
+        return {
+            show: () => { host.style.display = ''; },
+            hide: () => { host.style.display = 'none'; },
+            toggle: () => { host.style.display = host.style.display === 'none' ? '' : 'none'; },
+            refresh: paint,
+        };
+    };
+
+    let hudApi = null;
+    const ensureHud = () => {
+        if (hudApi) return hudApi;
+        if (!document.documentElement) return null;
+        hudApi = mountHud();
+        return hudApi;
+    };
+
+    window.play = {
+        start,
+        stop,
+        reset,
+        status,
+        snapshot,
+        s: status,
+        config: Config,
+        state: () => ({ ...State, usedTables: [...State.usedTables] }),
+        setTable,
+        clearUsed,
+        balance: getBalance,
+        units: () => State.sessionUnits,
+        unitSize: getUnitSize,
+        profit: () => State.sessionUnits * getUnitSize,
+        hud: {
+            show: () => ensureHud()?.show(),
+            hide: () => hudApi?.hide(),
+            toggle: () => ensureHud()?.toggle(),
+        },
+    };
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════════════
+
+    watchForPopup();
+
+    const bootHud = () => {
+        if (document.documentElement) ensureHud();
+        else document.addEventListener('DOMContentLoaded', ensureHud, { once: true });
+    };
+    bootHud();
+
+    const init = () => {
+        if (window.pp && window.pick) {
+            ensureHud();
+            console.log(`
+╔══════════════════════════════════════════════════════════════╗
+║              BACCARAT PLAY BOT v5.9.0                        ║
+╠══════════════════════════════════════════════════════════════╣
+║  On-page HUD is the control surface (Start / Stop / Reset).  ║
+║  Console still works: play.start · play.stop · play.status   ║
+║  play.hud.hide() / play.hud.show()                           ║
+╚══════════════════════════════════════════════════════════════╝
+`);
+        } else {
+            setTimeout(init, 500);
+        }
+    };
+
+    init();
+
+})();

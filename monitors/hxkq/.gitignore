@@ -1,0 +1,5 @@
+logs/
+.env
+*.pyc
+__pycache__/
+.stomatology_safety.pid

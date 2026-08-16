@@ -1,0 +1,386 @@
+// ==UserScript==
+// @name         Toggle Pro / Flash Extended
+// @namespace    http://tampermonkey.net/
+// @version      1.1.0
+// @description  Ctrl+Shift+Y toggles between Flash + Extended and Pro on Gemini
+// @author       You
+// @match        https://gemini.google.com/*
+// @grant        none
+// @run-at       document-idle
+// ==/UserScript==
+
+(function () {
+  "use strict";
+
+  const LOG_PREFIX = "[Pro/Flash Toggle]";
+
+  // Mode ids from Gemini's BardVeMetadataKey / data-test-id (still used when menu is open).
+  const FLASH = {
+    labels: ["3.5 Flash", "Flash", "2.5 Flash"],
+    pillHints: ["Flash"],
+    testId: "bard-mode-option-56fdd199312815e2",
+    modeId: "56fdd199312815e2",
+  };
+
+  const PRO = {
+    labels: ["3.1 Pro", "Pro", "Gemini Pro"],
+    pillHints: ["Pro"],
+    testId: "bard-mode-option-e6fa609c3fa255c0",
+    modeId: "e6fa609c3fa255c0",
+  };
+
+  const THINKING = "Extended";
+
+  let isProcessing = false;
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function waitUntil(test, timeoutMs = 2000, stepMs = 16) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+      if (test()) return true;
+      await sleep(stepMs);
+    }
+    return test();
+  }
+
+  function isVisible(el) {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
+  /** New UI: gem-button[data-test-id=bard-mode-menu-button] > button. Legacy: button.input-area-switch */
+  function findModeButton() {
+    const hosts = [
+      ...document.querySelectorAll('[data-test-id="bard-mode-menu-button"]'),
+      ...document.querySelectorAll("bard-mode-switcher .logo-pill-btn"),
+      ...document.querySelectorAll("button.input-area-switch"),
+    ];
+
+    for (const host of hosts) {
+      const btn = host.matches?.("button")
+        ? host
+        : host.querySelector("button:not([disabled])");
+      if (btn && !btn.disabled && isVisible(btn)) return btn;
+    }
+
+    // Aria: "Open mode picker, currently Gemini Pro"
+    for (const btn of document.querySelectorAll(
+      'button[aria-label*="mode picker"], button[aria-label*="Mode picker"]'
+    )) {
+      if (!btn.disabled && isVisible(btn)) return btn;
+    }
+
+    return null;
+  }
+
+  function getVisiblePillLabel() {
+    const containers = [
+      ...document.querySelectorAll('[data-test-id="logo-pill-label-container"]'),
+    ].filter(isVisible);
+
+    const inModeButton = (container) =>
+      container.closest(
+        '[data-test-id="bard-mode-menu-button"], button.input-area-switch, [data-test-id="bard-mode-switcher"], bard-mode-switcher'
+      );
+
+    const preferred =
+      containers.find(
+        (c) => c.classList.contains("thinking-level-enabled") && inModeButton(c)
+      ) ||
+      containers.find((c) => inModeButton(c)) ||
+      containers.find((c) => c.classList.contains("thinking-level-enabled")) ||
+      containers[0];
+
+    if (!preferred) return null;
+
+    return {
+      primary:
+        preferred.querySelector(".picker-primary-text")?.textContent.trim() ||
+        "",
+      secondary:
+        preferred
+          .querySelector(".picker-secondary-text")
+          ?.textContent.trim() || "",
+    };
+  }
+
+  function getModePickerAria() {
+    const btn = findModeButton();
+    return (btn?.getAttribute("aria-label") || "").toLowerCase();
+  }
+
+  function pillText() {
+    const pill = getVisiblePillLabel();
+    if (!pill) return "";
+    return `${pill.primary} ${pill.secondary}`.trim();
+  }
+
+  function isFlashExtended() {
+    const pill = getVisiblePillLabel();
+    const text = `${pillText()} ${getModePickerAria()}`.toLowerCase();
+    if (!text) return false;
+
+    const hasFlash = FLASH.pillHints.some((h) =>
+      text.includes(h.toLowerCase())
+    );
+    const hasExtended =
+      text.includes("extended") ||
+      (pill &&
+        pill.primary &&
+        FLASH.pillHints.some((h) => pill.primary === h) &&
+        pill.secondary === THINKING);
+
+    // New pill often shows "Gemini" + "Flash" / "Extended" instead of "Flash" + "Extended"
+    if (hasFlash && (hasExtended || text.includes("thinking"))) return true;
+    if (pill?.primary === "Flash" && pill?.secondary === THINKING) return true;
+    return false;
+  }
+
+  function isProMode() {
+    const pill = getVisiblePillLabel();
+    const text = `${pillText()} ${getModePickerAria()}`.toLowerCase();
+    if (pill?.secondary === "Pro") return true;
+    if (text.includes("gemini pro") || /\bpro\b/.test(text)) {
+      // Avoid treating "Flash … Pro" nonsense; Pro pill is usually "Gemini" + "Pro"
+      if (text.includes("flash") && !text.includes("gemini pro")) return false;
+      return true;
+    }
+    return PRO.labels.some(
+      (label) => pill?.primary === label || pill?.secondary === label
+    );
+  }
+
+  function getCurrentState() {
+    if (isProMode()) return "pro";
+    if (isFlashExtended()) return "flash-extended";
+    return "other";
+  }
+
+  function isMenuOpen() {
+    const menu = document.querySelector('[data-test-id="gem-mode-menu"]');
+    if (menu?.getAttribute("data-visible") === "true") return true;
+
+    const popover = document.querySelector(
+      '[data-test-id="bard-mode-desktop-gem-menu"], [data-test-id="bard-mode-mobile-gem-menu"], [data-test-id="bard-mode-gem-menu"], gem-popover[data-visible="true"]'
+    );
+    if (popover && isVisible(popover)) return true;
+
+    return !!document.querySelector(
+      'mat-option, .mat-mdc-option, gem-menu-item[role="menuitem"], [data-test-id^="bard-mode-option-"]'
+    );
+  }
+
+  function closeMenu() {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+    );
+  }
+
+  async function closeMenuAndWait() {
+    if (!isMenuOpen()) return;
+    closeMenu();
+    await waitUntil(() => !isMenuOpen(), 500, 16);
+  }
+
+  async function ensureMenuOpen(button) {
+    if (isMenuOpen()) return true;
+    button.click();
+    return waitUntil(isMenuOpen, 2000, 16);
+  }
+
+  function getMenuItemLabel(item) {
+    const label = item?.querySelector(
+      ".label-container .label, .label, .title-text, .picker-primary-text, .gds-body-l"
+    );
+    return (
+      label?.textContent.replace(/\s+/g, " ").trim() ||
+      item?.textContent.replace(/\s+/g, " ").trim() ||
+      ""
+    );
+  }
+
+  function isMenuItemSelected(item) {
+    return (
+      item?.getAttribute("data-active") === "true" ||
+      item?.classList.contains("selected") ||
+      item?.getAttribute("aria-selected") === "true"
+    );
+  }
+
+  function findMenuItem(labels, testId) {
+    if (testId) {
+      const byId = document.querySelector(`[data-test-id="${testId}"]`);
+      if (byId && isVisible(byId)) return byId;
+    }
+
+    const wanted = Array.isArray(labels) ? labels : [labels];
+    for (const item of document.querySelectorAll(
+      'gem-menu-item[role="menuitem"], mat-option, .mat-mdc-option, [role="option"], [data-test-id^="bard-mode-option-"]'
+    )) {
+      if (!isVisible(item)) continue;
+      if (item.getAttribute("value") === "thinking_level") continue;
+
+      const text =
+        getMenuItemLabel(item) ||
+        item.textContent.replace(/\s+/g, " ").trim();
+      if (wanted.some((label) => text === label || text.includes(label))) {
+        return item;
+      }
+    }
+
+    return null;
+  }
+
+  function getThinkingLevelItem() {
+    return document.querySelector('gem-menu-item[value="thinking_level"]');
+  }
+
+  function getCurrentThinkingLevel() {
+    const pill = getVisiblePillLabel();
+    if (
+      pill?.secondary &&
+      pill.secondary !== "Pro" &&
+      (FLASH.pillHints.includes(pill.primary) ||
+        pill.primary === "Gemini" ||
+        FLASH.pillHints.some((h) => pill.secondary.includes(h)))
+    ) {
+      // "Gemini" + "Extended" or "Flash" + "Extended"
+      if (pill.secondary === THINKING || pill.secondary === "Flash") {
+        return pill.secondary === THINKING ? THINKING : pill.secondary;
+      }
+      return pill.secondary;
+    }
+    return (
+      getThinkingLevelItem()?.querySelector(".sublabel")?.textContent.trim() ||
+      ""
+    );
+  }
+
+  async function selectModel(button, model) {
+    if (!(await ensureMenuOpen(button))) return false;
+
+    const item = findMenuItem(model.labels || model.label, model.testId);
+    if (!item) return false;
+    if (isMenuItemSelected(item)) return true;
+
+    item.click();
+    return waitUntil(() => isMenuItemSelected(item), 1500, 16);
+  }
+
+  async function selectThinking(button, level) {
+    let thinkingItem = getThinkingLevelItem();
+    if (!thinkingItem) {
+      if (!(await ensureMenuOpen(button))) return false;
+      thinkingItem = getThinkingLevelItem();
+    }
+    if (!thinkingItem) return true;
+
+    if (getCurrentThinkingLevel() === level) return true;
+
+    if (thinkingItem.getAttribute("aria-expanded") !== "true") {
+      thinkingItem.click();
+      await waitUntil(
+        () =>
+          thinkingItem.getAttribute("aria-expanded") === "true" ||
+          !!findMenuItem(level),
+        1500,
+        16
+      );
+    }
+
+    const levelItem = findMenuItem(level);
+    if (!levelItem) return false;
+    if (isMenuItemSelected(levelItem)) return true;
+
+    levelItem.click();
+    return waitUntil(() => getCurrentThinkingLevel() === level, 1500, 16);
+  }
+
+  async function applyFlashExtended(button) {
+    await selectModel(button, { labels: FLASH.labels, testId: FLASH.testId });
+    if (!isMenuOpen()) await ensureMenuOpen(button);
+    await selectThinking(button, THINKING);
+    await closeMenuAndWait();
+  }
+
+  async function applyPro(button) {
+    await selectModel(button, { labels: PRO.labels, testId: PRO.testId });
+    await closeMenuAndWait();
+  }
+
+  function focusInputArea() {
+    const inputArea =
+      document.querySelector('[aria-label="Enter a prompt for Gemini"]') ||
+      document.querySelector('[data-placeholder="Ask Gemini"]') ||
+      document.querySelector("input-area-v2 .ql-editor");
+    inputArea?.focus?.();
+  }
+
+  async function toggleMode() {
+    if (isProcessing) return;
+
+    const button = findModeButton();
+    if (!button) {
+      console.warn(`${LOG_PREFIX} Mode button not found`);
+      return;
+    }
+
+    isProcessing = true;
+
+    try {
+      const state = getCurrentState();
+      const target = state === "pro" ? "flash-extended" : "pro";
+
+      console.log(`${LOG_PREFIX} ${state} -> ${target}`, pillText());
+
+      if (target === "flash-extended") {
+        await applyFlashExtended(button);
+      } else {
+        await applyPro(button);
+      }
+
+      focusInputArea();
+    } catch (e) {
+      console.error(`${LOG_PREFIX} Error:`, e);
+    } finally {
+      await closeMenuAndWait();
+      isProcessing = false;
+    }
+  }
+
+  function setupKeyboardShortcut() {
+    document.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          !event.ctrlKey ||
+          !event.shiftKey ||
+          event.key.toLowerCase() !== "y"
+        )
+          return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        toggleMode();
+      },
+      true
+    );
+  }
+
+  function init() {
+    console.log(
+      `${LOG_PREFIX} Loaded — Ctrl+Shift+Y toggles Pro ↔ Flash + Extended`
+    );
+    setupKeyboardShortcut();
+  }
+
+  if (document.readyState === "complete") {
+    init();
+  } else {
+    window.addEventListener("load", init, { once: true });
+  }
+})();

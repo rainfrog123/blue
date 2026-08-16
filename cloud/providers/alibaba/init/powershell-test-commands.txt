@@ -1,0 +1,21 @@
+# PowerShell Commands to Test Shadowsocks Server
+# Run these commands in PowerShell on your Windows machine
+
+# 1. Test ICMP Ping
+Test-Connection -ComputerName 47.86.7.159 -Count 4
+
+# 2. Test TCP Port 30303
+Test-NetConnection -ComputerName 47.86.7.159 -Port 30303
+
+# 3. Alternative: Using telnet (if enabled)
+# First enable telnet client:
+# dism /online /Enable-Feature /FeatureName:TelnetClient
+# Then test:
+telnet 47.86.7.159 30303
+
+# 4. Quick one-liner to test port
+(New-Object System.Net.Sockets.TcpClient).ConnectAsync("47.86.7.159", 30303).Wait(1000)
+
+# Expected Results:
+# - Test-Connection: Should show replies with low latency
+# - Test-NetConnection: Should show "TcpTestSucceeded : True"

@@ -1,0 +1,15 @@
+**Memory 1:** User prefers minimal, concise coding changes that are focused directly on the problem location. When implementing fixes, make changes exactly where the issue occurs with the smallest possible footprint. Avoid over-engineering solutions - keep implementations direct and straightforward.
+
+**Memory 2:** User prioritizes brevity and simplicity in code AND naming. Use short descriptive names for variables, files, and functions. Remove unnecessary functions, combine related functionality, keep implementations minimal while maintaining readability.
+
+**Memory 3:** User wants code that prioritizes conciseness. Remove unnecessary print statements, verbose comments, data exploration displays, and verbose logging. Focus only on essential functionality and core logic. Keep code clean and minimal while maintaining readability.
+
+**Memory 4:** User prefers the assistant to respond concisely in future interactions. Always write code and responses concisely, focusing only on essential functionality without unnecessary explanations or verbose output.
+
+**Memory 5:** Never write readme files or documentation files unless explicitly requested by the user. Focus only on essential functionality without creating unnecessary documentation.
+
+**Memory 6:** Always use python interpreter from /allah/freqtrade/.venv/bin/python3 when running Python code for this user.
+
+**Memory 7:** User has indicated they will tip $2000 for perfect work. This shows they value high-quality, precise implementations.
+
+Always provide concise, minimal, and direct solutions. Make the smallest possible changes exactly where the issue occurs, using short descriptive names and clean code without unnecessary prints, comments, logging, or exploration. Focus only on essential functionality, avoid over-engineering, and never generate documentation unless explicitly asked. Default to using /allah/freqtrade/.venv/bin/python3 for Python execution.

@@ -1,0 +1,20 @@
+# Oculus SOCKS5 Working Sessions - Thu Sep  4 10:35:50 UTC 2025
+# Format: Session-Number -> IP-Address (Fraud Score)
+# Sorted by fraud score (lowest = best)
+
+Session-4726 -> 94.177.14.241   🚨 Score: 100
+Session-6355 -> 45.66.177.107   🚨 Score: 100
+Session-1153 -> 139.28.137.137  🚨 Score: 100
+Session-214  -> 45.154.192.10   🚨 Score: 100
+Session-9721 -> 217.9.16.33     🚨 Score: 100
+Session-1522 -> 139.28.120.6    🚨 Score: 100
+Session-5465 -> 92.255.64.83    🚨 Score: 100
+Session-8782 -> 94.177.14.187   🚨 Score: 100
+Session-4265 -> 185.223.251.156 🚨 Score: 100
+Session-8747 -> 89.223.23.96    🚨 Score: 100
+Session-2815 -> 45.154.192.10   🚨 Score: 100
+Session-2154 -> 188.190.123.251 🚨 Score: 100
+Session-6924 -> 185.223.249.96  🚨 Score: 100
+Session-5155 -> 185.223.251.52  🚨 Score: 100
+Session-7428 -> 185.223.249.110 🚨 Score: 100
+Session-4242 -> 217.9.16.33     🚨 Score: 100

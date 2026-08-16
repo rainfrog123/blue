@@ -1,0 +1,32 @@
+# All traffic → local mitmproxy (127.0.0.1:8080). Not blue.yml.
+# Phone: import in Shadowrocket, connect, point at this profile.
+# PC: FLClash profile when you want every MATCH through mitmweb.
+# Loop guard: never send the hop to :8080 back into itself.
+
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+ipv6: false
+
+proxies:
+  - name: mitm-local
+    type: http
+    server: 127.0.0.1
+    port: 8080
+    skip-cert-verify: true
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - mitm-local
+
+rules:
+  # Clash / Shadowrocket → mitm must not recurse
+  - IP-CIDR,127.0.0.1/32,DIRECT,no-resolve
+  - DST-PORT,8080,DIRECT
+  - PROCESS-NAME,mitmproxy.exe,DIRECT
+  - PROCESS-NAME,mitmweb.exe,DIRECT
+  - PROCESS-NAME,python.exe,DIRECT
+  - MATCH,PROXY

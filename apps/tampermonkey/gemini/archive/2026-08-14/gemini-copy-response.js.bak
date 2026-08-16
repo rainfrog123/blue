@@ -1,0 +1,454 @@
+// ==UserScript==
+// @name         Gemini Copy Response (Auto + Ctrl+C)
+// @namespace    http://tampermonkey.net/
+// @version      2.2.0
+// @description  Auto-copy finished responses + Ctrl+C (no selection) copies latest response
+// @author       You
+// @match        https://gemini.google.com/*
+// @grant        GM_setClipboard
+// @run-at       document-idle
+// ==/UserScript==
+
+/*
+ * Merged from (see archive/*.bak):
+ *   - archive/auto-copy.js.bak — auto copy when response finishes
+ *   - archive/copy-latest.js.bak — Ctrl+C copies latest (no selection)
+ *
+ * v2.2.0:
+ *   Auto-copy failed because navigator.clipboard needs a user gesture.
+ *   Ctrl+C worked (gesture). Auto path now uses GM_setClipboard (TM grant),
+ *   which does not need a gesture. Not a conflict with the other Gemini scripts.
+ */
+
+(function () {
+  "use strict";
+
+  const LOG = "[Gemini Copy Response]";
+  const SETTLE_MS = 900;
+  const POLL_MS = 800;
+  const STABLE_MS = 700;
+
+  function debug(...args) {
+    console.log(LOG, ...args);
+  }
+
+  function getContentEl(modelResponse) {
+    return (
+      modelResponse?.querySelector?.(
+        '[id^="model-response-message-content"]'
+      ) || null
+    );
+  }
+
+  function extractResponseText(modelResponse) {
+    const content = getContentEl(modelResponse);
+    if (!content) return "";
+    return (content.innerText || content.textContent || "")
+      .replace(/\u00a0/g, " ")
+      .trim();
+  }
+
+  function resolveCopyControl(root) {
+    if (!root) return null;
+    return (
+      root.querySelector(
+        'gem-icon-button[gemtooltip="Copy response"] button[aria-label="Copy"]'
+      ) ||
+      root.querySelector("copy-button button[aria-label='Copy']") ||
+      root.querySelector('gem-icon-button[arialabel="Copy"] button') ||
+      root.querySelector("copy-button button") ||
+      root.querySelector('gem-icon-button[gemtooltip="Copy response"]') ||
+      null
+    );
+  }
+
+  function findCopyInResponse(modelResponse) {
+    const host = modelResponse.querySelector("copy-button");
+    if (host) {
+      const btn = resolveCopyControl(host);
+      if (btn) return btn;
+    }
+    return resolveCopyControl(modelResponse);
+  }
+
+  function getLatestModelResponse() {
+    const responses = document.querySelectorAll("model-response");
+    if (!responses.length) return null;
+    return responses[responses.length - 1];
+  }
+
+  function clickEl(el) {
+    if (!el) return false;
+    const target =
+      el.matches?.("button") ? el : el.querySelector?.("button") || el;
+
+    const r = target.getBoundingClientRect?.() || {
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+    };
+    const cx = r.left + Math.max(r.width / 2, 1);
+    const cy = r.top + Math.max(r.height / 2, 1);
+    const common = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      view: window,
+      clientX: cx,
+      clientY: cy,
+      button: 0,
+      buttons: 1,
+    };
+
+    for (const [type, Ctor, extra] of [
+      [
+        "pointerdown",
+        PointerEvent,
+        { pointerId: 1, pointerType: "mouse", isPrimary: true },
+      ],
+      ["mousedown", MouseEvent, null],
+      [
+        "pointerup",
+        PointerEvent,
+        { pointerId: 1, pointerType: "mouse", isPrimary: true },
+      ],
+      ["mouseup", MouseEvent, null],
+      ["click", MouseEvent, null],
+    ]) {
+      const init = extra ? { ...common, ...extra } : common;
+      try {
+        target.dispatchEvent(new Ctor(type, init));
+      } catch (_) {
+        /* ignore */
+      }
+    }
+    try {
+      target.click();
+    } catch (_) {
+      /* ignore */
+    }
+    return true;
+  }
+
+  /** Temporarily unhide action bar so Gemini's Copy control can receive a click */
+  function forceClickCopyButton(modelResponse) {
+    const actions = modelResponse.querySelector("message-actions");
+    const hadHide = !!actions?.classList.contains("hide-action-bar");
+    if (hadHide) actions.classList.remove("hide-action-bar");
+
+    const btn = findCopyInResponse(modelResponse);
+    let clicked = false;
+    if (btn) {
+      clickEl(btn);
+      try {
+        btn.dataset.geminiAutoCopied = "1";
+      } catch (_) {
+        /* ignore */
+      }
+      clicked = true;
+    }
+
+    if (hadHide) {
+      // restore on next frame so click handlers can run first
+      requestAnimationFrame(() => {
+        actions.classList.add("hide-action-bar");
+      });
+    }
+    return clicked;
+  }
+
+  /**
+   * @param {string} text
+   * @param {{ preferGestureApi?: boolean }} [opts]
+   *   preferGestureApi: use navigator.clipboard first (Ctrl+C path)
+   */
+  async function writeClipboard(text, opts = {}) {
+    if (!text) return false;
+    const preferGestureApi = !!opts.preferGestureApi;
+
+    const tryGm = () => {
+      try {
+        if (typeof GM_setClipboard === "function") {
+          GM_setClipboard(text, "text");
+          return true;
+        }
+      } catch (e) {
+        debug("GM_setClipboard failed", e);
+      }
+      try {
+        // TM 5+ grant style sometimes exposed as GM.setClipboard
+        if (typeof GM !== "undefined" && typeof GM.setClipboard === "function") {
+          GM.setClipboard(text, "text");
+          return true;
+        }
+      } catch (e) {
+        debug("GM.setClipboard failed", e);
+      }
+      return false;
+    };
+
+    const tryNav = async () => {
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (e) {
+        debug("clipboard.writeText failed", e);
+      }
+      return false;
+    };
+
+    const tryExec = () => {
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.cssText = "position:fixed;left:-9999px;top:0";
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      } catch (e) {
+        debug("execCommand copy failed", e);
+        return false;
+      }
+    };
+
+    if (preferGestureApi) {
+      if (await tryNav()) return true;
+      if (tryGm()) return true;
+      return tryExec();
+    }
+
+    // Auto path: GM first (no user-gesture required)
+    if (tryGm()) return true;
+    if (await tryNav()) return true;
+    return tryExec();
+  }
+
+  async function copyModelResponse(modelResponse, reason) {
+    if (!modelResponse) {
+      debug(reason, "no model-response");
+      return false;
+    }
+
+    const text = extractResponseText(modelResponse);
+    if (!text) {
+      debug(reason, "empty response text");
+      return false;
+    }
+
+    const isManual = reason === "Ctrl+C";
+    const ok = await writeClipboard(text, { preferGestureApi: isManual });
+
+    // Best-effort UI click (does not replace clipboard write)
+    forceClickCopyButton(modelResponse);
+
+    debug(
+      reason,
+      ok ? "copied" : "FAILED",
+      `${text.length} chars`,
+      typeof GM_setClipboard === "function" ? "GM_ok" : "GM_missing"
+    );
+    return ok;
+  }
+
+  function isInPromptEditor(el) {
+    if (!el) return false;
+    if (
+      el.closest?.(
+        "input-area-v2, rich-textarea, .ql-editor, [data-node-type='input-area']"
+      )
+    ) {
+      return true;
+    }
+    if (el.getAttribute?.("aria-label") === "Enter a prompt for Gemini") {
+      return true;
+    }
+    return false;
+  }
+
+  function hasTextSelection() {
+    const el = document.activeElement;
+    if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      if (
+        typeof start === "number" &&
+        typeof end === "number" &&
+        start !== end
+      ) {
+        return true;
+      }
+    }
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed) return false;
+    return sel.toString().length > 0;
+  }
+
+  // --- Ctrl+C → latest response ---
+  (function initManualCopy() {
+    let busy = false;
+
+    async function onShortcut() {
+      if (busy) return;
+      busy = true;
+      try {
+        await copyModelResponse(getLatestModelResponse(), "Ctrl+C");
+      } catch (e) {
+        debug("error", e);
+      } finally {
+        setTimeout(() => {
+          busy = false;
+        }, 300);
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!(e.key === "c" || e.key === "C")) return;
+        if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+        if (hasTextSelection()) return;
+        if (isInPromptEditor(document.activeElement)) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        onShortcut();
+      },
+      true
+    );
+
+    debug("manual: Ctrl+C ready");
+  })();
+
+  // --- Auto-copy when latest response finishes ---
+  (function initAutoCopy() {
+    /** @type {Set<string>} */
+    const copiedIds = new Set();
+    /** @type {Map<string, {len:number, since:number}>} */
+    const stableMap = new Map();
+    let pending = null;
+    let booted = false;
+    let copying = false;
+
+    function responseId(modelResponse) {
+      const content = getContentEl(modelResponse);
+      if (content?.id) return content.id;
+      const conv = modelResponse.closest(".conversation-container");
+      if (conv?.id) return `conv:${conv.id}`;
+      return null;
+    }
+
+    function isComplete(modelResponse) {
+      const content = getContentEl(modelResponse);
+      if (!content) return false;
+      if (content.getAttribute("aria-busy") === "true") return false;
+
+      const footer = modelResponse.querySelector(".response-footer");
+      if (footer && !footer.classList.contains("complete")) return false;
+      if (footer?.classList.contains("complete")) return true;
+
+      return (
+        content.getAttribute("aria-busy") === "false" &&
+        !!findCopyInResponse(modelResponse)
+      );
+    }
+
+    function textIsStable(id, text) {
+      const now = Date.now();
+      const prev = stableMap.get(id);
+      if (!prev || prev.len !== text.length) {
+        stableMap.set(id, { len: text.length, since: now });
+        return false;
+      }
+      return now - prev.since >= STABLE_MS && text.length > 0;
+    }
+
+    function seedExisting() {
+      // Only mark *finished* replies so a URL change mid-stream doesn't
+      // permanently skip the in-flight response.
+      let n = 0;
+      document.querySelectorAll("model-response").forEach((mr) => {
+        const id = responseId(mr);
+        if (!id || copiedIds.has(id)) return;
+        if (isComplete(mr) && extractResponseText(mr)) {
+          copiedIds.add(id);
+          n++;
+        }
+      });
+      debug(`auto: seeded ${n} finished response(s)`);
+    }
+
+    async function tryCopyLatest() {
+      if (copying) return;
+      const latest = getLatestModelResponse();
+      if (!latest) return;
+
+      const id = responseId(latest);
+      if (!id || copiedIds.has(id)) return;
+      if (!isComplete(latest)) return;
+
+      const text = extractResponseText(latest);
+      if (!textIsStable(id, text)) {
+        scheduleScan();
+        return;
+      }
+
+      copying = true;
+      try {
+        const ok = await copyModelResponse(latest, "auto");
+        if (ok) copiedIds.add(id);
+        else scheduleScan();
+      } finally {
+        copying = false;
+      }
+    }
+
+    function scheduleScan() {
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(() => {
+        pending = null;
+        tryCopyLatest();
+      }, SETTLE_MS);
+    }
+
+    const obs = new MutationObserver(() => scheduleScan());
+
+    function start() {
+      if (booted) return;
+      booted = true;
+      seedExisting();
+      obs.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["aria-busy", "class"],
+        characterData: true,
+      });
+      setInterval(tryCopyLatest, POLL_MS);
+      debug(
+        "auto: watching",
+        typeof GM_setClipboard === "function"
+          ? "(GM_setClipboard available)"
+          : "(GM_setClipboard MISSING — reinstall script to apply @grant)"
+      );
+    }
+
+    let lastHref = location.href;
+    setInterval(() => {
+      if (location.href === lastHref) return;
+      lastHref = location.href;
+      debug("auto: route change — re-seed finished only");
+      copiedIds.clear();
+      stableMap.clear();
+      seedExisting();
+    }, 1000);
+
+    if (document.body) start();
+    else document.addEventListener("DOMContentLoaded", start, { once: true });
+  })();
+})();

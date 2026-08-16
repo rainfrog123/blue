@@ -1,0 +1,109 @@
+﻿1. App Overview
+This app will assist coliving space operators in accurately calculating booking costs, considering:
+✅ Property Selection (Alt_CM or Alt_PR)
+✅ Room Types Based on Property
+✅ Seasonal Rates (High, Medium, Low)
+✅ Long-Stay Discounts (up to 50%) (even when room types are changed)
+✅ Booking Extensions with Room Type Changes (including a manual override for 7-day extension rule)
+✅ Up to 3 Room Type Changes within a Single Booking
+✅ Capacity-Based Pricing Adjustments (+20% if 2 persons)
+✅ Promo & Manual Discounts (5-15%)
+✅ VAT (7%)
+✅ Date-Based 7-Day Extension Rule with Manual Override (checkbox to enable/disable if calculation needs backdating)
+✅ All Pricing Displayed in Thai Baht (THB) (no currency selection required)
+✅ Clean & Relevant Output Based on Calculation Type (New Booking, Extension, Room Type Change)
+✅ Detailed Calculation Breakdown in Output (number of nights displayed after date range per room type)
+The app should allow new bookings, extensions, and multiple room type changes while maintaining correct pricing logic.
+________________
+
+
+2. User Interface (UI) Design
+Step 1: Select Property
+* Dropdown Selection:
+   * Alt_CM
+   * Alt_PR
+* Based on the property selected, only relevant room types should be displayed in the next step.
+________________
+
+
+Step 2: Type of Calculation (Dropdown Selection)
+1. New Booking
+2. Booking Extension (for extending an existing stay)
+3. New Booking with Room Type Change (if switching room types mid-stay)
+________________
+
+
+Step 3A: Inputs for New Booking
+* Check-in Date (Calendar Picker)
+* Check-out Date (Calendar Picker)
+* Capacity (Dropdown: "1 Person" or "2 Persons")
+   * If capacity = 2 persons, apply a 20% surcharge to the base room rate.
+* Room Type (Dropdown, filtered by selected property):
+   * Alt_CM: Flexie, Flexie Plus, Ensuite Single, Ensuite Standard, Ensuite Plus
+   * Alt_PR: Flexie, Flexie XL, Ensuite Single, Ensuite Standard, Ensuite King/Twin
+* Extra Discounts (Numeric input with "%" at the end)
+* Add Room Type Change? (Yes/No toggle → If "Yes," go to Step 4A)
+________________
+
+
+Step 3B: Inputs for Booking Extension
+* Original Check-in Date (Calendar Picker)
+* Original Check-out Date (Calendar Picker)
+* New Check-out Date (Calendar Picker)
+* Change Room Type During Extension? (Yes/No toggle → If "Yes," go to Step 4B)
+* Apply Long-Stay Discount for Extension? (Checkbox to enable/disable the 7-day rule override if needed)
+💡 Logic:
+* The app should automatically detect the date of calculation and compare it to the original check-in date to determine if the extension qualifies for long-stay discounts (within 7 days of check-in).
+* The manual override checkbox allows staff to apply or disable the 7-day rule in case the calculation needs to be backdated or adjusted manually.
+________________
+
+
+Step 4A: Inputs for Room Type Change (New Booking Scenario)
+* Number of Room Type Changes (Dropdown: 1, 2, or 3 changes)
+* For Each Room Type Change (up to 3):
+   * Date of Room Type Change (Calendar Picker)
+   * New Room Type (Dropdown, filtered by selected property)
+   * New Capacity (if different) (Dropdown, +20% surcharge if 2 persons)
+   * Extra Discounts for New Room Type (if applicable)
+💡 Note: If there is a room type change within the same booking, long-term discounts still apply based on total stay duration.
+________________
+
+
+Step 4B: Inputs for Room Type Change (Booking Extension Scenario)
+* Number of Room Type Changes (Dropdown: 1, 2, or 3 changes)
+* For Each Room Type Change (up to 3):
+   * New Room Type (After Original Check-out Date) (Dropdown, filtered by selected property)
+   * New Capacity (if different) (Dropdown, +20% surcharge if 2 persons)
+   * Extra Discounts for Extended Period (if applicable)
+💡 Logic:
+* If the stay is extended in the same room type, apply one continuous pricing calculation.
+* If the stay is extended with a room type change, split the calculation into separate periods, one for each room type.
+* Long-stay discounts still apply across all periods if the extension is within 7 days of check-in, or if the manual override checkbox is enabled.
+________________
+
+
+3. Pricing Calculation Logic
+1. Determine Room Rates Based on Property & Seasonality
+   * Fetch the seasonal rate (High, Medium, Low) based on room type, property, and booking dates.
+2. Apply Capacity-Based Pricing Adjustment
+   * If Capacity = 2 persons, apply 20% surcharge to the base room rate.
+3. Apply Long-Stay Discount
+   * Automatically check if the extension is within 7 days of check-in and apply the appropriate long-stay discount if applicable.
+   * If the manual override checkbox is selected, the long-stay discount is applied regardless of the actual date.
+4. Long-stay discount tiers:
+   * 9-18 nights → 20% discount
+   * 19-28 nights → 35% discount
+   * 29+ nights → 50% discount
+5. Apply Promo & Manual Discounts
+   * Apply any promo codes or manual discounts (5-15%) entered by staff.
+6. Calculate Final Price
+   * Subtotal = (Room Rate × Nights per Room Type) - Discounts
+   * VAT (7%) = Subtotal × 1.07
+   * Final Total Price (THB) = Subtotal + VAT
+________________
+
+
+4. Output & Summary Display
+* All prices should be displayed in Thai Baht (THB).
+* The summary should be clean and relevant based on the type of calculation (New Booking, Extension, Room Type Change).
+* The number of nights should be displayed in the same row as the room type period, after the date range.

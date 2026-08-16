@@ -1,0 +1,1163 @@
+{
+  "uuid": "21134137816a481f9c0c2c471772a45f",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFuIjp7ImludGVybmFsX2FwaV9yYXRlX2xpbWl0IjoxMDB9LCJqdGkiOiI4MjhiOGVjNy1hNWZlLTQ1NzgtOThmZi00Nzg1OTEyYjQ3OTgiLCJzdWIiOiIyMTEzNDEzNzgxNmE0ODFmOWMwYzJjNDcxNzcyYTQ1ZiIsIm5hbWUiOm51bGwsImlhdCI6MTc3MDY2MjMyOSwiaXNzIjoicHJvZC5vY3RvYnJvd3Nlci5uZXQiLCJhdWQiOiJzZXJ2ZXIiLCJuYmYiOjE3NzA2NjIzMjksImV4cCI6MTc3MDY2NTkyOSwiaWRlbnRpdHkiOiIyMTEzNDEzNzgxNmE0ODFmOWMwYzJjNDcxNzcyYTQ1ZiIsInR5cGUiOiJhY2Nlc3MiLCJyZWZyZXNoX2lkIjoiMGEyZmY4OWUtY2IwZi00NTRmLTg3OWEtMzA4ZDVkNTU1M2VlIn0.q0JwvVoyQ7aLs1hWnbBkzeKZly4AHPScZ4z9SJnYZbw",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGFuIjp7ImludGVybmFsX2FwaV9yYXRlX2xpbWl0IjoxMDB9LCJqdGkiOiIwYTJmZjg5ZS1jYjBmLTQ1NGYtODc5YS0zMDhkNWQ1NTUzZWUiLCJzdWIiOiIyMTEzNDEzNzgxNmE0ODFmOWMwYzJjNDcxNzcyYTQ1ZiIsIm5hbWUiOm51bGwsImlhdCI6MTc3MDY2MjMyOSwiaXNzIjoicHJvZC5vY3RvYnJvd3Nlci5uZXQiLCJhdWQiOiJzZXJ2ZXIiLCJuYmYiOjE3NzA2NjIzMjksImV4cCI6MTc3MzI1NDMyOSwiaWRlbnRpdHkiOiIyMTEzNDEzNzgxNmE0ODFmOWMwYzJjNDcxNzcyYTQ1ZiIsInR5cGUiOiJyZWZyZXNoIn0.r04MOPGLxEH4LrdXLOAq31hmi2QoK2LDGnO5mNFwxow",
+  "email": "xxlo@ceto.site",
+  "hid": "bfc20204b4f54381995ca27aa51d897e",
+  "feature_versions": {
+    "feeds": 16
+  },
+  "feed": {
+    "news": [
+      {
+        "id": 132,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 144.</li>\n<li>Added videostream spoofing for macOS.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 144 версии Chromium.</li>\n<li>Добавлена подмена видеопотока на macOS.</li></ul>"
+        },
+        "ts": 1768469100,
+        "model_id": 135,
+        "order": 132
+      },
+      {
+        "id": 131,
+        "html": {
+          "en": "<h1>Update 2.9</h1>\n<h2 class=\"title-new\">What’s New:</h2>\n<ul>\n    <li>Local cache for profiles.</li>\n    <li>Limits on loading images.</li>\n    <li>Deleting team invitations.</li>\n</ul>\n<div>Learn more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-9-reducing-traffic-usage\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.9</h1>\n<h2 class=\"title-new\">Что нового:</h2>\n<ul>\n    <li>Локальный кэш для профилей.</li>\n    <li>Ограничение загрузки изображений.</li>\n    <li>Удаление приглашений в команду.</li>\n</ul>\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-9-ehkonomya-trafika\">блоге</a>.</div>"
+        },
+        "ts": 1768207938,
+        "model_id": 134,
+        "order": 131
+      },
+      {
+        "id": 130,
+        "html": {
+          "en": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> The time of enormous discounts is running out!</h1>\n<h2>Make the most of it before December 31:</h2>\n<ul>\n    <li>Subscriptions for 3, 6, or 12 months — discounts of up to 40%.</li>\n    <li>Traffic in the Proxy Shop — discounts of up to 60%.</li>\n</ul>",
+          "ru": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> Время больших скидок заканчивается! <img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\n<h2>Успейте выгодно закупиться до 31 декабря:</h2>\n<ul>\n    <li>Подписки на 3, 6 или 12 месяцев — со скидкой до 40%.</li>\n    <li>Трафик в прокси-шопе — со скидкой до 60%.</li>\n</ul>"
+        },
+        "ts": 1767081872,
+        "model_id": 133,
+        "order": 130
+      },
+      {
+        "id": 129,
+        "html": {
+          "en": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> New Year discounts are live! <img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\n<h2>Until December 31:</h2>\n<ul>\n    <li>Subscriptions for 3, 6, or 12 months — discounts of up to 40%.</li>\n    <li>Traffic in the Proxy Shop — discounts of up to 60%.</li>\n</ul>",
+          "ru": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> Новогодние скидки уже работают! <img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\n<h2>До 31 декабря:</h2>\n<ul>\n    <li>Подписки на 3, 6 или 12 месяцев — со скидкой до 40%.</li>\n    <li>Трафик в прокси-шопе — со скидкой до 60%.</li>\n</ul>"
+        },
+        "ts": 1765785620,
+        "model_id": 132,
+        "order": 129
+      },
+      {
+        "id": 128,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 143.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 143 версии Chromium.</li></ul>"
+        },
+        "ts": 1764839688,
+        "model_id": 131,
+        "order": 128
+      },
+      {
+        "id": 124,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 142.</li></ul>\n<ul><li>Added a dark theme for mobile fingerprints on Android.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 142 версии Chromium.</li></ul>\n<ul><li>Добавлена темная тема для мобильных отпечатков на Аndroid.</li></ul>"
+        },
+        "ts": 1761816107,
+        "model_id": 127,
+        "order": 124
+      },
+      {
+        "id": 123,
+        "html": {
+          "en": "<h1>Update 2.8</h1>\n<h2 class=\"title-new\">What’s New:</h2>\n<ul>\n    <li>Configure command-line switches passed to the browser at startup.</li>\n    <li>Search the team members’ list.</li>\n    <li>Context menu for text fields.</li>\n    <li>You can now reset settings for tables.</li>\n    <li>Minor browser improvements and fixes.</li>\n</ul>\n<div>Learn more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-8-command-line-arguments\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.8</h1>\n<h2 class=\"title-new\">Что нового:</h2>\n<ul>\n    <li>Настройка аргументов запуска браузера.</li>\n    <li>Поиск по списку участников команды.</li>\n    <li>Контекстное меню для текстовых полей.</li>\n    <li>Возможность сброса настроек таблиц.</li>\n    <li>Небольшие улучшения и исправления в работе клиента.</li>\n</ul>\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-8-argumenty-zapuska-profilya\">блоге</a>.</div>"
+        },
+        "ts": 1761037633,
+        "model_id": 126,
+        "order": 123
+      },
+      {
+        "id": 122,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 141.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 141 версии Chromium.</li></ul>"
+        },
+        "ts": 1759742513,
+        "model_id": 125,
+        "order": 122
+      },
+      {
+        "id": 121,
+        "html": {
+          "en": "<h1>New Feature: One-Time Profiles</h1>\n<div>You can now launch one-time profiles using the API. Profiles are created at launch and automatically deleted after they are stopped. This greatly simplifies automation for web scraping and other tasks where anonymity and a clean browser fingerprint without saved data are required.</div>\n<div>Learn more on our <a href=\"https://blog.octobrowser.net/one-time-profiles\">blog</a>.</div>",
+          "ru": "<h1>Новая функция: одноразовые профили</h1>\n<div>Теперь вы можете запускать одноразовые профили через API. Профили создаются при запуске и автоматически удаляются после завершения работы. Это значительно упрощает автоматизацию для веб-скрейпинга и других задач, где требуется анонимность и чистый браузерный отпечаток без сохранения данных.</div>\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/odnorazovye-profili\">блоге</a>.</div>"
+        },
+        "ts": 1758013986,
+        "model_id": 124,
+        "order": 121
+      },
+      {
+        "id": 120,
+        "html": {
+          "en": "<h1>Update 2.7</h1>\n<h2 class=\"title-new\">What’s New:</h2>\n<ul>\n    <li>Added mobile fingerprints.</li>\n    <li>Browser speed and responsiveness increased several times.</li>\n    <li>Added new API methods for managing team access rights.</li>\n    <li>Many minor improvements and fixes enhancing browser performance.</li>\n</ul>\n<div>Learn more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-7-mobile-fingerprints\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.7</h1>\n<h2 class=\"title-new\">Что нового:</h2>\n<ul>\n    <li>Добавлены мобильные отпечатки.</li>\n    <li>Скорость и отзывчивость клиента увеличена в несколько раз.</li>\n    <li>Добавлены новые API-методы для управления правами доступа команды.</li>\n    <li>Много небольших улучшений и исправлений в работе клиента.</li>\n</ul>\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-7-mobilnye-otpechatki\">блоге</a>.</div>"
+        },
+        "ts": 1757495935,
+        "model_id": 123,
+        "order": 120
+      },
+      {
+        "id": 119,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 140.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 140 версии Chromium.</li></ul>"
+        },
+        "ts": 1757409824,
+        "model_id": 122,
+        "order": 119
+      },
+      {
+        "id": 118,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 139.</li></ul>\n<b>Important!</b>\n<div>Google Chrome no longer supports macOS Big Sur (11). After Chromium 139 was released, Octium also stopped supporting macOS 11. To continue using Octo Browser, please update your operating system to macOS 12 or later.</div>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 139 версии Chromium.</li></ul>\n<b> Внимание!</b>\n<div>Google Chrome прекратил поддержку macOS Big Sur (11). С выходом ядра Chromium 139 Octium также больше не поддерживает macOS 11. Чтобы и дальше пользоваться Octo Browser, пожалуйста, обновите операционную систему до macOS 12 или выше.</div>"
+        },
+        "ts": 1754558882,
+        "model_id": 121,
+        "order": 118
+      },
+      {
+        "id": 117,
+        "html": {
+          "en": "<h1>Scheduled Maintenance</h1>\n<div>On July 24 from 09:10 to 13:10 (UTC), scheduled maintenance will take place in preparation for the upcoming Chromium update to version 139 and the end of support for macOS Big Sur (11).</div>\n<div>During this period:</div>\n<ul>\n<li>It will not be possible to create or edit profiles with a macOS 11 browser fingerprint.</li>\n<li>Profiles and templates using macOS 11 will be automatically updated to macOS 12.</li>\n</ul>",
+          "ru": "<h1>Техническое обслуживание</h1>\n<div>24 июля с 09:10 до 13:10 (UTC) запланированы технические работы в связи со скорым обновлением Chromium до 139 версии и прекращением поддержки macOS Big Sur (11).</div>\n<div>В этот период:</div>\n<ul>\n<li>Будет невозможно создавать и редактировать профили с браузерным отпечатком macOS 11.</li>\n<li>Профили и шаблоны с macOS 11 будут автоматически обновлены до macOS 12.</li>\n</ul>"
+        },
+        "ts": 1753261175,
+        "model_id": 120,
+        "order": 117
+      },
+      {
+        "id": 116,
+        "html": {
+          "en": "<h1>Hive Proxy Maintenance</h1>\n<div>On July 17 from 08:00 to 09:00 (UTC), the proxy provider Hive Proxy will be performing scheduled maintenance.</div>\n<div>Please note that during this time:</div>\n<ul>\n<li>Short-term disruptions in proxy service may occur (up to 20 minutes).</li>\n<li>Purchasing Hive Proxy traffic will be temporarily unavailable.</li>\n</ul>\n<div>This maintenance is being carried out to improve service quality and stability. We apologize for any inconvenience this may cause.</div>",
+          "ru": "<h1>Техническое обслуживание Hive Proxy</h1>\n<div>17 июля с 8:00 до 9:00 (UTC) прокси-провайдер Hive Proxy проведет плановые технические работы.</div>\n<div>Обратите внимание, что в это время:</div>\n<ul>\n<li>Возможны кратковременные перебои в работе прокси (до 20 минут).</li>\n<li>Будет временно отключена возможность покупки трафика Hive Proxy.</li>\n</ul>\n<div>Обслуживание проводится для повышения стабильности сервиса. Приносим извинения за возможные неудобства.</div>"
+        },
+        "ts": 1752735702,
+        "model_id": 119,
+        "order": 116
+      },
+      {
+        "id": 113,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 138.</li></ul>\n<b>Important!</b>\n<div>Google Chrome will end support for macOS Big Sur (11) in August. After the Chromium kernel is updated to version 139, Octium will also stop supporting macOS 11. To continue using Octo Browser, please update your operating system to macOS 12 or later.</div>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 138 версии Chromium.</li></ul>\n<b> Внимание!</b>\n<div>В августе Google Chrome прекратит поддержку macOS Big Sur (11). После обновления ядра Chromium до 139 версии Octium также перестанет работать на macOS 11. Чтобы продолжить использовать Octo Browser, обновите операционную систему до macOS 12 или выше.</div>"
+        },
+        "ts": 1750929785,
+        "model_id": 116,
+        "order": 113
+      },
+      {
+        "id": 112,
+        "html": {
+          "en": "<h1>Update 2.6</h1>\r\n<h2 class=\"title-new\">What’s New:</h2>\r\n<ul>\r\n    <li>Update 2.6 improves the stability and performance of the browser.</li>\r\n    <li>Added support for Chinese Simplified, Vietnamese, and Spanish languages.</li>\r\n    <li>Increased limits on proxies saved in the Proxy Manager.</li>\r\n    <li>Added hotkeys for searching in the Profile List: Ctrl + F for Windows and Cmd + F for macOS.</li>\r\n</ul>\r\n<div>Learn more on our <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-6-technical-improvements \">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.6</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>Обновление повышает стабильность и производительность клиента.</li>\r\n    <li>Добавлена поддержка китайского, вьетнамского и испанского языков в клиенте.</li>\r\n    <li>В прокси-менеджере увеличены лимиты на добавление сохраненных прокси.</li>\r\n    <li>Добавлены горячие клавиши для поиска по таблице профилей: Ctrl + F для Windows и Cmd + F для macOS.</li>\r\n</ul>\r\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-6-uluchsheniya-i-dorabotki\">блоге</a>.</div>"
+        },
+        "ts": 1749460365,
+        "model_id": 115,
+        "order": 112
+      },
+      {
+        "id": 111,
+        "html": {
+          "en": "<h1>Octium Update</h1>\n<ul><li>Browser kernel updated to Chromium 137.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\n<ul><li>Ядро обновлено до 137 версии Chromium.</li></ul>"
+        },
+        "ts": 1748510050,
+        "model_id": 114,
+        "order": 111
+      },
+      {
+        "id": 110,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 136.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 136 версии Chromium.</li></ul>"
+        },
+        "ts": 1746536293,
+        "model_id": 113,
+        "order": 110
+      },
+      {
+        "id": 109,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 135.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 135 версии Chromium.</li></ul>"
+        },
+        "ts": 1743672378,
+        "model_id": 112,
+        "order": 109
+      },
+      {
+        "id": 108,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 134.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 134 версии Chromium.</li></ul>"
+        },
+        "ts": 1741254161,
+        "model_id": 111,
+        "order": 108
+      },
+      {
+        "id": 107,
+        "html": {
+          "en": "<h1>New Features for Base and Team Subscriptions</h1>\r\n<ul>\r\n    <li>In the Base subscription, you can now increase the number of profiles to 200.</li>\r\n    <li>In the Team subscription, you can now increase the number of profiles to 600 and expand your team to 6 members.</li>\r\n</ul>\r\n<div>Read more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-5-additional-resource\">blog</a>.</div>",
+          "ru": "<h1>Новые возможности для подписок Base и Team</h1>\r\n<ul>\r\n    <li>В подписке Base вы можете увеличить количество профилей до 200.</li>\r\n    <li>В подписке Team вы можете увеличить количество профилей до 600 и расширить команду до 6 участников.</li>\r\n</ul>\r\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-5-dopolnitelnye-resursy\">блоге</a>.</div>"
+        },
+        "ts": 1739869375,
+        "model_id": 110,
+        "order": 107
+      },
+      {
+        "id": 106,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 133.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 133 версии Chromium.</li></ul>"
+        },
+        "ts": 1738834481,
+        "model_id": 109,
+        "order": 106
+      },
+      {
+        "id": 105,
+        "html": {
+          "en": "<h1>Update 2.5</h1>\r\n<h2 class=\"title-new\">What’s New:</h2>\r\n<ul>\r\n    <li>In the Starter subscription, you can now increase the number of profiles to 30.</li>\r\n    <li>In the Advanced subscription, you can now increase the number of profiles to 10,000, expand your team, and raise API limits.</li>\r\n    <li>Updated the subscription selection interface; Octo now shows more comprehensive purchase details.</li>\r\n    <li>Added new payment methods.</li>\r\n</ul>\r\n<div>Read more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-5-additional-resource\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.5</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>В подписке Starter вы можете увеличить количество профилей до 30.</li>\r\n    <li>В подписке Advanced вы можете увеличить количество профилей до 10000, расширить команду и увеличить лимиты API.</li>\r\n    <li>Обновлены интерфейсы выбора тарифа и улучшена детализация покупок.</li>\r\n    <li>Добавлены новые способы оплаты.</li>\r\n</ul>\r\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-5-dopolnitelnye-resursy\">блоге</a>.</div>"
+        },
+        "ts": 1738746814,
+        "model_id": 108,
+        "order": 105
+      },
+      {
+        "id": 104,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 132.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 132 версии Chromium.</li></ul>"
+        },
+        "ts": 1737017074,
+        "model_id": 107,
+        "order": 104
+      },
+      {
+        "id": 103,
+        "html": {
+          "en": "<h1>How Octo Browser improved in 2024</h1>\r\n<div>In 2024, our team released 8 major updates packed with new, useful features. These were significant improvements, and we decided to highlight the most important ones:</div>\r\n<ul>\r\n    <li><strong>Referral Program:</strong> Earn 15% from every payment made by referred users.</li>\r\n    <li><strong>Octo 2.0:</strong> A new level of multi-accounting with an improved interface and 2FA.</li>\r\n    <li><strong>Profile Tasks:</strong> A convenient task management system.</li>\r\n    <li><strong>Proxy Shop:</strong> High-quality proxies are now available directly in the browser.</li>\r\n    <li><strong>Profile Passwords:</strong> Additional protection for your data.</li>\r\n    <li><strong>Action Log:</strong> A detailed history of account events.</li>\r\n</ul>\r\n<div>Learn more about the year’s achievements and future plans on our <a href=\"https://blog.octobrowser.net/octo-browser-360-tops-the-rankings\">blog</a>.</div>",
+          "ru": "<h1>Как Octo Browser стал лучше в 2024</h1>\r\n<div>В 2024 году наша команда выпустила 8 крупных релизов с новыми полезными функциями. Это действительно большие изменения, и мы решили напомнить о самых важных из них:</div>\r\n<ul>\r\n    <li><strong>Реферальная программа:</strong> получайте 15% от каждой оплаты привлеченных пользователей.</li>\r\n    <li><strong>Octo 2.0:</strong> новый уровень мультиаккаунтинга с улучшением интерфейса и добавлением 2FA.</li>\r\n    <li><strong>Задачи в профилях:</strong> удобная система управления задачами.</li>\r\n    <li><strong>Прокси-шоп:</strong> качественные прокси доступны прямо в клиенте браузера.</li>\r\n    <li><strong>Пароли для профилей:</strong> дополнительная защита ваших данных.</li>\r\n    <li><strong>Журнал действий:</strong> детальная история событий в аккаунте.</li>\r\n</ul>\r\n<div>Узнайте больше об итогах года и планах на будущее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-360-na-vershine-rejtingov\">блоге</a>.</div>"
+        },
+        "ts": 1736758742,
+        "model_id": 106,
+        "order": 103
+      },
+      {
+        "id": 102,
+        "html": {
+          "en": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> December 16 — 31: New Year Deal <img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\r\n<p>Renew your subscription for 3, 6, or 12 months with up to 40% off, and enjoy increased discounts on proxies as well: up to 60% off larger bundles.</p>\r\n<div><a href=\"https://blog.octobrowser.net/new-year-deal\"><strong>Learn more</strong></a></div>",
+          "ru": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /> New Year Deal 16 - 31 декабря <img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\r\n<p>При продлении подписки на 3, 6 и 12 месяцев — скидка до 40%. И увеличенные скидки на прокси — до 60% за большие пакеты.</p>\r\n<div><a href=\"https://blog.octobrowser.net/ru/new-year-deal\"><strong>Подробнее</storng></a></div>"
+        },
+        "ts": 1734339722,
+        "model_id": 105,
+        "order": 102
+      },
+      {
+        "id": 101,
+        "html": {
+          "en": "<h1>Update 2.4</h1>\r\n<h2 class=\"title-new\">What’s New:</h2>\r\n<ul>\r\n    <li>Action log, storing the history of your team members' actions, is now available.</li>\r\n    <li>New proxy provider: Netlabs.</li>\r\n    <li>Portuguese and Ukrainian browser interface languages are now available.</li>\r\n    <li>The number of available locations for Hive Proxy has been increased.</li>\r\n</ul>\r\n<div>Read more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-4-activity-log\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.4</h1>\r\n<h2 class=\"title-new\">Что еще:</h2>\r\n<ul>\r\n    <li>Добавлен журнал действий, в котором хранится история действий членов вашей команды.</li>\r\n    <li>Новый прокси-провайдер — Netlabs.</li>\r\n    <li>Добавлена поддержка португальского и украинского языков в клиенте.</li>\r\n    <li>Количество доступных локаций для Hive Proxy увеличено.</li>\r\n</ul>\r\n<div>Узнайте подробнее в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-4-zhurnal-dejstvij\">блоге</a>.</div>"
+        },
+        "ts": 1732613599,
+        "model_id": 104,
+        "order": 101
+      },
+      {
+        "id": 100,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 131.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 131 версии Chromium.</li></ul>"
+        },
+        "ts": 1731577669,
+        "model_id": 103,
+        "order": 100
+      },
+      {
+        "id": 99,
+        "html": {
+          "en": "<h1>Update 2.3: Proxy Shop and Free Gigabytes</h1>\r\n<div>You can now purchase proxies directly in Octo. To celebrate our latest release, we are giving away traffic to all active users. Test the proxy quality of our partners right now and purchase traffic with discounts of up to 25%.</div>\r\n<h2 class=\"title-new\">What else is new:</h2>\r\n<ul>\r\n    <li>tags and profile templates limits removed;</li>\r\n    <li>saved proxies limit available with the Starter subscription increased;</li>\r\n    <li>other minor improvements and bug fixes.</li>\r\n</ul>\r\n<div>Read more on our <a href=\"https://blog.octobrowser.net/octo-browser-2-3-proxy-shop-and-free-gigabytes\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.3: прокси-шоп и гигабайты в подарок</h1>\r\n<div>Теперь прокси можно приобрести прямо в клиенте. В честь релиза мы дарим трафик всем активным пользователям. Протестируйте качество прокси от наших партнеров уже сейчас и покупайте трафик со скидками до 25%.</div>\r\n<h2 class=\"title-new\">Что еще нового:</h2>\r\n<ul>\r\n    <li>сняты лимиты для тегов и шаблонов профилей;</li>\r\n    <li>увеличен лимит на сохранение прокси в список в подписке Starter;</li>\r\n    <li>небольшие улучшения и исправления.</li>\r\n</ul>\r\n<div>Подробнее читайте в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-3-proksi-shop-i-gigabajty-v-podarok\">блоге</a>.</div>"
+        },
+        "ts": 1730197418,
+        "model_id": 102,
+        "order": 99
+      },
+      {
+        "id": 98,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 130.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 130 версии Chromium.</li></ul>"
+        },
+        "ts": 1729156100,
+        "model_id": 101,
+        "order": 98
+      },
+      {
+        "id": 97,
+        "html": {
+          "en": "<h1>It’s time to choose the best browser</h1>\r\n<div>Octo Browser has been nominated for the Affiliate Space Awards 2024 in the “<a href=\"https://www.conversion-club.com/voting-affiliate-space-awards-2024\">Best Anti-Detect Browser</a>” category. The winner will be determined by voting, so we greatly appreciate your support. Register on the voting page, find Octo Browser in “The Best Anti-Detect Browser” category (number 17), and cast your vote for Octo Browser. We value each and every one of your votes!</div>",
+          "ru": "<h1>Время выбирать лучший браузер</h1>\r\n<div>Octo Browser номинирован на премию Affiliate Space Awards 2024 в категории <a href=\"https://www.conversion-club.com/voting-affiliate-space-awards-2024\">«Лучший антидетект-браузер»</a>. Победителя определят голоса, поэтому для нас важна поддержка каждого. Зарегистрируйтесь на странице голосования, найдите Octo Browser в номинации №17 и выберите Octo Browser. Мы ценим каждый голос!</div>"
+        },
+        "ts": 1728554913,
+        "model_id": 100,
+        "order": 97
+      },
+      {
+        "id": 96,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 129.</li></ul>\r\n<h2>Important!</h2>\r\n<p>Google Chrome no longer supports macOS Catalina (10.15). After the Chromium kernel is updated to version 129, Octium will also stop supporting macOS 10.15. To continue using Octo Browser, please update your operating system to macOS Big Sur (11.0) or later.</p>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 129 версии Chromium.</li></ul>\r\n<h2> Внимание!</h2>\r\n<p>Google Chrome больше не поддерживает macOS Catalina (10.15). С обновлением ядра до 129 версии Chromium, Octium также прекращает поддержку macOS 10.15. Чтобы продолжить использовать Octo Browser, пожалуйста, обновите вашу операционную систему до версии macOS Big Sur (11.0) или выше.</p>"
+        },
+        "ts": 1727085707,
+        "model_id": 99,
+        "order": 96
+      },
+      {
+        "id": 94,
+        "html": {
+          "en": "<h1>Technical Maintenance</h1>\r\n<div>On September 18 at 23:00 (UTC), scheduled maintenance will take place. For this reason, there may be interruptions in the service operation, so we recommend postponing important tasks during this time. We apologize for any inconvenience this may cause.</div>",
+          "ru": "<h1>Техническое обслуживание</h1>\r\n<div>18 сентября 23:00 (UTC) запланированы технические работы. В связи с этим могут возникнуть перерывы в работе сервиса, поэтому рекомендуем отложить выполнение важных задач в это время. Приносим извинения за возможные неудобства.</div>"
+        },
+        "ts": 1726655372,
+        "model_id": 97,
+        "order": 94
+      },
+      {
+        "id": 93,
+        "html": {
+          "en": "<h1>Update 2.2</h1>\r\n<h2 class=\"title-new\">What's New:</h2>\r\n<ul>\r\n    <li>Added search functionality for the Trash Bin.</li>\r\n    <li>The bookmarks bar opens automatically after adding new bookmarks.</li>\r\n    <li>You can now undo font changes when editing a profile.</li>\r\n    <li>Improved browser interface responsiveness.</li>\r\n</ul>\r\n<div>Read more about the latest changes and improvements on our <a href=\"https://blog.octobrowser.net/octo-browser-2-2-search-in-trash-bin\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.2</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>Добавлен поиск в корзине.</li>\r\n    <li>Панель закладок автоматически открывается после добавления новых закладок.</li>\r\n    <li>При редактировании профиля можно отменить изменение шрифтов.</li>\r\n    <li>Улучшена скорость отклика интерфейса клиента.</li>\r\n</ul>\r\n<div>Подробнее обо всех изменениях и улучшениях читайте в <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-2-poisk-profilya-v-korzine\">блоге</a>.</div>"
+        },
+        "ts": 1725439323,
+        "model_id": 96,
+        "order": 93
+      },
+      {
+        "id": 92,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 128.</li></ul>\r\n<h2>Important!</h2>\r\n<p>Google Chrome will end support for macOS Catalina (10.15) in September. After the Chromium kernel is updated to version 129, Octium will also stop supporting macOS 10.15. To continue using Octo Browser, please update your operating system to macOS Big Sur (11.0) or later.</p>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 128 версии Chromium.</li></ul>\r\n<h2> Внимание!</h2>\r\n<p>В сентябре Google Chrome прекратит поддержку macOS Catalina (10.15). После обновления ядра до версии 129 Chromium, Octium также перестанет поддерживать macOS 10.15. Чтобы продолжить использовать Octo Browser, пожалуйста, обновите вашу операционную систему до версии macOS Big Sur (11.0) или выше.</p>"
+        },
+        "ts": 1724317923,
+        "model_id": 95,
+        "order": 92
+      },
+      {
+        "id": 91,
+        "html": {
+          "en": "<h1>Update 2.1</h1>\r\n<h2 class=\"title-new\">What's New:</h2>\r\n<ul>\r\n    <li>New Feature: Profile Tasks. Now you can set tasks for yourself and your teammates. This new feature will remind you of scheduled actions with your profiles.</li>\r\n    <li>Updated Proxy Interface. Results of proxy checks are now more detailed.</li>\r\n    <li>New Bulk Actions for Profiles: start, stop, proxy check, and IP address change.</li>\r\n    <li>You can now create profiles in bulk by uploading data in .csv or .xlsx formats.</li>\r\n</ul>\r\n<div>Learn more about these and other changes and improvements in our <a href=\"https://blog.octobrowser.net/octo-browser-2-1-profile-tasks-updated-proxy-interface\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.1</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>Новая функция: задачи в профилях. Теперь вы можете ставить задачи себе и своим тиммейтам. Новая функция будет напоминать о запланированных действиях, связанных с профилями.</li>\r\n    <li>Обновлен интерфейс прокси. Результаты проверки прокси стали более детализированными.</li>\r\n    <li>Массовое создание профилей через загрузку данных в формате .csv, .xlsx.</li>\r\n    <li>Добавили новые массовые действия над профилями: запуск, остановка, проверка прокси, смена IP-адреса.</li>\r\n</ul>\r\n<div>Узнайте подробнее об этих и других изменениях и улучшениях в нашем <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-1-zadachi-uluchshennyj-proksi\">блоге</a>.</div>"
+        },
+        "ts": 1723454632,
+        "model_id": 94,
+        "order": 91
+      },
+      {
+        "id": 90,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 127.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 127 версии Chromium.</li></ul>"
+        },
+        "ts": 1721899145,
+        "model_id": 93,
+        "order": 90
+      },
+      {
+        "id": 89,
+        "html": {
+          "en": "<h1>Welcome to Octo Club!</h1>\r\n<div>Here’s what you can find in our community:</div>\r\n<ul>\r\n    <li>Rewards for the most active members and token giveaways for subscribers.</li>\r\n    <li>Exclusive offers from our partners.</li>\r\n    <li>Direct access to professionals ready to answer all your questions.</li>\r\n</ul>\r\n<div>Join the <a href=\"https://t.me/octobrowserenchat\">Octo Club</a> today and become a part of our expert community!</div>\r\n<div>Learn more about the Octo Club, how the giveaways work, the rewards for active members, and special offers <a href=\"https://blog.octobrowser.net/welcome-to-the-octo-club\">here</a>.</div>",
+          "ru": "<h1>Добро пожаловать в Octo Club!</h1>\r\n<div>Что вас ждет в нашем новом сообществе:</div>\r\n<ul>\r\n    <li>Награды для самых активных участников и розыгрыши токенов среди подписчиков.</li>\r\n    <li>Эксклюзивные офферы от партнеров.</li>\r\n    <li>Общение с профессионалами, которые знают ответы на все вопросы.</li>\r\n</ul>\r\n<div>Вступайте в <a href=\"https://t.me/octobrowser_chat\">Octo Club</a> прямо сейчас и станьте частью нашего экспертного комьюнити!</div>\r\n<div>Подробнее об Octo Club, механиках розыгрыша, наградах для самых активных участников и офферах читайте <a href=\"https://blog.octobrowser.net/ru/dobro-pozhalovat-v-octo-club\">здесь</a>.</div>"
+        },
+        "ts": 1719824712,
+        "model_id": 92,
+        "order": 89
+      },
+      {
+        "id": 88,
+        "html": {
+          "en": "<h1>Update 2.0.10</h1>\r\n<h2 class=\"title-new\">Improvements and fixes:</h2>\r\n<ul>\r\n    <li>The proxy list is now displayed correctly on low-resolution screens.</li>\r\n    <li>You can now quickly save profile name edits by pressing Enter.</li>\r\n    <li>A link to a detailed description of two-factor authentication has been added to Account Settings.</li>\r\n    <li>The “New fingerprint” button has been brought back to the profile editing window.</li>\r\n</ul>",
+          "ru": "<h1>Обновление 2.0.10</h1>\r\n<h2 class=\"title-new\">Улучшения и исправления:</h2>\r\n<ul>\r\n    <li>Список прокси отображается корректно на экранах с низким разрешением.</li>\r\n    <li>При редактировании имени профиля можно быстро сохранить изменения, нажав на Enter.</li>\r\n    <li>В настройки аккаунта добавлена ссылка на подробное описание двухфакторной аутентификации.</li>\r\n    <li>В окно редактирования профиля возвращена кнопка «Новый отпечаток».</li>\r\n</ul>"
+        },
+        "ts": 1719393167,
+        "model_id": 91,
+        "order": 88
+      },
+      {
+        "id": 87,
+        "html": {
+          "en": "<h1>Participate in the giveaway for a chance to win 100 tokens!</h1>\r\n<div>The biggest Octo Update since the project's launch is a great reason for a celebratory giveaway, for which we've prepared 5 sets of 100 tokens each and a randomizer bot that will determine the winners on June 27th.</div>\r\n<div>To participate in the giveaway, you need to:</div>\r\n<ul>\r\n    <li>Have an Octo Browser account registered before 20.06.</li>\r\n    <li>Be a subscriber of the <a href=\"https://t.me/octobrowseren\">Octo Browser Telegram channel</a>.</li>\r\n    <li>Follow the <a href=\"https://t.me/octobrowseren/171\">link to the post</a> and click the <i>Participate</i> button.</li>\r\n</ul>\r\n<div>Good luck!</div>",
+          "ru": "<h1>Участвуйте в розыгрыше 100 токенов!</h1>\r\n<div>Крупнейшее обновление Octo со времен запуска проекта — это отличный повод для праздничного розыгрыша. Мы подготовили 15 комплектов по 100 токенов и бота-рандомайзера, который 27 июня определит победителей.</div>\r\n<div>Для участия в розыгрыше нужно:</div>\r\n<ul>\r\n    <li>Иметь аккаунт в Octo Browser, зарегистрированный до 20.06.</li>\r\n    <li>Быть подписчиком <a href=\"https://t.me/octobrowser\">телеграм-канала Octo Browser</a>.</li>\r\n    <li>Перейти по <a href=\"https://t.me/octobrowser/331\">ссылке на пост</a> и нажать на кнопку «Участвую».</li>\r\n</ul>\r\n<div>Желаем удачи!</div>"
+        },
+        "ts": 1718893957,
+        "model_id": 90,
+        "order": 87
+      },
+      {
+        "id": 86,
+        "html": {
+          "en": "<h1>Update 2.0</h1>\r\n<h2 class=\"title-new\">What's New:</h2>\r\n<ul>\r\n    <li>Two-Factor Authentication is now available for more reliable account protection against unauthorized access.</li>\r\n    <li>A feature for bulk creation of quick profiles and importing profiles from cookie files. This feature allows you to create and configure up to 100 profiles simultaneously.</li>\r\n    <li>Profile List Customization. Now you can adjust the position and size of the columns and hide unnecessary ones. Additional columns with profile information are now available.</li>\r\n    <li>Updated design of the profile creation and editing pages. The new layout facilitates faster and more convenient work with profiles.</li>\r\n    <li>Expanded selection of macOS architectures when creating quick profiles.</li>\r\n</ul>\r\n<h2 class=\"title-new\"> Fixes:</h2>\r\n<ul>\r\n    <li>Notifications are now displayed in the lower left corner and no longer cover the search field.</li>\r\n    <li>The system will no longer log you out of your account every 30 days, but we recommend enabling this option in your account settings for security reasons.</li>\r\n    <li>We have redesigned error codes for working with the API. Now you will see a clearly understandable error message if an error occurs.</li>\r\n    <li>Added the checkbox \"Do not show this warning again\" in the modal window that appears if you overwrite settings when changing the template.</li>\r\n</ul>\r\n<div>Learn more about these and other changes and improvements in our <a href=\"https://blog.octobrowser.net/octo-browser-2-0-new-level\">blog</a>.</div>",
+          "ru": "<h1>Обновление 2.0</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>Доступна двухфакторная аутентификация для более надежной защиты аккаунта от несанкционированного доступа.</li>\r\n    <li>Добавлена функция массового создания быстрых профилей и импорта профилей из файлов куки. Эта функция позволяет создавать и настраивать до 100 профилей одновременно.</li>\r\n    <li>Кастомизация таблицы профилей. Теперь вы можете изменять положение и размер колонок, а также скрывать их. Доступны дополнительные колонки с информацией о профилях.</li>\r\n    <li>Обновлен дизайн страниц создания и редактирования профиля. Новое отображение позволит быстрее и удобнее работать с профилями.</li>\r\n    <li>Расширен выбор архитектуры macOS при создании быстрых профилей.</li>\r\n</ul>\r\n<h2 class=\"title-new\"> Исправления:</h2>\r\n<ul>\r\n    <li>Нотификации теперь выводятся в левом нижнем углу и не перекрывают собой поле поиска.</li>\r\n    <li>Теперь система не будет разлогинивать из аккаунта каждые 30 дней, но в целях безопасности мы рекомендуем вам включить эту опцию в настройках аккаунта.</li>\r\n    <li>Мы переработали коды ошибок при работе с API. Теперь вы увидите понятный текст ошибки при ее возникновении.</li>\r\n    <li>Добавлен чекбокс «Больше не показывать это предупреждение» в модальном окне, которое отображается при перезаписи настроек при смене шаблона.</li>\r\n</ul>\r\n<div>Узнайте подробнее об этих и других изменениях и улучшениях в нашем <a href=\"https://blog.octobrowser.net/ru/octo-browser-2-0-novyj-uroven\">блоге</a>.</div>"
+        },
+        "ts": 1718786726,
+        "model_id": 89,
+        "order": 86
+      },
+      {
+        "id": 85,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 126.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 126 версии Chromium.</li></ul>"
+        },
+        "ts": 1718268569,
+        "model_id": 88,
+        "order": 85
+      },
+      {
+        "id": 84,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 125.</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 125 версии Chromium.</li></ul>"
+        },
+        "ts": 1716196544,
+        "model_id": 87,
+        "order": 84
+      },
+      {
+        "id": 83,
+        "html": {
+          "en": "<h1>Octo Browser needs your support!</h1>\r\n<div>We have been nominated for the Best Anti-Detect Browser at The MAC Awards 2024, where the winner will be determined by voting. Register on the site by e-mail and select Octo Browser and click on the icon to support us. We appreciate every vote.</div>\r\n<div><a href=\"https://partnerkin.com/mac24?lang=en\">Choose Octo Browser and win with us!</a></div>",
+          "ru": "<h1>Твой голос нужен Octo Browser!</h1>\r\n<div>Мы номинированы на премию «Лучший антидетект-браузер» по версии MAC, где победителя определят голоса. Зарегистрируйтесь на сайте по e-mail или через VK, выберите Octo Browser и нажмите на значок, чтобы поддержать нас. Мы ценим каждый голос.</div>\r\n<div><a href=\"https://partnerkin.com/mac24?lang=ru\">Выбирайте Octo Browser и побеждайте вместе с нами!</a></div>"
+        },
+        "ts": 1714136461,
+        "model_id": 86,
+        "order": 83
+      },
+      {
+        "id": 82,
+        "html": {
+          "en": "<h1>Update 1.15</h1>\r\n<h2 class=\"title-new\">What’s new:</h2>\r\n<ul>\r\n    <li>Updated and improved tag management. Now you can choose a color, pin a tag to a profile, quickly add new tags, and assign them directly from the profile list. We've improved bulk tag editing and added the option to hide the tag list.</li>\r\n    <li>Improved profile extensions management. Now you can delete extensions you no longer use, add or remove extensions in bulk, install new extensions from the store via a link, and add them as an archive or folder.</li>\r\n    <li>The interface for performing bulk actions is now always visible when scrolling through the profile list, which makes these operations more accessible. </li>\r\n    <li>Improved the interface of the Profiles page. Now the search and tags area remains visible when scrolling through the list.</li>\r\n    <li>Added browser tooltips providing information about various settings and actions.</li>\r\n</ul>\r\n<div>Learn more about these and other changes our <a href=\"https://blog.octobrowser.net/octo-browser-1-15-redesigned-tags\">blog</a>.</div>",
+          "ru": "<h1>Обновление 1.15</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n    <li>Обновили управление тегами. Теперь вы можете выбрать цвет, закрепить тег для профиля, быстро добавить новые теги и назначить их прямо из таблицы профилей. Мы улучшили массовое редактирование тегов и добавили возможность скрыть список тегов.</li>\r\n    <li>Улучшили управление расширениями в профилях. Вы можете удалять расширения, которыми больше не пользуетесь, массово назначать или снимать расширения, а также устанавливать новые расширения из магазина по ссылке, загружать их в виде архива или папки.</li>\r\n    <li>Интерфейс для выполнения массовых действий теперь всегда на виду при прокрутке списка профилей, что упрощает доступ к этим операциям.</li>\r\n    <li>Улучшили интерфейс страницы «Профили». Область с тегами и функцией поиска остается видимой при прокрутке списка.</li>\r\n    <li>В клиент добавлены подсказки с информацией о различных настройках и действиях.</li>\r\n</ul>\r\n<br />\r\n<div>Узнайте подробнее об этих и других изменениях в нашем <a href=\"https://blog.octobrowser.net/ru/octo-browser-1-15-redizajn-tegov\">блоге</a>. </div>"
+        },
+        "ts": 1713949418,
+        "model_id": 85,
+        "order": 82
+      },
+      {
+        "id": 81,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 124</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 124 версии Chromium</li></ul>"
+        },
+        "ts": 1713430914,
+        "model_id": 84,
+        "order": 81
+      },
+      {
+        "id": 80,
+        "html": {
+          "en": "<h1>New feature: Password-Protected Profiles</h1>\r\n<div>Now you can set a password for one or several profiles, after which starting such profiles will require the password. Moreover, passwords additionally protect the profile data using end-to-end encryption, which means that no one except you can access this encrypted data.</div>\r\n<div>Learn more about the additional profile password protection <a href=\"https://blog.octobrowser.net/password-protected-profiles\">on our blog</a>.</div>",
+          "ru": "<h1>Новая функция: Пароли для профилей</h1>\r\n<div>Теперь вы можете установить пароль для одного или нескольких профилей, и каждый запуск таких профилей будет защищен паролем. Кроме того, пароль дополнительно защищает данные профилей с помощью сквозного шифрования, что означает, что доступ к этим данным не сможет получить никто, кроме вас.</div>\r\n<div>Узнайте больше о том, как работает дополнительная защита паролем для профилей, <a href=\"https://blog.octobrowser.net/ru/paroli-dlya-profiley\">в нашем блоге</a>.</div>"
+        },
+        "ts": 1711963375,
+        "model_id": 83,
+        "order": 80
+      },
+      {
+        "id": 79,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 123</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 123 версии Chromium</li></ul>"
+        },
+        "ts": 1711010441,
+        "model_id": 82,
+        "order": 79
+      },
+      {
+        "id": 78,
+        "html": {
+          "en": "<h1>Update 1.14</h1>\r\n<h2 class=\"title-new\">What’s new:</h2>\r\n<ul>\r\n<li>Improved profile import functionality. Added a field for mass profile import in text format.</li>\r\n</ul>\r\n<h2 class=\"title-new\">Key fixes:</h2>\r\n<ul>\r\n<li>Fixed the issue preventing the launch of an imported profile.</li>\r\n<li>During mass profile stoppage, open tabs are now saved correctly.</li>\r\n<li>Fixed the incorrect display of the profile status during mass profile launch.</li>\r\n<li>Fixed the issue causing the browser to freeze when changing the account password.</li>\r\n<li>The proxy list is now updated after mass deletion of saved proxies.</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.14</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n<li>Улучшен импорт профилей. Добавлено поле для массового импорта профилей в текстовом формате.</li>\r\n</ul>\r\n<h2 class=\"title-new\">Основные исправления:</h2>\r\n<ul>\r\n<li>Исправлена ошибка, не позволявшая запустить импортированный профиль.</li>\r\n<li>При массовой остановке профилей открытые вкладки теперь сохраняются корректно.</li>\r\n<li>Исправлено некорректное отображение состояния профиля при массовом запуске профилей.</li>\r\n<li>Исправлен кейс, приводивший к зависанию клиента при изменении пароля учетной записи.</li>\r\n<li>Список прокси после массового удаления сохраненных прокси теперь актуализируется.</li>\r\n</ul>"
+        },
+        "ts": 1710752914,
+        "model_id": 81,
+        "order": 78
+      },
+      {
+        "id": 77,
+        "html": {
+          "en": "<h1>Fixing the MetaMask connection issue</h1>\r\n<div>We have observed some issues when connecting to certain MetaMask versions. To establish a connection to this extension, please update MetaMask to the latest version. If you need help or still have questions, feel free to contact the <a href=\"http://t.me/OctoBrowser_support_bot\">Octo Browser Support</a>.</div>",
+          "ru": "<h1>Подключение к расширению MetaMask</h1>\r\n<div>Мы заметили сбои при подключении к определенным версиям MetaMask. Для подключения к расширению обновите MetaMask до последней версии. Если у вас возникли вопросы или вам нужна помощь, обратитесь в <a href=\"https://t.me/OctoBrowser_support_bot/\">телеграм-бот техподдержки</a>.</div>"
+        },
+        "ts": 1708609188,
+        "model_id": 80,
+        "order": 77
+      },
+      {
+        "id": 76,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 122</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 122 версии Chromium</li></ul>"
+        },
+        "ts": 1708599490,
+        "model_id": 79,
+        "order": 76
+      },
+      {
+        "id": 75,
+        "html": {
+          "en": "<h1>Join our Referral Program</h1>\r\n<div>Now you can recommend Octo Browser and earn by doing so! Invite new users with your Referral Link and get paid 15% of all their Octo purchases for a year since their registration.</div>\r\n<div>Learn more about the Referral Program Terms and Conditions in our <a href=\"https://blog.octobrowser.net/launch-a-referral-program\">blog</a>.</div>",
+          "ru": "<h1>Присоединяйтесь к нашей реферальной программе</h1>\r\n<div>Теперь можно рекомендовать Octo Browser и хорошо на этом зарабатывать! Приглашайте новых пользователей по реферальной ссылке и получайте 15% от каждой их оплаты в течение года после регистрации.</div>\r\n<div>Узнайте подробнее об условиях программы в нашем <a href=\"https://blog.octobrowser.net/ru/zapusk-referalnoj-programmy\">блоге</a>.</div>"
+        },
+        "ts": 1706692508,
+        "model_id": 78,
+        "order": 75
+      },
+      {
+        "id": 74,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 121</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 121 версии Chromium</li></ul>"
+        },
+        "ts": 1706520373,
+        "model_id": 77,
+        "order": 74
+      },
+      {
+        "id": 73,
+        "html": {
+          "en": "<h1>Update 1.13</h1>\r\n<h2 class=\"title-new\">What’s new:</h2>\r\n<ul>\r\n<li>We have optimized profile starting and synchronizing. This solved the issues arising from bulk start and stop of profiles, use of automation, working with an unstable Internet connection or on overloaded systems.</li>\r\n<li>Application performance for users running a very large number of profiles has been enhanced.</li>\r\n</ul>\r\n<h2 class=\"title-new\">Major fixes:</h2>\r\n<ul>\r\n<li> Fixed the issue with the rendering of the timer on the payment page running in the background.</li>\r\n<li>Resolved an issue causing profile freezes when the device comes out of the sleep mode on Windows.</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.13</h1>\r\n<h2 class=\"title-new\">Что нового:</h2>\r\n<ul>\r\n<li>Мы оптимизировали механизм запуска и синхронизации профилей. Это решило проблемы, возникающие при массовых запусках и остановках профилей, использовании автоматизации, работе при нестабильном интернет-соединении и нагруженных системах.</li>\r\n<li>Ускорена работа приложения у пользователей с очень большим количеством профилей.</li>\r\n</ul>\r\n<h2 class=\"title-new\">Основные исправления:</h2>\r\n<ul>\r\n<li>Исправлено отображение таймера на странице оплаты в фоновом режиме.</li>\r\n<li>Исправлен кейс, приводивший к зависанию профиля при выходе устройства из спящего режима на Windows.</li>\r\n</ul>"
+        },
+        "ts": 1706008642,
+        "model_id": 76,
+        "order": 73
+      },
+      {
+        "id": 71,
+        "html": {
+          "en": "<h1>The New Year's promo has come to end!</h1>\r\n<div>For those who purchased a subscription between December 18 and 31, your opportunity for victory is on the line!</div>\r\n<div>We will unveil the results of the drawing on January 5, 2024.</div>\r\n<div>Find out how the chances of winning are divided in our <a href=\"https://blog.octobrowser.net/new-year-chance\">blog post</a>.</div>",
+          "ru": "<h1>Новогодняя акция завершилась!</h1>\r\n<div>Каждый, кто купил подписку с 18 - 31 декабря, получил свой шанс на победу!</div>\r\n<div>Результаты розыгрыша мы опубликуем 05.01.2024</div>\r\n<div>Как распределяются шансы на победу читайте <a href=\"https://blog.octobrowser.net/ru/new-year-chance\">в блоге</a>.</div>"
+        },
+        "ts": 1704270493,
+        "model_id": 74,
+        "order": 71
+      },
+      {
+        "id": 70,
+        "html": {
+          "en": "<h1>Bonus tokens</h1>\r\n<div>New discounts on upgrading your subscription for 3, 6, or 12 months are available with <a href=\"https://blog.octobrowser.net/octo-browser-1-12-discounts-on-subscription-upgrades\">Update 1.12</a>! Now upgrading your subscription is as profitable as purchasing a new long-term one.</div>\r\n<div>We have decided that it would be only fair if new discounts applied to previously made purchases, so, after recalculation, all users who have upgraded their subscriptions for 3 months or longer in 2023 will receive bonus tokens.</div>",
+          "ru": "<h1>Бонусные токены</h1>\r\n<div>В <a href=\"https://blog.octobrowser.net/ru/octo-browser-1-12-skidki-na-apgreid-podpiski\">Обновлении 1.12</a> при апгрейде подписки на 3, 6 и 12 месяцев применяются новые скидки! Теперь апгрейд стал таким же выгодным, как покупка подписки на длительный срок.</div>\r\n<div>Мы решили, что будет справедливо, если новые скидки распространятся и на покупки, совершенные ранее. В результате пересчета оплаты все пользователи, которые сделали апгрейд в 2023 году на 3 месяца и больше, получат бонусные токены на свой аккаунт.</div>"
+        },
+        "ts": 1703762229,
+        "model_id": 73,
+        "order": 70
+      },
+      {
+        "id": 69,
+        "html": {
+          "en": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" />Holiday Chance! December 18-31 only!<img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\r\n<p>If you renew or buy a subscription for 3, 6, or 12 months, you get up to 40% off and a chance to win prizes.</p>\r\n<div><a href=\"https://blog.octobrowser.net/new-year-chance\"><strong>Learn more</strong></a></div>",
+          "ru": "<h1><img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" />Holiday Chance! 18-31 декабря<img src=\"https://octobrowser.net/hubfs/ny-octo.png\" alt=\"ny octo\" width=\"20\" height=\"20\" style=\"margin-top: -3px\" /></h1>\r\n<p>При продлении подписки на 3, 6 или 12 месяцев — скидка до 40% и шанс выиграть призы!</p>\r\n<div><a href=\"https://blog.octobrowser.net/ru/new-year-chance\"><strong>Подробнее</storng></a></div>"
+        },
+        "ts": 1703500603,
+        "model_id": 72,
+        "order": 69
+      },
+      {
+        "id": 68,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 120</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 120 версии Chromium</li></ul>"
+        },
+        "ts": 1702544086,
+        "model_id": 71,
+        "order": 68
+      },
+      {
+        "id": 67,
+        "html": {
+          "en": "<h1>Update 1.12</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Discounts for 3, 6, 12 months subscription upgrade</li>\r\n<li>Expanded WebRTC settings</li>\r\n</ul>\r\n<br/>\r\n<div>Learn more about these and other changes in our <a href=\"https://blog.octobrowser.net/octo-browser-1-12-discounts-on-subscription-upgrades\">blog</a>.</div>",
+          "ru": "<h1>Обновление 1.12</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Скидки при апгрейде подписки на 3, 6, 12 месяцев</li>\r\n<li>Расширение настроек WebRTC</li>\r\n</ul>\r\n<br/>\r\n<div>Узнайте подробнее об этих и других изменениях в нашем <a href=\"https://blog.octobrowser.net/ru/octo-browser-1-12-skidki-na-apgreid-podpiski\">блоге</a>.</div>"
+        },
+        "ts": 1701678741,
+        "model_id": 70,
+        "order": 67
+      },
+      {
+        "id": 65,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 119</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 119 версии Chromium</li></ul>"
+        },
+        "ts": 1698915541,
+        "model_id": 68,
+        "order": 65
+      },
+      {
+        "id": 63,
+        "html": {
+          "en": "<h1>Update 1.11</h1>\r\n<div>We have fixed several minor issues and improved overall browser stability and performance.</div>\r\n<div>Thank you for using Octo Browser!</div>",
+          "ru": "<h1>Обновление 1.11</h1>\r\n<div>Обновление исправляет небольшие ошибки, повышает общую стабильность и производительность клиента.</div>\r\n<div>Спасибо, что пользуетесь Octo Browser!</div>"
+        },
+        "ts": 1698655711,
+        "model_id": 66,
+        "order": 63
+      },
+      {
+        "id": 62,
+        "html": {
+          "en": "<h1>Octoweek October 23-31</h1>\r\n<div>Get 5 bonus days when you upgrade your subscription!</div>\r\n<div><a href=\"https://blog.octobrowser.net/octoweek-october-23-31\">Find out more on our blog</a>.</div>",
+          "ru": "<h1>Octoweek 23-31 октября</h1>\r\n<div>Получите 5 бонусных дней при апгрейде подписки!</div>\r\n<div><a href=\"https://blog.octobrowser.net/ru/octoweek-23-31-oktyabrya\">Узнать подробности акции</a>.</div>"
+        },
+        "ts": 1698047323,
+        "model_id": 65,
+        "order": 62
+      },
+      {
+        "id": 61,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 118</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 118 версии Chromium</li></ul>"
+        },
+        "ts": 1697447217,
+        "model_id": 64,
+        "order": 61
+      },
+      {
+        "id": 60,
+        "html": {
+          "en": "<h1>Update 1.10</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Selecting the OS version and macOS architecture</li>\r\n<li>Restoring profiles from Trash</li>\r\n<li>Import cookie counter</li>\r\n<li>Notification about closing the browser</li>\r\n<li>User surveys</li>\r\n</ul>\r\n<br/>\r\n<div>Learn more about these and other changes in our <a href=\"https://blog.octobrowser.net/octo-browser-1-10-os-version-and-macos-architecture\">blog</a>.</div>",
+          "ru": "<h1>Обновление 1.10</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Выбор версии ОС и архитектуры macOS</li>\r\n<li>Восстановление профилей из корзины</li>\r\n<li>Счетчик куки при импорте</li>\r\n<li>Предупреждение о закрытии клиента</li>\r\n<li>Пользовательские опросы</li>\r\n</ul>\r\n<br/>\r\n<div>Узнайте подробнее об этих и других изменениях в нашем <a href=\"https://blog.octobrowser.net/ru/octo-browser-1-10-vybor-versii-os-i-arhitektury-macos\">блоге</a>.</div>"
+        },
+        "ts": 1695805507,
+        "model_id": 63,
+        "order": 60
+      },
+      {
+        "id": 59,
+        "html": {
+          "en": "<h1>End of support for macOS 10.13 and 10.14</h1>\r\n<div>Chrome will no longer support macOS 10.13 and macOS 10.14. With the release of Octium 117, Octo Browser likewise stops supporting these OSs. If you still use these macOS versions, we strongly recommend updating your OS.</div>",
+          "ru": "<h1>Прекращение поддержки macOS 10.13 и 10.14</h1>\r\n<div>Chrome больше не будет поддерживать macOS 10.13 и macOS 10.14. С выходом обновления Octium 117 Octo Browser также прекращает их поддержку. Если вы используете эти версии macOS, мы рекомендуем обновить вашу операционную систему.</div>"
+        },
+        "ts": 1695301521,
+        "model_id": 62,
+        "order": 59
+      },
+      {
+        "id": 58,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 117</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 117 версии Chromium</li></ul>"
+        },
+        "ts": 1695287233,
+        "model_id": 61,
+        "order": 58
+      },
+      {
+        "id": 57,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 116</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 116 версии Chromium</li></ul>"
+        },
+        "ts": 1692262111,
+        "model_id": 60,
+        "order": 57
+      },
+      {
+        "id": 55,
+        "html": {
+          "en": "<h1>Normal operation of the payment service restored</h1>\r\n<div>USDT TRC-20 and TRX payment methods are available again.</div>",
+          "ru": "<h1>Работа платежного сервиса восстановлена</h1>\r\n<div>Методы оплаты USDT TRC-20 и TRX снова доступны.</div>"
+        },
+        "ts": 1690216695,
+        "model_id": 58,
+        "order": 55
+      },
+      {
+        "id": 54,
+        "html": {
+          "en": "<h1>USDT TRC-20 and TRX payment methods are temporarily unavailable</h1>\r\n<div>We recommend using other available payment methods.</div>\r\n<div>We apologize for any inconvenience this may have caused, and we will notify you as soon as normal operation of the payment service is restored.</div>",
+          "ru": "<h1>Временно недоступны методы оплаты USDT TRC-20 и TRX</h1>\r\n<div>Рекомендуем воспользоваться другими доступными способами пополнения баланса.</div>\r\n<div>Приносим свои извинения за доставленные неудобства и обязательно сообщим, как только корректная работа платежей будет восстановлена.</div>"
+        },
+        "ts": 1690180186,
+        "model_id": 57,
+        "order": 54
+      },
+      {
+        "id": 53,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 115</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 115 версии Chromium</li></ul>"
+        },
+        "ts": 1689842240,
+        "model_id": 56,
+        "order": 53
+      },
+      {
+        "id": 52,
+        "html": {
+          "en": "<h1>New payment method</h1>\r\n<div>We now accept TRX (Tronix) tokens. Now you can top up your Octo Browser balance using this secure and fast method.</div>",
+          "ru": "<h1>Новый метод оплаты</h1>\r\n<div>Добавлен прием токенов TRX (Tronix). Теперь вы можете пополнить баланс Octo Browser ещё одним безопасным и быстрым способом.</div>"
+        },
+        "ts": 1689681597,
+        "model_id": 55,
+        "order": 52
+      },
+      {
+        "id": 51,
+        "html": {
+          "en": "<h1>End of support for browser versions 1.8.9 and 1.9.0</h1>\r\n<div>We strive to limit the lifespan of outdated browser versions so as not to jeopardize profile security. Today the browser versions 1.8.9 and 1.9.0 were automatically updated to version 1.9.1.</div>\r\n<div>If you encounter issues installing or reinstalling Microsoft Edge WebView2 components while updating Octo Browser, please consult the relevant <a href=\"https://docs.octobrowser.net/en/faq/webview/\">Knowledge Base</a>.</div>",
+          "ru": "<h1>Прекращение поддержки 1.8.9 и 1.9.0 версий клиента</h1>\r\n<div>Мы стремимся сократить время использования устаревших версий клиента, чтобы не подвергать риску безопасную работу с профилями. Сегодня 1.8.9 и 1.9.0 версии клиента были автоматически обновлены до версии 1.9.1.</div>\r\n<div>Если у вас возникли сложности при установке/переустановке Microsoft Edge WebView2 компонентов при обновлении Octo Browser, воспользуйтесь нашим <a href=\"https://docs.octobrowser.net/faq/webview/\">мануалом</a>.</div>"
+        },
+        "ts": 1688473967,
+        "model_id": 54,
+        "order": 51
+      },
+      {
+        "id": 50,
+        "html": {
+          "en": "<h1>Update 1.9.1</h1>\r\n<p>We have fixed several minor issues and improved overall browser stability and performance.</p>\r\n<p>Thank you for using Octo Browser!</p>",
+          "ru": "<h1> Обновление 1.9.1</h1>\r\n<p>Обновление исправляет небольшие ошибки, повышает общую стабильность и производительность клиента.</p>\r\n<p>Спасибо, что пользуетесь Octo Browser!</p>"
+        },
+        "ts": 1687943872,
+        "model_id": 53,
+        "order": 50
+      },
+      {
+        "id": 49,
+        "html": {
+          "en": "<h1>Update 1.9</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>A new widget in the browser that gives easy access to FAQ, feedback, and chat with Technical Support</li>\r\n<li>A new design of the profile status when launching or stopping a profile</li>\r\n<li>A new interface for configuring proxies</li>\r\n<li>It’s now possible to add a set of proxies to a template</li>\r\n<li>Bulk import of start pages</li>\r\n<li>Better performance on Windows</li>\r\n<li>Improved UI</li>\r\n</ul>\r\n<br/>\r\n<div>Learn more about these and other changes in our <a href=\"https://blog.octobrowser.net/octo-browser-update-1-9-talkme-support-in-client-profile-starting-states?utm_source=octobrowser&utm_medium=notification&utm_campaign=content_update_1_9\">blog</a>.</div>",
+          "ru": "<h1>Обновление 1.9</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>В клиент добавлен виджет: FAQ, обратная связь и чат с техподдержкой</li>\r\n<li>Изменен дизайн состояния профиля при запуске и остановке</li>\r\n<li>Новый интерфейс для настройки прокси</li>\r\n<li>Добавлена возможность задать набор прокси в шаблон</li>\r\n<li>Массовый импорт стартовых страниц</li>\r\n<li>Увеличение производительности под Windows</li>\r\n<li>Улучшение UI</li>\r\n</ul>\r\n<br/>\r\n<div>Узнайте подробнее об этих и других изменениях в нашем <a href=\"https://blog.octobrowser.net/ru/octobrowser-obnovlenie-1-9-novyj-vidzhet-podderzhki?utm_source=octobrowser&utm_medium=notification&utm_campaign=content_update_1_9\">блоге</a>.</div>"
+        },
+        "ts": 1687250527,
+        "model_id": 52,
+        "order": 49
+      },
+      {
+        "id": 48,
+        "html": {
+          "en": "<h1>Join our new community!</h1>\r\n<div>We have created a new <a href=\"https://t.me/octobrowseren\">Telegram channel</a> and <a href=\"https://t.me/octobrowserenchat\">chat</a> specifically for our English-speaking users.</div>\r\n<div>Join the community, be the first to know the latest Octo Browser news, and simply keep in touch.</div>",
+          "ru": "<h1>Присоединяйтесь к англоязычному комьюнити!</h1>\r\n<div>Мы создали <a href=\"https://t.me/octobrowseren\">Телеграм канал</a> и <a href=\"https://t.me/octobrowserenchat\">чат</a> на английском языке.</div>\r\n<div>Подпишитесь, чтобы не пропускать наши новости и делиться опытом с коллегами по всему миру.</div>"
+        },
+        "ts": 1686919246,
+        "model_id": 51,
+        "order": 48
+      },
+      {
+        "id": 47,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 114</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 114 версии Chromium</li></ul>"
+        },
+        "ts": 1685954046,
+        "model_id": 50,
+        "order": 47
+      },
+      {
+        "id": 46,
+        "html": {
+          "en": "<h1>Octium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 113</li></ul>",
+          "ru": "<h1>Обновление Octium</h1>\r\n<ul><li>Ядро обновлено до 113 версии Chromium</li></ul>"
+        },
+        "ts": 1684833228,
+        "model_id": 49,
+        "order": 46
+      },
+      {
+        "id": 44,
+        "html": {
+          "en": "<h1>Update 1.8.9</h1>\r\n<p>We have fixed several minor issues and improved overall browser stability and performance.</p>\r\n<p>Thank you for using Octo Browser!</p>",
+          "ru": "<h1> Обновление 1.8.9</h1>\r\n<p>Обновление исправляет небольшие ошибки, повышает общую стабильность и производительность клиента.</p>\r\n<p>Спасибо, что пользуетесь Octo Browser!</p>"
+        },
+        "ts": 1683102311,
+        "model_id": 47,
+        "order": 44
+      },
+      {
+        "id": 43,
+        "html": {
+          "en": "<h1>Update 1.8.8</h1>\r\n<ul>\r\n<li>Optimized browser client performance</li>\r\n<li>Added an API method to get the name of the current user</li>\r\n<li>Improved algorithm for checking slow proxies</li>\r\n<li>Fixed the issue with disappearing previously added browser extensions</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.8.8</h1>\r\n<ul>\r\n<li>Оптимизирована производительность клиента</li>\r\n<li>Добавлен метод API для получения имени текущего пользователя</li>\r\n<li>Улучшен алгоритм проверки медленных прокси</li>\r\n<li>Решена проблема потери установленных расширений браузера</li>\r\n</ul>"
+        },
+        "ts": 1682498251,
+        "model_id": 46,
+        "order": 43
+      },
+      {
+        "id": 42,
+        "html": {
+          "en": "<h1>Chromium Update</h1>\r\n<ul><li>Browser kernel updated to Chromium 112.</li></ul>",
+          "ru": "<h1>Обновление Chromium</h1>\r\n<ul><li>Обновление ядра до 112 версии Chromium.</li></ul>"
+        },
+        "ts": 1680780787,
+        "model_id": 45,
+        "order": 42
+      },
+      {
+        "id": 41,
+        "html": {
+          "en": "<h2>Vote for Octo Browser in the international Kinza Awards 2023!</h2>\r\n<ul>\r\n<li>Register on the Kinza Awards <a href=\"https://awards.kinza360.com/\">official website</a> (don’t forget to check the spam folder if you don’t see the registration email);</li>\r\n<li>Find us in <i>The Best Tool for Affiliate Marketing</i> and vote.</li>\r\n</ul>\r\nWe greatly value your support. Choose Octo Browser and win with us!",
+          "ru": "<h2>Голосуйте за Octo Browser на международной премии Kinza Awards 2023!</h2>\r\n<ul>\r\n<li>Зарегистрируйтесь на <a href=\"https://awards.kinza360.com/\">сайте голосования</a> (проверьте спам, если письмо не дойдет);</li>\r\n<li>Найдите нас в номинации «Лучший арбитражный сервис/тул» и проголосуйте.</li>\r\n</ul>\r\nМы очень ценим вашу поддержку. Выбирайте Octo Browser и побеждайте с нами!"
+        },
+        "ts": 1679931340,
+        "model_id": 44,
+        "order": 41
+      },
+      {
+        "id": 40,
+        "html": {
+          "en": "<h1>Update 1.8.7</h1>\r\n<ul>\r\n<li>The issues with the Cookie Robot have been fixed and its normal operation has been resumed</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.8.7</h1>\r\n<ul>\r\n<li>Корректная работа куки-робота — восстановлена</li>\r\n</ul>"
+        },
+        "ts": 1678794781,
+        "model_id": 43,
+        "order": 40
+      },
+      {
+        "id": 39,
+        "html": {
+          "en": "<h1>Attention!</h1>\r\n<div>We are aware of the current issues with the Cookie Robot and are working to fix them.</div>\r\n<div>We apologize for the inconvenience and thank you for your understanding.</div>",
+          "ru": "<h1>Внимание!</h1>\r\n<div>Мы наблюдаем некорректную работу куки-робота и уже исправляем неполадки.</div>\r\n<div>Приносим свои извинения за доставленные неудобства.</div>"
+        },
+        "ts": 1678790376,
+        "model_id": 42,
+        "order": 39
+      },
+      {
+        "id": 38,
+        "html": {
+          "en": "<h1> Update 1.8.6</h1>\r\n<ul>\r\n<li>Better browser client performance</li>\r\n<li>Fixed the issue with profile counter rendering</li>\r\n<li>Better proxy checking when IP is changed and quick proxy checking</li>\r\n<li>Fixed the cases of incorrect Octo Browser client launch and log-out</li>\r\n<li>Removed restrictions on amount of profiles for the Cookie Robot</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.8.6</h1>\r\n<ul>\r\n<li>Улучшена производительность клиента</li>\r\n<li>Исправлено отображение счетчика профилей</li>\r\n<li>Улучшена проверка прокси при обновлении IP и быстрая проверка прокси</li>\r\n<li>Исправлены случаи некорректного запуска и логаута в клиенте Octo Browser</li>\r\n<li>Сняты ограничения по количеству профилей для работы куки-робота.</li>\r\n</ul>"
+        },
+        "ts": 1678789290,
+        "model_id": 41,
+        "order": 38
+      },
+      {
+        "id": 37,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 111</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul><li>Better spoofing</li></ul>",
+          "ru": "<h1>Обновление ядра до 111 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul><li>Улучшены подмены</li></ul>"
+        },
+        "ts": 1678697534,
+        "model_id": 40,
+        "order": 37
+      },
+      {
+        "id": 36,
+        "html": {
+          "en": "<h1>Update 1.8.5</h1>\r\n<h2 class=\"title-new\">What's new</h2>\r\n<ul>\r\n<li>Higher UI response speed</li>\r\n<li>Fixed proxy checking after an IP change</li>\r\n<li>Better performance when searching and selecting tags, and with other aspects of browser client functionality</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.8.5</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Увеличена скорость отклика UI</li>\r\n<li>Исправлена проверка прокси после смены IP</li>\r\n<li>Улучшена производительность при поиске и выборе тегов и другие аспекты работы клиента</li>\r\n</ul>"
+        },
+        "ts": 1677846517,
+        "model_id": 39,
+        "order": 36
+      },
+      {
+        "id": 31,
+        "html": {
+          "en": "<h1>Normal operation resumed</h1>\r\n<div>All technical issues have been fixed, we apologize for the inconvenience and thank you for your understanding.</div>\r\n<div>If you still experience issues with Octo Browser, please drop a line to our technical support team: <a href=\"https://t.me/OctoBrowser_support_bot\">t.me/OctoBrowser_support_bot</a></div>",
+          "ru": "<h1>Работа сервиса восстановлена</h1>\r\n<div>Все технические неполадки устранены, приносим свои извинения за доставленные неудобства и благодарим вас за понимание.</div>\r\n<div>Если вы продолжаете испытывать сложности с использованием Octo Browser, то напишите нам, пожалуйста, в бот техподдержки: <a href=\"https://t.me/OctoBrowser_support_bot\">t.me/OctoBrowser_support_bot</a></div>"
+        },
+        "ts": 1676633507,
+        "model_id": 33,
+        "order": 31
+      },
+      {
+        "id": 30,
+        "html": {
+          "en": "<h1>Attention!</h1>\r\n<div>We have run into some technical issues, and right now we're actively working to get them fixed as soon as possible.</div>\r\n<div>We apologize for the inconvenience and thank you for your patience and understanding.</div>",
+          "ru": "<h1>Внимание!</h1>\r\n<div>Прямо сейчас мы фиксируем технические неполадки и работаем над их скорейшим устранением.</div>\r\n<div>Приносим извинения за доставленные неудобства и благодарим вас за понимание.</div>"
+        },
+        "ts": 1676549083,
+        "model_id": 32,
+        "order": 30
+      },
+      {
+        "id": 29,
+        "html": {
+          "en": "<h1>Update 1.8.1: Proxy functionality has been fixed</h1>\r\n<div>If you still experience issues with proxies in Octo Browser, please drop a line to our technical support team: <a href=\"https://t.me/OctoBrowser_support_bot\">OctoBrowser_support_bot</a></div>",
+          "ru": "<h1>Обновление 1.8.1: Исправлена работоспособность прокси</h1>\r\n<div>Если вы продолжаете испытывать сложности с использованием ваших прокси в Octo Browser, то напишите нам, пожалуйста, в бот техподдержки: <a href=\"https://t.me/OctoBrowser_support_bot\">t.me/OctoBrowser_support_bot</a></div>"
+        },
+        "ts": 1676462457,
+        "model_id": 31,
+        "order": 29
+      },
+      {
+        "id": 28,
+        "html": {
+          "en": "<h1>Update 1.8</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Dark UI theme is now available</li>\r\n<li>Bookmarks can now be imported</li>\r\n<li>User operating system is used as default when creating profiles</li>\r\n<li>New profile feature: update User Agent</li>\r\n<li>Bypassing ISP bans using server API\r\n</li>\r\n</ul>\r\n<br/>\r\n<div>Learn more about these and other changes in our <a href=\"https://blog.octobrowser.net/en/octo-browser-1-8-update-dark-theme-importing-bookmarks-fixing-user-agent?utm_source=octobrowser&utm_medium=notification&utm_campaign=content_update_1_8\">blog</a>.</div>",
+          "ru": "<h1>Обновление 1.8</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Добавлен тёмный интерфейс клиента\r\n</li>\r\n<li>Появился импорт закладок</li>\r\n<li>ОС пользователя используется по умолчанию при создании профилей</li>\r\n<li>Новая функция в профиле: актуализация строки User Agent</li>\r\n<li>Обход запретов провайдеров через серверный API</li>\r\n</ul>\r\n<br/>\r\n<div>Узнайте подробнее об этих и других изменениях в нашем <a href=\"https://blog.octobrowser.net/octo-browser-1-8-update-dark-theme-importing-bookmarks-fixing-user-agent?utm_source=octobrowser&utm_medium=notification&utm_campaign=content_update_1_8\">блоге</a>.</div>"
+        },
+        "ts": 1676452988,
+        "model_id": 30,
+        "order": 28
+      },
+      {
+        "id": 27,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 110</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul><li>Better fingerprint spoofing</li></ul>\r\n<br/>\r\n<div>\r\nWith the release of Chrome 110 Octo Browser has stopped supporting Windows 7/8/8.1 If you're using these operating systems, we recommend that you switch to a newer Windows version to continue working with Octo Browser.\r\n</div>",
+          "ru": "<h1>Обновление ядра до 110 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul><li>Улучшены подмены</li></ul>\r\n<br/>\r\n<div>\r\nС выходом обновления Chrome 110 Octo Browser прекратил поддержку Windows 7/8/8.1. Если вы используете эти операционные системы, то для продолжения работы в Octo Browser вам необходимо перейти на новую версию Windows.\r\n</div>"
+        },
+        "ts": 1675849185,
+        "model_id": 29,
+        "order": 27
+      },
+      {
+        "id": 25,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 109</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul><li>Better spoofing</li></ul>\r\n<br/>\r\n<div>\r\nIf you’re using Windows 7 or Windows 8, we recommend that you switch to a newer Windows version before February 2023. Octo Browser will stop supporting these operating systems after Chrome 110 is released.\r\n</div>",
+          "ru": "<h1>Обновление ядра до 109 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul><li>Улучшены подмены</li></ul>\r\n<br/>\r\n<div>\r\nЕсли вы используете Windows 7 или Windows 8, мы рекомендуем перейти на новую версию Windows до февраля 2023 года. Octo Browser перестанет поддерживать эти операционные системы с выходом обновления Chrome 110.\r\n</div>"
+        },
+        "ts": 1673513805,
+        "model_id": 27,
+        "order": 25
+      },
+      {
+        "id": 24,
+        "html": {
+          "en": "<h2 class=\"title-new\">We at Octo Browser wish you happy holidays and a happy New Year!</h1>\r\n<br/>\r\n<div>We would like to thank you for your trust and share the results of our productive year with you.</div>\r\n<div>You can look back and see what we have achieved and how the browser has become better for our clients in our <a href=\"https://blog.octobrowser.net/en/octo-browser-2022-review?utm_source=blog&utm_medium=organic&utm_campaign=ny22en\">blog</a>.</div>",
+          "ru": "<h2 class=\"title-new\">Команда Octo Browser поздравляет вас с наступившим Новым Годом!</h1>\r\n<br/>\r\n<div>Мы благодарим вас за доверие и хотим поделиться результатами плодотворной работы.</div>\r\n<div>Читайте в нашем <a href=\"https://blog.octobrowser.net/octo-browser-2022-review?utm_source=blog&utm_medium=organic&utm_campaign=ny22ru\">блоге</a> о том, как мы стали лучше.</div>"
+        },
+        "ts": 1673016796,
+        "model_id": 26,
+        "order": 24
+      },
+      {
+        "id": 23,
+        "html": {
+          "en": "<h1>NEW YEAR SALE<h1>\r\n<h2>Up to 40% off!</h2>\r\n<h2>21 — 31 December only!</h2>\r\n<div>If you buy or renew a subscription for 3, 6, or 12 months, you get up to 40% off!</div>\r\n<div><a href=\"https://octobrowser.net/en/pricing/\">You can see the discounted prices on our website.</a></div>",
+          "ru": "<h1>NEW YEAR SALE</h1>\r\n<h2>Скидки до 40%!</h2>\r\n<h2>Только с 21 по 31 декабря!</h2>\r\n<div>При продлении или покупке новой подписки на 3, 6 и 12 месяцев - скидка до 40%!</div>\r\n<div><a href=\"https://octobrowser.net/pricing/\">Узнать подробности акции на сайте.</a></div>"
+        },
+        "ts": 1671616963,
+        "model_id": 25,
+        "order": 23
+      },
+      {
+        "id": 22,
+        "html": {
+          "en": "<h1>Update 1.7.8</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Fixed the bug where some processes could remain after the client has been closed in the Windows version of the browser.</li>\r\n<li>Added error codes when launching the browser through API.</li>\r\n<li>Revised API usage conditions. We have changed (and will further refine) the limit on the amount of requests, and will create separate subscription plans for automatization.</li>\r\n</ul>\r\n<br/>\r\n<div>If you’re using Windows 7 or Windows 8, we recommend that you switch to a newer Windows version before February 2023. Octo Browser will stop supporting these operating systems after Chrome 110 is released.</div>",
+          "ru": "<h1>Обновление 1.7.8</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Исправлена работа браузера в Windows. Устранена проблема, при которой после закрытия клиента могли оставаться незавершённые процессы.</li>\r\n<li>Добавлены коды ошибок при запуске браузера через API.</li>\r\n<li>Пересмотрены условия по использованию API: изменены и будут дорабатываться лимиты на количество запросов, а также будут формироваться отдельные тарифные планы для автоматизации.</li>\r\n</ul>\r\n<br/>\r\n<div>Если вы используете Windows 7 или Windows 8, мы рекомендуем перейти на новую версию Windows до февраля 2023 года. Octo Browser перестанет поддерживать эти операционные системы с выходом обновления Chrome 110.</div>"
+        },
+        "ts": 1671526685,
+        "model_id": 24,
+        "order": 22
+      },
+      {
+        "id": 21,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 108</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul><li>Better spoofing</li></ul>\r\n<br/>\r\n<div>\r\nWhy do we update the browser kernel as quickly as possible, and how does this help us protect your accounts from bans? <a href=\"https://blog.octobrowser.net/en/how-chromium-updates-affect-the-reliability-of-antidetect-multi\"> Find out in our blog!</a>\r\n</div>",
+          "ru": "<h1>Обновление ядра до 108 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul><li>Улучшены подмены</li></ul>\r\n<br/>\r\n<div>\r\nПочему мы максимально быстро обновляем ядро браузера и как это помогает обезопасить ваши аккаунты от блокировок — <a href=\"https://blog.octobrowser.net/zachem-antidetektu-obnovlyat-yadro-chromium\"> читайте в нашем блоге!</a>\r\n</div>"
+        },
+        "ts": 1670839590,
+        "model_id": 23,
+        "order": 21
+      },
+      {
+        "id": 20,
+        "html": {
+          "en": "<h1>New payment method</h1>\r\n<div>We now accept USDT via the popular TRC-20 protocol. You can now pay for Octo Browser with low commission and high transaction speed.</div>",
+          "ru": "<h1>Новый метод оплаты</h1>\r\n<div>Добавлен прием USDT через популярный протокол TRC-20. Теперь вы можете оплачивать Octo Browser с низкой комиссией и высокой скоростью транзакций.</div>"
+        },
+        "ts": 1669886535,
+        "model_id": 22,
+        "order": 20
+      },
+      {
+        "id": 19,
+        "html": {
+          "en": "<h1>Update 1.7.6</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Improved profile stopping</li>\r\n<li>Fixed the bug with Profile Force Stop through API</li>\r\n<li>Improved overall client UI</li>\r\n<li>Sums to be paid in tokens are now rounded if they contain a fraction</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.7.6</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Улучшен механизм остановки профиля</li>\r\n<li>Исправлена ошибка с принудительной остановкой профиля через API</li>\r\n<li>Улучшен общий UI клиента</li>\r\n<li>Добавлено округление суммы счета на оплату при дробном количестве токенов</li>\r\n</ul>"
+        },
+        "ts": 1669212816,
+        "model_id": 21,
+        "order": 19
+      },
+      {
+        "id": 18,
+        "html": {
+          "en": "<h1>We have launched our blog!<h1>\r\n<h2><a href=\"https://blog.octobrowser.net\">blog.octobrowser.net</a></h2>\r\n<div>\r\nThere you will find the latest news about Octo Browser, browser update reviews and detailed tutorials, and also articles and recommendations helping you to uncover the full potential of Octo Browser in your work.\r\n<br/>Follow us to learn more!\r\n</div>",
+          "ru": "<h1>Мы запустили блог!<h1>\r\n<h2><a href=\"https://blog.octobrowser.net\">blog.octobrowser.net</a></h2>\r\n<div>\r\nМы публикуем последние новости Octo Browser, обзоры обновлений и подробные туториалы, а также статьи и рекомендации о том, как раскрыть весь потенциал Octo Browser в вашей работе. \r\n<br/>Узнайте о нас больше!\r\n</div>"
+        },
+        "ts": 1668502888,
+        "model_id": 20,
+        "order": 18
+      },
+      {
+        "id": 17,
+        "html": {
+          "en": "<h1>Update 1.7.5</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n<li>Improved overall client UI</li>\r\n<li>Improved profile list UI</li>\r\n<li>Increased client speed</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.7.5</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n<li>Улучшен общий UI клиента</li>\r\n<li>Улучшен UI в таблице профилей</li>\r\n<li>Ускорена работа клиента</li>\r\n</ul>"
+        },
+        "ts": 1667466374,
+        "model_id": 19,
+        "order": 17
+      },
+      {
+        "id": 16,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 107</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n  <li>Improved spoofing</li>\r\n</ul>",
+          "ru": "<h1>Обновление ядра до 107 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n  <li>Улучшены подмены</li>\r\n</ul>"
+        },
+        "ts": 1667380854,
+        "model_id": 18,
+        "order": 16
+      },
+      {
+        "id": 15,
+        "html": {
+          "en": "<h1>Update 1.7.4</h1>\r\n<h2 class=\"title-new\">We have heard your requests and have improved UI and updated 1.7 functionality</h2>\r\n<ul>\r\n<li>Made improvements to the client: improved profile start and synchronization speeds, and also better work with the table and sorting by tags</li>\r\n<li>Fixed profile start if the proxy isn't working</li>\r\n<li>Increased the width of the Title column: now long profile names are displayed correctly</li>\r\n<li>Made the profile description field size larger</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.7.4</h1>\r\n<h2 class=\"title-new\">По вашим запросам улучшили  UI и работу обновления 1.7</h2>\r\n<ul>\r\n<li>Улучшили работу клиента: скорость запуска и синхронизации профилей, а также работу с таблицей и фильтр по тегам</li>\r\n<li>Исправили запуск профиля в случае нерабочего прокси</li>\r\n<li>Увеличили ширину колонки Title: теперь длинные имена профилей отображаются корректно</li>\r\n<li>Увеличили размер поля ввода описания профиля</li>\r\n</ul>"
+        },
+        "ts": 1666274933,
+        "model_id": 17,
+        "order": 15
+      },
+      {
+        "id": 14,
+        "html": {
+          "en": "<h1>Update 1.7</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n  <li>Updated client interface and profile settings</li>\r\n  <li>Added profile recycle bin</li>\r\n  <li>New profile feature: history and restore</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.7</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n  <li>Обновлён интерфейс клиента и настроек профиля</li>\r\n  <li>Добавлена корзина профилей</li>\r\n  <li>Новая функция в профиле: история и восстановление</li>\r\n</ul>"
+        },
+        "ts": 1665650799,
+        "model_id": 16,
+        "order": 14
+      },
+      {
+        "id": 13,
+        "html": {
+          "en": "<h1>Browser kernel updated to Chromium 106</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n  <li>Improved spoofing, including spoofing when working with API</li>\r\n  <li>Enabled built-in Google Translate</li>\r\n</ul>",
+          "ru": "<h1>Обновление ядра до 106 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n  <li>Улучшены подмены, в том числе при работе через API</li>\r\n  <li>Включен встроенный Google - переводчик</li>\r\n</ul>"
+        },
+        "ts": 1664875636,
+        "model_id": 15,
+        "order": 13
+      },
+      {
+        "id": 9,
+        "html": {
+          "en": "<h1>We're updating the browser kernel to Chromium 105</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n  <li>Better spoofing</li>\r\n  <li>Fixed rendering issues of some sites with WebGL noise turned on</li>\r\n</ul>",
+          "ru": "<h1>Обновление ядра до 105 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n  <li>Улучшены подмены</li>\r\n  <li>Исправлено отображение некоторых сайтов со включенным шумом WebGL</li>\r\n</ul>"
+        },
+        "ts": 1662032194,
+        "model_id": 11,
+        "order": 9
+      },
+      {
+        "id": 8,
+        "html": {
+          "en": "<h1>Update browser core to 104 Chromium version</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n  <li>\r\n     <b>New feature: videostream spoofing</b>\r\n    <div>We are launching the first version of <a href=\"https://docs.octobrowser.net/knowledge-base/profiles/videostream-spoofing/?lang=en\" target=\"_blank\">videostream spoofing feature</a> (for now Windows-only). Now you can use a pre-recorded video as your webcam stream. Try it out and leave your feedback.</div>\r\n</li>\r\n</ul>",
+          "ru": "<h1>Обновление ядра до 104 версии Chromium</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n  <li>\r\n     <b>Новая функция: подмена видеопотока</b>\r\n    <div>Мы запускаем первую версию <a href=\"https://docs.octobrowser.net/knowledge-base/profiles/videostream-spoofing/?lang=ru\" target=\"_blank\">функции подмены видео </a> (пока что только на Windows).\r\nТеперь, в качестве видео с веб-камеры вы можете транслировать заранее записанный файл - пробуйте и оставляйте свои отзывы.\r\n</div>\r\n</li>\r\n</ul>"
+        },
+        "ts": 1660213590,
+        "model_id": 10,
+        "order": 8
+      },
+      {
+        "id": 7,
+        "html": {
+          "en": "<h1>Update 1.6.7</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n            <li>A faster client app</li>\r\n            <li>Improved UX</li>\r\n            <li>Fixed the issues of updates 1.6.4 and 1.6.5</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.6.7</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n            <li>Ускорена работа клиента</li>\r\n            <li>Улучшен UX</li>\r\n            <li>Решены проблемы обновлений 1.6.4 и 1.6.5</li>\r\n</ul>"
+        },
+        "ts": 1660038915,
+        "model_id": 9,
+        "order": 7
+      },
+      {
+        "id": 6,
+        "html": {
+          "en": "<h1>Update 1.6.5</h1>\r\n<h2 class=\"title-fixed\">Fixed</h2>\r\n<ul>\r\n            <li>Fixed synchronization bug for some profiles</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.6.5</h1>\r\n<h2 class=\"title-fixed\">Исправлено</h2>\r\n<ul>\r\n            <li>Исправлена ошибка при синхронизации некоторых профилей</li>\r\n</ul>"
+        },
+        "ts": 1658928055,
+        "model_id": 8,
+        "order": 6
+      },
+      {
+        "id": 5,
+        "html": {
+          "en": "<h1>Update 1.6.4</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n            <li>Multiple start pages are now supported</li>\r\n            <li>Added Notification Feed</li>\r\n            <li>Added support for IPv6 address as a proxy host</li>\r\n            <li>Now you can change the API local port from application settings</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.6.4</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n            <li>Доступна поддержка нескольких стартовых страниц</li>\r\n            <li>Добавлена лента уведомлений</li>\r\n            <li>Добавлена поддержка IPv6 адреса в роли хоста прокси</li>\r\n            <li>Доступна опция смены локального порта API в настройках приложения</li>\r\n</ul>"
+        },
+        "ts": 1658843822,
+        "model_id": 7,
+        "order": 5
+      },
+      {
+        "id": 4,
+        "html": {
+          "en": "<h1>Long-awaited PROXY Update</h1>\r\n<p>Due to popular demand, the amount of saved proxies has been increased in BASE, TEAM and ADVANCED subscriptions. Now it equals the number of available profiles — start using it now!</p>",
+          "ru": "<h1>Долгожданный PROXY-апдейт</h1>\r\n<p>По массовым просьбам наших пользователей, в подписках BASE, TEAM и ADVANCED количество сохраненных прокси увеличено, оно равняется количеству доступных профилей. Пользуйтесь!</p>"
+        },
+        "ts": 1657904862,
+        "model_id": 5,
+        "order": 4
+      },
+      {
+        "id": 2,
+        "html": {
+          "en": "<h1>As requested by our users, from now on we support USDT ERC-20 payments</h1>",
+          "ru": "<h1>По многочисленным просьбам добавлен прием USDT ERC-20</h1>"
+        },
+        "ts": 1657901201,
+        "model_id": 3,
+        "order": 2
+      },
+      {
+        "id": 1,
+        "html": {
+          "en": "<h1>Update browser core to 103 Chrome version</h1>\r\n<ul>\r\n            <li>Fixed password saving on MacOS</li>\r\n            <li>WebRTC spoofing is improved</li>\r\n            <li>WebGL spoofing is improved</li>\r\n</ul>\r\n",
+          "ru": "<h1>Обновление ядра до 103 версии Chrome</h1>\r\n<ul>\r\n            <li>Исправлено сохранение паролей на MacOS</li>\r\n            <li>Улучшены подмены WebRTC</li>\r\n            <li>Улучшены подмены WebGL</li>\r\n</ul>"
+        },
+        "ts": 1657901181,
+        "model_id": 2,
+        "order": 1
+      },
+      {
+        "id": 0,
+        "html": {
+          "en": "<h1>Update 1.5.0</h1>\r\n<h2 class=\"title-new\">What’s new</h2>\r\n<ul>\r\n            <li>Team members permissions improvements</li>\r\n            <li>Proxy data won’t be available to team members without the ‘edit proxy’ permission</li>\r\n            <li>Self-signed certificate proxy support</li>\r\n            <li>Display an external IP after proxy check or profile start</li>\r\n            <li>Mozilla Firefox json cookies format support</li>\r\n            <li>Discounts added for subscription activation/prolongation for 3/6/12 month</li>\r\n            <li>Added a storage option to sync Service Workers data</li>\r\n            <li>Current subscription data is displayed on the settings page (price, expiration, resources amount)</li>\r\n            <li>New screen resolutions added (2k, 4k, Retina)</li>\r\n</ul>",
+          "ru": "<h1>Обновление 1.5.0</h1>\r\n<h2 class=\"title-new\">Что нового</h2>\r\n<ul>\r\n            <li>Улучшение настройки прав для членов команды</li>\r\n            <li>Скрытие данных прокси, если у члена команды нет прав на редактирование прокси</li>\r\n            <li>Поддержка прокси с self-signed certificate</li>\r\n            <li>Отображение внешнего IP при проверке прокси и запуске профиля</li>\r\n            <li>Поддержка json куки в формате Mozilla Firefox</li>\r\n            <li>Введены скидки на покупку/продление подписки на 3/6/12 месяцев</li>\r\n            <li>Добавлена опция хранилища для синхронизации данных Service Workers</li>\r\n            <li>Добавлено отображение данных текущей подписки (цена, окончание, количество ресурсов) в настройках</li>\r\n            <li>Добавлены новые разрешения экрана (2k, 4k, Retina)</li>\r\n</ul>"
+        },
+        "ts": 1657901155,
+        "model_id": 1,
+        "order": 0
+      }
+    ],
+    "notifications": []
+  },
+  "images": {
+    "expire": 1773254333,
+    "value": [
+      {
+        "uuid": "55e228c7227946b3889f370b54be26c1",
+        "default": true,
+        "data": "data:image/png;base64,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",
+        "updated_at": 1755852529
+      }
+    ]
+  },
+  "sid": null,
+  "selected_tags": [],
+  "current_page": 0,
+  "current_search": "",
+  "last_query": null,
+  "client_update_skipped": false,
+  "page_len": 25
+}

@@ -1,0 +1,21 @@
+# WeCom URL verify (unlock Trusted IP). Tunnel hostname → this service.
+# Run: bash cloud/common/stacks/wecom-verify/up.sh ali-jp
+
+services:
+  wecom-verify:
+    build: .
+    image: wecom-verify:local
+    container_name: wecom-verify
+    restart: unless-stopped
+    environment:
+      WECOM_TOKEN: ${WECOM_TOKEN}
+      WECOM_AES_KEY: ${WECOM_AES_KEY}
+      WECOM_CORP_ID: ${WECOM_CORP_ID}
+    networks:
+      - tunnel-net
+    mem_limit: 64m
+
+networks:
+  tunnel-net:
+    name: init_tunnel-net
+    external: true

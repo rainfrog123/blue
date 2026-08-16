@@ -1,0 +1,9 @@
+# Aliyun — self-signed TLS until LE rate limit lifts (~2026-07-24 19:11 UTC).
+# Clash needs skip-cert-verify for this node.
+tls:
+  cert: /etc/hysteria/acme/manual/hy.hyas.site.crt
+  key: /etc/hysteria/acme/manual/hy.hyas.site.key
+
+auth:
+  type: password
+  password: jEdTlnZe2q2nv1N0lmmXHCp2

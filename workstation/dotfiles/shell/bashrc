@@ -1,0 +1,203 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║                              BASHRC CONFIG                                 ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+# sudo rm -f /root/.bashrc && sudo ln -sf /allah/blue/workstation/dotfiles/shell/Bashrc /root/.bashrc
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PROMPT
+# ─────────────────────────────────────────────────────────────────────────────
+if [ -n "$CURSOR_AGENT" ]; then
+    PS1='$ '
+else
+    PS1="\[\033[1;32m\]\u\[\033[0m\]@\[\033[1;34m\]\h\[\033[0m\] \[\e[1;34m\]\w\[\e[0m\] 🚀🚀🚀  $ "
+fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENVIRONMENT
+# ─────────────────────────────────────────────────────────────────────────────
+export EDITOR='cursor'
+export DISPLAY=:1
+
+export PATH="/allah/freqtrade/.venv/bin:$PATH"
+export PATH="$HOME/development/flutter/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$PATH:/usr/local/go/bin"
+
+[ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
+xauth merge /home/vncuser/.Xauthority 2>/dev/null
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HISTORY
+# ─────────────────────────────────────────────────────────────────────────────
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DIRECTORY ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Root (Linux-specific absolute mounts)
+# ─────────────────────────────────────────────────────────────────────────────
+alias al='cd /allah'
+alias bl='cd /allah/blue'
+alias fq='cd /allah/freqtrade'
+alias me='cd /media'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/* (top level)
+# ─────────────────────────────────────────────────────────────────────────────
+alias tr='cd /allah/blue/trading'
+alias in='cd /allah/blue/workstation'
+alias we='cd /allah/blue/apps'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/trading/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias hb='cd /allah/blue/trading/hummingbot'
+alias ml='cd /allah/blue/trading/ml'
+alias tn='cd /allah/blue/trading/notes'
+alias rs='cd /allah/blue/trading/research'
+alias ts='cd /allah/blue/trading/scripts'
+alias to='cd /allah/blue/trading/tools'
+alias ud='cd /allah/blue/trading/freqtrade'
+
+# blue/trading/research/*
+alias ex='cd /allah/blue/trading/research/execution'
+alias ll='cd /allah/blue/trading/research/lead-lag'
+alias mm='cd /allah/blue/trading/research/market-making'
+alias mr='cd /allah/blue/trading/research/mean-reversion'
+alias ofi='cd /allah/blue/trading/research/ofi'
+
+# blue/trading/tools/*
+alias bi='cd /allah/blue/trading/tools/binance'
+alias cv='cd /allah/blue/trading/tools/converters'
+alias hi='cd /allah/blue/trading/tools/historical'
+alias re='cd /allah/blue/trading/tools/realtime'
+alias cx='cd /allah/blue/trading/tools/realtime/ccxt'
+alias tv='cd /allah/blue/trading/tools/realtime/tradingview'
+
+# blue/trading/freqtrade/*
+alias uc='cd /allah/blue/trading/freqtrade/config'
+alias hr='cd /allah/blue/trading/freqtrade/hyperopt_results'
+alias hy='cd /allah/blue/trading/freqtrade/hyperopts'
+alias nb='cd /allah/blue/trading/freqtrade/notebooks'
+alias st='cd /allah/blue/trading/freqtrade/strategies'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/workstation/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias cu='cd /allah/blue/workstation/cursor'
+alias ca='cd "$HOME/Downloads/jefr-cursor/automation"'
+alias cac='cd /allah/blue/workstation/cursor/accounts'
+alias cl='cd /allah/blue/cloud'
+alias ne='cd /allah/blue/network/clash'
+alias dt='cd /allah/blue/workstation/dotfiles'
+alias dc='cd /allah/blue/workstation/dotfiles/config'
+alias ds='cd /allah/blue/workstation/dotfiles/shell'
+alias nt='cd /allah/blue/workstation/notes'
+alias is='cd /allah/blue/workstation/scripts'
+alias wi='cd /allah/blue/workstation/scripts/window'
+alias mb='cd /allah/blue/workstation/mobile'
+alias se='cd /allah/blue/workstation/security'
+
+# blue/cloud/*  (hosts = site secrets, providers = CLIs)
+alias ali='cd /allah/blue/cloud/providers/alibaba'
+alias aw='cd /allah/blue/cloud/providers/aws'
+alias az='cd /allah/blue/cloud/providers/azure'
+alias dg='cd /allah/blue/cloud/hosts/digi'
+alias gcp='cd /allah/blue/cloud/providers/gcp'
+alias li='cd /allah/blue/cloud/providers/linode'
+alias vu='cd /allah/blue/cloud/providers/vultr'
+alias cs='cd /allah/blue/cloud/common/setup'
+alias cst='cd /allah/blue/cloud/common/stacks'
+alias hali='cd /allah/blue/cloud/hosts/ali'
+alias haz='cd /allah/blue/cloud/hosts/azure'
+
+# blue/cloud/providers/alibaba/*
+alias acf='cd /allah/blue/cloud/providers/alibaba/config'
+alias ec='cd /allah/blue/cloud/providers/alibaba/ecs'
+alias ai='cd /allah/blue/cloud/providers/alibaba/init'
+
+# blue/cloud/providers/linode/*
+alias lm='cd /allah/blue/cloud/providers/linode/manager'
+alias lsc='cd /allah/blue/cloud/providers/linode/scripts'
+
+# blue/cloud/common/setup/*
+alias ssr='cd /allah/blue/cloud/common/setup/ssr-deploy'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# blue/web/*
+# ─────────────────────────────────────────────────────────────────────────────
+alias ap='cd /allah/blue/apps'
+alias au='cd /allah/blue/automation'
+alias mo='cd /allah/blue/monitors'
+alias px='cd /allah/blue/network/proxy'
+alias md='cd /allah/blue/workstation/scripts'
+
+# blue/apps/*
+alias ac='cd /allah/blue/apps/alt-calculator'
+alias cf='cd /allah/blue/network/cloudflare'
+alias sk='cd /allah/blue/apps/tampermonkey/stake'
+alias tm='cd /allah/blue/apps/tampermonkey'
+alias ti='cd /allah/blue/apps/tinder'
+
+# blue/apps/tampermonkey/stake/*
+alias ba='cd /allah/blue/apps/tampermonkey/stake/baccarat'
+alias bj='cd /allah/blue/apps/tampermonkey/stake/blackjack'
+
+# blue/apps/tampermonkey/*
+alias tb='cd /allah/blue/apps/tampermonkey/backup'
+
+# blue/apps/tinder/*
+alias td='cd /allah/blue/apps/tinder/data'
+alias tsc='cd /allah/blue/apps/tinder/scripts'
+
+# blue/Automation/*
+alias dom='cd /allah/blue/automation/domain'
+alias dr='cd /allah/blue/automation/drivers'
+alias hs='cd /allah/blue/automation/herosms'
+alias oc='cd /allah/blue/automation/octo'
+alias wo='cd /allah/blue/automation/worker'
+
+# blue/automation/octo/*
+alias hid='cd /allah/blue/automation/octo/reverse-engineering/hid'
+alias osl='cd /allah/blue/automation/octo/reverse-engineering/ssl'
+
+# blue/Monitors/*
+alias hu='cd /allah/blue/monitors/huayitong'
+alias hx='cd /allah/blue/monitors/hxkq'
+
+# blue/network/proxy/*
+alias de='cd /allah/blue/network/proxy/decodo'
+alias ipr='cd /allah/blue/network/proxy/iproyal'
+alias ra='cd /allah/blue/network/proxy/rayobyte'
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMAND ALIASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Git
+# ─────────────────────────────────────────────────────────────────────────────
+alias ga='git add'
+alias gc='git commit -m'
+alias gl='git pull'
+alias gp='git push'
+alias gs='git status'
+
+# Docker Compose v2 compatibility
+alias docker-compose='docker compose'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Utilities
+# ─────────────────────────────────────────────────────────────────────────────
+alias bashrc='cursor /allah/blue/workstation/dotfiles/shell/Bashrc'
+alias cls='clear'
+alias code='cursor'
+alias diskspace='df -h'
+alias lsh='ls -la | head'
+alias myip='curl -s http://ipinfo.io/ip'
+alias note='cursor /allah/blue/trading/notes'
+alias rc='cursor /allah/blue/workstation/dotfiles/shell/Bashrc'

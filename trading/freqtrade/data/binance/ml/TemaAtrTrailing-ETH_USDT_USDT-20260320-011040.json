@@ -1,0 +1,10 @@
+{
+  "strategy": "TemaAtrTrailing",
+  "pair": "ETH/USDT:USDT",
+  "timeframe": "5s",
+  "timerange": "TimeRange(20260319-20260320)",
+  "total_candles": 1339,
+  "total_trades": 1,
+  "winners": 0,
+  "losers": 1
+}

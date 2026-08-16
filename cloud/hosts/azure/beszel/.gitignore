@@ -1,0 +1,7 @@
+site.env
+.env
+data/
+socket/
+agent-data/
+admin.password
+bootstrap.json

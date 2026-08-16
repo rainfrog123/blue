@@ -1,0 +1,7 @@
+# Binance Perpetual Connector Configuration
+# Filled from secrets/cred.json by setup.sh — do not put keys here.
+# Copy target: /allah/hummingbot/conf/connectors/binance_perpetual.yml
+
+connector: binance_perpetual
+binance_perpetual_api_key: YOUR_BINANCE_API_KEY
+binance_perpetual_api_secret: YOUR_BINANCE_API_SECRET

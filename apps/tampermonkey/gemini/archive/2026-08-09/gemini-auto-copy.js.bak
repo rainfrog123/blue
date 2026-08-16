@@ -1,0 +1,214 @@
+// ==UserScript==
+// @name         Gemini Auto Copy on Finish
+// @namespace    http://tampermonkey.net/
+// @version      1.1.1
+// @description  When a Gemini response finishes, automatically click its Copy button
+// @author       You
+// @match        https://gemini.google.com/*
+// @grant        none
+// @run-at       document-idle
+// ==/UserScript==
+
+(function () {
+  "use strict";
+
+  const SETTLE_MS = 500;
+  const POLL_MS = 1000;
+  /** @type {Set<string>} */
+  const copiedIds = new Set();
+  let pending = null;
+  let booted = false;
+
+  function debug(...args) {
+    console.log("[Gemini Auto Copy]", ...args);
+  }
+
+  function responseId(modelResponse) {
+    const content = modelResponse.querySelector(
+      '[id^="model-response-message-content"]'
+    );
+    if (content?.id) return content.id;
+    const conv = modelResponse.closest(".conversation-container");
+    if (conv?.id) return `conv:${conv.id}`;
+    return null;
+  }
+
+  function findCopyButton(modelResponse) {
+    // Current UI: <copy-button><gem-icon-button arialabel="Copy" gemtooltip="Copy response">…
+    // data-test-id="copy-button" is gone.
+    const host = modelResponse.querySelector("copy-button");
+    if (host) {
+      const btn =
+        host.querySelector("button[aria-label='Copy']") ||
+        host.querySelector(
+          'gem-icon-button[gemtooltip="Copy response"] button'
+        ) ||
+        host.querySelector('gem-icon-button[arialabel="Copy"] button') ||
+        host.querySelector("button") ||
+        host.querySelector("gem-icon-button");
+      if (btn) return btn;
+    }
+    return (
+      modelResponse.querySelector(
+        'gem-icon-button[gemtooltip="Copy response"] button'
+      ) || modelResponse.querySelector("button[aria-label='Copy']")
+    );
+  }
+
+  function isComplete(modelResponse) {
+    const content = modelResponse.querySelector(
+      '[id^="model-response-message-content"]'
+    );
+    if (content?.getAttribute("aria-busy") === "true") return false;
+
+    const footer = modelResponse.querySelector(".response-footer");
+    if (footer?.classList.contains("complete")) return true;
+
+    // Footer present but not complete yet → still streaming / finalizing
+    if (footer && !footer.classList.contains("complete")) return false;
+
+    // Fallback: content settled + Copy control mounted
+    return !!(
+      content &&
+      content.getAttribute("aria-busy") === "false" &&
+      findCopyButton(modelResponse)
+    );
+  }
+
+  function clickEl(el) {
+    try {
+      el.click();
+      return;
+    } catch (_) {
+      /* fall through */
+    }
+    // Some Gemini controls ignore synthetic click without pointer events
+    const r = el.getBoundingClientRect();
+    const cx = r.left + Math.max(r.width / 2, 1);
+    const cy = r.top + Math.max(r.height / 2, 1);
+    const common = {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX: cx,
+      clientY: cy,
+      button: 0,
+      buttons: 1,
+    };
+    for (const [type, Ctor, extra] of [
+      ["pointerdown", PointerEvent, { pointerId: 1, pointerType: "mouse", isPrimary: true }],
+      ["mousedown", MouseEvent, null],
+      ["pointerup", PointerEvent, { pointerId: 1, pointerType: "mouse", isPrimary: true }],
+      ["mouseup", MouseEvent, null],
+      ["click", MouseEvent, null],
+    ]) {
+      const init = extra ? { ...common, ...extra } : common;
+      try {
+        el.dispatchEvent(new Ctor(type, init));
+      } catch (_) {
+        /* ignore */
+      }
+    }
+  }
+
+  function seedExisting() {
+    const responses = document.querySelectorAll("model-response");
+    let n = 0;
+    responses.forEach((mr) => {
+      const id = responseId(mr);
+      if (id && !copiedIds.has(id)) {
+        copiedIds.add(id);
+        n++;
+      }
+    });
+    debug(`seeded ${n} existing response id(s); watching for new finishes`);
+  }
+
+  function tryCopyLatest() {
+    const responses = document.querySelectorAll("model-response");
+    if (!responses.length) return;
+
+    const latest = responses[responses.length - 1];
+    const id = responseId(latest);
+    if (!id) {
+      debug("latest response has no id yet");
+      return;
+    }
+    if (copiedIds.has(id)) return;
+
+    if (!isComplete(latest)) {
+      debug("latest not complete", id);
+      return;
+    }
+
+    const btn = findCopyButton(latest);
+    if (!btn) {
+      debug("complete but no Copy button yet", id);
+      scheduleScan();
+      return;
+    }
+
+    copiedIds.add(id);
+    debug("auto-clicking Copy for", id, btn);
+    clickEl(btn);
+  }
+
+  function scheduleScan() {
+    if (pending) clearTimeout(pending);
+    pending = setTimeout(() => {
+      pending = null;
+      tryCopyLatest();
+    }, SETTLE_MS);
+  }
+
+  const obs = new MutationObserver((mutations) => {
+    let interesting = false;
+    for (const m of mutations) {
+      if (m.type === "attributes") {
+        interesting = true;
+        break;
+      }
+      for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (
+          n.matches?.(
+            "model-response, copy-button, .response-footer, message-actions"
+          ) ||
+          n.querySelector?.(
+            "model-response, copy-button, .response-footer.complete, button[aria-label='Copy']"
+          )
+        ) {
+          interesting = true;
+          break;
+        }
+      }
+      if (interesting) break;
+    }
+    if (interesting) scheduleScan();
+  });
+
+  function start() {
+    if (booted) return;
+    booted = true;
+    seedExisting();
+    obs.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-busy", "class"],
+    });
+    setInterval(tryCopyLatest, POLL_MS);
+  }
+
+  let lastHref = location.href;
+  setInterval(() => {
+    if (location.href === lastHref) return;
+    lastHref = location.href;
+    debug("route change — re-seed");
+    copiedIds.clear();
+    seedExisting();
+  }, 1000);
+
+  if (document.body) start();
+  else document.addEventListener("DOMContentLoaded", start, { once: true });
+})();

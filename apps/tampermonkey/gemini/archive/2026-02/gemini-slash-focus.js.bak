@@ -1,0 +1,49 @@
+// ==UserScript==
+// @name         Gemini Slash Focus
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  Press / to instantly focus the Gemini prompt input
+// @author       You
+// @match        https://gemini.google.com/*
+// @grant        none
+// @run-at       document-idle
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    function getPromptInput() {
+        return document.querySelector('[aria-label="Enter a prompt for Gemini"]') ||
+               document.querySelector('input-area-v2 .ql-editor') ||
+               document.querySelector('.ql-editor[contenteditable="true"]');
+    }
+
+    function isEditableElement(el) {
+        if (!el) return false;
+        const tagName = el.tagName.toLowerCase();
+        if (tagName === 'input' || tagName === 'textarea') return true;
+        if (el.isContentEditable) return true;
+        return false;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        // Only trigger on "/" key
+        if (e.key !== '/') return;
+
+        // Don't trigger if user is already typing in an input field
+        if (isEditableElement(document.activeElement)) return;
+
+        // Don't trigger with modifier keys
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const input = getPromptInput();
+        if (input) {
+            e.preventDefault();
+            input.focus();
+            console.log('[Gemini Slash Focus] Focused prompt input');
+        }
+    });
+
+    console.log('[Gemini Slash Focus] Script loaded - press / to focus prompt');
+})();
+

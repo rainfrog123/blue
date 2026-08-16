@@ -1,0 +1,21 @@
+{
+  "ws": {
+    "url": "wss://gs20.pragmaticplaylive.net/game?JSESSIONID=dnchw_bjJW4YCpEy-lpmN0HaQwKhHbru60Yme51ujDaHkbyF-fHW%21021770770-cdd8f61b&tableId=cbcf6qas8fscb222&type=json&launchSource=lcLobby&multiTable=true&mtbGroupId=4",
+    "origin": "https://client.pragmaticplaylive.net",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+    "cookie": ""
+  },
+  "bet": {
+    "table": "cbcf6qas8fscb221",
+    "amount": "0.2",
+    "betcode": "1",
+    "seq": 156,
+    "send_bets_wrapper": true,
+    "protocol": "xml_lpbet",
+    "channel": "table-cbcf6qas8fscb221",
+    "game_id": "14154345320",
+    "user_id": "ppc1735060087172",
+    "bc": "0",
+    "ck": "1777983000768"
+  }
+}

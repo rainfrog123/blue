@@ -1,0 +1,116 @@
+{
+  "connections": [
+    {
+      "name": "pragmatic-game",
+      "enabled": true,
+      "url": "wss://gs20.pragmaticplaylive.net/game?JSESSIONID=ONv4Kbgnz81d5gLaSKG5NTAOeJm3En7HoINWBYcuWKJNTfxmzDej%21-1292492821-e5b19d90&tableId=cbcf6qas8fscb222&type=json&launchSource=lcLobby&multiTable=true&mtbGroupId=4",
+      "headers": {
+        "Origin": "https://client.pragmaticplaylive.net",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+      },
+      "sendFrames": [
+        "<ping channel=\"table-spto41bctorobc41\" time=\"0\"/>"
+      ]
+    },
+    {
+      "name": "pragmatic-lobby",
+      "enabled": true,
+      "url": "wss://dga.pragmaticplaylive.net/ws",
+      "headers": {
+        "Origin": "https://client.pragmaticplaylive.net",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
+      },
+      "sendFramesJson": [
+        {
+          "type": "statistics"
+        },
+        {
+          "type": "available",
+          "casinoId": "ppcds00000003709"
+        },
+        {
+          "type": "subscribe",
+          "isDeltaEnabled": true,
+          "casinoId": "ppcds00000003709",
+          "key": [
+            "007",
+            "440",
+            "402",
+            "442",
+            "415",
+            "401",
+            "404",
+            "455",
+            "403",
+            "441",
+            "468",
+            "413",
+            "412",
+            "454",
+            "421",
+            "424",
+            "422",
+            "4511",
+            "405",
+            "4512",
+            "466",
+            "414",
+            "481",
+            "438",
+            "411",
+            "431",
+            "450",
+            "434",
+            "427",
+            "456",
+            "425",
+            "459",
+            "436",
+            "435",
+            "851",
+            "458",
+            "428",
+            "451",
+            "432",
+            "433",
+            "430",
+            "452",
+            "449",
+            "483",
+            "482",
+            "439",
+            "2101",
+            "488",
+            "476",
+            "461",
+            "479",
+            "460",
+            "480",
+            "489",
+            "426",
+            "496",
+            "499",
+            "484",
+            "467",
+            "490",
+            "453",
+            "477"
+          ],
+          "currency": "USD"
+        },
+        {
+          "type": "statistics"
+        },
+        {
+          "type": "ping",
+          "pingTime": 1777984985428
+        }
+      ]
+    }
+  ],
+  "storage": {
+    "logDirections": [
+      "receive"
+    ]
+  }
+}

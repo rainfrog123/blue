@@ -1,0 +1,1 @@
+"""Huayitong appointment monitor package."""

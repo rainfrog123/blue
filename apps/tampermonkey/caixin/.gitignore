@@ -1,0 +1,9 @@
+# Auth data (contains sensitive tokens)
+auth_cookies.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# HAR files (large, can be regenerated)
+har/*.js

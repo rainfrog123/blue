@@ -1,0 +1,170 @@
+"""
+Credential loader — loads credentials from secrets/cred.json
+DO NOT hardcode credentials in code files!
+"""
+
+import json
+from functools import lru_cache
+from pathlib import Path
+
+
+def repo_root() -> Path:
+    here = Path(__file__).resolve().parent
+    for cand in [here, *here.parents]:
+        if (cand / "secrets" / "cred.json").is_file():
+            return cand
+        if (cand / ".git").exists() and (cand / "trading").is_dir() and (cand / "cloud").is_dir():
+            return cand
+    return Path(__file__).resolve().parents[2]
+
+
+REPO_ROOT = repo_root()
+CRED_PATH = REPO_ROOT / "secrets" / "cred.json"
+FREQTRADE_USERDIR = REPO_ROOT / "trading" / "freqtrade"
+SCRIPTS_DIR = REPO_ROOT / "workstation" / "scripts"
+
+
+@lru_cache(maxsize=1)
+def load_cred() -> dict:
+    """Load all credentials from the JSON file (cached)."""
+    if not CRED_PATH.exists():
+        raise FileNotFoundError(f"Credentials file not found: {CRED_PATH}")
+    with open(CRED_PATH, "r") as f:
+        return json.load(f)
+
+
+def reload_cred() -> dict:
+    """Force reload credentials (clears cache)."""
+    load_cred.cache_clear()
+    return load_cred()
+
+
+def get_binance() -> dict:
+    """Get Binance API credentials."""
+    return load_cred()["binance"]
+
+
+def get_freqtrade() -> dict:
+    """Get Freqtrade API-server credentials."""
+    return load_cred()["freqtrade"]
+
+
+def get_tradingview() -> dict:
+    """Get TradingView credentials."""
+    return load_cred()["tradingview"]
+
+
+def get_linode(token_index: int = 0) -> dict:
+    """Get Linode credentials. token_index selects which token to use."""
+    linode = load_cred()["linode"]
+    return {
+        "token": linode["tokens"][token_index]
+        if token_index < len(linode["tokens"])
+        else linode["default_token"],
+        "root_password": linode["root_password"],
+        "ssr_password": linode["ssr_password"],
+    }
+
+
+def get_linode_token(token_index: int = 0) -> str:
+    """Get a specific Linode API token."""
+    return get_linode(token_index)["token"]
+
+
+def get_upstash() -> dict:
+    """Get Upstash credentials."""
+    return load_cred()["upstash"]
+
+
+def get_tinder() -> dict:
+    """Get Tinder credentials."""
+    return load_cred()["tinder"]
+
+
+def get_proxy_decodo() -> dict:
+    """Get Decodo proxy credentials."""
+    return load_cred()["proxy"]["decodo"]
+
+
+def get_proxy_rayobyte() -> dict:
+    """Get Rayobyte proxy credentials."""
+    return load_cred()["proxy"]["rayobyte"]
+
+
+def get_ipqs(key_index: int = 0) -> str:
+    """Get IPQS API key."""
+    ipqs = load_cred()["ipqs"]
+    return (
+        ipqs["api_keys"][key_index]
+        if key_index < len(ipqs["api_keys"])
+        else ipqs["default_key"]
+    )
+
+
+def get_alibaba() -> dict:
+    """Get Alibaba Cloud credentials."""
+    return load_cred()["alibaba"]
+
+
+def get_hero_sms() -> dict:
+    """Get HeroSMS credentials."""
+    return load_cred()["hero_sms"]
+
+
+def get_cloudflare() -> dict:
+    """Get Cloudflare credentials."""
+    return load_cred()["cloudflare"]
+
+
+def get_cloudflare_api_token() -> str:
+    """Get Cloudflare API token."""
+    cred = load_cred()
+    # Support both formats
+    if "cloudflare" in cred:
+        return cred["cloudflare"]["api_token"]
+    return cred.get("CLOUDFLARE_API_TOKEN", "")
+
+
+def get_azure(account: str = "azure") -> dict:
+    """Get Azure service principal credentials.
+
+    account: cred.json key, e.g. \"azure\" or \"azure2\".
+    Aliases: az → azure, az2 → azure2.
+    """
+    aliases = {"az": "azure", "az2": "azure2", "primary": "azure", "secondary": "azure2"}
+    key = aliases.get(account, account)
+    cred = load_cred()
+    if key not in cred:
+        available = [k for k in cred if k.startswith("azure")]
+        raise KeyError(f"No '{key}' in cred.json (found: {available or 'none'})")
+    return cred[key]
+
+
+def get_resend() -> dict:
+    """Get Resend email API credentials."""
+    return load_cred()["resend"]
+
+
+def get_telegram() -> dict:
+    """Get Telegram bot credentials."""
+    return load_cred()["telegram"]
+
+
+def get_digitalocean() -> dict:
+    """Get DigitalOcean credentials."""
+    return load_cred()["digitalocean"]
+
+
+def get_vultr() -> dict:
+    """Get Vultr API credentials."""
+    return load_cred()["vultr"]
+
+
+if __name__ == "__main__":
+    # Test loading
+    try:
+        cred = load_cred()
+        print(f"Loaded credentials from: {CRED_PATH}")
+        print(f"Available services: {list(cred.keys())}")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")

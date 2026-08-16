@@ -1,0 +1,25 @@
+[
+  {
+    "symbol": "ETHUSDT",
+    "timestamp": 1766604126532,
+    "standard": {
+      "best_bid": 2937.72,
+      "best_ask": 2937.73,
+      "spread_bps": 0.03403994587648606,
+      "bid_levels": 1000,
+      "ask_levels": 1000
+    },
+    "rpi": {
+      "best_bid": 2937.72,
+      "best_ask": 2937.73,
+      "spread_bps": 0.03403994587648606,
+      "bid_levels": 1000,
+      "ask_levels": 1000
+    },
+    "hidden_rpi_bid_levels": 0,
+    "hidden_rpi_ask_levels": 0,
+    "hidden_rpi_bid_notional": 0.0,
+    "hidden_rpi_ask_notional": 0.0,
+    "spread_improvement_bps": null
+  }
+]

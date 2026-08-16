@@ -1,0 +1,153 @@
+{
+  "symbol": "ETHUSDT",
+  "start_time": "2025-12-24T20:11:04.945145",
+  "duration_seconds": 70.53376698493958,
+  "total_samples": 337,
+  "api_errors": 0,
+  "rpi_events_count": 14,
+  "rpi_appearance_rate": 4.154302670623145,
+  "total_hidden_bid_notional": 173012.83414,
+  "total_hidden_ask_notional": 9413.66034999998,
+  "events": [
+    {
+      "elapsed": 2.570932388305664,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 35.36243999999999,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 2.78263783454895,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 2356.3520000000003,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 4.685043811798096,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 2356.48,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 9.33992862701416,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 179.69806999997888,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 9.55112910270691,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 0,
+      "total_hidden_ask": 2946.3,
+      "bid_levels": 0,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 9.762316226959229,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 5178.582690000002,
+      "total_hidden_ask": 2357.359999999999,
+      "bid_levels": 2,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 12.513462781906128,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 26.512740000001006,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 13.57192349433899,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 20.620529999999935,
+      "total_hidden_ask": 359.46324,
+      "bid_levels": 1,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 15.054644107818604,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 73.64649999999581,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 15.689581632614136,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 20.621020000014738,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 16.11312484741211,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 1502.1540000000007,
+      "total_hidden_ask": 556.7769899999995,
+      "bid_levels": 1,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 16.95820903778076,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 998.4295800000011,
+      "total_hidden_ask": 1499.69215,
+      "bid_levels": 1,
+      "ask_levels": 1
+    },
+    {
+      "elapsed": 19.07440423965454,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 1375.562509999999,
+      "total_hidden_ask": 0,
+      "bid_levels": 1,
+      "ask_levels": 0
+    },
+    {
+      "elapsed": 19.285950660705566,
+      "best_bid": 2945.86,
+      "best_ask": 2945.87,
+      "spread_bps": 0.033945886860950965,
+      "total_hidden_bid": 159103.87256999998,
+      "total_hidden_ask": 1479.007460000002,
+      "bid_levels": 4,
+      "ask_levels": 1
+    }
+  ]
+}
