@@ -19,7 +19,8 @@
 # Default proxies: 3x-ui (SQLite) + cloudflared (hosts/<host>/3x-ui/MIGRATE).
 # After up: panel login applied + default inbounds seeded (usable immediately).
 # Default monitoring: Beszel agent → https://beszel.hyas.site
-# Default cron: root daily reboot 08:00 Asia/Singapore (SKIP_CRON=1 to skip)
+# Default cron: root daily reboot 07:00 Asia/Singapore (SKIP_CRON=1 to skip)
+# Ubuntu vixie cron schedules in system local time (CRON_TZ is not used for scheduling).
 # Oracle hosts: live log → sudo tail -f /var/log/oracle-init.log
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
@@ -158,6 +159,14 @@ run hostnamectl set-hostname --static "$HOSTNAME_VALUE" 2>/dev/null \
   || run hostnamectl set-hostname "$HOSTNAME_VALUE"
 print_success "Hostname: $(hostname)"
 
+# --- timezone (cron reboot is wall-clock local; Ubuntu vixie ignores CRON_TZ) ---
+print_header "TIMEZONE"
+print_step "Asia/Singapore..."
+run apt install -y tzdata
+run timedatectl set-timezone Asia/Singapore \
+  || run ln -sfn /usr/share/zoneinfo/Asia/Singapore /etc/localtime
+print_success "Timezone: $(timedatectl show -p Timezone --value 2>/dev/null || cat /etc/timezone)"
+
 # --- swap ---
 print_header "SWAP"
 if [[ "${SKIP_SWAP:-0}" == "1" ]]; then
@@ -217,15 +226,30 @@ git config --global user.email "$(openssl rand -hex 12)@example.com" || true
 if [[ -d /allah/blue/.git ]]; then
   print_step "Pulling existing /allah/blue..."
   git -C /allah/blue pull --ff-only || print_warn "git pull failed — continuing"
-elif [[ -d /allah/blue/cloud ]]; then
-  # Tar/rsync bootstrap without .git (common before first push of host tree)
-  print_warn "/allah/blue exists without .git — keeping tree as-is"
+elif [[ -d /allah/blue ]]; then
+  # Tar/rsync tree without .git — overlay latest clone, keep local host runtime
+  print_step "Overlaying latest blue onto existing /allah/blue..."
+  git -C /allah clone https://github.com/rainfrog123/blue.git blue.new
+  cp -a /allah/blue.new/. /allah/blue/
+  rm -rf /allah/blue.new
 else
   print_step "Cloning blue..."
   git -C /allah clone https://github.com/rainfrog123/blue.git
 fi
 BLUE=/allah/blue
 print_success "Repository at $BLUE"
+
+print_header "GIT /allah/freqtrade"
+if [[ -d /allah/freqtrade/.git ]]; then
+  print_step "Pulling existing /allah/freqtrade..."
+  git -C /allah/freqtrade pull --ff-only || print_warn "git pull failed — continuing"
+elif [[ -d /allah/freqtrade ]]; then
+  print_warn "/allah/freqtrade exists without .git — keeping tree as-is"
+else
+  print_step "Cloning freqtrade..."
+  git -C /allah clone https://github.com/rainfrog123/freqtrade.git
+fi
+print_success "Repository at /allah/freqtrade"
 
 # --- BBR ---
 print_header "TCP BBR & NETWORK"
@@ -327,12 +351,12 @@ else
     print_step "Installing cron (missing on Minimal images)..."
     run apt install -y cron
   fi
-  print_step "Root crontab: daily reboot 08:00 Asia/Singapore..."
+  print_step "Root crontab: daily reboot 07:00 Asia/Singapore..."
   CRON_TMP="$(mktemp)"
   {
     echo "CRON_TZ=Asia/Singapore"
-    echo "# Daily host reboot at 08:00 Singapore time"
-    echo "0 8 * * * /sbin/reboot"
+    echo "# Daily host reboot at 07:00 Singapore time"
+    echo "0 7 * * * /sbin/reboot"
     # Keep any other root jobs (drop prior reboot / CRON_TZ / our comment)
     run crontab -l 2>/dev/null \
       | grep -vE '^CRON_TZ=|/sbin/reboot|^# Daily host reboot' \
@@ -340,14 +364,19 @@ else
   } >"$CRON_TMP"
   run crontab "$CRON_TMP"
   rm -f "$CRON_TMP"
-  print_success "crontab: 0 8 * * * /sbin/reboot (CRON_TZ=Asia/Singapore)"
+  print_success "crontab: 0 7 * * * /sbin/reboot (system TZ Asia/Singapore)"
 fi
 
 # --- bashrc ---
 print_header "SHELL"
-if [[ -f "$BLUE/workstation/dotfiles/shell/Bashrc" ]]; then
+BASHRC=""
+for _rc in "$BLUE/workstation/dotfiles/shell/bashrc" \
+           "$BLUE/workstation/dotfiles/shell/Bashrc"; do
+  [[ -f "$_rc" ]] && { BASHRC="$_rc"; break; }
+done
+if [[ -n "$BASHRC" ]]; then
   run rm -f /root/.bashrc
-  run ln -sf "$BLUE/workstation/dotfiles/shell/Bashrc" /root/.bashrc
+  run ln -sf "$BASHRC" /root/.bashrc
   print_success "bashrc linked"
 else
   print_warn "bashrc not found — skip"
@@ -546,7 +575,7 @@ print_info "  • Monitor: Beszel agent → https://beszel.hyas.site (SKIP_BESZE
 print_info "  • Legacy stacks: LEGACY_PROXIES=1"
 print_info "  • Site: hosts/$HOST/  · Repo: $BLUE"
 print_info "  • BBR + fq: enabled"
-print_info "  • Cron: daily reboot 08:00 Asia/Singapore (SKIP_CRON=1 to skip)"
+print_info "  • Cron: daily reboot 07:00 Asia/Singapore (SKIP_CRON=1 to skip)"
 [[ -n "${INIT_LOG:-}" ]] && print_info "  • Init log: $INIT_LOG  (tail -f $INIT_LOG)"
 
 if [[ "${SKIP_REBOOT:-0}" == "1" ]]; then

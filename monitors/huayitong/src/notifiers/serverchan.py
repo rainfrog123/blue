@@ -5,9 +5,8 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
-import requests
-
 from config import settings
+from ..http import post_form
 from ..models import AppointmentEntry
 
 
@@ -86,22 +85,22 @@ class ServerChanNotifier:
 
         try:
             title, desp, short = self._build(changes)
-            response = requests.post(
+            result = post_form(
                 self.url,
-                data={"title": title, "desp": desp, "short": short, "noip": "1"},
+                {"title": title, "desp": desp, "short": short, "noip": "1"},
                 timeout=10,
             )
-            if response.status_code != 200:
-                print(f"[serverchan] HTTP {response.status_code}: {response.text[:200]}")
+            if result.status != 200:
+                print(f"[serverchan] HTTP {result.status}: {result.text()[:200]}")
                 return False
 
-            result = response.json()
-            if result.get("code") == 0 or result.get("errno") == 0:
+            data = result.json()
+            if data.get("code") == 0 or data.get("errno") == 0:
                 self.last_notification_time = time.time()
-                print(f"[serverchan] sent pushid={result.get('data', {}).get('pushid')}")
+                print(f"[serverchan] sent pushid={data.get('data', {}).get('pushid')}")
                 return True
 
-            print(f"[serverchan] error: {result.get('message') or result.get('errmsg')}")
+            print(f"[serverchan] error: {data.get('message') or data.get('errmsg')}")
             return False
         except Exception as exc:
             print(f"[serverchan] send failed: {exc}")
@@ -120,12 +119,12 @@ class ServerChanNotifier:
         }
         try:
             print(f"[serverchan] test → {self.url}")
-            response = requests.post(self.url, data=data, timeout=10)
-            result = response.json() if response.status_code == 200 else {}
-            ok = response.status_code == 200 and (
-                result.get("code") == 0 or result.get("errno") == 0
+            result = post_form(self.url, data, timeout=10)
+            parsed = result.json() if result.status == 200 else {}
+            ok = result.status == 200 and (
+                parsed.get("code") == 0 or parsed.get("errno") == 0
             )
-            print(f"[serverchan] test {'ok' if ok else 'failed'}: {result}")
+            print(f"[serverchan] test {'ok' if ok else 'failed'}: {parsed}")
             return bool(ok)
         except Exception as exc:
             print(f"[serverchan] test failed: {exc}")

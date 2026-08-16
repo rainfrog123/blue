@@ -6,18 +6,13 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-import requests
-import urllib3
-
 from config import settings
+from .http import parse_api_json, post_json
 from .models import AppointmentEntry
-
-if settings.API_PROXY and settings.API_PROXY_INSECURE:
-    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class HuayitongAPIClient:
-    """POST doctor detail queries with rotating client headers."""
+    """POST doctor detail queries. Transport is CFNetwork on iPhone, urllib elsewhere."""
 
     def __init__(
         self,
@@ -44,7 +39,7 @@ class HuayitongAPIClient:
         headers.update(
             {
                 "User-Agent": self._user_agent(),
-                "UUID": str(uuid.uuid4()).upper(),
+                "UUID": settings.API_UUID or str(uuid.uuid4()).upper(),
                 "token": self.token,
                 "accessToken": self.access_token,
                 "Cookie": self.cookie,
@@ -56,50 +51,11 @@ class HuayitongAPIClient:
         self,
         doctor_payload: Dict[str, Any],
         doctor_name: str,
-    ) -> Optional[Dict[str, Any]]:
-        """Fetch raw JSON for one doctor, or None on failure."""
-        try:
-            time.sleep(random.uniform(0.5, 2.0))
-            payload = dict(doctor_payload)
-            payload["timestamp"] = str(int(time.time()))
-
-            kwargs: Dict[str, Any] = {
-                "headers": self._headers(),
-                "json": payload,
-                "timeout": 30,
-            }
-            if settings.API_PROXY:
-                kwargs["proxies"] = {
-                    "http": settings.API_PROXY,
-                    "https": settings.API_PROXY,
-                }
-                if settings.API_PROXY_INSECURE:
-                    kwargs["verify"] = False
-
-            response = requests.post(self.url, **kwargs)
-
-            if response.status_code != 200:
-                print(f"[HTTP {response.status_code}] {doctor_name}: {response.text[:120]}")
-                return None
-
-            ctype = (response.headers.get("Content-Type") or "").lower()
-            body = response.text or ""
-            if "aliyun_waf" in body or ctype.startswith("text/html"):
-                print(
-                    "[WAF] Aliyun challenge (HTML) instead of JSON. "
-                    "From this PC set HUAYITONG_PROXY=http://192.168.23.128:8080 "
-                    "(guest mitmweb) — see .env.example."
-                )
-                return None
-
-            try:
-                return response.json()
-            except ValueError:
-                print(f"[HTTP 200 non-json] {doctor_name}: {body[:120]!r}")
-                return None
-        except requests.RequestException as exc:
-            print(f"[request error] {doctor_name}: {exc}")
-            return None
+    ) -> Dict[str, Any]:
+        payload = dict(doctor_payload)
+        payload["timestamp"] = str(int(time.time()))
+        result = post_json(self.url, payload, self._headers(), timeout=30)
+        return parse_api_json(result, doctor_name)
 
     def extract_appointments(
         self,
@@ -107,9 +63,6 @@ class HuayitongAPIClient:
         doctor_name: str,
     ) -> List[AppointmentEntry]:
         """Flatten API response into AppointmentEntry list (deduped by schedule id)."""
-        if not data or data.get("code") != "1":
-            return []
-
         entries: List[AppointmentEntry] = []
         seen: set[str] = set()
 

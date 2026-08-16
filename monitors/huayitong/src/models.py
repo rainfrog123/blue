@@ -72,10 +72,10 @@ class AppointmentEntry:
 
 def _time_period_label(schedule_range: int) -> str:
     if schedule_range == 0:
-        return "Morning"
+        return "上午"
     if schedule_range == 1:
-        return "Afternoon"
-    return f"Period {schedule_range}"
+        return "下午"
+    return f"段{schedule_range}"
 
 
 @dataclass(frozen=True)

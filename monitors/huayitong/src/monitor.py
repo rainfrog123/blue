@@ -5,18 +5,19 @@ import os
 import random
 import subprocess
 import time
+from collections import deque
 from datetime import datetime
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 from config import DOCTORS, settings
 from .api_client import HuayitongAPIClient
 from .models import AppointmentEntry, DoctorConfig
-from .notifiers import MultiNotifier, build_notifiers
+from .notifiers import MultiNotifier, WeComNotifier, build_notifiers
 from .state import SlotStateTracker
 
 
 class AppointmentMonitor:
-    """Monitor Huayitong doctor schedules and alert on newly bookable slots."""
+    """Monitor Huayitong doctor schedules and alert on slot edges."""
 
     def __init__(
         self,
@@ -28,6 +29,7 @@ class AppointmentMonitor:
         self.notifier = notifier or build_notifiers()
         self.doctors = self._normalize_doctors(doctors or DOCTORS)
         self.state = SlotStateTracker()
+        self._tail: Deque[str] = deque(maxlen=int(settings.TAIL_LINES))
 
     @staticmethod
     def _normalize_doctors(
@@ -61,11 +63,7 @@ class AppointmentMonitor:
 
         for doctor in self.doctors:
             raw = self.api_client.fetch_doctor_appointments(doctor.payload, doctor.name)
-            if not raw:
-                continue
             entries = self.api_client.extract_appointments(raw, doctor.name)
-            if not entries:
-                continue
             all_entries.extend(entries)
             all_changes.extend(self.state.newly_bookable(entries, doctor.name))
 
@@ -77,7 +75,7 @@ class AppointmentMonitor:
         now_str = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
         print("\n*** APPOINTMENT SLOTS AVAILABLE! ***")
         print(f"Time: {now_str}")
-        print(f"Found {len(changes)} newly bookable slot(s):")
+        print(f"Found {len(changes)} slot change(s):")
 
         by_doctor: Dict[str, List[AppointmentEntry]] = {}
         for change in changes:
@@ -109,7 +107,6 @@ class AppointmentMonitor:
         message = f"{len(changes)} new slot(s) for {doctors}"
         try:
             if os.name == "nt":
-                # Keep message simple for PowerShell string safety
                 safe = message.replace('"', "'")
                 ps = f"""
                 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
@@ -135,62 +132,83 @@ class AppointmentMonitor:
             pass
 
     def run_once(self) -> List[AppointmentEntry]:
-        """Single poll (useful for cron / debug). Returns newly bookable slots."""
+        """Single poll (useful for cron / debug). Returns changed slots."""
         entries, changes = self.check_once()
         self._log_summary(entries)
         if changes:
+            print(f"NEW {len(changes)}")
             self._print_changes(changes)
             self.notifier.send(changes)
             self._system_toast(changes)
+        elif not entries:
+            print("no slots")
         return changes
 
     def _log_summary(self, entries: List[AppointmentEntry]) -> None:
+        lines = []
         if not entries:
             print("[warn] No appointment data")
+            lines.append("no slots")
+        else:
+            for entry in entries:
+                line = (
+                    f"  {entry.schedule_date} {entry.dept_name} "
+                    f"status={entry.status} avail={entry.available_count} "
+                    f"remain={entry.remaining_num} ¥{entry.total_fee:g}"
+                )
+                print(line)
+                lines.append(line)
+        self._tail.append("\n".join(lines))
+        print()
+
+    def _heartbeat_text(self) -> str:
+        stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
+        if not self._tail:
+            return f"华医通 poller\n{stamp} no data"
+        return "华医通 poller\n\n" + "\n\n".join(self._tail)
+
+    def _send_heartbeat(self) -> None:
+        url = settings.WECOM_TEST_URL
+        if not url:
             return
-        total_avail = sum(e.available_count for e in entries)
-        bookable = sum(1 for e in entries if e.is_bookable)
-        print(f"[ok] {total_avail} remaining seats, {bookable} bookable slots")
-        for entry in entries:
-            print(
-                f"  - {entry.schedule_date} {entry.time_period} | "
-                f"{entry.hospital_area_name} | {entry.dept_name} | "
-                f"Avail:{entry.available_count} | {entry.total_fee} CNY | "
-                f"{entry.status_label}"
-            )
+        WeComNotifier(webhook_url=url, cooldown=0).send_text(self._heartbeat_text())
 
     def run(self) -> None:
         names = ", ".join(d.name for d in self.doctors)
-        print("Starting Huayitong appointment monitor...")
+        print("huayitong poller", names)
         print(
-            f"Interval normal {settings.NORMAL_INTERVAL_MIN}-{settings.NORMAL_INTERVAL_MAX}s | "
-            f"peak {settings.PEAK_HOUR_INTERVAL}s"
+            f"normal {settings.NORMAL_INTERVAL_MIN:g}-{settings.NORMAL_INTERVAL_MAX:g}s | "
+            f"peak {settings.PEAK_HOUR_INTERVAL:g}s"
         )
-        print(f"Monitoring: {names}")
-        print(f"Notifiers: {settings.ENABLED_NOTIFIERS}")
-        print("Alert rule: newly bookable only (status=1 AND availableCount>0)")
+        print(
+            f"notifiers: {settings.ENABLED_NOTIFIERS}  "
+            f"fail backoff {settings.ERROR_WAIT_MIN:g}-{settings.ERROR_WAIT_MAX:g}s  "
+            f"tail {settings.WECOM_TAIL_SEC:g}s"
+        )
+        print("Alert rule: status/avail/remain edge, or new bookable id after warmup")
         print("=" * 60)
 
-        iteration = 0
+        last_tail = time.monotonic()
         while True:
+            failed = False
             try:
-                iteration += 1
-                stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
-                print(f"[{stamp}] Check #{iteration}")
-
                 self.run_once()
-
-                wait = self.wait_seconds()
-                peak = "[PEAK]" if self.is_peak_hour() else "[normal]"
-                print(f"[{stamp}] {peak} sleep {wait:.1f}s")
-                time.sleep(wait)
             except KeyboardInterrupt:
                 stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
                 print(f"\nStopped by user at {stamp}")
                 break
             except Exception as exc:
+                failed = True
                 stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
+                err_line = f"{stamp} err {type(exc).__name__} {exc}"
+                print(err_line)
+                self._tail.append(err_line)
+            if last_tail and time.monotonic() - last_tail >= settings.WECOM_TAIL_SEC:
+                last_tail = time.monotonic()
+                self._send_heartbeat()
+            if failed:
                 wait = random.uniform(settings.ERROR_WAIT_MIN, settings.ERROR_WAIT_MAX)
-                print(f"[{stamp}] Error: {exc}")
-                print(f"[{stamp}] Retry in {wait:.1f}s")
+                print(f"stop {wait:.1f}s then retry")
                 time.sleep(wait)
+                continue
+            time.sleep(self.wait_seconds())

@@ -5,9 +5,8 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
-import requests
-
 from config import settings
+from ..http import post_json
 from ..models import AppointmentEntry
 
 _MD_V2_SPECIAL = r"_*[]()~`>#+-=|{}.!"
@@ -98,26 +97,26 @@ class TelegramNotifier:
             return False
 
         try:
-            response = requests.post(
+            result = post_json(
                 f"{self.api_url}/sendMessage",
-                json={
+                {
                     "chat_id": self.chat_id,
                     "text": self._build_message(changes),
                     "parse_mode": "MarkdownV2",
                 },
                 timeout=10,
             )
-            if response.status_code != 200:
-                print(f"[telegram] HTTP {response.status_code}: {response.text[:200]}")
+            if result.status != 200:
+                print(f"[telegram] HTTP {result.status}: {result.text()[:200]}")
                 return False
 
-            result = response.json()
-            if not result.get("ok"):
-                print(f"[telegram] API error: {result.get('description', 'unknown')}")
+            data = result.json()
+            if not data.get("ok"):
+                print(f"[telegram] API error: {data.get('description', 'unknown')}")
                 return False
 
             self.last_notification_time = time.time()
-            print(f"[telegram] sent message_id={result.get('result', {}).get('message_id')}")
+            print(f"[telegram] sent message_id={data.get('result', {}).get('message_id')}")
             return True
         except Exception as exc:
             print(f"[telegram] send failed: {exc}")
@@ -135,18 +134,18 @@ class TelegramNotifier:
         )
         try:
             print(f"[telegram] test -> chat_id={self.chat_id}")
-            response = requests.post(
+            result = post_json(
                 f"{self.api_url}/sendMessage",
-                json={
+                {
                     "chat_id": self.chat_id,
                     "text": message,
                     "parse_mode": "MarkdownV2",
                 },
                 timeout=10,
             )
-            result = response.json() if response.status_code == 200 else {}
-            ok = response.status_code == 200 and result.get("ok")
-            print(f"[telegram] test {'ok' if ok else 'failed'}: {response.status_code} {result}")
+            data = result.json() if result.status == 200 else {}
+            ok = result.status == 200 and data.get("ok")
+            print(f"[telegram] test {'ok' if ok else 'failed'}: {result.status} {data}")
             return bool(ok)
         except Exception as exc:
             print(f"[telegram] test failed: {exc}")

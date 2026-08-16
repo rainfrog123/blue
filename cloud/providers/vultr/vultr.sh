@@ -85,6 +85,7 @@ git config --global user.email "$(openssl rand -hex 12)@example.com"
 
 cd /allah
 git clone https://github.com/rainfrog123/blue.git
+git clone https://github.com/rainfrog123/freqtrade.git
 
 # ==============================================================================
 # SSH ACCESS CONFIGURATION

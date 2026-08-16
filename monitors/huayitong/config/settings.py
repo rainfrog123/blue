@@ -6,6 +6,7 @@ Env / `.env` overrides hardcoded fallbacks. Telegram also falls back to
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 from datetime import timedelta, timezone
@@ -31,6 +32,19 @@ def _load_dotenv(path: Path) -> None:
 
 _load_dotenv(PROJECT_ROOT / ".env")
 
+PHONE_CONFIG_PATH = PROJECT_ROOT / "iphone" / "phone_config.json"
+_PHONE: dict = {}
+if PHONE_CONFIG_PATH.is_file():
+    _PHONE = json.loads(PHONE_CONFIG_PATH.read_text(encoding="utf-8"))
+
+
+def _phone(*keys: str, default: str = "") -> str:
+    for key in keys:
+        val = _PHONE.get(key)
+        if val is not None and str(val).strip():
+            return str(val).strip()
+    return default
+
 
 def _add_scripts_path() -> None:
     """Find blue/workstation/scripts so cred_loader can load secrets/cred.json."""
@@ -47,7 +61,8 @@ CST_TZ = timezone(timedelta(hours=8))
 
 API_URL = os.environ.get(
     "HUAYITONG_API_URL",
-    "https://hytapiv2.cd120.com/cloud/appointment/doctorListModel/selDoctorDetailsTwo",
+    _phone("url")
+    or "https://hytapiv2.cd120.com/cloud/appointment/doctorListModel/selDoctorDetailsTwo",
 )
 
 # Empty = direct. This lab PC is WAF-blocked; guest mitmweb is not.
@@ -72,15 +87,22 @@ DEFAULT_HEADERS = {
 # Auth — env overrides; defaults from app capture 2026-08-15 (export.txt). JWT exp ~2026-09-14.
 API_TOKEN = os.environ.get(
     "HUAYITONG_TOKEN",
-    "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzg2NzcwMjcyLCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3ODkzNjIyNzJ9.QE39Q08VBr8pUBz7NBe_kd569GFcIqcbF1mDhkD8trI***HXGYAPP",
+    _phone("token")
+    or "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzg2NzcwMjcyLCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3ODkzNjIyNzJ9.QE39Q08VBr8pUBz7NBe_kd569GFcIqcbF1mDhkD8trI***HXGYAPP",
 )
 API_ACCESS_TOKEN = os.environ.get(
     "HUAYITONG_ACCESS_TOKEN",
-    "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzg2NzcwMjcyLCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3ODkzNjIyNzJ9.QE39Q08VBr8pUBz7NBe_kd569GFcIqcbF1mDhkD8trI***HXGYAPP",
+    _phone("accessToken")
+    or "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIyNzkwODA5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhIiwiaWF0IjoxNzg2NzcwMjcyLCJzdWIiOiJ7XCJ1c2VySWRcIjpcIjI3OTA4MFwiLFwiYWNjb3VudElkXCI6XCIyOTMzNjBcIixcInVzZXJUeXBlXCI6MCxcImFwcENvZGVcIjpcIkhYR1lBUFBcIixcImNoYW5uZWxDb2RlXCI6XCJQQVRJRU5UX0lPU1wiLFwiZGV2aWNlbnVtYmVyXCI6XCI5NTBiOWY4NzhlNjcwZTg3Y2VjOWYwNzc5YmI5ODE0NTVhZDM3YmUyMjViZjVkODkzODA4MTM5YzYwMDgwODBhXCIsXCJkZXZpY2VUeXBlXCI6XCJBUFBcIixcImFjY291bnROb1wiOlwiMTM4ODI5ODUxODhcIixcIm5hbWVcIjpcIumZiOS6leW3nVwiLFwiZG9jdG9ySWRcIjpudWxsLFwib3JnYW5Db2RlXCI6bnVsbH0iLCJleHAiOjE3ODkzNjIyNzJ9.QE39Q08VBr8pUBz7NBe_kd569GFcIqcbF1mDhkD8trI***HXGYAPP",
 )
 API_COOKIE = os.environ.get(
     "HUAYITONG_COOKIE",
-    "acw_tc=76b20f8b17867738472542366e3e0bd6008ad623664e75c6b17fbaa977b3ba",
+    _phone("cookie")
+    or "acw_tc=76b20f8b17867738472542366e3e0bd6008ad623664e75c6b17fbaa977b3ba",
+)
+API_UUID = os.environ.get(
+    "HUAYITONG_UUID",
+    _phone("uuid") or "25FEFB37-9D3D-4FA1-B7E8-81F7FB0A2FAD",
 )
 
 SERVERCHAN_URL = os.environ.get(
@@ -91,14 +113,23 @@ SERVERCHAN_URL = os.environ.get(
 # WeCom group webhook (Path B) — no Trusted IP; lands in 企微群
 WECOM_WEBHOOK_URL = os.environ.get(
     "WECOM_WEBHOOK_URL",
-    "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=685b4dce-8bbc-4d64-9de1-36027e8bc5d1",
+    _phone("wecom_live", "wecom")
+    or "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=685b4dce-8bbc-4d64-9de1-36027e8bc5d1",
 )
+WECOM_TEST_URL = os.environ.get("WECOM_TEST_URL", _phone("wecom_test"))
 WECOM_MAX_SLOTS = int(os.environ.get("WECOM_MAX_SLOTS", "3"))
+WECOM_TAIL_SEC = float(os.environ.get("HUAYITONG_WECOM_TAIL_SEC", str(_PHONE.get("wecom_tail_sec") or 3600)))
+TAIL_LINES = int(os.environ.get("HUAYITONG_TAIL_LINES", str(_PHONE.get("tail_lines") or 5)))
 
 # Notifier toggles: comma-separated, e.g. "wecom" or "telegram,wecom"
+_default_notifiers = "wecom,telegram"
+if isinstance(_PHONE.get("notifiers"), list) and _PHONE["notifiers"]:
+    _default_notifiers = ",".join(str(x) for x in _PHONE["notifiers"])
+elif _PHONE:
+    _default_notifiers = "wecom"
 ENABLED_NOTIFIERS = [
     n.strip().lower()
-    for n in os.environ.get("HUAYITONG_NOTIFIERS", "wecom,telegram").split(",")
+    for n in os.environ.get("HUAYITONG_NOTIFIERS", _default_notifiers).split(",")
     if n.strip()
 ]
 
@@ -114,22 +145,44 @@ def _telegram_from_cred() -> tuple[str, str]:
 
 
 _cred_bot, _cred_chat = _telegram_from_cred()
-TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", _cred_bot)
-TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", _cred_chat)
+TELEGRAM_BOT_TOKEN = os.environ.get(
+    "TELEGRAM_BOT_TOKEN",
+    _phone("telegram_bot_token", "telegram_token") or _cred_bot,
+)
+TELEGRAM_CHAT_ID = os.environ.get(
+    "TELEGRAM_CHAT_ID",
+    _phone("telegram_chat_id", "telegram_chat") or _cred_chat,
+)
 
-NOTIFICATION_COOLDOWN = int(os.environ.get("HUAYITONG_NOTIFY_COOLDOWN", "60"))
 
-PEAK_HOUR_INTERVAL = float(os.environ.get("HUAYITONG_PEAK_INTERVAL", "5"))
-NORMAL_INTERVAL_MIN = float(os.environ.get("HUAYITONG_INTERVAL_MIN", "15"))
-NORMAL_INTERVAL_MAX = float(os.environ.get("HUAYITONG_INTERVAL_MAX", "25"))
-ERROR_WAIT_MIN = float(os.environ.get("HUAYITONG_ERROR_WAIT_MIN", "30"))
-ERROR_WAIT_MAX = float(os.environ.get("HUAYITONG_ERROR_WAIT_MAX", "60"))
+def _num(env_key: str, phone_key: str, default: float) -> float:
+    if env_key in os.environ:
+        return float(os.environ[env_key])
+    if phone_key in _PHONE and _PHONE[phone_key] is not None:
+        return float(_PHONE[phone_key])
+    return float(default)
+
+
+NOTIFICATION_COOLDOWN = int(os.environ.get("HUAYITONG_NOTIFY_COOLDOWN", "0"))
+
+PEAK_HOUR_INTERVAL = _num("HUAYITONG_PEAK_INTERVAL", "peak_interval", 3)
+NORMAL_INTERVAL_MIN = _num("HUAYITONG_INTERVAL_MIN", "interval_min", 9)
+NORMAL_INTERVAL_MAX = _num("HUAYITONG_INTERVAL_MAX", "interval_max", 13)
+ERROR_WAIT_MIN = _num("HUAYITONG_ERROR_WAIT_MIN", "fail_sleep_min", 30)
+ERROR_WAIT_MAX = _num("HUAYITONG_ERROR_WAIT_MAX", "fail_sleep_max", 60)
 
 # Release windows when new slots often appear (China Standard Time)
 PEAK_WINDOWS = [
     ("07:59:00", "08:04:00"),
     ("19:59:00", "20:04:00"),
 ]
+if _PHONE.get("peak_windows"):
+    PEAK_WINDOWS = [tuple(w) for w in _PHONE["peak_windows"]]
+
+PHONE_DOCTOR = _PHONE.get("doctor") if isinstance(_PHONE.get("doctor"), dict) else None
+STATE_PATH = (
+    PROJECT_ROOT / "iphone" / "state.json" if _PHONE else PROJECT_ROOT / "state.json"
+)
 
 APP_VERSIONS = ["7.1.1"]
 IOS_VERSIONS = [

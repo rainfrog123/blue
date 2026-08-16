@@ -4,6 +4,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
 SESSION_NAME="huayitong"
 export LANG=UTF-8 LC_ALL=UTF-8 LC_CTYPE=UTF-8
 
@@ -22,13 +23,13 @@ if "$TMUX_BIN" has-session -t "$SESSION_NAME" 2>/dev/null; then
   sleep 1
 fi
 
-"$TMUX_BIN" new-session -d -s "$SESSION_NAME" -c "$SCRIPT_DIR" \
-  "$PYTHON_BIN" "$SCRIPT_DIR/phone_poll.py"
+"$TMUX_BIN" new-session -d -s "$SESSION_NAME" -c "$ROOT" \
+  "$PYTHON_BIN" "$ROOT/main.py"
 
 sleep 1
 if "$TMUX_BIN" has-session -t "$SESSION_NAME" 2>/dev/null; then
   echo "Started. Attach: LANG=UTF-8 $TMUX_BIN attach -t $SESSION_NAME"
 else
-  echo "Failed — try: $PYTHON_BIN $SCRIPT_DIR/phone_poll.py --once"
+  echo "Failed — try: $PYTHON_BIN $ROOT/main.py --once"
   exit 1
 fi

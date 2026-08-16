@@ -1,14 +1,11 @@
 """WeCom group webhook notifier — plain text (personal WeChat–friendly)."""
 from __future__ import annotations
 
-import re
-import time
 from datetime import datetime
 from typing import Dict, List, Optional, Sequence
 
-import requests
-
 from config import settings
+from ..http import post_json
 from ..models import AppointmentEntry
 
 _CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩"
@@ -90,8 +87,10 @@ class WeComNotifier:
         shown = ordered[:max_slots]
         hidden = len(ordered) - len(shown)
 
+        any_open = any(c.is_bookable for c in ordered)
+        title = "【有号】华西医院" if any_open else "【号变】华西医院"
         lines = [
-            "【有号】华西医院",
+            title,
             f"【共{len(ordered)}个】{doctors}",
             f"【时间】刚刚 · {now_str}",
             "────────────",
@@ -123,24 +122,23 @@ class WeComNotifier:
             lines.append(f"【更多】…另有 {hidden} 个号源未列出")
         return "\n".join(lines).rstrip() + "\n"
 
+    def send_text(self, content: str) -> bool:
+        return self._post(content)
+
     def _post(self, content: str) -> bool:
         if not self.webhook_url:
             print("[wecom] WECOM_WEBHOOK_URL missing")
             return False
         payload = {"msgtype": "text", "text": {"content": content}}
         try:
-            response = requests.post(
-                self.webhook_url,
-                json=payload,
-                timeout=10,
-            )
-            if response.status_code != 200:
-                print(f"[wecom] HTTP {response.status_code}: {response.text[:200]}")
+            result = post_json(self.webhook_url, payload, timeout=10)
+            if result.status != 200:
+                print(f"[wecom] HTTP {result.status}: {result.text()[:200]}")
                 return False
-            result = response.json()
-            if result.get("errcode") == 0:
+            data = result.json()
+            if data.get("errcode") == 0:
                 return True
-            print(f"[wecom] error: {result}")
+            print(f"[wecom] error: {data}")
             return False
         except Exception as exc:
             print(f"[wecom] send failed: {exc}")
