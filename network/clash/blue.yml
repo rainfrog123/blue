@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 18:08-08/17 (UTC+8)
+# Version: 🔖 18:15-08/17 (UTC+8)
 
 # DNS — parked 2026-08-07 (commented out for now; FlClash client DNS / see Obsidian [[FlClash DNS]])
 # Split-horizon draft kept below for when we re-enable (CN DoH + foreign fallback · ipv6: true).
@@ -404,6 +404,38 @@ proxies:
       public-key: 2XfIey1rhz1eN3dbwIL_PIDaPOkVlBsTXIZD6FJPHzk
       short-id: ec8db916fb27e732
     client-fingerprint: chrome
+
+  # Trojan via CF hostname (DNS, not pinned anycast). Origin: http://3x-ui:8080
+  # Zone has both A + AAAA — split like _ss / _hy2 / _reality
+  - name: 🇯🇵oracle-a1
+    type: trojan
+    server: oa1.hyas.space
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+    ip-version: ipv4
+
+  - name: 🇯🇵oracle-a1_v6
+    type: trojan
+    server: oa1.hyas.space
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+    ip-version: ipv6
 
   # Trojan via Cloudflare (oracle-a1 / 3x-ui) — tunnel → http://3x-ui:8080
   # Hostnames: oa1.hyas.space + oa1.hyas.site · WS path /x7f9k2m4p8
@@ -1376,7 +1408,7 @@ proxies:
 
 
   # Version reference (display only) — name must match the bookmark entry in 🚀 Node Selection
-  - {name: "🔖 18:08-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 18:15-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -1397,7 +1429,7 @@ proxy-groups:
       - 🇬🇧 Decodo GB
       - 🇺🇸 Decodo US
       - 🔑 Manual Selection
-      - "🔖 18:08-08/17 (UTC+8)"
+      - "🔖 18:15-08/17 (UTC+8)"
       - 🎯 Direct
 
   - name: 🌀 Hysteria Nodes
@@ -1425,6 +1457,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_hy2_v6
       - 🇯🇵oracle-a1_reality
       - 🇯🇵oracle-a1_reality_v6
+      - 🇯🇵oracle-a1
+      - 🇯🇵oracle-a1_v6
       - 🇯🇵oracle-a1_nrt_01
       - 🇯🇵oracle-a1_nrt_02
       - 🇯🇵oracle-a1_nrt_03
@@ -1475,6 +1509,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_hy2_v6
       - 🇯🇵oracle-a1_reality
       - 🇯🇵oracle-a1_reality_v6
+      - 🇯🇵oracle-a1
+      - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
@@ -1644,6 +1680,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_hy2_v6
       - 🇯🇵oracle-a1_reality
       - 🇯🇵oracle-a1_reality_v6
+      - 🇯🇵oracle-a1
+      - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
@@ -1671,6 +1709,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_hy2_v6
       - 🇯🇵oracle-a1_reality
       - 🇯🇵oracle-a1_reality_v6
+      - 🇯🇵oracle-a1
+      - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
@@ -1710,6 +1750,8 @@ proxy-groups:
       - 🇯🇵ali-jp_nrt_06
       - 🇯🇵ali-jp_nrt_07
       - 🇯🇵ali-jp_nrt_08
+      - 🇯🇵oracle-a1
+      - 🇯🇵oracle-a1_v6
       - 🇯🇵oracle-a1_nrt_01
       - 🇯🇵oracle-a1_nrt_02
       - 🇯🇵oracle-a1_nrt_03
