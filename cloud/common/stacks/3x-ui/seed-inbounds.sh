@@ -6,7 +6,7 @@
 #   - Creates SS :12033 if missing
 #   - Creates Hy2 :443/udp if cert pair exists (auto self-signed when HY2_SNI known)
 #   - Creates Trojan WS :8080 (cloudflared target) if missing
-#   - Creates VLESS REALITY :443/tcp if hosts/<host>/3x-ui/REALITY exists (Hy2 stays UDP)
+#   - Creates VLESS REALITY :8443/tcp if hosts/<host>/3x-ui/REALITY exists (Hy2 stays UDP 443)
 #   - Syncs clients + client_inbounds (required by newer 3x-ui / Xray auth)
 #   - Reads/writes tracked inbound.env (Clash secrets) + gitignored site.env (panel)
 #   - Writes clash.snippet.yml for copy-paste into blue.yml
@@ -130,7 +130,7 @@ REALITY_UUID="${REALITY_UUID:-}"
 REALITY_PRIVKEY="${REALITY_PRIVKEY:-}"
 REALITY_PUBKEY="${REALITY_PUBKEY:-}"
 REALITY_SHORTID="${REALITY_SHORTID:-}"
-REALITY_SNI="${REALITY_SNI:-www.microsoft.com}"
+REALITY_SNI="${REALITY_SNI:-www.apple.com}"
 REALITY_DEST="${REALITY_DEST:-${REALITY_SNI}:443}"
 [[ -n "$SS_PASS" ]] || SS_PASS="$(rand_alnum 16)"
 [[ -n "$HY2_PASS" ]] || HY2_PASS="$(rand_alnum 24)"
@@ -222,7 +222,7 @@ reality_uuid = os.environ.get("SEED_REALITY_UUID", "")
 reality_priv = os.environ.get("SEED_REALITY_PRIVKEY", "")
 reality_pub = os.environ.get("SEED_REALITY_PUBKEY", "")
 reality_sid = os.environ.get("SEED_REALITY_SHORTID", "")
-reality_sni = os.environ.get("SEED_REALITY_SNI", "www.microsoft.com")
+reality_sni = os.environ.get("SEED_REALITY_SNI", "www.apple.com")
 reality_dest = os.environ.get("SEED_REALITY_DEST", "") or f"{reality_sni}:443"
 now_ms = int(os.environ["SEED_NOW_MS"])
 force = os.environ.get("SEED_FORCE", "0") == "1"
@@ -314,7 +314,7 @@ for tag, port, proto, settings in rows:
         p = extract_trojan_pass(settings)
         if p:
             trojan_pass = p
-    if proto == "vless" and port == 443:
+    if proto == "vless" and port in (443, 8443):
         u = extract_reality_uuid(settings)
         if u:
             reality_uuid = u
@@ -446,12 +446,24 @@ if not skip_trojan:
         changed.append("trojan")
 
 if not skip_reality and reality_uuid and reality_priv and reality_pub:
-    tag = "in-443-tcp"
+    # TCP 443 Reality is a GFW trap from CN — migrate leftover in-443-tcp away
+    if has_tag("in-443-tcp"):
+        stmts.append(sql_delete("in-443-tcp"))
+        stmts.append(
+            "DELETE FROM client_inbounds WHERE inbound_id NOT IN (SELECT id FROM inbounds);"
+        )
+        stmts.append(
+            "DELETE FROM client_traffics WHERE inbound_id NOT IN (SELECT id FROM inbounds);"
+        )
+        by_tag.pop("in-443-tcp", None)
+        rows = [r for r in rows if r[0] != "in-443-tcp"]
+        changed.append("reality-migrate-443")
+    tag = "in-8443-tcp"
     if force and has_tag(tag):
         stmts.append(sql_delete(tag))
         by_tag.pop(tag, None)
         rows = [r for r in rows if r[0] != tag]
-    if not has_tag(tag) and not has_port_proto(443, "vless"):
+    if not has_tag(tag) and not has_port_proto(8443, "vless"):
         settings = {
             "clients": [{
                 "id": reality_uuid,
@@ -502,7 +514,7 @@ if not skip_reality and reality_uuid and reality_priv and reality_pub:
             },
         }
         stmts.append(sql_insert(
-            f"{host}-reality", 443, "vless",
+            f"{host}-reality", 8443, "vless",
             json.dumps(settings, indent=2),
             json.dumps(stream),
             tag, sniff_on,
@@ -663,7 +675,7 @@ if not skip_hy2:
 if not skip_trojan:
     wanted.append(("trojan", 8080, "trojan", f"trojan@{host}", trojan_pass, "", "password", ""))
 if not skip_reality and reality_uuid:
-    wanted.append(("reality", 443, "vless", f"reality@{host}", "", "", "uuid", reality_uuid))
+    wanted.append(("reality", 8443, "vless", f"reality@{host}", "", "", "uuid", reality_uuid))
 
 def find_inbound(port, proto):
     for ib in inbounds:
@@ -773,7 +785,7 @@ PUBLIC_IP="$(echo "$PUBLIC_IP" | tr -d '[:space:]')"
     echo "  - name: 🇯🇵${HOST}_reality"
     echo "    type: vless"
     echo "    server: $PUBLIC_IP"
-    echo "    port: 443"
+    echo "    port: 8443"
     echo "    uuid: $REALITY_UUID"
     echo "    network: tcp"
     echo "    tls: true"
@@ -810,7 +822,7 @@ try:
   c=json.load(sys.stdin)
 except Exception:
   sys.exit(1)
-want={(12033,"shadowsocks"),(443,"hysteria"),(8080,"trojan"),(443,"vless")}
+want={(12033,"shadowsocks"),(443,"hysteria"),(8080,"trojan"),(8443,"vless")}
 present=set()
 ok_clients={}
 for i in c.get("inbounds",[]):
@@ -822,7 +834,7 @@ for i in c.get("inbounds",[]):
 # SS required; others required only if inbound present
 ok = ok_clients.get((12033,"shadowsocks"), False)
 for key in present:
-  if key[0] in (443, 8080):
+  if key in ((443,"hysteria"),(8080,"trojan"),(8443,"vless")):
     ok = ok and ok_clients.get(key, False)
 sys.exit(0 if ok else 1)
 ' 2>/dev/null
@@ -855,7 +867,7 @@ if [[ -n "$HY2_SNI" && -f "$CERT_DIR/${HY2_SNI}.crt" ]]; then
 fi
 echo "  Trojan: :8080 WS /x7f9k2m4p8  pass=$TROJAN_PASS  (cloudflared)"
 if [[ "${SKIP_REALITY}" != "1" && -n "$REALITY_UUID" ]]; then
-  echo "  REALITY: $PUBLIC_IP:443/tcp  uuid=$REALITY_UUID  sni=$REALITY_SNI  (minClientVer=1.0.0)"
+  echo "  REALITY: $PUBLIC_IP:8443/tcp  uuid=$REALITY_UUID  sni=$REALITY_SNI  (minClientVer=1.0.0)"
 fi
 echo "  inbound.env (tracked): $INBOUND_ENV"
 echo "  site.env (panel):      $ENV_FILE"

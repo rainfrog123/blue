@@ -18,7 +18,7 @@ bash cloud/common/stacks/3x-ui/seed-inbounds.sh oracle-tokyo
 | Image | `ghcr.io/mhsanaei/3x-ui:latest` |
 | DB | SQLite in `hosts/<host>/3x-ui/db/` → `/etc/x-ui/` |
 | Panel | `127.0.0.1:2053` (SSH tunnel) |
-| Defaults | SS `:12033` · Hy2 `:443/udp` (self-signed) · Trojan WS `:8080` · optional VLESS REALITY `:443/tcp` (touch `REALITY`) |
+| Defaults | SS `:12033` · Hy2 `:443/udp` (self-signed) · Trojan WS `:8080` · optional VLESS REALITY `:8443/tcp` (touch `REALITY`) |
 | Network | `init_tunnel-net` |
 | mem_limit | `350m` |
 
@@ -31,7 +31,7 @@ bash cloud/common/stacks/3x-ui/seed-inbounds.sh oracle-tokyo
 | File | Tracked? | Purpose |
 | --- | --- | --- |
 | **`inbound.env`** | **yes** | SS / Hy2 / Trojan / REALITY / HY2_SNI (Clash secrets; survives `git clone`) |
-| `REALITY` | yes | Marker: seed VLESS REALITY `:443/tcp` beside Hy2 UDP |
+| `REALITY` | yes | Marker: seed VLESS REALITY `:8443/tcp` (Hy2 stays UDP 443) |
 | `site.env` | no | Panel login only (+ copy of proxy keys) |
 | `clash.snippet.yml` | no | Auto paste helper for `blue.yml` |
 | `db/` `cert/` | no | Runtime |

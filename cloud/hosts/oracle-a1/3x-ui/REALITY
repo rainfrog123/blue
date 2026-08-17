@@ -1,2 +1,3 @@
-# Marker: seed-inbounds.sh adds VLESS + REALITY + xtls-rprx-vision on :443/tcp
-# (Hy2 stays :443/udp). Dest/SNI: www.microsoft.com. minClientVer=1.0.0 for FlClash.
+# Marker: seed-inbounds.sh adds VLESS + REALITY + xtls-rprx-vision on :8443/tcp
+# (Hy2 stays :443/udp). Dest/SNI: www.apple.com. minClientVer=1.0.0 for FlClash.
+# Not :443/tcp — GFW often drops TCP 443 to Oracle IPs (FlClash Timeout).
