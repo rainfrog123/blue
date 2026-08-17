@@ -12,3 +12,4 @@ ssh -L 2053:127.0.0.1:2053 oracle-a1   # panel (if 3x-ui up)
 ```
 
 **Notes:** ARM64 — use aarch64 images/binaries. IPv6 guest iface `enp0s6`. Init log: `/var/log/oracle-init.log`.
+Trojan via CF: **`oa1.hyas.space`** (+ `oa1.hyas.site`) → `http://3x-ui:8080`. Token: `cloudflared/site.env` (gitignored).

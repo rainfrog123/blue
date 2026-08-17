@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 17:42-08/17 (UTC+8)
+# Version: 🔖 18:07-08/17 (UTC+8)
 
 # DNS — parked 2026-08-07 (commented out for now; FlClash client DNS / see Obsidian [[FlClash DNS]])
 # Split-horizon draft kept below for when we re-enable (CN DoH + foreign fallback · ipv6: true).
@@ -404,6 +404,121 @@ proxies:
       public-key: 2XfIey1rhz1eN3dbwIL_PIDaPOkVlBsTXIZD6FJPHzk
       short-id: ec8db916fb27e732
     client-fingerprint: chrome
+
+  # Trojan via Cloudflare (oracle-a1 / 3x-ui) — tunnel → http://3x-ui:8080
+  # Hostnames: oa1.hyas.space + oa1.hyas.site · WS path /x7f9k2m4p8
+  # 8× Japan CF anycast IPs (same set as 🇯🇵ali-jp_nrt_01..08).
+  - name: 🇯🇵oracle-a1_nrt_01
+    type: trojan
+    server: 162.159.38.58
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_02
+    type: trojan
+    server: 162.159.39.248
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_03
+    type: trojan
+    server: 172.64.53.144
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_04
+    type: trojan
+    server: 108.162.198.99
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_05
+    type: trojan
+    server: 162.159.44.202
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_06
+    type: trojan
+    server: 172.64.229.84
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_07
+    type: trojan
+    server: 162.159.45.212
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
+
+  - name: 🇯🇵oracle-a1_nrt_08
+    type: trojan
+    server: 172.64.52.153
+    port: 443
+    password: d83a390c-33c3-4577-9258-e062f8ebdc16
+    sni: oa1.hyas.space
+    skip-cert-verify: false
+    network: ws
+    ws-opts:
+      path: /x7f9k2m4p8
+      headers:
+        Host: oa1.hyas.space
+    udp: true
 
   # Vultr Osaka High Frequency (vultr-osk / vhf-8c-32gb) — via 3x-ui SQLite
   # Backend: container 3x-ui (SS :12033 / Hy2 :443/udp / Trojan WS :8080 ← cloudflared later)
@@ -1261,7 +1376,7 @@ proxies:
 
 
   # Version reference (display only) — name must match the bookmark entry in 🚀 Node Selection
-  - {name: "🔖 17:42-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 18:07-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -1272,6 +1387,7 @@ proxy-groups:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🟠 Oracle Nodes
+      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🌀 Hysteria Nodes
@@ -1281,7 +1397,7 @@ proxy-groups:
       - 🇬🇧 Decodo GB
       - 🇺🇸 Decodo US
       - 🔑 Manual Selection
-      - "🔖 17:42-08/17 (UTC+8)"
+      - "🔖 18:07-08/17 (UTC+8)"
       - 🎯 Direct
 
   - name: 🌀 Hysteria Nodes
@@ -1303,6 +1419,24 @@ proxy-groups:
   - name: 🟠 Oracle Nodes
     type: select
     proxies:
+      - 🇯🇵oracle-a1_ss
+      - 🇯🇵oracle-a1_ss_v6
+      - 🇯🇵oracle-a1_hy2
+      - 🇯🇵oracle-a1_hy2_v6
+      - 🇯🇵oracle-a1_reality
+      - 🇯🇵oracle-a1_reality_v6
+      - 🇯🇵oracle-a1_nrt_01
+      - 🇯🇵oracle-a1_nrt_02
+      - 🇯🇵oracle-a1_nrt_03
+      - 🇯🇵oracle-a1_nrt_04
+      - 🇯🇵oracle-a1_nrt_05
+      - 🇯🇵oracle-a1_nrt_06
+      - 🇯🇵oracle-a1_nrt_07
+      - 🇯🇵oracle-a1_nrt_08
+
+  - name: 🔶 OCI Nodes
+    type: select
+    proxies:
       - 🇯🇵oci_ss
       - 🇯🇵oci_ss_v6
       - 🇯🇵oci_hy2
@@ -1311,12 +1445,6 @@ proxy-groups:
       - 🇯🇵oracle-tokyo2_ss_v6
       - 🇯🇵oracle-tokyo2_hy2
       - 🇯🇵oracle-tokyo2_hy2_v6
-      - 🇯🇵oracle-a1_ss
-      - 🇯🇵oracle-a1_ss_v6
-      - 🇯🇵oracle-a1_hy2
-      - 🇯🇵oracle-a1_hy2_v6
-      - 🇯🇵oracle-a1_reality
-      - 🇯🇵oracle-a1_reality_v6
 
   # --- Node pools / apps ---
   - name: 📺 YouTube Nodes
@@ -1327,6 +1455,7 @@ proxy-groups:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🟠 Oracle Nodes
+      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - ☁️ Cloudflare CF Nodes
@@ -1351,6 +1480,7 @@ proxy-groups:
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_hy2_v6
       - 🇯🇵ali-jp_nrt_01
+      - 🇯🇵oracle-a1_nrt_01
       - 🎯 Direct
 
   - name: 🔷 Azure Nodes
@@ -1439,6 +1569,7 @@ proxy-groups:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🟠 Oracle Nodes
+      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🌀 Hysteria Nodes
@@ -1452,6 +1583,7 @@ proxy-groups:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🟠 Oracle Nodes
+      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       - 🌀 Hysteria Nodes
       # - 🇸🇬do_ss_v6  # OFFLINED Digi 2026-07-28
@@ -1578,6 +1710,14 @@ proxy-groups:
       - 🇯🇵ali-jp_nrt_06
       - 🇯🇵ali-jp_nrt_07
       - 🇯🇵ali-jp_nrt_08
+      - 🇯🇵oracle-a1_nrt_01
+      - 🇯🇵oracle-a1_nrt_02
+      - 🇯🇵oracle-a1_nrt_03
+      - 🇯🇵oracle-a1_nrt_04
+      - 🇯🇵oracle-a1_nrt_05
+      - 🇯🇵oracle-a1_nrt_06
+      - 🇯🇵oracle-a1_nrt_07
+      - 🇯🇵oracle-a1_nrt_08
       # - 🇸🇬do_01  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_02  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_03  # OFFLINED Digi 2026-07-28
@@ -1624,6 +1764,7 @@ proxy-groups:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
       - 🟠 Oracle Nodes
+      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🚀 Node Selection
