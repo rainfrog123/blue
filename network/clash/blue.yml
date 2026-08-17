@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 18:07-08/17 (UTC+8)
+# Version: 🔖 18:08-08/17 (UTC+8)
 
 # DNS — parked 2026-08-07 (commented out for now; FlClash client DNS / see Obsidian [[FlClash DNS]])
 # Split-horizon draft kept below for when we re-enable (CN DoH + foreign fallback · ipv6: true).
@@ -1376,7 +1376,7 @@ proxies:
 
 
   # Version reference (display only) — name must match the bookmark entry in 🚀 Node Selection
-  - {name: "🔖 18:07-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 18:08-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -1386,8 +1386,8 @@ proxy-groups:
     proxies:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
+      - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🌀 Hysteria Nodes
@@ -1397,7 +1397,7 @@ proxy-groups:
       - 🇬🇧 Decodo GB
       - 🇺🇸 Decodo US
       - 🔑 Manual Selection
-      - "🔖 18:07-08/17 (UTC+8)"
+      - "🔖 18:08-08/17 (UTC+8)"
       - 🎯 Direct
 
   - name: 🌀 Hysteria Nodes
@@ -1416,7 +1416,7 @@ proxy-groups:
       # - 🇸🇬do_hy2_v6  # OFFLINED Digi 2026-07-28
       - 🇸🇬az_hy2
 
-  - name: 🟠 Oracle Nodes
+  - name: 🟠 A1 Nodes
     type: select
     proxies:
       - 🇯🇵oracle-a1_ss
@@ -1434,7 +1434,7 @@ proxy-groups:
       - 🇯🇵oracle-a1_nrt_07
       - 🇯🇵oracle-a1_nrt_08
 
-  - name: 🔶 OCI Nodes
+  - name: 🟠 Oracle Nodes
     type: select
     proxies:
       - 🇯🇵oci_ss
@@ -1454,8 +1454,8 @@ proxy-groups:
       - 🌀 Hysteria Nodes
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
+      - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - ☁️ Cloudflare CF Nodes
@@ -1568,8 +1568,8 @@ proxy-groups:
     proxies:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
+      - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🌀 Hysteria Nodes
@@ -1582,8 +1582,8 @@ proxy-groups:
     proxies:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
+      - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       - 🌀 Hysteria Nodes
       # - 🇸🇬do_ss_v6  # OFFLINED Digi 2026-07-28
@@ -1763,8 +1763,8 @@ proxy-groups:
     proxies:
       - 🔵 Aliyun Nodes
       - 🔷 Azure Nodes
+      - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🔶 OCI Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🚀 Node Selection
