@@ -6,12 +6,13 @@
 #   - Creates SS :12033 if missing
 #   - Creates Hy2 :443/udp if cert pair exists (auto self-signed when HY2_SNI known)
 #   - Creates Trojan WS :8080 (cloudflared target) if missing
+#   - Creates VLESS REALITY :443/tcp if hosts/<host>/3x-ui/REALITY exists (Hy2 stays UDP)
 #   - Syncs clients + client_inbounds (required by newer 3x-ui / Xray auth)
 #   - Reads/writes tracked inbound.env (Clash secrets) + gitignored site.env (panel)
 #   - Writes clash.snippet.yml for copy-paste into blue.yml
 #   - Verifies Xray has non-empty clients before declaring ready
 #
-# Env: SKIP_SS=1  SKIP_HY2=1  SKIP_TROJAN=1  FORCE_SEED=1
+# Env: SKIP_SS=1  SKIP_HY2=1  SKIP_TROJAN=1  SKIP_REALITY=1  SEED_REALITY=1  FORCE_SEED=1
 set -euo pipefail
 
 HOST="${1:-}"
@@ -125,9 +126,40 @@ HY2_SNI="${HY2_SNI:-$(default_hy2_sni)}"
 SS_PASS="${SS_PASS:-}"
 HY2_PASS="${HY2_PASS:-}"
 TROJAN_PASS="${TROJAN_PASS:-}"
+REALITY_UUID="${REALITY_UUID:-}"
+REALITY_PRIVKEY="${REALITY_PRIVKEY:-}"
+REALITY_PUBKEY="${REALITY_PUBKEY:-}"
+REALITY_SHORTID="${REALITY_SHORTID:-}"
+REALITY_SNI="${REALITY_SNI:-www.microsoft.com}"
+REALITY_DEST="${REALITY_DEST:-${REALITY_SNI}:443}"
 [[ -n "$SS_PASS" ]] || SS_PASS="$(rand_alnum 16)"
 [[ -n "$HY2_PASS" ]] || HY2_PASS="$(rand_alnum 24)"
 [[ -n "$TROJAN_PASS" ]] || TROJAN_PASS="$(rand_uuid)"
+
+if [[ "${SKIP_REALITY:-0}" == "1" ]]; then
+  :
+elif [[ "${SEED_REALITY:-0}" == "1" || -f "$SITE_DIR/REALITY" ]]; then
+  SKIP_REALITY=0
+else
+  SKIP_REALITY=1
+fi
+
+if [[ "${SKIP_REALITY}" != "1" ]]; then
+  [[ -n "$REALITY_UUID" ]] || REALITY_UUID="$(rand_uuid)"
+  [[ -n "$REALITY_SHORTID" ]] || REALITY_SHORTID="$(openssl rand -hex 8 2>/dev/null || rand_alnum 8)"
+  if [[ -z "$REALITY_PRIVKEY" || -z "$REALITY_PUBKEY" ]]; then
+    echo "==> generating REALITY x25519 keys"
+    XRAY_BIN="$(docker exec 3x-ui sh -c 'ls /app/bin/xray-linux-* 2>/dev/null | head -1')"
+    KEYS="$(docker exec 3x-ui "$XRAY_BIN" x25519)"
+    REALITY_PRIVKEY="$(printf '%s\n' "$KEYS" | awk -F': ' '/^PrivateKey:/{print $2; exit}')"
+    REALITY_PUBKEY="$(printf '%s\n' "$KEYS" | awk -F': ' '/PublicKey/{print $2; exit}')"
+    if [[ -z "$REALITY_PRIVKEY" || -z "$REALITY_PUBKEY" ]]; then
+      echo "failed to parse xray x25519 output:" >&2
+      printf '%s\n' "$KEYS" >&2
+      exit 1
+    fi
+  fi
+fi
 
 ensure_hy2_cert() {
   local sni="$1"
@@ -162,8 +194,12 @@ META_FILE="$(mktemp)"
 
 export SEED_HOST="$HOST" SEED_SS_PASS="$SS_PASS" SEED_HY2_PASS="$HY2_PASS"
 export SEED_TROJAN_PASS="$TROJAN_PASS" SEED_HY2_SNI="$HY2_SNI" SEED_HY2_ID="$HY2_ID"
+export SEED_REALITY_UUID="$REALITY_UUID" SEED_REALITY_PRIVKEY="$REALITY_PRIVKEY"
+export SEED_REALITY_PUBKEY="$REALITY_PUBKEY" SEED_REALITY_SHORTID="$REALITY_SHORTID"
+export SEED_REALITY_SNI="$REALITY_SNI" SEED_REALITY_DEST="$REALITY_DEST"
 export SEED_NOW_MS="$NOW_MS" SEED_SKIP_SS="${SKIP_SS:-0}" SEED_SKIP_HY2="${SKIP_HY2:-0}"
-export SEED_SKIP_TROJAN="${SKIP_TROJAN:-0}" SEED_FORCE="${FORCE_SEED:-0}"
+export SEED_SKIP_TROJAN="${SKIP_TROJAN:-0}" SEED_SKIP_REALITY="${SKIP_REALITY:-1}"
+export SEED_FORCE="${FORCE_SEED:-0}"
 export SEED_CERT_DIR="$CERT_DIR" SEED_SQL="$SQL_FILE" SEED_META="$META_FILE"
 
 # Dump current inbounds as JSON lines (settings contain newlines — avoid TSV)
@@ -182,11 +218,18 @@ hy2_pass = os.environ["SEED_HY2_PASS"]
 trojan_pass = os.environ["SEED_TROJAN_PASS"]
 hy2_sni = os.environ.get("SEED_HY2_SNI", "")
 hy2_id = os.environ["SEED_HY2_ID"]
+reality_uuid = os.environ.get("SEED_REALITY_UUID", "")
+reality_priv = os.environ.get("SEED_REALITY_PRIVKEY", "")
+reality_pub = os.environ.get("SEED_REALITY_PUBKEY", "")
+reality_sid = os.environ.get("SEED_REALITY_SHORTID", "")
+reality_sni = os.environ.get("SEED_REALITY_SNI", "www.microsoft.com")
+reality_dest = os.environ.get("SEED_REALITY_DEST", "") or f"{reality_sni}:443"
 now_ms = int(os.environ["SEED_NOW_MS"])
 force = os.environ.get("SEED_FORCE", "0") == "1"
 skip_ss = os.environ.get("SEED_SKIP_SS", "0") == "1"
 skip_hy2 = os.environ.get("SEED_SKIP_HY2", "0") == "1"
 skip_trojan = os.environ.get("SEED_SKIP_TROJAN", "0") == "1"
+skip_reality = os.environ.get("SEED_SKIP_REALITY", "1") == "1"
 cert_dir = os.environ["SEED_CERT_DIR"]
 sql_path = os.environ["SEED_SQL"]
 meta_path = os.environ["SEED_META"]
@@ -250,6 +293,13 @@ def extract_trojan_pass(settings: str):
     except Exception:
         return None
 
+def extract_reality_uuid(settings: str):
+    try:
+        data = json.loads(settings)
+        return (data.get("clients") or [{}])[0].get("id")
+    except Exception:
+        return None
+
 # Prefer existing inbound passwords so site.env stays truthful
 for tag, port, proto, settings in rows:
     if proto == "shadowsocks" and port == 12033:
@@ -264,6 +314,10 @@ for tag, port, proto, settings in rows:
         p = extract_trojan_pass(settings)
         if p:
             trojan_pass = p
+    if proto == "vless" and port == 443:
+        u = extract_reality_uuid(settings)
+        if u:
+            reality_uuid = u
 
 def has_tag(tag):
     return tag in by_tag
@@ -391,6 +445,70 @@ if not skip_trojan:
         ))
         changed.append("trojan")
 
+if not skip_reality and reality_uuid and reality_priv and reality_pub:
+    tag = "in-443-tcp"
+    if force and has_tag(tag):
+        stmts.append(sql_delete(tag))
+        by_tag.pop(tag, None)
+        rows = [r for r in rows if r[0] != tag]
+    if not has_tag(tag) and not has_port_proto(443, "vless"):
+        settings = {
+            "clients": [{
+                "id": reality_uuid,
+                "flow": "xtls-rprx-vision",
+                "email": f"reality@{host}",
+                "limitIp": 0,
+                "totalGB": 0,
+                "expiryTime": 0,
+                "enable": True,
+                "tgId": 0,
+                "subId": "",
+                "comment": "",
+                "reset": 0,
+                "security": "",
+                "created_at": now_ms,
+                "updated_at": now_ms,
+            }],
+            "decryption": "none",
+            "encryption": "none",
+            "fallbacks": [],
+        }
+        stream = {
+            "network": "tcp",
+            "security": "reality",
+            "externalProxy": [],
+            "realitySettings": {
+                "show": False,
+                "xver": 0,
+                "target": reality_dest,
+                "dest": reality_dest,
+                "serverNames": [reality_sni],
+                "privateKey": reality_priv,
+                "minClientVer": "1.0.0",
+                "maxClientVer": "",
+                "maxTimediff": 0,
+                "shortIds": [reality_sid],
+                "settings": {
+                    "publicKey": reality_pub,
+                    "fingerprint": "chrome",
+                    "serverName": "",
+                    "spiderX": "/",
+                    "mldsa65Verify": "",
+                },
+            },
+            "tcpSettings": {
+                "acceptProxyProtocol": False,
+                "header": {"type": "none"},
+            },
+        }
+        stmts.append(sql_insert(
+            f"{host}-reality", 443, "vless",
+            json.dumps(settings, indent=2),
+            json.dumps(stream),
+            tag, sniff_on,
+        ))
+        changed.append("reality")
+
 with open(sql_path, "w", encoding="utf-8") as f:
     f.write("BEGIN;\n")
     for s in stmts:
@@ -403,6 +521,12 @@ meta = {
     "hy2_pass": hy2_pass,
     "trojan_pass": trojan_pass,
     "hy2_sni": hy2_sni,
+    "reality_uuid": reality_uuid,
+    "reality_privkey": reality_priv,
+    "reality_pubkey": reality_pub,
+    "reality_shortid": reality_sid,
+    "reality_sni": reality_sni,
+    "reality_dest": reality_dest,
 }
 with open(meta_path, "w", encoding="utf-8") as f:
     json.dump(meta, f)
@@ -420,7 +544,9 @@ fi
 eval "$(python3 -c '
 import json,sys
 m=json.load(open(sys.argv[1]))
-for k in ("ss_pass","hy2_pass","trojan_pass","hy2_sni"):
+for k in ("ss_pass","hy2_pass","trojan_pass","hy2_sni",
+          "reality_uuid","reality_privkey","reality_pubkey",
+          "reality_shortid","reality_sni","reality_dest"):
     v=m.get(k) or ""
     print(f"{k.upper()}={json.dumps(v)}")
 print("CHANGED_LIST="+json.dumps(",".join(m.get("changed") or []) or "none"))
@@ -429,6 +555,12 @@ SS_PASS="$SS_PASS"
 HY2_PASS="$HY2_PASS"
 TROJAN_PASS="$TROJAN_PASS"
 HY2_SNI="$HY2_SNI"
+REALITY_UUID="${REALITY_UUID:-}"
+REALITY_PRIVKEY="${REALITY_PRIVKEY:-}"
+REALITY_PUBKEY="${REALITY_PUBKEY:-}"
+REALITY_SHORTID="${REALITY_SHORTID:-}"
+REALITY_SNI="${REALITY_SNI:-}"
+REALITY_DEST="${REALITY_DEST:-}"
 CHANGED="${CHANGED_LIST:-$CHANGED}"
 
 upsert_env() {
@@ -443,6 +575,14 @@ upsert_env SS_PASS "$SS_PASS"
 upsert_env HY2_PASS "$HY2_PASS"
 upsert_env TROJAN_PASS "$TROJAN_PASS"
 [[ -n "$HY2_SNI" ]] && upsert_env HY2_SNI "$HY2_SNI"
+if [[ "${SKIP_REALITY}" != "1" && -n "$REALITY_UUID" ]]; then
+  upsert_env REALITY_UUID "$REALITY_UUID"
+  upsert_env REALITY_PRIVKEY "$REALITY_PRIVKEY"
+  upsert_env REALITY_PUBKEY "$REALITY_PUBKEY"
+  upsert_env REALITY_SHORTID "$REALITY_SHORTID"
+  upsert_env REALITY_SNI "$REALITY_SNI"
+  upsert_env REALITY_DEST "$REALITY_DEST"
+fi
 
 # Tracked inbound.env (git) — Clash/proxy secrets survive clone; panel stays in site.env
 {
@@ -451,6 +591,14 @@ upsert_env TROJAN_PASS "$TROJAN_PASS"
   printf 'SS_PASS=%s\nHY2_PASS=%s\n' "$SS_PASS" "$HY2_PASS"
   [[ -n "$HY2_SNI" ]] && printf 'HY2_SNI=%s\n' "$HY2_SNI"
   printf 'TROJAN_PASS=%s\n' "$TROJAN_PASS"
+  if [[ "${SKIP_REALITY}" != "1" && -n "$REALITY_UUID" ]]; then
+    printf 'REALITY_UUID=%s\n' "$REALITY_UUID"
+    printf 'REALITY_PRIVKEY=%s\n' "$REALITY_PRIVKEY"
+    printf 'REALITY_PUBKEY=%s\n' "$REALITY_PUBKEY"
+    printf 'REALITY_SHORTID=%s\n' "$REALITY_SHORTID"
+    printf 'REALITY_SNI=%s\n' "$REALITY_SNI"
+    printf 'REALITY_DEST=%s\n' "$REALITY_DEST"
+  fi
 } | run tee "$INBOUND_ENV" >/dev/null
 run chmod 644 "$INBOUND_ENV" || true
 
@@ -458,6 +606,7 @@ run chmod 644 "$INBOUND_ENV" || true
 # Inbound.settings JSON alone leaves Xray with empty clients (Hy2 listens but auth fails).
 CLIENT_SQL="$(mktemp)"
 export SEED_SS_PASS="$SS_PASS" SEED_HY2_PASS="$HY2_PASS" SEED_TROJAN_PASS="$TROJAN_PASS"
+export SEED_REALITY_UUID="$REALITY_UUID" SEED_SKIP_REALITY="${SKIP_REALITY:-1}"
 export SEED_NOW_MS="$NOW_MS" SEED_CLIENT_SQL="$CLIENT_SQL" SEED_HOST="$HOST"
 INBOUND_IDS="$(mktemp)"
 run sqlite3 "$DB" \
@@ -465,7 +614,7 @@ run sqlite3 "$DB" \
   >"$INBOUND_IDS" || true
 CLIENT_DUMP="$(mktemp)"
 run sqlite3 "$DB" \
-  "SELECT json_object('id', id, 'email', email, 'password', password, 'auth', auth) FROM clients;" \
+  "SELECT json_object('id', id, 'email', email, 'password', password, 'auth', auth, 'uuid', uuid) FROM clients;" \
   >"$CLIENT_DUMP" 2>/dev/null || true
 export SEED_INBOUND_IDS="$INBOUND_IDS" SEED_CLIENT_DUMP="$CLIENT_DUMP"
 
@@ -476,11 +625,13 @@ host = os.environ["SEED_HOST"]
 ss_pass = os.environ["SEED_SS_PASS"]
 hy2_pass = os.environ["SEED_HY2_PASS"]
 trojan_pass = os.environ["SEED_TROJAN_PASS"]
+reality_uuid = os.environ.get("SEED_REALITY_UUID", "")
 now_ms = int(os.environ["SEED_NOW_MS"])
 sql_path = os.environ["SEED_CLIENT_SQL"]
 skip_ss = os.environ.get("SEED_SKIP_SS", "0") == "1"
 skip_hy2 = os.environ.get("SEED_SKIP_HY2", "0") == "1"
 skip_trojan = os.environ.get("SEED_SKIP_TROJAN", "0") == "1"
+skip_reality = os.environ.get("SEED_SKIP_REALITY", "1") == "1"
 
 def load_jsonl(path):
     out = []
@@ -506,11 +657,13 @@ clients = {c.get("email"): c for c in load_jsonl(os.environ["SEED_CLIENT_DUMP"])
 
 wanted = []
 if not skip_ss:
-    wanted.append(("ss", 12033, "shadowsocks", f"ss@{host}", ss_pass, "", "password"))
+    wanted.append(("ss", 12033, "shadowsocks", f"ss@{host}", ss_pass, "", "password", ""))
 if not skip_hy2:
-    wanted.append(("hy2", 443, "hysteria", f"hy2@{host}", "", hy2_pass, "auth"))
+    wanted.append(("hy2", 443, "hysteria", f"hy2@{host}", "", hy2_pass, "auth", ""))
 if not skip_trojan:
-    wanted.append(("trojan", 8080, "trojan", f"trojan@{host}", trojan_pass, "", "password"))
+    wanted.append(("trojan", 8080, "trojan", f"trojan@{host}", trojan_pass, "", "password", ""))
+if not skip_reality and reality_uuid:
+    wanted.append(("reality", 443, "vless", f"reality@{host}", "", "", "uuid", reality_uuid))
 
 def find_inbound(port, proto):
     for ib in inbounds:
@@ -520,10 +673,11 @@ def find_inbound(port, proto):
 
 stmts = []
 changed = []
-for kind, port, proto, email, password, auth, _mode in wanted:
+for kind, port, proto, email, password, auth, _mode, uuid in wanted:
     inbound_id = find_inbound(port, proto)
     if inbound_id is None:
         continue
+    flow = "xtls-rprx-vision" if kind == "reality" else ""
     cur = clients.get(email)
     need = False
     if cur is None:
@@ -531,20 +685,27 @@ for kind, port, proto, email, password, auth, _mode in wanted:
         stmts.append(
             "INSERT INTO clients (email, sub_id, uuid, password, auth, flow, security, "
             "limit_ip, total_gb, expiry_time, enable, tg_id, comment, reset, created_at, updated_at) "
-            f"VALUES ('{esc(email)}', '', '', '{esc(password)}', '{esc(auth)}', '', '', "
+            f"VALUES ('{esc(email)}', '', '{esc(uuid)}', '{esc(password)}', '{esc(auth)}', '{esc(flow)}', '', "
             f"0, 0, 0, 1, 0, '', 0, {now_ms}, {now_ms});"
         )
     else:
-        if (cur.get("password") or "") != password or (cur.get("auth") or "") != auth:
+        if ((cur.get("password") or "") != password
+                or (cur.get("auth") or "") != auth
+                or (cur.get("uuid") or "") != uuid):
             need = True
             stmts.append(
                 f"UPDATE clients SET password='{esc(password)}', auth='{esc(auth)}', "
+                f"uuid='{esc(uuid)}', flow='{esc(flow)}', "
                 f"enable=1, updated_at={now_ms} WHERE email='{esc(email)}';"
             )
     # link + traffic (idempotent)
     stmts.append(
         f"INSERT OR IGNORE INTO client_inbounds (client_id, inbound_id, flow_override, created_at) "
-        f"SELECT id, {inbound_id}, '', {now_ms} FROM clients WHERE email='{esc(email)}';"
+        f"SELECT id, {inbound_id}, '{esc(flow)}', {now_ms} FROM clients WHERE email='{esc(email)}';"
+    )
+    stmts.append(
+        f"UPDATE client_inbounds SET flow_override='{esc(flow)}' "
+        f"WHERE inbound_id={inbound_id} AND client_id=(SELECT id FROM clients WHERE email='{esc(email)}');"
     )
     stmts.append(
         f"INSERT INTO client_traffics (inbound_id, enable, email, up, down, expiry_time, total, reset, last_online) "
@@ -607,6 +768,23 @@ PUBLIC_IP="$(echo "$PUBLIC_IP" | tr -d '[:space:]')"
     echo "    skip-cert-verify: true"
     # no up/down / brutal-opts — BBR (2026-08-08)
   fi
+  if [[ "${SKIP_REALITY}" != "1" && -n "$REALITY_UUID" && -n "$REALITY_PUBKEY" ]]; then
+    echo
+    echo "  - name: 🇯🇵${HOST}_reality"
+    echo "    type: vless"
+    echo "    server: $PUBLIC_IP"
+    echo "    port: 443"
+    echo "    uuid: $REALITY_UUID"
+    echo "    network: tcp"
+    echo "    tls: true"
+    echo "    udp: true"
+    echo "    flow: xtls-rprx-vision"
+    echo "    servername: $REALITY_SNI"
+    echo "    reality-opts:"
+    echo "      public-key: $REALITY_PUBKEY"
+    echo "      short-id: $REALITY_SHORTID"
+    echo "    client-fingerprint: chrome"
+  fi
 } | run tee "$SNIPPET" >/dev/null
 run chmod 600 "$SNIPPET" || true
 
@@ -632,17 +810,20 @@ try:
   c=json.load(sys.stdin)
 except Exception:
   sys.exit(1)
-want={12033:"shadowsocks",443:"hysteria",8080:"trojan"}
-found={}
+want={(12033,"shadowsocks"),(443,"hysteria"),(8080,"trojan"),(443,"vless")}
+present=set()
+ok_clients={}
 for i in c.get("inbounds",[]):
-  p=i.get("port")
-  if p in want:
+  key=(i.get("port"), i.get("protocol"))
+  if key in want:
+    present.add(key)
     clients=i.get("settings",{}).get("clients") or []
-    found[p]=len(clients)>0
-# SS required; Hy2/Trojan required only if inbound present
-ok = found.get(12033, False)
-if 443 in [i.get("port") for i in c.get("inbounds",[])]:
-  ok = ok and found.get(443, False)
+    ok_clients[key]=len(clients)>0
+# SS required; others required only if inbound present
+ok = ok_clients.get((12033,"shadowsocks"), False)
+for key in present:
+  if key[0] in (443, 8080):
+    ok = ok and ok_clients.get(key, False)
 sys.exit(0 if ok else 1)
 ' 2>/dev/null
 }
@@ -673,6 +854,9 @@ if [[ -n "$HY2_SNI" && -f "$CERT_DIR/${HY2_SNI}.crt" ]]; then
   echo "  Hy2:    $PUBLIC_IP:443/udp  pass=$HY2_PASS  sni=$HY2_SNI"
 fi
 echo "  Trojan: :8080 WS /x7f9k2m4p8  pass=$TROJAN_PASS  (cloudflared)"
+if [[ "${SKIP_REALITY}" != "1" && -n "$REALITY_UUID" ]]; then
+  echo "  REALITY: $PUBLIC_IP:443/tcp  uuid=$REALITY_UUID  sni=$REALITY_SNI  (minClientVer=1.0.0)"
+fi
 echo "  inbound.env (tracked): $INBOUND_ENV"
 echo "  site.env (panel):      $ENV_FILE"
 echo "  snippet:               $SNIPPET"

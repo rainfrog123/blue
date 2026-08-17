@@ -1,5 +1,5 @@
 # Proxies
-# Version: 🔖 17:17-08/17 (UTC+8)
+# Version: 🔖 17:32-08/17 (UTC+8)
 
 # DNS — parked 2026-08-07 (commented out for now; FlClash client DNS / see Obsidian [[FlClash DNS]])
 # Split-horizon draft kept below for when we re-enable (CN DoH + foreign fallback · ipv6: true).
@@ -372,6 +372,38 @@ proxies:
     password: CEcyUdNx2Fmcaku2dCMyqtAx
     sni: hyocia1.hyas.site
     skip-cert-verify: true
+
+  # VLESS + REALITY + Vision (oracle-a1 / 3x-ui) — TCP 443 beside Hy2 UDP 443
+  # dest/SNI www.microsoft.com · minClientVer 1.0.0 (FlClash/Mihomo)
+  - name: 🇯🇵oracle-a1_reality
+    type: vless
+    server: 161.33.146.74
+    port: 443
+    uuid: 76241c9e-81ee-4a4d-a40a-651b48ac843b
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.microsoft.com
+    reality-opts:
+      public-key: 2XfIey1rhz1eN3dbwIL_PIDaPOkVlBsTXIZD6FJPHzk
+      short-id: ec8db916fb27e732
+    client-fingerprint: chrome
+
+  - name: 🇯🇵oracle-a1_reality_v6
+    type: vless
+    server: "2603:c021:8018:8c00:0:c50c:ef76:beb7"
+    port: 443
+    uuid: 76241c9e-81ee-4a4d-a40a-651b48ac843b
+    network: tcp
+    tls: true
+    udp: true
+    flow: xtls-rprx-vision
+    servername: www.microsoft.com
+    reality-opts:
+      public-key: 2XfIey1rhz1eN3dbwIL_PIDaPOkVlBsTXIZD6FJPHzk
+      short-id: ec8db916fb27e732
+    client-fingerprint: chrome
 
   # Vultr Osaka High Frequency (vultr-osk / vhf-8c-32gb) — via 3x-ui SQLite
   # Backend: container 3x-ui (SS :12033 / Hy2 :443/udp / Trojan WS :8080 ← cloudflared later)
@@ -1229,7 +1261,7 @@ proxies:
 
 
   # Version reference (display only) — name must match the bookmark entry in 🚀 Node Selection
-  - {name: "🔖 22:57-08/10 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
+  - {name: "🔖 17:32-08/17 (UTC+8)", type: ss, server: 127.0.0.1, port: 1, cipher: chacha20-ietf-poly1305, password: version, udp: false}
 
 # Proxy Groups
 proxy-groups:
@@ -1249,7 +1281,7 @@ proxy-groups:
       - 🇬🇧 Decodo GB
       - 🇺🇸 Decodo US
       - 🔑 Manual Selection
-      - "🔖 22:57-08/10 (UTC+8)"
+      - "🔖 17:32-08/17 (UTC+8)"
       - 🎯 Direct
 
   - name: 🌀 Hysteria Nodes
@@ -1283,6 +1315,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_ss_v6
       - 🇯🇵oracle-a1_hy2
       - 🇯🇵oracle-a1_hy2_v6
+      - 🇯🇵oracle-a1_reality
+      - 🇯🇵oracle-a1_reality_v6
 
   # --- Node pools / apps ---
   - name: 📺 YouTube Nodes
@@ -1310,6 +1344,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_ss_v6
       - 🇯🇵oracle-a1_hy2
       - 🇯🇵oracle-a1_hy2_v6
+      - 🇯🇵oracle-a1_reality
+      - 🇯🇵oracle-a1_reality_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
@@ -1474,6 +1510,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_ss_v6
       - 🇯🇵oracle-a1_hy2
       - 🇯🇵oracle-a1_hy2_v6
+      - 🇯🇵oracle-a1_reality
+      - 🇯🇵oracle-a1_reality_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
@@ -1499,6 +1537,8 @@ proxy-groups:
       - 🇯🇵oracle-a1_ss_v6
       - 🇯🇵oracle-a1_hy2
       - 🇯🇵oracle-a1_hy2_v6
+      - 🇯🇵oracle-a1_reality
+      - 🇯🇵oracle-a1_reality_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
