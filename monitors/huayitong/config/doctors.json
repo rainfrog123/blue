@@ -1,0 +1,31 @@
+{
+  "doctors": [
+    {
+      "slug": "zhaoyu",
+      "name": "赵宇 (耳鼻喉头颈外科)",
+      "doctorId": "4028b881646e3d8701646e3d873c00df",
+      "docCode": "6252",
+      "hook": "gq",
+      "active": true,
+      "encrypt": "Q6mg66/ILN5Yd69ATVVCcg=="
+    },
+    {
+      "slug": "lizhengyong",
+      "name": "李正勇 (美容烧伤整形)",
+      "doctorId": "4028b082715335fa017153530154008d",
+      "docCode": "5747",
+      "hook": "cjc",
+      "active": false,
+      "encrypt": "sD63BndsHAz9jIXuNdbC3Q=="
+    },
+    {
+      "slug": "wujunliang",
+      "name": "伍俊良 (美容烧伤整形)",
+      "doctorId": "4028b881646e3d8701646e3d87190048",
+      "docCode": "16856",
+      "hook": "cjc",
+      "active": false,
+      "encrypt": "QOP0egYH+EO+3IbE2VECHg=="
+    }
+  ]
+}

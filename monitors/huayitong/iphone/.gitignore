@@ -1,2 +1,5 @@
 state.json
+state-*.json
 phone_config.json
+hits.log
+hits-*.log

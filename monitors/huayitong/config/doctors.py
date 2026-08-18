@@ -1,42 +1,39 @@
-"""
-Doctors to watch.
+"""Load doctor watch list from `doctors.json`."""
+from __future__ import annotations
 
-Each `payload` is the JSON body the 华医通 app sends for that doctor's
-detail page (capture with a proxy). `timestamp` is filled at request time.
-Capture 2026-08-15: empty dept/area/card; `encrypt` from that session.
-"""
+import json
+from pathlib import Path
+from typing import Any, Iterable
 
-DOCTORS = [
-    {
-        "name": "赵宇 (耳鼻喉头颈外科)",
-        "payload": {
-            "hospitalCode": "HID0101",
-            "deptCode": "",
-            "doctorId": "4028b881646e3d8701646e3d873c00df",
-            "channelCode": "PATIENT_IOS",
-            "appCode": "HXGYAPP",
-            "hospitalAreaCode": "",
-            "tabAreaCode": "",
-            "cardId": "",
-            "encrypt": "Q6mg66/ILN5Yd69ATVVCcg==",
-            "deptCategoryCode": "",
-            "appointmentType": "1",
-        },
-    },
-    # {
-    #     "name": "伍俊良 (美容烧伤整形)",
-    #     "payload": {
-    #         "hospitalCode": "HID0101",
-    #         "deptCode": "",
-    #         "doctorId": "4028b881646e3d8701646e3d87190048",
-    #         "channelCode": "PATIENT_IOS",
-    #         "appCode": "HXGYAPP",
-    #         "hospitalAreaCode": "",
-    #         "tabAreaCode": "",
-    #         "cardId": "",
-    #         "encrypt": "u5kuL5Y8uJHjzPNAf+Ll+w==",
-    #         "deptCategoryCode": "",
-    #         "appointmentType": "1",
-    #     },
-    # },
-]
+DOCTORS_JSON = Path(__file__).resolve().parent / "doctors.json"
+
+
+def _truthy(value: Any, default: bool = True) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() not in {"0", "false", "no", "off", ""}
+
+
+def load_doctor_records() -> list[dict[str, Any]]:
+    blob = json.loads(DOCTORS_JSON.read_text(encoding="utf-8"))
+    if isinstance(blob, list):
+        rows = blob
+    elif isinstance(blob, dict):
+        rows = blob.get("doctors") or []
+    else:
+        rows = []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def iter_start_rows() -> Iterable[tuple[str, bool]]:
+    """(slug, active) for tmux start/stop."""
+    for row in load_doctor_records():
+        slug = str(row.get("slug") or "").strip()
+        if slug:
+            yield slug, _truthy(row.get("active"), default=True)
+
+
+ALL_DOCTORS = load_doctor_records()
+DOCTORS = [row for row in ALL_DOCTORS if _truthy(row.get("active"), default=True)]

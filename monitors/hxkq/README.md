@@ -2,7 +2,7 @@
 
 Poll **华西口腔** WeChat mini-program rosters (`uf-wechat.scgh114.com`) and alert when a slot **newly** becomes bookable.
 
-**Project note (Obsidian):** `Tech/Web/Monitors/Huaxi Stomatology Appointment Monitor.md` — wiki [[Huaxi Stomatology Appointment Monitor]]. Repo pointer: [PROJECT.md](./PROJECT.md).
+**Project note (Obsidian):** `Reference/Life/Local/Huaxi Stomatology Appointment Monitor.md` — wiki [[Huaxi Stomatology Appointment Monitor]]. Repo pointer: [PROJECT.md](./PROJECT.md).
 
 Sibling: `../huayitong/` (华医通 / 华西医院综合).
 

@@ -24,5 +24,6 @@ Disable old split Gemini / baccarat entries before import.
 | `stake/blackjack/stake-blackjack-dom-automation.js` | DOM automation |
 | `stake/baccarat/stake-baccarat.js` | Unified 7.0.0 — pp + pick + play HUD |
 | `stake/baccarat/stake-baccarat-pick-telegram-monitor.js` | Optional Telegram |
+| `hyperliquid/hyperliquid-light-theme.js` | Light chrome for app.hyperliquid.xyz |
 
 `gemini/zoom-per-tab-ext/` is a Chrome extension, not TM.

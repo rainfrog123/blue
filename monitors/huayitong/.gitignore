@@ -1,4 +1,10 @@
+hits.log
+hits-*.log
 state.json
+state-*.json
 .env
 __pycache__/
 *.pyc
+lizhengyong.txt
+wujunliang.txt
+export.txt

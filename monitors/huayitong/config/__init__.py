@@ -1,8 +1,5 @@
 """Configuration for the Huayitong appointment monitor."""
 from . import settings
-from .doctors import DOCTORS
+from .doctors import ALL_DOCTORS, DOCTORS
 
-if settings.PHONE_DOCTOR:
-    DOCTORS = [settings.PHONE_DOCTOR]
-
-__all__ = ["DOCTORS", "settings"]
+__all__ = ["ALL_DOCTORS", "DOCTORS", "settings"]

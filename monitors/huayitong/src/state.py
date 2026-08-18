@@ -13,7 +13,8 @@ _Prev = Tuple[int, int, int]
 
 
 def _bookable(status: int, available_count: int, remaining_num: int) -> bool:
-    return status == 1 and (available_count > 0 or remaining_num > 0)
+    """Any of these means 'something to book / opened' — not AND."""
+    return status == 1 or available_count > 0 or remaining_num > 0
 
 
 class SlotStateTracker:
@@ -69,9 +70,10 @@ class SlotStateTracker:
         Slots that should notify:
 
         - Known id: remainingNum / availableCount / status changed.
-        - New id after warmup: appears already bookable (放号 of a new date).
+        - New id after warmup: any of status==1 / avail>0 / remain>0.
 
-        First successful poll is baseline only (no alert), even if seats exist.
+        Warmup = first successful poll (or existing state.json). That snapshot is
+        baseline only — no alert for rows already on the list, even if open.
         """
         changes: List[AppointmentEntry] = []
 

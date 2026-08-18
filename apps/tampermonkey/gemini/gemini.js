@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Gemini
 // @namespace    http://tampermonkey.net/
-// @version      3.0.3
+// @version      3.0.11
 // @description  One script: auto-copy + Ctrl+C, finish toast, sidenav/mode/upsell, fixed input + autofocus.
 // @author       You
 // @match        https://gemini.google.com/*
@@ -11,19 +11,27 @@
 // ==/UserScript==
 
 /*
+ * v3.0.11 — copy toast a bit larger.
+ * v3.0.10 — hide Gemini "Copied to clipboard" snackbar (our toast stays).
+ * v3.0.9 — auto-copy clicks Copy, intercepts Gemini's markdown, GM-writes it (no gesture needed).
+ * v3.0.8 — HTML→Markdown matches Gemini Copy: tight lists, fence lang, cell markup, hr.
+ * v3.0.7 — auto-copy uses GM markdown again (click has no gesture). Ctrl+C still clicks Copy.
+ * v3.0.6 — no extra 1.5s after Copy appears; click as soon as complete + stable + button.
+ * v3.0.5 — auto-copy is the Copy button click (same payload as Ctrl+C). No GM overwrite.
+ * v3.0.4 — wait for Copy button + extra settle; clipboard is HTML→markdown, not innerText.
  * v3.0.3 — toast uses inverse snackbar contrast (notification, not chrome).
  * v3.0.2 — quieter lr26 toast (glass chip, check, above input).
  * v3.0.1 — toast sits above the input dock (lr26 mweb header ate top:20px).
  * v3.0.0 — single IIFE. Split sources: archive/2026-08-14/*.bak
  *
- * One finish bus (footer.complete + aria-busy + stable text) drives copy + toast.
+ * One finish bus (footer.complete + aria-busy + stable text + copy control) drives copy + toast.
  * zoom-per-tab-ext stays a Chrome extension, not this file.
  */
 
 (function (global) {
   "use strict";
 
-  const VERSION = "3.0.3";
+  const VERSION = "3.0.11";
   const LOG = "[Gemini]";
 
   const SETTLE_MS = 900;
@@ -74,6 +82,238 @@
       return (content.innerText || content.textContent || "")
         .replace(/\u00a0/g, " ")
         .trim();
+    },
+
+    // Match Gemini's Copy button: tight lists, ```lang fences, inline markup in tables, ---.
+    htmlToMarkdown(root) {
+      if (!root) return "";
+
+      const skip = new Set([
+        "script",
+        "style",
+        "button",
+        "copy-button",
+        "mat-icon",
+        "svg",
+        "noscript",
+        "message-actions",
+      ]);
+
+      const isSkip = (el) => skip.has(el.tagName.toLowerCase());
+
+      const isSep = (el) => {
+        const tag = el.tagName.toLowerCase();
+        if (tag === "hr" || tag === "mat-divider") return true;
+        if (el.getAttribute("role") === "separator") return true;
+        const cls = String(el.className || "");
+        return /\b(divider|separator|thematic-break)\b/i.test(cls);
+      };
+
+      const inline = (el) => {
+        let s = "";
+        const walk = (n) => {
+          if (!n) return;
+          if (n.nodeType === 3) {
+            s += n.textContent.replace(/\u00a0/g, " ");
+            return;
+          }
+          if (n.nodeType !== 1) return;
+          if (isSkip(n) || isSep(n)) return;
+          const t = n.tagName.toLowerCase();
+          if (t === "br") {
+            s += "\n";
+            return;
+          }
+          if (t === "strong" || t === "b") {
+            s += "**" + inline(n) + "**";
+            return;
+          }
+          if (t === "em" || t === "i") {
+            s += "*" + inline(n) + "*";
+            return;
+          }
+          if (t === "code") {
+            s += "`" + (n.textContent || "").replace(/`/g, "\\`") + "`";
+            return;
+          }
+          if (t === "del" || t === "s") {
+            s += "~~" + inline(n) + "~~";
+            return;
+          }
+          if (t === "p") {
+            const inner = inline(n);
+            s += s && inner ? "\n" + inner : inner;
+            return;
+          }
+          n.childNodes.forEach(walk);
+        };
+        el.childNodes.forEach(walk);
+        return s.replace(/[ \t]+\n/g, "\n").replace(/[ \t]{2,}/g, " ").trim();
+      };
+
+      const fenceLang = (el) => {
+        const attr =
+          el.getAttribute?.("data-language") ||
+          el.getAttribute?.("data-lang") ||
+          el.querySelector?.("[data-language]")?.getAttribute("data-language") ||
+          el.querySelector?.("[data-lang]")?.getAttribute("data-lang") ||
+          "";
+        if (attr.trim()) return attr.trim();
+        const code = el.querySelector?.("code");
+        const cls = `${el.className || ""} ${code?.className || ""}`;
+        const m = String(cls).match(/language-([a-zA-Z0-9_+-]+)/);
+        if (m) return m[1];
+        const header = el.querySelector?.(
+          ".code-block-header .lang, .code-block-header .language, [class$='-language'], .language-label, .header-row .lang"
+        );
+        if (header) {
+          const t = (header.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+          if (t && t.length < 24 && !/copy|copied/.test(t)) return t;
+        }
+        const headerRow = el.querySelector?.(".header, .header-row, .code-block-header, .toolbar");
+        if (headerRow) {
+          const t = (headerRow.textContent || "")
+            .replace(/copy(ed)?/gi, "")
+            .replace(/\s+/g, "")
+            .trim()
+            .toLowerCase();
+          if (/^[a-z0-9_+-]{1,20}$/.test(t)) return t;
+        }
+        return "";
+      };
+
+      const fenceFrom = (el) => {
+        const codeEl =
+          el.querySelector("pre code") ||
+          el.querySelector("pre") ||
+          (el.tagName.toLowerCase() === "pre" ? el : el.querySelector("code"));
+        const raw = ((codeEl && codeEl !== el ? codeEl.textContent : el.querySelector("code")?.textContent) || "")
+          .replace(/\u00a0/g, " ")
+          .replace(/\n$/, "");
+        const lang = fenceLang(el);
+        const open = lang ? "```" + lang : "```";
+        return open + "\n" + raw + "\n\n```";
+      };
+
+      const tableToMd = (table) => {
+        const rows = [...table.querySelectorAll("tr")].map((tr) =>
+          [...tr.querySelectorAll("th,td")].map((c) =>
+            inline(c).replace(/\|/g, "\\|").replace(/\n/g, " ")
+          )
+        );
+        if (!rows.length) return "";
+        const width = Math.max(...rows.map((r) => r.length), 1);
+        const pad = (r) => {
+          const x = r.slice();
+          while (x.length < width) x.push("");
+          return x;
+        };
+        const fmt = (r) => "| " + pad(r).join(" | ") + " |";
+        const sep = "| " + Array(width).fill("---").join(" | ") + " |";
+        const body = rows.map(pad);
+        return [fmt(body[0]), sep, ...body.slice(1).map(fmt)].join("\n");
+      };
+
+      const listBlock = (listEl, indent) => {
+        const ordered = listEl.tagName.toLowerCase() === "ol";
+        const start = ordered ? Number(listEl.getAttribute("start")) || 1 : 1;
+        const lines = [];
+        let n = 0;
+        for (const li of listEl.children) {
+          if (li.tagName.toLowerCase() !== "li") continue;
+          const nested = [];
+          const rest = [];
+          li.childNodes.forEach((child) => {
+            if (child.nodeType === 1 && /^(ul|ol)$/i.test(child.tagName)) nested.push(child);
+            else rest.push(child);
+          });
+          const wrap = document.createElement("span");
+          rest.forEach((c) => wrap.appendChild(c.cloneNode(true)));
+          const pad = "  ".repeat(indent);
+          const bullet = ordered ? `${start + n}. ` : "- ";
+          n++;
+          const text = inline(wrap);
+          if (text) lines.push(pad + bullet + text);
+          nested.forEach((sub) => {
+            const inner = listBlock(sub, indent + 1);
+            if (inner) lines.push(inner);
+          });
+        }
+        return lines.join("\n");
+      };
+
+      const blocks = [];
+      const render = (el) => {
+        if (!el) return;
+        if (el.nodeType === 3) {
+          const t = el.textContent.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+          if (t) blocks.push(t);
+          return;
+        }
+        if (el.nodeType !== 1) return;
+        const tag = el.tagName.toLowerCase();
+        if (isSkip(el)) return;
+        if (isSep(el)) {
+          blocks.push("---");
+          return;
+        }
+        if (/^h[1-6]$/.test(tag)) {
+          const t = inline(el);
+          if (t) blocks.push("#".repeat(+tag[1]) + " " + t);
+          return;
+        }
+        if (el.getAttribute("role") === "heading") {
+          const level = Math.min(6, Math.max(1, Number(el.getAttribute("aria-level")) || 2));
+          const t = inline(el);
+          if (t) blocks.push("#".repeat(level) + " " + t);
+          return;
+        }
+        if (tag === "p") {
+          const t = inline(el);
+          if (t) blocks.push(t);
+          return;
+        }
+        if (tag === "blockquote") {
+          const t = inline(el);
+          if (t) blocks.push(t.split("\n").map((l) => "> " + l).join("\n"));
+          return;
+        }
+        if (tag === "ul" || tag === "ol") {
+          const t = listBlock(el, 0);
+          if (t) blocks.push(t);
+          return;
+        }
+        if (tag === "table") {
+          const t = tableToMd(el);
+          if (t) blocks.push(t);
+          return;
+        }
+        if (tag === "pre" || tag === "code-block") {
+          blocks.push(fenceFrom(el));
+          if (el.querySelector("hr, mat-divider, [role='separator']")) blocks.push("---");
+          return;
+        }
+        if (tag === "hr") {
+          blocks.push("---");
+          return;
+        }
+        el.childNodes.forEach(render);
+      };
+
+      root.childNodes.forEach(render);
+      return blocks
+        .filter(Boolean)
+        .join("\n\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+    },
+
+    extractMarkdown(modelResponse) {
+      const content = util.getContentEl(modelResponse);
+      if (!content) return "";
+      const md = util.htmlToMarkdown(content);
+      if (md) return md;
+      return util.extractText(modelResponse);
     },
 
     getLatest() {
@@ -218,6 +458,10 @@
         schedule();
         return;
       }
+      if (!util.findCopyControl(latest)) {
+        schedule();
+        return;
+      }
       emit(latest, id);
     };
 
@@ -294,10 +538,13 @@
       return true;
     };
 
-    const forceClickCopy = (modelResponse) => {
+    const forceClickCopy = async (modelResponse) => {
       const actions = modelResponse.querySelector("message-actions");
       const hadHide = !!actions?.classList.contains("hide-action-bar");
-      if (hadHide) actions.classList.remove("hide-action-bar");
+      if (hadHide) {
+        actions.classList.remove("hide-action-bar");
+        await new Promise((r) => requestAnimationFrame(r));
+      }
       const btn = util.findCopyControl(modelResponse);
       let clicked = false;
       if (btn) {
@@ -311,6 +558,90 @@
         requestAnimationFrame(() => actions.classList.add("hide-action-bar"));
       }
       return clicked;
+    };
+
+    // Gemini still *calls* clipboard.writeText on a synthetic click; the browser
+    // rejects the write (no gesture). Capture that string and GM-write it.
+    const clickCopyAndCapture = async (modelResponse) => {
+      const page = typeof unsafeWindow !== "undefined" ? unsafeWindow : global;
+      const clips = [];
+      if (page.navigator?.clipboard) clips.push(page.navigator.clipboard);
+      if (global.navigator?.clipboard && global.navigator.clipboard !== page.navigator?.clipboard) {
+        clips.push(global.navigator.clipboard);
+      }
+
+      let captured = "";
+      const restore = [];
+
+      const hookClip = (clip) => {
+        if (!clip) return;
+        const origWriteText = clip.writeText ? clip.writeText.bind(clip) : null;
+        const origWrite = clip.write ? clip.write.bind(clip) : null;
+        if (origWriteText) {
+          try {
+            clip.writeText = async (text) => {
+              captured = String(text ?? "");
+              try {
+                return await origWriteText(text);
+              } catch (_) {
+                return undefined;
+              }
+            };
+            restore.push(() => {
+              try {
+                clip.writeText = origWriteText;
+              } catch (_) {}
+            });
+          } catch (_) {}
+        }
+        if (origWrite) {
+          try {
+            clip.write = async (items) => {
+              try {
+                const arr = items && typeof items[Symbol.iterator] === "function" ? [...items] : [];
+                for (const item of arr) {
+                  if (item?.types && [...item.types].includes("text/plain")) {
+                    const blob = await item.getType("text/plain");
+                    captured = await blob.text();
+                  }
+                }
+              } catch (_) {}
+              try {
+                return await origWrite(items);
+              } catch (_) {
+                return undefined;
+              }
+            };
+            restore.push(() => {
+              try {
+                clip.write = origWrite;
+              } catch (_) {}
+            });
+          } catch (_) {}
+        }
+      };
+      clips.forEach(hookClip);
+
+      const onCopy = (e) => {
+        try {
+          const t = e.clipboardData?.getData("text/plain");
+          if (t) captured = t;
+        } catch (_) {}
+      };
+      document.addEventListener("copy", onCopy, true);
+
+      try {
+        const clicked = await forceClickCopy(modelResponse);
+        if (!clicked) return "";
+        const until = Date.now() + 500;
+        while (!captured && Date.now() < until) {
+          await util.sleep(40);
+        }
+        return captured.trim();
+      } finally {
+        document.removeEventListener("copy", onCopy, true);
+        restore.forEach((fn) => fn());
+      }
     };
 
     const writeClipboard = async (text, opts = {}) => {
@@ -381,16 +712,40 @@
         util.log(reason, "no model-response");
         return false;
       }
-      const text = util.extractText(modelResponse);
+
+      // Ctrl+C is a real gesture — Gemini's Copy button writes native Markdown.
+      if (reason === "Ctrl+C") {
+        const clicked = await forceClickCopy(modelResponse);
+        if (clicked) {
+          util.log(reason, "clicked Copy");
+          return true;
+        }
+      }
+
+      // Auto: click Copy, steal the markdown Gemini tried to write, GM it.
+      if (reason === "auto" || reason === "manual") {
+        const captured = await clickCopyAndCapture(modelResponse);
+        if (captured) {
+          const ok = await writeClipboard(captured);
+          util.log(
+            reason,
+            ok ? "copied via Copy button" : "FAILED",
+            `${captured.length} chars`
+          );
+          return ok;
+        }
+        util.log(reason, "Copy click gave no payload — HTML→md fallback");
+      }
+
+      const text = util.extractMarkdown(modelResponse);
       if (!text) {
         util.log(reason, "empty response text");
         return false;
       }
       const ok = await writeClipboard(text, { preferGestureApi: reason === "Ctrl+C" });
-      forceClickCopy(modelResponse);
       util.log(
         reason,
-        ok ? "copied" : "FAILED",
+        ok ? "copied md" : "FAILED",
         `${text.length} chars`,
         typeof GM_setClipboard === "function" ? "GM_ok" : "GM_missing"
       );
@@ -461,9 +816,9 @@
       #${TOAST_ID}{
         position:fixed !important;left:50% !important;right:auto !important;
         top:auto !important;bottom:96px;z-index:2147483647 !important;
-        pointer-events:none;display:flex;align-items:center;gap:10px;
-        padding:8px 16px 8px 8px;border-radius:999px;
-        font:500 13px/1.2 "Google Sans Text","Google Sans","Segoe UI",system-ui,sans-serif;
+        pointer-events:none;display:flex;align-items:center;gap:12px;
+        padding:10px 20px 10px 10px;border-radius:999px;
+        font:500 15px/1.25 "Google Sans Text","Google Sans","Segoe UI",system-ui,sans-serif;
         letter-spacing:.02em;
         color:#fff;
         background:#1b1b1b;
@@ -476,12 +831,12 @@
       }
       #${TOAST_ID}.on{opacity:1;transform:translate(-50%,0) scale(1)}
       #${TOAST_ID} .mark{
-        width:22px;height:22px;border-radius:50%;flex:none;
+        width:26px;height:26px;border-radius:50%;flex:none;
         display:flex;align-items:center;justify-content:center;
         background:#0f9d58;
         box-shadow:0 0 0 3px rgba(15,157,88,.22);
       }
-      #${TOAST_ID} svg{width:12px;height:12px;color:#fff}
+      #${TOAST_ID} svg{width:14px;height:14px;color:#fff}
       @media (prefers-reduced-motion:reduce){
         #${TOAST_ID}{transition:opacity 160ms linear;transform:translate(-50%,0) scale(1)}
       }
@@ -978,9 +1333,25 @@
       util.log("ui: Ctrl+Shift+Y toggles Pro ↔ Flash + Extended");
     };
 
+    const initHideCopySnack = () => {
+      // Overlay container stays — it hosts menus. Hide only the copy snackbar.
+      util.addStyle(
+        `
+        .cdk-overlay-pane:has(bard-simple-snack-bar),
+        mat-snack-bar-container:has(bard-simple-snack-bar),
+        bard-simple-snack-bar {
+          display: none !important;
+        }
+        `,
+        "tm-hide-gemini-copy-snack"
+      );
+      util.log("ui: Gemini copy snackbar hidden");
+    };
+
     util.whenLoad(() => {
       initSidenav();
       initUpsell();
+      initHideCopySnack();
       initModeToggle();
     });
   };

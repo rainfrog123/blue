@@ -110,19 +110,23 @@ SERVERCHAN_URL = os.environ.get(
     "https://sctapi.ftqq.com/SCT282278T91zPNpvuek2817He3xtGpSLJ.send",
 )
 
-# WeCom group webhook (Path B) — no Trusted IP; lands in 企微群
+# WeCom group webhooks (Path B) — no Trusted IP
+# GQ hook = 放号. CJC hook = personal (heartbeat / optional test).
 WECOM_WEBHOOK_URL = os.environ.get(
     "WECOM_WEBHOOK_URL",
-    _phone("wecom_live", "wecom")
+    _phone("wecom_gq", "wecom_live", "wecom")
     or "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=685b4dce-8bbc-4d64-9de1-36027e8bc5d1",
 )
-WECOM_TEST_URL = os.environ.get("WECOM_TEST_URL", _phone("wecom_test"))
+WECOM_TEST_URL = os.environ.get(
+    "WECOM_TEST_URL",
+    _phone("wecom_cjc", "wecom_test"),
+)
 WECOM_MAX_SLOTS = int(os.environ.get("WECOM_MAX_SLOTS", "3"))
 WECOM_TAIL_SEC = float(os.environ.get("HUAYITONG_WECOM_TAIL_SEC", str(_PHONE.get("wecom_tail_sec") or 3600)))
 TAIL_LINES = int(os.environ.get("HUAYITONG_TAIL_LINES", str(_PHONE.get("tail_lines") or 5)))
 
-# Notifier toggles: comma-separated, e.g. "wecom" or "telegram,wecom"
-_default_notifiers = "wecom,telegram"
+# Notifier toggles: comma-separated. Telegram off.
+_default_notifiers = "wecom"
 if isinstance(_PHONE.get("notifiers"), list) and _PHONE["notifiers"]:
     _default_notifiers = ",".join(str(x) for x in _PHONE["notifiers"])
 elif _PHONE:
@@ -179,10 +183,29 @@ PEAK_WINDOWS = [
 if _PHONE.get("peak_windows"):
     PEAK_WINDOWS = [tuple(w) for w in _PHONE["peak_windows"]]
 
-PHONE_DOCTOR = _PHONE.get("doctor") if isinstance(_PHONE.get("doctor"), dict) else None
 STATE_PATH = (
     PROJECT_ROOT / "iphone" / "state.json" if _PHONE else PROJECT_ROOT / "state.json"
 )
+HIT_LOG = (
+    PROJECT_ROOT / "iphone" / "hits.log" if _PHONE else PROJECT_ROOT / "hits.log"
+)
+
+
+def _data_dir() -> Path:
+    return PROJECT_ROOT / "iphone" if _PHONE else PROJECT_ROOT
+
+
+def state_path(slug: str | None = None) -> Path:
+    if slug:
+        return _data_dir() / f"state-{slug}.json"
+    return STATE_PATH
+
+
+def hit_log_path(slug: str | None = None) -> Path:
+    if slug:
+        return _data_dir() / f"hits-{slug}.log"
+    return HIT_LOG
+
 
 APP_VERSIONS = ["7.1.1"]
 IOS_VERSIONS = [

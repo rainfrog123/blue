@@ -11,6 +11,7 @@ from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 from config import DOCTORS, settings
 from .api_client import HuayitongAPIClient
+from .logging_util import log_hit
 from .models import AppointmentEntry, DoctorConfig
 from .notifiers import MultiNotifier, WeComNotifier, build_notifiers
 from .state import SlotStateTracker
@@ -24,12 +25,23 @@ class AppointmentMonitor:
         api_client: Optional[HuayitongAPIClient] = None,
         notifier: Optional[MultiNotifier] = None,
         doctors: Optional[Sequence[dict | DoctorConfig]] = None,
+        slug: Optional[str] = None,
     ) -> None:
         self.api_client = api_client or HuayitongAPIClient()
         self.notifier = notifier or build_notifiers()
         self.doctors = self._normalize_doctors(doctors or DOCTORS)
-        self.state = SlotStateTracker()
+        if slug:
+            self.slug = slug
+        elif len(self.doctors) == 1:
+            self.slug = self.doctors[0].slug
+        else:
+            self.slug = None
+        self.hit_log = settings.hit_log_path(self.slug)
+        self.state = SlotStateTracker(path=settings.state_path(self.slug))
         self._tail: Deque[str] = deque(maxlen=int(settings.TAIL_LINES))
+        self._hook_by_name = {d.name: d.wecom_hook for d in self.doctors}
+        self._hit_log_mtime = self._hits_log_mtime()
+        self._last_ok = True
 
     @staticmethod
     def _normalize_doctors(
@@ -138,7 +150,11 @@ class AppointmentMonitor:
         if changes:
             print(f"NEW {len(changes)}")
             self._print_changes(changes)
-            self.notifier.send(changes)
+            try:
+                log_hit(changes, path=self.hit_log)
+            except Exception as exc:
+                print(f"[hit log error] {exc}")
+            self._dispatch(changes)
             self._system_toast(changes)
         elif not entries:
             print("no slots")
@@ -161,31 +177,75 @@ class AppointmentMonitor:
         self._tail.append("\n".join(lines))
         print()
 
+    def _hook_for(self, change: AppointmentEntry) -> str:
+        return self._hook_by_name.get(change.doctor_name or "", "gq")
+
+    def _dispatch(self, changes: List[AppointmentEntry]) -> None:
+        gq = [c for c in changes if self._hook_for(c) != "cjc"]
+        cjc = [c for c in changes if self._hook_for(c) == "cjc"]
+        if gq:
+            self.notifier.send(gq)
+        if cjc:
+            url = settings.WECOM_TEST_URL
+            if not url:
+                print("[wecom] CJC hook missing")
+            else:
+                WeComNotifier(webhook_url=url, cooldown=0).send(cjc)
+
+    def _hits_log_mtime(self) -> float:
+        try:
+            return self.hit_log.stat().st_mtime
+        except OSError:
+            return 0.0
+
     def _heartbeat_text(self) -> str:
-        stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
-        if not self._tail:
-            return f"华医通 poller\n{stamp} no data"
-        return "华医通 poller\n\n" + "\n\n".join(self._tail)
+        stamp = datetime.now(settings.CST_TZ).strftime("%H:%M")
+        names = " ".join((d.name.split()[0] if d.name else "?") for d in self.doctors)
+        log_name = self.hit_log.name
+        mtime = self._hits_log_mtime()
+        if mtime > self._hit_log_mtime:
+            hits = f"{log_name} updated"
+        elif mtime == 0:
+            hits = f"{log_name} none"
+        else:
+            hits = f"{log_name} unchanged"
+        self._hit_log_mtime = mtime
+        status = "ok" if self._last_ok else "err"
+        return f"华医通 {stamp} {status} {names} · {hits}"
 
     def _send_heartbeat(self) -> None:
+        text = self._heartbeat_text()
+        print(f"[heartbeat] {text}")
         url = settings.WECOM_TEST_URL
         if not url:
+            print("[wecom] CJC hook missing (heartbeat)")
             return
-        WeComNotifier(webhook_url=url, cooldown=0).send_text(self._heartbeat_text())
+        WeComNotifier(webhook_url=url, cooldown=0).send_text(text)
 
     def run(self) -> None:
         names = ", ".join(d.name for d in self.doctors)
         print("huayitong poller", names)
+        print(
+            "doctors",
+            ", ".join(
+                f"{d.slug} hook={d.wecom_hook} doctorId={d.doctor_id} "
+                f"docCode={d.doc_code} active={d.active}"
+                for d in self.doctors
+            ),
+        )
         print(
             f"normal {settings.NORMAL_INTERVAL_MIN:g}-{settings.NORMAL_INTERVAL_MAX:g}s | "
             f"peak {settings.PEAK_HOUR_INTERVAL:g}s"
         )
         print(
             f"notifiers: {settings.ENABLED_NOTIFIERS}  "
+            f"heartbeat CJC  slots by hook  "
             f"fail backoff {settings.ERROR_WAIT_MIN:g}-{settings.ERROR_WAIT_MAX:g}s  "
             f"tail {settings.WECOM_TAIL_SEC:g}s"
         )
-        print("Alert rule: status/avail/remain edge, or new bookable id after warmup")
+        print("Alert rule: status/avail/remain edge, or new id after warmup if status==1 or seats>0")
+        print(f"hit log {self.hit_log}")
+        print(f"state {self.state.path}")
         print("=" * 60)
 
         last_tail = time.monotonic()
@@ -193,12 +253,14 @@ class AppointmentMonitor:
             failed = False
             try:
                 self.run_once()
+                self._last_ok = True
             except KeyboardInterrupt:
                 stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
                 print(f"\nStopped by user at {stamp}")
                 break
             except Exception as exc:
                 failed = True
+                self._last_ok = False
                 stamp = datetime.now(settings.CST_TZ).strftime("%Y-%m-%d %H:%M:%S CST")
                 err_line = f"{stamp} err {type(exc).__name__} {exc}"
                 print(err_line)

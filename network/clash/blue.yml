@@ -1416,19 +1416,19 @@ proxy-groups:
   - name: 🚀 Node Selection
     type: select
     proxies:
-      - 🔵 Aliyun Nodes
-      - 🔷 Azure Nodes
+      - 🌀 Hysteria Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
+      - 🔷 Azure Nodes
+      - 🔵 Aliyun Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
-      - 🌀 Hysteria Nodes
-      - ☁️ Cloudflare CF Nodes
-      - 🔄 CF WARP Outbound
+      - 🔑 Manual Selection
       - 🇹🇷 Decodo TR
       - 🇬🇧 Decodo GB
       - 🇺🇸 Decodo US
-      - 🔑 Manual Selection
+      - ☁️ Cloudflare CF Nodes
+      - 🔄 CF WARP Outbound
       - "🔖 18:15-08/17 (UTC+8)"
       - 🎯 Direct
 
