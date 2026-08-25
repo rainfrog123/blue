@@ -1,6 +1,6 @@
 # Tampermonkey scripts
 
-Canonical tree. Chrome export snapshot: `backup/Tampermonkey Backup YYYY-MM-DD/` (export names unchanged).
+Canonical tree. Chrome export snapshot: `backup/Tampermonkey Backup YYYY-MM-DD.zip` (zip only, no unpacked folder).
 
 **Live kebab-case files** · superseded → `archive/*.bak`.
 
@@ -16,7 +16,9 @@ Disable old split Gemini / baccarat entries before import.
 
 | File | Role |
 | --- | --- |
-| `gemini/gemini.js` | Unified 3.0.0 — copy + toast + sidenav/mode/upsell + input |
+| `gemini/gemini.js` | Unified 3.0.19 — copy + toast + sidenav/mode/upsell + input |
+| `ft/ft.js` | Ctrl+C copies the full FT article when it is on the page |
+| `wsj/wsj.js` | Ctrl+C copies the full WSJ article when it is on the page |
 | `caixin/caixin-reader-relogin-and-block-redirect.js` | Relogin + block global redirect |
 | `twitter/twitter-ui-cleanup-hide-pill-and-verified.js` | Hide pill + remove verified |
 | `xiaohongshu/xiaohongshu-ctrl-click-new-tab.js` | Ctrl+Click new tab |
@@ -26,4 +28,4 @@ Disable old split Gemini / baccarat entries before import.
 | `stake/baccarat/stake-baccarat-pick-telegram-monitor.js` | Optional Telegram |
 | `hyperliquid/hyperliquid-light-theme.js` | Light chrome for app.hyperliquid.xyz |
 
-`gemini/zoom-per-tab-ext/` is a Chrome extension, not TM.
+`gemini/zoom-per-tab-ext/` is a Chrome extension, not TM. `gemini/gemini-bridge.js` is deprecated (use jefr-gemini).

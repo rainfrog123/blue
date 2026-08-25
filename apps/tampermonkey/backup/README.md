@@ -1,17 +1,15 @@
 # Tampermonkey backups
 
-Uniform naming for every item:
+Zip only. Do not unpack.
 
 ```
-Tampermonkey Backup YYYY-MM-DD.zip     # packed export
-Tampermonkey Backup YYYY-MM-DD/        # unpacked export (optional)
+Tampermonkey Backup YYYY-MM-DD.zip
 ```
 
-No extra suffixes (no `Chrome`, no timestamps).
+No extra suffixes (no `Chrome`, no timestamps). No `Tampermonkey Backup YYYY-MM-DD/` folders.
 
 ## Latest
 
-- `Tampermonkey Backup 2026-08-08.zip`
-- `Tampermonkey Backup 2026-08-08/` (unpacked; Title Case script stems)
+- `Tampermonkey Backup 2026-08-23.zip`
 
 Live refactored install set: `../import/tampermonkey-live-active.zip`

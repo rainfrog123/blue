@@ -1,16 +1,26 @@
 // ==UserScript==
 // @name         Gemini
 // @namespace    http://tampermonkey.net/
-// @version      3.0.11
+// @version      3.0.19
 // @description  One script: auto-copy + Ctrl+C, finish toast, sidenav/mode/upsell, fixed input + autofocus.
 // @author       You
 // @match        https://gemini.google.com/*
 // @grant        GM_setClipboard
 // @grant        GM_addStyle
+// @grant        GM_registerMenuCommand
+// @grant        GM_unregisterMenuCommand
 // @run-at       document-idle
 // ==/UserScript==
 
 /*
+ * v3.0.19 — Full-height input: copy toast at the usual lower-center (bottom 96px).
+ * v3.0.18 — Full-height input: copy toast sits under the top bar, not off-screen.
+ * v3.0.17 — Input menu uses last sizes (not 33/48/64) + Input full.
+ * v3.0.16 — Hide Ask Gemini / plus / mic by default; menu can show them again.
+ * v3.0.15 — Tampermonkey menu: Set input size… (under the Gemini script).
+ * v3.0.14 — geminiTm.setInputSize(n) sets the prompt box height (default 33px).
+ * v3.0.13 — Selectors from 2026-08-23 dump: message-content, Pro Extended, disclaimer p.
+ * v3.0.12 — Ctrl+C uses our toast (Gemini copy snackbar is hidden).
  * v3.0.11 — copy toast a bit larger.
  * v3.0.10 — hide Gemini "Copied to clipboard" snackbar (our toast stays).
  * v3.0.9 — auto-copy clicks Copy, intercepts Gemini's markdown, GM-writes it (no gesture needed).
@@ -31,7 +41,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "3.0.11";
+  const VERSION = "3.0.19";
   const LOG = "[Gemini]";
 
   const SETTLE_MS = 900;
@@ -40,7 +50,15 @@
   const TOAST_MS = 2400;
   const TOAST_FADE_MS = 420;
   const TOAST_ID = "jefr-gemini-finish-toast";
-  const INPUT_HEIGHT = "33px";
+  const INPUT_SIZE_KEY = "gemini-input-size";
+  const INPUT_SIZE_RECENTS_KEY = "gemini-input-size-recents";
+  const INPUT_SIZE_RECENTS_MAX = 3;
+  const INPUT_SIZE_DEFAULT = "33px";
+  const INPUT_SIZE_FULL = "full";
+  const INPUT_SIZE_FULL_CSS = "calc(100dvh - 96px)";
+  const INPUT_CSS_ID = "tm-gemini-input-height";
+  const INPUT_CHROME_KEY = "gemini-input-chrome";
+  const INPUT_CHROME_CSS_ID = "tm-gemini-input-chrome";
 
   const util = {
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
@@ -72,6 +90,9 @@
     getContentEl(modelResponse) {
       return (
         modelResponse?.querySelector?.('[id^="model-response-message-content"]') ||
+        modelResponse?.querySelector?.("message-content .md-content") ||
+        modelResponse?.querySelector?.('[id^="message-content-id"]') ||
+        modelResponse?.querySelector?.("message-content") ||
         null
       );
     },
@@ -340,6 +361,7 @@
         ) ||
         from.querySelector("copy-button button[aria-label='Copy']") ||
         from.querySelector('gem-icon-button[arialabel="Copy"] button') ||
+        from.querySelector(".actions-container-v2 copy-button button") ||
         from.querySelector("copy-button button") ||
         from.querySelector('gem-icon-button[gemtooltip="Copy response"]') ||
         null
@@ -363,7 +385,7 @@
       if (!el) return false;
       if (
         el.closest?.(
-          "input-area-v2, rich-textarea, .ql-editor, [data-node-type='input-area']"
+          "input-area-v2, input-container, rich-textarea, .input-area, .ql-editor, [data-node-type='input-area']"
         )
       ) {
         return true;
@@ -504,7 +526,7 @@
 
   // ── copy (auto + Ctrl+C) ──
 
-  const createCopy = (finish) => {
+  const createCopy = (finish, notify) => {
     const clickEl = (el) => {
       if (!el) return false;
       const target = el.matches?.("button") ? el : el.querySelector?.("button") || el;
@@ -778,11 +800,15 @@
         e.stopPropagation();
         if (busy) return;
         busy = true;
-        copyModelResponse(util.getLatest(), "Ctrl+C").finally(() => {
-          setTimeout(() => {
-            busy = false;
-          }, 300);
-        });
+        copyModelResponse(util.getLatest(), "Ctrl+C")
+          .then((ok) => {
+            if (ok) notify?.showToast();
+          })
+          .finally(() => {
+            setTimeout(() => {
+              busy = false;
+            }, 300);
+          });
       },
       true
     );
@@ -843,13 +869,18 @@
       `;
     };
 
-    const toastBottomPx = () => {
+    const placeToast = (el) => {
       const dock =
         document.querySelector("input-container") ||
         document.querySelector("input-area-v2");
-      if (!dock) return 96;
-      const top = dock.getBoundingClientRect().top;
-      return Math.max(24, Math.round(window.innerHeight - top + 18));
+      const dockTop = dock ? dock.getBoundingClientRect().top : NaN;
+      el.style.top = "auto";
+      if (!Number.isFinite(dockTop) || dockTop < 160) {
+        el.style.bottom = "96px";
+        return;
+      }
+      el.style.bottom =
+        Math.max(24, Math.round(window.innerHeight - dockTop + 18)) + "px";
     };
 
     const checkIcon = () => {
@@ -880,7 +911,7 @@
       const label = document.createElement("span");
       label.textContent = "Copied";
       el.append(mark, label);
-      el.style.bottom = toastBottomPx() + "px";
+      placeToast(el);
       (document.body || document.documentElement).appendChild(el);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => el.classList.add("on"));
@@ -972,7 +1003,7 @@
 
       const replaceDisclaimer = () => {
         const disclaimer =
-          document.querySelector('hallucination-disclaimer p[data-test-id="disclaimer"]') ||
+          document.querySelector("hallucination-disclaimer p.gds-body-s") ||
           document.querySelector("hallucination-disclaimer p");
         if (disclaimer && !disclaimer.dataset.tmInspired) {
           disclaimer.dataset.tmInspired = "true";
@@ -1158,7 +1189,7 @@
       const isProMode = () => {
         const pill = getVisiblePillLabel();
         const text = `${pillText()} ${getModePickerAria()}`.toLowerCase();
-        if (pill?.secondary === "Pro") return true;
+        if (pill?.primary === "Pro" || pill?.secondary === "Pro") return true;
         if (text.includes("gemini pro") || /\bpro\b/.test(text)) {
           if (text.includes("flash") && !text.includes("gemini pro")) return false;
           return true;
@@ -1356,23 +1387,74 @@
     });
   };
 
-  // ── fixed input + type-anywhere focus ──
+  // ── input size + type-anywhere focus ──
 
-  const createInput = () => {
-    util.addStyle(
-      `
+  const normalizeInputSize = (size) => {
+    if (size == null || size === "") return INPUT_SIZE_DEFAULT;
+    if (typeof size === "number" && Number.isFinite(size)) return `${Math.max(1, size)}px`;
+    const s = String(size).trim();
+    if (/^full$/i.test(s)) return INPUT_SIZE_FULL;
+    if (/^\d+(\.\d+)?$/.test(s)) return `${Math.max(1, Number(s))}px`;
+    return s;
+  };
+
+  const inputSizeCssValue = (stored) =>
+    stored === INPUT_SIZE_FULL ? INPUT_SIZE_FULL_CSS : stored;
+
+  const inputSizeLabel = (stored) =>
+    stored === INPUT_SIZE_FULL ? "full" : stored;
+
+  const getInputSize = () => {
+    try {
+      return normalizeInputSize(localStorage.getItem(INPUT_SIZE_KEY) || INPUT_SIZE_DEFAULT);
+    } catch (_) {
+      return INPUT_SIZE_DEFAULT;
+    }
+  };
+
+  const getInputSizeRecents = () => {
+    try {
+      const raw = localStorage.getItem(INPUT_SIZE_RECENTS_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) return [];
+      const out = [];
+      for (const item of list) {
+        const n = normalizeInputSize(item);
+        if (n && !out.includes(n)) out.push(n);
+      }
+      return out.slice(0, INPUT_SIZE_RECENTS_MAX);
+    } catch (_) {
+      return [];
+    }
+  };
+
+  const rememberInputSize = (stored) => {
+    const height = normalizeInputSize(stored);
+    const next = [height, ...getInputSizeRecents().filter((x) => x !== height)].slice(
+      0,
+      INPUT_SIZE_RECENTS_MAX
+    );
+    try {
+      localStorage.setItem(INPUT_SIZE_RECENTS_KEY, JSON.stringify(next));
+    } catch (_) {}
+    return next;
+  };
+
+  const inputSizeCss = (stored) => {
+    const height = inputSizeCssValue(stored);
+    return `
         input-area-v2 .text-input-field,
         input-area-v2 .text-input-field.simplified-input-area {
-            height: ${INPUT_HEIGHT} !important;
-            min-height: ${INPUT_HEIGHT} !important;
-            max-height: ${INPUT_HEIGHT} !important;
+            height: ${height} !important;
+            min-height: ${height} !important;
+            max-height: ${height} !important;
         }
         input-area-v2 .textarea-wrapper,
         input-area-v2 [data-test-id="textarea-wrapper"],
         .text-input-field_textarea-wrapper {
-            height: ${INPUT_HEIGHT} !important;
-            min-height: ${INPUT_HEIGHT} !important;
-            max-height: ${INPUT_HEIGHT} !important;
+            height: ${height} !important;
+            min-height: ${height} !important;
+            max-height: ${height} !important;
         }
         input-area-v2 .text-input-field_textarea-inner,
         input-area-v2 [data-test-id="textarea-inner"] {
@@ -1385,10 +1467,11 @@
             height: 100% !important;
             min-height: 100% !important;
             max-height: 100% !important;
-            --chat-container-height: ${INPUT_HEIGHT} !important;
+            --chat-container-height: ${height} !important;
         }
         input-area-v2 .ql-editor.textarea,
-        input-area-v2 .ql-editor.new-input-ui {
+        input-area-v2 .ql-editor.new-input-ui,
+        input-area-v2 .ql-editor.simplified-mobile-input {
             height: 100% !important;
             min-height: 100% !important;
             max-height: 100% !important;
@@ -1418,9 +1501,28 @@
             flex: 0 1 auto !important;
             text-align: center !important;
         }
-    `,
-      "tm-gemini-input-height"
-    );
+    `;
+  };
+
+  const setInputSize = (size) => {
+    const height = normalizeInputSize(size);
+    try {
+      localStorage.setItem(INPUT_SIZE_KEY, height);
+    } catch (_) {}
+    rememberInputSize(height);
+    let el = document.getElementById(INPUT_CSS_ID);
+    if (!el) {
+      el = document.createElement("style");
+      el.id = INPUT_CSS_ID;
+      (document.head || document.documentElement).appendChild(el);
+    }
+    el.textContent = inputSizeCss(height);
+    util.log("input size", height, height === INPUT_SIZE_FULL ? INPUT_SIZE_FULL_CSS : "");
+    return height;
+  };
+
+  const createInput = () => {
+    setInputSize(getInputSize());
 
     const isInInput = () => {
       const el = document.activeElement;
@@ -1442,15 +1544,124 @@
       util.focusAtEnd(input);
     });
 
-    util.log("input: fixed height + type-anywhere focus");
+    setInputChrome(getInputChrome());
+    util.log("input: size + type-anywhere focus");
+  };
+
+  const getInputChrome = () => {
+    try {
+      return localStorage.getItem(INPUT_CHROME_KEY) !== "show";
+    } catch (_) {
+      return true;
+    }
+  };
+
+  const inputChromeCss = `
+        input-area-v2 simplified-input-menu,
+        input-area-v2 .menu-button.gem-menu-button,
+        input-area-v2 speech-dictation-mic-button,
+        input-area-v2 .speech_dictation_mic_button {
+            display: none !important;
+        }
+        input-area-v2 .ql-editor.ql-blank:before,
+        input-area-v2 .ql-editor.ql-blank:after,
+        input-area-v2 rich-textarea .ql-editor.ql-blank:before,
+        input-area-v2 rich-textarea .ql-editor.ql-blank:after {
+            content: none !important;
+            display: none !important;
+            visibility: hidden !important;
+        }
+    `;
+
+  const setInputChrome = (hidden) => {
+    try {
+      localStorage.setItem(INPUT_CHROME_KEY, hidden ? "hide" : "show");
+    } catch (_) {}
+    let el = document.getElementById(INPUT_CHROME_CSS_ID);
+    if (!hidden) {
+      el?.remove();
+      util.log("input chrome shown");
+      return false;
+    }
+    if (!el) {
+      el = document.createElement("style");
+      el.id = INPUT_CHROME_CSS_ID;
+      (document.head || document.documentElement).appendChild(el);
+    }
+    el.textContent = inputChromeCss;
+    util.log("input chrome hidden");
+    return true;
+  };
+
+  const registerInputSizeMenu = () => {
+    if (typeof GM_registerMenuCommand !== "function") {
+      util.log("GM_registerMenuCommand missing — reinstall to apply @grant");
+      return;
+    }
+
+    const menuIds = [];
+    const addMenu = (name, fn) => {
+      const id = GM_registerMenuCommand(name, fn);
+      if (id != null) menuIds.push(id);
+    };
+
+    const apply = (size) => {
+      const height = setInputSize(size);
+      util.log("menu input size", height);
+      if (menuIds.length && typeof GM_unregisterMenuCommand === "function") refresh();
+    };
+
+    const refresh = () => {
+      if (typeof GM_unregisterMenuCommand === "function") {
+        for (const id of menuIds) {
+          try {
+            GM_unregisterMenuCommand(id);
+          } catch (_) {}
+        }
+      }
+      menuIds.length = 0;
+
+      const current = getInputSize();
+      let recents = getInputSizeRecents();
+      if (!recents.length) recents = [current];
+      if (!recents.includes(INPUT_SIZE_FULL)) recents = [...recents, INPUT_SIZE_FULL];
+
+      for (const size of recents) {
+        const mark = size === current ? " ✓" : "";
+        addMenu(`Input ${inputSizeLabel(size)}${mark}`, () => apply(size));
+      }
+      addMenu("Set input size…", () => {
+        const next = global.prompt(
+          "Input height (px, CSS, or full)",
+          inputSizeLabel(getInputSize())
+        );
+        if (next == null) return;
+        apply(next);
+      });
+      addMenu("Show plus / mic / Ask Gemini", () => setInputChrome(false));
+      addMenu("Hide plus / mic / Ask Gemini", () => setInputChrome(true));
+    };
+
+    refresh();
   };
 
   const finish = createFinishBus();
-  const copy = createCopy(finish);
   const notify = createNotify(finish);
+  const copy = createCopy(finish, notify);
   createUi();
   createInput();
+  registerInputSizeMenu();
 
-  global.geminiTm = { version: VERSION, util, copy, notify };
+  global.geminiTm = {
+    version: VERSION,
+    util,
+    copy,
+    notify,
+    setInputSize,
+    getInputSize,
+    getInputSizeRecents,
+    setInputChrome,
+    getInputChrome,
+  };
   util.log(`v${VERSION} · copy + toast + ui + input · geminiTm.version`);
 })(typeof window !== "undefined" ? window : this);
