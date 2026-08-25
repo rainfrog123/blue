@@ -1,0 +1,9 @@
+{
+  "id": "keep-word-select",
+  "name": "Keep Word Select",
+  "version": "1.0.1",
+  "minAppVersion": "1.4.0",
+  "description": "Shift-extend keeps the word you already selected (anchor flip).",
+  "author": "local",
+  "isDesktopOnly": false
+}

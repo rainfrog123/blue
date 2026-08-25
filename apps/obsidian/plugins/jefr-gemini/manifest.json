@@ -1,0 +1,9 @@
+{
+  "id": "jefr-gemini",
+  "name": "JEFR Gemini",
+  "version": "2.0.10",
+  "minAppVersion": "1.4.0",
+  "description": "Compact dock: type or paste a photo, extension CDP-sends it in the Gemini tab.",
+  "author": "jefr",
+  "isDesktopOnly": true
+}

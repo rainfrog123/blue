@@ -1,0 +1,316 @@
+/* JEFR Gemini — compact dock (mirrors jefr-cdp minimized) */
+
+.jefr-gem-root {
+  --jefr-gem-accent: var(--interactive-accent);
+  --jefr-gem-accent-soft: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+  --jefr-gem-radius-sm: 8px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  gap: 0;
+}
+
+.jefr-gem-dock {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-primary);
+}
+
+.jefr-gem-routebar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 10px 0;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: visible;
+}
+
+.jefr-gem-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.jefr-gem-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.jefr-gem-pill-on {
+  color: var(--color-green, #16a34a);
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.jefr-gem-pill-off {
+  color: var(--text-faint);
+  background: var(--background-modifier-border);
+}
+
+.jefr-gem-pill-busy {
+  color: var(--color-orange, #d97706);
+  background: rgba(217, 119, 6, 0.14);
+}
+
+.jefr-gem-answer {
+  margin-left: 0;
+}
+
+.jefr-gem-timer {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--color-orange, #d97706);
+  user-select: none;
+  white-space: nowrap;
+  min-width: 2.75em;
+}
+
+.jefr-gem-timer:empty {
+  display: none;
+}
+
+.jefr-gem-route {
+  display: none;
+}
+
+.jefr-gem-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0 12px 6px;
+}
+
+.jefr-gem-meta-empty {
+  display: none;
+}
+
+.jefr-gem-model {
+  display: block;
+  flex: 0 0 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  user-select: none;
+}
+
+.jefr-gem-model-empty {
+  display: none;
+}
+
+.jefr-gem-model-ok {
+  color: var(--text-muted);
+}
+
+.jefr-gem-thinking {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.2;
+  color: var(--color-orange, #d97706);
+  user-select: none;
+}
+
+.jefr-gem-thinking:empty {
+  display: none;
+}
+
+.jefr-gem-context {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-width: 1.75em;
+  margin-left: auto;
+  padding: 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.jefr-gem-context-empty {
+  color: var(--text-faint);
+}
+
+.jefr-gem-context-ok {
+  color: var(--color-green, #16a34a);
+}
+
+.jefr-gem-composer {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 2px;
+}
+
+.jefr-gem-composer.jefr-gem-dragover {
+  outline: 2px dashed var(--jefr-gem-accent);
+  outline-offset: -4px;
+}
+
+.jefr-gem-attachbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 4px;
+  flex: 0 0 auto;
+}
+
+.jefr-gem-attachbar:empty {
+  display: none;
+}
+
+.jefr-gem-attach-chip {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  flex: 0 0 auto;
+}
+
+.jefr-gem-attach-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.jefr-gem-attach-remove {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jefr-gem-input {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--jefr-gem-radius-sm);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: 12px;
+  line-height: 1.5;
+  font-family: inherit;
+  outline: none;
+}
+
+.jefr-gem-input:focus {
+  border-color: var(--jefr-gem-accent);
+  box-shadow: 0 0 0 2px var(--jefr-gem-accent-soft);
+}
+
+/* Copied toast on the Obsidian tab — smaller than the Gemini-page toast. */
+.jefr-gem-copy-toast {
+  position: absolute;
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: 72px;
+  z-index: 30;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  font: 500 12px/1.2 "Google Sans Text", "Google Sans", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: #1b1b1b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.12);
+  transform: translate(-50%, 8px) scale(0.97);
+  opacity: 0;
+  transform-origin: 50% 100%;
+  transition: opacity 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.jefr-gem-copy-toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.jefr-gem-copy-toast .mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f9d58;
+  box-shadow: 0 0 0 2px rgba(15, 157, 88, 0.22);
+}
+
+.jefr-gem-copy-toast svg {
+  width: 10px;
+  height: 10px;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jefr-gem-copy-toast {
+    transition: opacity 160ms linear;
+    transform: translate(-50%, 0) scale(1);
+  }
+}

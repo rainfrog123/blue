@@ -1,0 +1,683 @@
+/* JEFR CDP — compact-first UI (mirrors jefr-chat minimized mode) */
+
+.jefr-cdp-root {
+  --jefr-cdp-accent: var(--interactive-accent);
+  --jefr-cdp-accent-soft: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+  --jefr-cdp-radius: 12px;
+  --jefr-cdp-radius-sm: 8px;
+  --jefr-cdp-attach-thumb-size: 26px;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  gap: 0;
+}
+
+/* ---------------- Expanded history region ---------------- */
+
+.jefr-cdp-scroll {
+  flex: 1 1 auto;
+  overflow: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.jefr-cdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex: 0 0 auto;
+}
+
+.jefr-cdp-brand {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.jefr-cdp-logo {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--jefr-cdp-accent);
+}
+
+.jefr-cdp-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.jefr-cdp-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.jefr-cdp-pill-on,
+.jefr-cdp-pill-ready {
+  color: var(--color-green, #16a34a);
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.jefr-cdp-pill-off,
+.jefr-cdp-pill-idle {
+  color: var(--text-faint);
+  background: var(--background-modifier-border);
+}
+
+.jefr-cdp-pill-busy {
+  color: var(--color-orange, #d97706);
+  background: rgba(217, 119, 6, 0.14);
+}
+
+.jefr-cdp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jefr-cdp-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.jefr-cdp-icon-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.jefr-cdp-icon-btn .svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.jefr-cdp-meta {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jefr-cdp-messages {
+  flex: 1 1 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.jefr-cdp-empty {
+  margin: 24px 8px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.jefr-cdp-empty-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: var(--text-normal);
+}
+
+.jefr-cdp-empty-body {
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.jefr-cdp-msg {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--jefr-cdp-radius);
+  padding: 8px 10px;
+  background: var(--background-primary);
+}
+
+.jefr-cdp-msg-out {
+  border-color: color-mix(in srgb, var(--interactive-accent) 35%, var(--background-modifier-border));
+}
+
+.jefr-cdp-msg-sys {
+  opacity: 0.85;
+  font-size: 12px;
+}
+
+.jefr-cdp-msg-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--text-faint);
+  font-weight: 700;
+}
+
+.jefr-cdp-msg-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* ---------------- Dock / composer ---------------- */
+
+.jefr-cdp-dock {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.jefr-cdp-routebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px 2px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.jefr-cdp-route {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+}
+
+.jefr-cdp-route-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jefr-cdp-route-model {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jefr-cdp-route-on {
+  color: var(--color-green, #16a34a);
+}
+
+.jefr-cdp-route-busy {
+  color: var(--color-orange, #d97706);
+}
+
+.jefr-cdp-route-off {
+  color: var(--text-faint);
+}
+
+.jefr-cdp-context {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+}
+
+.jefr-cdp-context-pct {
+  font-variant-numeric: tabular-nums;
+}
+
+.jefr-cdp-context-tokens {
+  font-size: 10px;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0.75;
+  font-variant-numeric: tabular-nums;
+}
+
+.jefr-cdp-context-pct-only .jefr-cdp-context-tokens,
+.jefr-cdp-context-tokens:empty {
+  display: none;
+}
+
+.jefr-cdp-context-empty {
+  opacity: 0.4;
+  color: var(--text-faint);
+}
+
+/* Level colors: calm → caution → critical */
+.jefr-cdp-context-ok {
+  color: var(--color-green, #16a34a);
+}
+
+.jefr-cdp-context-warn {
+  color: var(--color-orange, #d97706);
+}
+
+.jefr-cdp-context-danger {
+  color: var(--color-red, #dc2626);
+}
+
+.jefr-cdp-context-hidden {
+  display: none !important;
+}
+
+.jefr-cdp-workdir {
+  display: inline-block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0 4px;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
+  user-select: none;
+}
+
+.jefr-cdp-workdir-empty {
+  display: none;
+}
+
+.jefr-cdp-route-right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.jefr-cdp-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+  padding: 0 4px;
+}
+
+.jefr-cdp-toggle input {
+  margin: 0;
+}
+
+.jefr-cdp-toggle-label {
+  font-weight: 600;
+}
+
+.jefr-cdp-prompt-select {
+  max-width: 120px;
+  height: 22px;
+  margin: 0 2px 0 0;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.jefr-cdp-prompt-select:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.jefr-cdp-minimize-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+}
+
+.jefr-cdp-minimize-btn .svg-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.jefr-cdp-composer {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 10px 10px;
+  background: var(--background-primary);
+}
+
+.jefr-cdp-composer.jefr-cdp-dragover .jefr-cdp-input {
+  border-color: var(--jefr-cdp-accent);
+  box-shadow: 0 0 0 3px var(--jefr-cdp-accent-soft);
+}
+
+.jefr-cdp-attachbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+  flex: 0 0 auto;
+}
+
+.jefr-cdp-attachbar:empty {
+  display: none;
+}
+
+.jefr-cdp-attach-chip {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  flex: 0 0 auto;
+}
+
+.jefr-cdp-attach-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.jefr-cdp-attach-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jefr-cdp-fileinput {
+  display: none;
+}
+
+.jefr-cdp-input {
+  width: 100%;
+  min-height: 64px;
+  max-height: 200px;
+  resize: vertical;
+  padding: 10px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--jefr-cdp-radius-sm);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.jefr-cdp-input:focus {
+  border-color: var(--jefr-cdp-accent);
+  box-shadow: 0 0 0 2px var(--jefr-cdp-accent-soft);
+}
+
+.jefr-cdp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.jefr-cdp-hint {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.jefr-cdp-send {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--jefr-cdp-radius-sm);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent, #fff);
+  cursor: pointer;
+}
+
+.jefr-cdp-send:hover {
+  filter: brightness(1.05);
+}
+
+.jefr-cdp-send[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ---------------- Compact / minimized (default) ---------------- */
+/* Left: Inject + New agent. Mid: workdir. Right: context %.       */
+/* Prompt / attach / reconnect / mode → pane ⋮.                    */
+
+.jefr-cdp-minimized .jefr-cdp-scroll,
+.jefr-cdp-minimized .jefr-cdp-header,
+.jefr-cdp-minimized .jefr-cdp-meta,
+.jefr-cdp-minimized .jefr-cdp-messages,
+.jefr-cdp-minimized .jefr-cdp-toolbar,
+.jefr-cdp-minimized .jefr-cdp-full-only {
+  display: none !important;
+}
+
+.jefr-cdp-minimized .jefr-cdp-dock {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: none;
+}
+
+.jefr-cdp-minimized .jefr-cdp-routebar {
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px 0;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.jefr-cdp-minimized .jefr-cdp-route-right {
+  order: 1;
+  flex: 0 0 auto;
+  min-width: 0;
+  justify-content: flex-start;
+  gap: 6px;
+  overflow: hidden;
+  margin-left: 0;
+}
+
+.jefr-cdp-minimized .jefr-cdp-workdir {
+  order: 2;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 4px 0 2px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+.jefr-cdp-minimized .jefr-cdp-workdir-empty {
+  display: none;
+}
+
+.jefr-cdp-minimized .jefr-cdp-context {
+  order: 3;
+  margin: 0 0 0 auto;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-ok {
+  color: var(--color-green, #16a34a);
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-warn {
+  color: var(--color-orange, #d97706);
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-danger {
+  color: var(--color-red, #dc2626);
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-empty {
+  color: var(--text-faint);
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-ring {
+  display: none !important;
+}
+
+.jefr-cdp-minimized .jefr-cdp-context-tokens {
+  display: none;
+}
+
+.jefr-cdp-minimized .jefr-cdp-prompt-select {
+  display: none !important;
+}
+
+.jefr-cdp-minimized .jefr-cdp-toggle {
+  padding: 0;
+  gap: 5px;
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.jefr-cdp-minimized .jefr-cdp-toggle-label {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.jefr-cdp-minimized .jefr-cdp-toggle input {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--text-muted);
+}
+
+.jefr-cdp-minimized .jefr-cdp-icon-btn {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border-radius: 5px;
+  color: var(--text-faint);
+  background: transparent;
+}
+
+.jefr-cdp-minimized .jefr-cdp-icon-btn:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.jefr-cdp-minimized .jefr-cdp-icon-btn .svg-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.jefr-cdp-minimized .jefr-cdp-composer {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px 8px;
+}
+
+.jefr-cdp-minimized .jefr-cdp-input {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  resize: vertical;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.jefr-cdp-minimized .jefr-cdp-attachbar {
+  gap: 4px;
+  margin-bottom: 4px;
+  flex: 0 0 auto;
+}
+
+.jefr-cdp-minimized .jefr-cdp-attach-chip {
+  width: var(--jefr-cdp-attach-thumb-size, 26px);
+  height: var(--jefr-cdp-attach-thumb-size, 26px);
+  max-width: var(--jefr-cdp-attach-thumb-size, 26px);
+  max-height: var(--jefr-cdp-attach-thumb-size, 26px);
+  border-radius: 5px;
+}
+
+.jefr-cdp-minimized .jefr-cdp-attach-thumb {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.jefr-cdp-minimized .jefr-cdp-attach-remove {
+  width: 12px;
+  height: 12px;
+  top: 0;
+  right: 0;
+  font-size: 9px;
+  line-height: 1;
+}

@@ -1,0 +1,9 @@
+{
+  "id": "double-hr",
+  "name": "Double HR",
+  "version": "1.1.18",
+  "minAppVersion": "1.4.0",
+  "description": "Insert a foldable # Clip n · time slot; paste fills the title from the first 8 words.",
+  "author": "local",
+  "isDesktopOnly": false
+}
