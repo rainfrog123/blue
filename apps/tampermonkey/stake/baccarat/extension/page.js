@@ -1,22 +1,10 @@
-// ==UserScript==
-// @name         Stake Baccarat
-// @namespace    http://tampermonkey.net/
-// @version      7.2.1
-// @description  One script: PP WebSocket + table pick + on-page play HUD. Bet the hand after a Tie. Human-like click jitter. Focus mask on Stake + PP.
-// @author       You
-// @match        *://client.pragmaticplaylive.net/desktop/multibaccarat*
-// @match        *://client.pragmaticplaylive.net/*
-// @match        *://*.stake.com/*
-// @match        *://stake.com/*
-// @grant        none
-// @run-at       document-start
-// ==/UserScript==
-
 /*
- * LIVE: Chrome extension ./extension/ (v8.1.0). Disable this userscript when the
- * extension is loaded so WebSocket is not double-hooked. This file stays as a
- * Tampermonkey fallback (clicks are untrusted dispatchEvent).
+ * Stake Baccarat — Chrome extension MAIN-world script (MV3).
+ * Injected by manifest content_scripts at document_start (not Tampermonkey).
  *
+ * v8.1.0 — concurrent hunt: keep placing on other tables while results settle.
+ * v8.0.1 — confirm felt/wire before “placement failed” (CDP clicks are slower than dispatchEvent).
+ * v8.0.0 — trusted clicks via extension debugger Input.dispatchMouseEvent.
  * v7.2.1 — Customer Support popup → OK, resume after iframe reload.
  * v7.2.0 — human-like click jitter (timing + point inside the button).
  * v7.1.9 — HUD says “1 unit”, not “1u”.
@@ -37,7 +25,7 @@
 (function (global) {
     'use strict';
 
-    const VERSION = '7.2.1';
+    const VERSION = '8.1.0';
 
     /** Spoof visible/focused so Stake + PP do not pause when the tab is in the background. From archive/always-focused.js.bak. */
     const maskPageFocus = () => {
@@ -70,9 +58,25 @@
     maskPageFocus();
     if (!isMultibaccarat) {
         global.sb = { version: VERSION, focusOnly: true };
-        console.log(`[SB] v${VERSION} · focus mask only (${location.host})`);
+        console.log(`[SB] v${VERSION} · extension · focus mask only (${location.host})`);
         return;
     }
+
+    const extCall = (type, extra = {}) => new Promise((resolve) => {
+        const id = `sb-${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const onMsg = (e) => {
+            const d = e.data;
+            if (!d || d.source !== 'sb-ext' || d.id !== id) return;
+            window.removeEventListener('message', onMsg);
+            resolve(!!d.ok);
+        };
+        window.addEventListener('message', onMsg);
+        window.postMessage({ source: 'sb-page', type, id, ...extra }, '*');
+        setTimeout(() => {
+            window.removeEventListener('message', onMsg);
+            resolve(false);
+        }, type === 'attachDebugger' ? 4000 : 2500);
+    });
 
     const util = {
         displayName: (s) => String(s ?? '').replace(/_/g, ' '),
@@ -81,6 +85,8 @@
             const n = parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
             return Number.isFinite(n) ? n : 0;
         },
+        ensureDebugger: () => extCall('attachDebugger'),
+        trustedClick: (clientX, clientY, gapMs) => extCall('trustedClick', { x: clientX, y: clientY, gapMs }),
         click: async (el, opts = {}) => {
             if (!el) return false;
             const r = el.getBoundingClientRect();
@@ -95,6 +101,11 @@
             const gap = opts.eventGapMs != null
                 ? opts.eventGapMs
                 : (4 + Math.floor(Math.random() * 18));
+            if (await util.trustedClick(clientX, clientY, gap)) return true;
+            if (!util._trustedFallbackWarned) {
+                util._trustedFallbackWarned = true;
+                console.warn('[SB] trusted CDP click failed — synthetic dispatchEvent fallback');
+            }
             const shared = {
                 bubbles: true,
                 cancelable: true,
@@ -213,10 +224,12 @@
     const hookOutgoingSend = (data) => {
         let s = '';
         if (typeof data === 'string') s = data;
+        else if (data instanceof ArrayBuffer) s = new TextDecoder().decode(data);
+        else if (ArrayBuffer.isView(data)) s = new TextDecoder().decode(data);
         else return;
         if (!s.includes('lpbet')) return;
         const rec = parseLpbetXml(s);
-        if (rec && (rec.tableId || rec.bets.length)) emitLpbet(rec);
+        if (rec && (rec.tableId || rec.gameId || rec.bets.length)) emitLpbet(rec);
     };
 
     /** On `betsopen`, delay before `pp.get(id).canBet === true`. */
@@ -254,10 +267,15 @@
     };
 
     const tableMatchLpbet = (rec, tableId) => {
-        if (!rec || !rec.tableId) return false;
+        if (!rec) return false;
         const tid = resolveGameId(tableId) || String(tableId);
-        const rt = resolveGameId(rec.tableId) || rec.tableId;
-        return rt === tid || rec.tableId === tid;
+        const want = new Set([tid, String(tableId)].filter(Boolean));
+        for (const c of [rec.tableId, rec.gameId]) {
+            if (!c) continue;
+            const rt = resolveGameId(c) || c;
+            if (want.has(String(c)) || want.has(String(rt))) return true;
+        }
+        return false;
     };
 
     const stakeFromRecSide = (rec, side) => {
@@ -361,6 +379,16 @@
     window.WebSocket.OPEN = 1;
     window.WebSocket.CLOSING = 2;
     window.WebSocket.CLOSED = 3;
+    if (!_WS.prototype.send.__sbHooked) {
+        const _protoSend = _WS.prototype.send;
+        const hookedSend = function(data) {
+            try { hookOutgoingSend(data); } catch (_) {}
+            return _protoSend.apply(this, arguments);
+        };
+        hookedSend.__sbHooked = true;
+        _WS.prototype.send = hookedSend;
+        window.WebSocket.prototype.send = hookedSend;
+    }
 
     function gameIdFromWsUrl(url) {
         if (!url || typeof url !== 'string') return null;
@@ -376,13 +404,6 @@
 
     function hookWS(ws, url) {
         const ctxGameId = gameIdFromWsUrl(url);
-        const _send = ws.send.bind(ws);
-        ws.send = function(data) {
-            try {
-                hookOutgoingSend(data);
-            } catch (_) {}
-            return _send(data);
-        };
         ws.addEventListener('message', (e) => {
             try {
                 const msg = JSON.parse(e.data);
@@ -1879,13 +1900,21 @@ ${line()}
         CHIP_VALUE: 0.20,           // Unit rounding; tray may also have $1 / $5 / …
         /** Gap between burst P/B clicks (ms). Keep short — betting window is often 1–2s. */
         CLICK_GAP_MS: 70,
-        /** After burst / each top-up click, wait this long for the running total to move */
-        CLICK_WIRE_WAIT_MS: 160,
+        /** After each P/B click, wait this long for wire/spot to move */
+        CLICK_WIRE_WAIT_MS: 400,
+        /** After the planned taps, wait this long before calling the stake short (CDP + lpbet lag) */
+        PLACE_CONFIRM_MS: 2000,
         /** Extra clicks allowed if a click did not register on the wire */
-        CLICK_RETRY: 6,
+        CLICK_RETRY: 2,
         CHIP_BAR_SEL: '[data-testid="chip-stack-bar"]',
         CHIP_BTN_PREFIX: 'chip-stack-value-',
-        BET_DELAY: 2000,            // Delay between bet attempts (ms)
+        BET_DELAY: 2000,            // Delay between bet attempts (ms) when CONCURRENT is false
+        /** Hunt other after-T tables without waiting for the previous hand to settle. Off = old serial wait. */
+        CONCURRENT: true,
+        /** Scan delay after a place (or when nothing is open) while concurrent. */
+        CONCURRENT_SCAN_MS: 450,
+        /** 0 = no cap. Live stakes are limited by wallet either way. */
+        MAX_CONCURRENT: 0,
         /** After `canBet` is true, wait this long before clicking (ms). Jittered when HUMANIZE. */
         PRE_BET_DELAY_MS: 100,
         /** Vary timing and click point so bursts are not identical. Off = old fixed delays. */
@@ -1998,6 +2027,8 @@ ${line()}
         usedTables: new Set(),      // Skipped until play.clearUsed() (min bet, shuffle, etc.)
         /** tableId → shoe `total` when we last clicked (blocks a second click on the same after-T window). */
         stakedRoadTotal: new Map(),
+        /** tableId → live bet still waiting on the road */
+        pendingBets: new Map(),
         tableBetCount: 0,
 
         // Execution
@@ -2257,7 +2288,8 @@ ${line()}
         const unitChip = Config.CHIP_VALUE;
         const target = Math.max(unitChip, Math.round(betDollars / unitChip) * unitChip);
         const gap = Config.CLICK_GAP_MS || 70;
-        const waitMs = Config.CLICK_WIRE_WAIT_MS || 160;
+        const waitMs = Config.CLICK_WIRE_WAIT_MS || 400;
+        const confirmMs = Config.PLACE_CONFIRM_MS || 2000;
 
         const wired = () => {
             if (typeof pp?.lpbetStake === 'function') {
@@ -2268,11 +2300,13 @@ ${line()}
 
         const readSpotStake = (el) => {
             if (!el) return 0;
+            const cell = el.parentElement || el;
             const bits = [
                 el.getAttribute('data-amount'),
                 el.getAttribute('data-bet-amount'),
                 el.getAttribute('aria-label'),
                 el.innerText,
+                cell.innerText,
             ].filter(Boolean).join(' ');
             let best = 0;
             const re = /\$?\s*(\d+(?:\.\d{1,2})?)/g;
@@ -2346,8 +2380,9 @@ ${line()}
                 clicks++;
                 if (i < g.count - 1 && !atTarget()) await humanSleep(gap);
             }
-            await pollUntil(atTarget, waitMs);
         }
+
+        if (!atTarget()) await pollUntil(atTarget, confirmMs);
 
         while (clicks < maxClicks && !atTarget()) {
             if (smallest) await selectChip(smallest.value);
@@ -2356,6 +2391,8 @@ ${line()}
             clicks++;
             await pollUntil(() => atTarget() || observed() > before + 1e-9, waitMs);
         }
+
+        if (!atTarget()) await pollUntil(atTarget, confirmMs);
 
         const ok = atTarget();
         log(
@@ -2391,6 +2428,7 @@ ${line()}
         let lastLoggedTotal = null;
 
         while (Date.now() - startTime < Config.WAIT_FOR_RESULT) {
+            if (!State.running) return 'STOPPED';
             const t = pp?.get(tableId);
             if (!t) {
                 log(`Table ${tableId} not found in pp`, 'error');
@@ -2464,6 +2502,7 @@ ${line()}
         State.focusedTable = null;
         State.usedTables.clear();
         State.stakedRoadTotal.clear();
+        State.pendingBets.clear();
         State.tableBetCount = 0;
         
         // Recalculate unit size based on new balance
@@ -2510,6 +2549,7 @@ ${line()}
             if (!fresh.canBet) continue;
             if (Config.BET_AFTER_TIE && getTableLastResult(id) !== 'T') continue;
             if (State.stakedRoadTotal.get(id) === (fresh.total || 0)) continue;
+            if (State.pendingBets.has(id)) continue;
 
             const tableMinBetRaw = Number(fresh.minBet);
             const tableMinBet = Number.isFinite(tableMinBetRaw) && tableMinBetRaw > 0 ? tableMinBetRaw : null;
@@ -2537,23 +2577,49 @@ ${line()}
         return Config.STEPS[idx] ?? Config.STEPS[0];
     };
 
-    const processResult = (result) => {
-        const betUnits = getCurrentBetUnits();
-        const betSide = State.lastBet?.side || 'B';
+    const processResult = (result, bet = null) => {
+        const rec = bet || State.lastBet || {};
+        const betUnits = rec.units || getCurrentBetUnits();
+        const betSide = rec.side || 'B';
+        const unitSize = rec.unitSize || getUnitSize();
+        const prefix = rec.table ? `${rec.table} | ` : '';
         const won = (result === betSide);
-        // Note: Tie returns stake, treating as push
+        const concurrent = Config.CONCURRENT !== false;
 
         if (result === 'T') {
-            // Tie - push (no change)
-            log(`TIE - push (no units change)`, 'info');
+            log(`${prefix}TIE - push (no units change)`, 'info');
             State.lastResult = 'T';
             return;
         }
 
-        const stakeDollars = betUnits * getUnitSize();
+        const stakeDollars = rec.dollars != null ? rec.dollars : betUnits * unitSize;
         const credit = (didWin) => {
             State.sessionProfitDollars += didWin ? stakeDollars : -stakeDollars;
         };
+
+        if (concurrent) {
+            if (won) {
+                credit(true);
+                State.sessionUnits += betUnits;
+                State.sessionWins++;
+                State.lastResult = 'W';
+                log(
+                    `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units`,
+                    'win'
+                );
+            } else {
+                credit(false);
+                State.sessionUnits -= betUnits;
+                State.sequenceUnits -= betUnits;
+                State.sessionLosses++;
+                State.lastResult = 'L';
+                log(
+                    `${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units`,
+                    'loss'
+                );
+            }
+            return;
+        }
 
         if (useParoli()) {
             if (won) {
@@ -2566,7 +2632,7 @@ ${line()}
                 const cap = Math.min(Config.PAROLI_MAX_WIN_STREAK, Config.STEPS.length);
                 if (State.currentStep >= cap) {
                     log(
-                        `WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Paroli: ${cap} wins — reset → 1 unit next`,
+                        `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Paroli: ${cap} wins — reset → 1 unit next`,
                         'win'
                     );
                     State.currentStep = 0;
@@ -2574,7 +2640,7 @@ ${line()}
                 } else {
                     const nextU = Config.STEPS[State.currentStep] ?? Config.STEPS[0];
                     log(
-                        `WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: ${nextU} unit (win ${State.currentStep}/${cap})`,
+                        `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: ${nextU} unit (win ${State.currentStep}/${cap})`,
                         'win'
                     );
                 }
@@ -2586,7 +2652,7 @@ ${line()}
                 State.lastResult = 'L';
                 State.currentStep = 0;
                 log(
-                    `LOST -${betUnits} units | Session: ${State.sessionUnits} units | Paroli reset → next 1 unit`,
+                    `${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units | Paroli reset → next 1 unit`,
                     'loss'
                 );
                 refreshUnitAfterRound();
@@ -2601,7 +2667,7 @@ ${line()}
             State.lastResult = 'W';
             State.currentStep = 0;
             State.sequenceUnits = 0;
-            log(`WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
+            log(`${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
             refreshUnitAfterRound();
         } else {
             credit(false);
@@ -2611,12 +2677,12 @@ ${line()}
             State.currentStep++;
             State.lastResult = 'L';
 
-            log(`LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
+            log(`${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
 
             if (State.currentStep >= Config.STEPS.length) {
                 log(`Max step reached (lost 7 units) | Finding new table`, 'loss');
                 const tableId =
-                    State.focusedTable?.gameId || State.focusedTable?.id || State.lastBet?.tableId;
+                    rec.tableId || State.focusedTable?.gameId || State.focusedTable?.id;
                 if (tableId) {
                     markTableDone(tableId, 'max-loss', true);
                 }
@@ -2658,6 +2724,10 @@ ${line()}
 
         let balance = getBalance();
         if (balance < neededDollars) {
+            if (State.pendingBets.size > 0) {
+                scheduleNext(Config.CONCURRENT_SCAN_MS ?? 450);
+                return;
+            }
             log(`Balance low ($${balance.toFixed(2)}) - waiting 6s for UI update...`, 'info');
             await sleep(6000);
             balance = getBalance();
@@ -2691,6 +2761,12 @@ ${line()}
         if (!ordered.length) {
             log('No tables (pp empty or all in usedTables)', 'exit');
             stop();
+            return;
+        }
+
+        const maxLive = Number(Config.MAX_CONCURRENT) || 0;
+        if (maxLive > 0 && State.pendingBets.size >= maxLive) {
+            scheduleNext(Config.CONCURRENT_SCAN_MS ?? 450);
             return;
         }
 
@@ -2775,7 +2851,34 @@ ${line()}
         log(`${displayTableName(freshTable.name || tableId)} | ${afterT}Step ${State.currentStep + 1} | ${betSide} ${fmtUnitCount(betUnits)} ($${actualBet.toFixed(2)})`, 'bet');
 
         const wireSince = Date.now();
-        const placed = await placeBet(tile, actualBet, betSide, tableId, wireSince);
+        let placed = await placeBet(tile, actualBet, betSide, tableId, wireSince);
+        if (!placed && typeof pp?.waitLpbet === 'function') {
+            const late = await pp.waitLpbet(tableId, {
+                side: betSide,
+                since: wireSince,
+                minTotal: actualBet,
+                timeoutMs: Config.LPBET_CONFIRM_MS,
+            });
+            if (late) {
+                const amt = Number(pp.lpbetStake(tableId, { side: betSide, since: wireSince })) || 0;
+                log(`Late lpbet confirm · wire $${amt.toFixed(2)} / $${actualBet.toFixed(2)}`, 'info');
+                placed = true;
+            }
+        }
+        if (!placed && typeof pp?.lastLpbet === 'function') {
+            const last = pp.lastLpbet();
+            if (last && last.time >= wireSince) {
+                const wantBc = betSide === 'B' ? '1' : '0';
+                let s = 0;
+                for (const b of last.bets || []) {
+                    if (String(b.bc) === wantBc) s += Number(b.amt) || 0;
+                }
+                if (s + 1e-9 >= actualBet) {
+                    log(`lpbet confirm (id unmatched) · wire $${s.toFixed(2)} / $${actualBet.toFixed(2)}`, 'info');
+                    placed = true;
+                }
+            }
+        }
         if (!placed) {
             log('Bet placement failed', 'error');
             scheduleNext();
@@ -2784,89 +2887,118 @@ ${line()}
         State.stakedRoadTotal.set(tableId, countBefore);
 
         if (typeof pp?.waitLpbet === 'function') {
-            const wire = await pp.waitLpbet(tableId, {
-                side: betSide,
-                since: wireSince,
-                minTotal: actualBet,
-                timeoutMs: Config.LPBET_CONFIRM_MS,
-            });
-            if (!wire) {
-                log('No matching lpbet on wire — stake may not have registered; skipping round', 'error');
-                scheduleNext();
-                return;
+            const already = Number(pp.lpbetStake(tableId, { side: betSide, since: wireSince })) || 0;
+            if (already + 1e-9 < actualBet) {
+                const wire = await pp.waitLpbet(tableId, {
+                    side: betSide,
+                    since: wireSince,
+                    minTotal: actualBet,
+                    timeoutMs: Config.LPBET_CONFIRM_MS,
+                });
+                if (!wire) {
+                    log('No matching lpbet on wire — continuing on felt stake', 'info');
+                }
             }
         }
 
         State.sessionBets++;
-        State.lastBet = {
+        const betRec = {
             table: displayTableName(freshTable.name || tableId),
             tableId,
             side: betSide,
             units: betUnits,
+            unitSize: getUnitSize(),
+            dollars: actualBet,
+            countBefore,
             step: State.currentStep + 1,
-            time: Date.now()
+            time: Date.now(),
         };
+        State.lastBet = betRec;
+        State.stakedRoadTotal.set(tableId, countBefore);
 
-        // Wait for result
-        State.waitingForResult = true;
-        log('Waiting for result...', 'info');
-
-        const result = await waitForResult(tableId, countBefore);
-
-        State.waitingForResult = false;
-
-        if (result === 'SHOE_RESET') {
-            // Shoe reset during wait - move to new table (bet voided)
-            log('Shoe reset - moving to new table (bet voided)', 'info');
-            markTableDone(tableId, 'shoe-reset', false);
-            scheduleNext();
-            return;
-        }
-        if (result === 'SHUFFLE') {
-            leaveTableForShuffle(tableId);
-            scheduleNext(Config.SHUFFLE_SWITCH_DELAY_MS);
-            return;
-        }
-        if (result === null) {
-            log('Result timeout - treating as loss', 'error');
-            processResult(State.lastBet?.side === 'B' ? 'P' : 'B'); // Opposite side = loss
-        } else {
-            processResult(result);
-        }
-
-        // Wait 3s then check if shoe reset (total dropped to 0 = new shoe)
-        await sleep(3000);
-        const tableAfter = pp?.get(tableId);
-        if (tableAfter && tableAfter.total === 0) {
-            log(`New shoe detected (total=0) - moving to new table`, 'info');
-            markTableDone(tableId, 'new-shoe', false);
-            scheduleNext();
-            return;
-        }
-
-        // Check exit conditions again after result
-        const exitAfter = checkExitConditions();
-        if (exitAfter.exit) {
-            // Check if we can start a new session (have minimum unit)
-            const balanceAfter = getBalance();
-            const minUnitAfter = calcUnitSize(balanceAfter);
-            if (balanceAfter >= minUnitAfter) {
-                // Start new session
-                startNewSession();
+        if (Config.CONCURRENT === false) {
+            State.waitingForResult = true;
+            log('Waiting for result...', 'info');
+            const result = await waitForResult(tableId, countBefore);
+            State.waitingForResult = false;
+            if (result === 'STOPPED') return;
+            if (result === 'SHOE_RESET') {
+                log('Shoe reset - moving to new table (bet voided)', 'info');
+                markTableDone(tableId, 'shoe-reset', false);
                 scheduleNext();
                 return;
             }
-            // Not enough balance - stop completely
-            stop();
+            if (result === 'SHUFFLE') {
+                leaveTableForShuffle(tableId);
+                scheduleNext(Config.SHUFFLE_SWITCH_DELAY_MS);
+                return;
+            }
+            if (result === null) {
+                log('Result timeout - treating as loss', 'error');
+                processResult(betRec.side === 'B' ? 'P' : 'B', betRec);
+            } else {
+                processResult(result, betRec);
+            }
+            await sleep(3000);
+            const tableAfter = pp?.get(tableId);
+            if (tableAfter && tableAfter.total === 0) {
+                log(`New shoe detected (total=0) - moving to new table`, 'info');
+                markTableDone(tableId, 'new-shoe', false);
+                scheduleNext();
+                return;
+            }
+            const exitAfter = checkExitConditions();
+            if (exitAfter.exit) {
+                const balanceAfter = getBalance();
+                const minUnitAfter = calcUnitSize(balanceAfter);
+                if (balanceAfter >= minUnitAfter) {
+                    startNewSession();
+                    scheduleNext();
+                    return;
+                }
+                stop();
+                return;
+            }
+            scheduleNext();
             return;
         }
 
-        scheduleNext();
+        State.pendingBets.set(tableId, betRec);
+        State.waitingForResult = true;
+        log(`${betRec.table} | watching result · ${State.pendingBets.size} live · hunting next`, 'info');
+        void watchPending(betRec);
+        scheduleNext(Config.CONCURRENT_SCAN_MS ?? 450);
     };
 
-    const scheduleNext = (delay = Config.BET_DELAY) => {
+    const watchPending = async (bet) => {
+        const result = await waitForResult(bet.tableId, bet.countBefore);
+        if (State.pendingBets.get(bet.tableId) !== bet) return;
+        State.pendingBets.delete(bet.tableId);
+        State.waitingForResult = State.pendingBets.size > 0;
+        if (!State.running || result === 'STOPPED') return;
+        if (result === 'SHOE_RESET') {
+            log(`${bet.table} | Shoe reset — stake voided`, 'info');
+            markTableDone(bet.tableId, 'shoe-reset', false);
+            return;
+        }
+        if (result === 'SHUFFLE') {
+            leaveTableForShuffle(bet.tableId);
+            return;
+        }
+        if (result === null) {
+            log(`${bet.table} | Result timeout - treating as loss`, 'error');
+            processResult(bet.side === 'B' ? 'P' : 'B', bet);
+            return;
+        }
+        processResult(result, bet);
+    };
+
+    const scheduleNext = (delay) => {
         if (!State.running) return;
-        let ms = delay;
+        const fallback = Config.CONCURRENT === false
+            ? Config.BET_DELAY
+            : (Config.CONCURRENT_SCAN_MS ?? 450);
+        let ms = delay != null ? delay : fallback;
         if (Config.HUMANIZE !== false) {
             ms = jitterMs(delay, delay === Config.BET_DELAY ? (Config.HUMAN_BET_DELAY_JITTER ?? 0.28) : 0.12);
         }
@@ -2948,11 +3080,13 @@ ${line()}
     // CONTROL API
     // ═══════════════════════════════════════════════════════════════════════
 
-    const start = () => {
+    const start = async () => {
         if (State.running) {
             log('Already running');
             return;
         }
+        const attached = await util.ensureDebugger();
+        if (!attached) log('Debugger attach failed — clicks fall back to dispatchEvent', 'error');
 
         // Pre-flight checks
         if (!pp) {
@@ -2975,6 +3109,8 @@ ${line()}
         State.sessionUnitSize = calcUnitSize(balance);
 
         State.running = true;
+        State.pendingBets.clear();
+        State.waitingForResult = false;
         setResumeWanted(true);
         const sideMode =
             Config.SIDE === null
@@ -2985,13 +3121,15 @@ ${line()}
             ? `Paroli (${paroliCap} wins cap) WIN→raise rung · LOSE→reset`
             : `Martingale WIN→1 unit · LOSE→double (${Config.STEPS.join('→')} units)`;
         log(`STARTED | Balance: $${balance.toFixed(2)} | Unit: $${State.sessionUnitSize.toFixed(2)} (1/${Math.round(1/Config.UNIT_FRACTION)} of balance)`, 'info');
-        log(`${modeLine} | Side: ${sideMode} | After T only: ${Config.BET_AFTER_TIE ? 'YES (all tables)' : 'no'} | Stop-loss: ${fmtUnitCount(Config.SESSION_STOP_LOSS, true)} | Stop-win: ${fmtUnitCount(Config.SESSION_STOP_WIN, true)}`);
+        log(`${modeLine} | Side: ${sideMode} | After T only: ${Config.BET_AFTER_TIE ? 'YES (all tables)' : 'no'} | Concurrent: ${Config.CONCURRENT === false ? 'no' : 'YES'} | Stop-loss: ${fmtUnitCount(Config.SESSION_STOP_LOSS, true)} | Stop-win: ${fmtUnitCount(Config.SESSION_STOP_WIN, true)}`);
 
         betCycle();
     };
 
     const stop = (opts = {}) => {
         State.running = false;
+        State.pendingBets.clear();
+        State.waitingForResult = false;
         if (State.intervalId) {
             clearTimeout(State.intervalId);
             State.intervalId = null;
@@ -3016,6 +3154,7 @@ ${line()}
         State.focusedTable = null;
         State.usedTables.clear();
         State.stakedRoadTotal.clear();
+        State.pendingBets.clear();
         State.tableBetCount = 0;
         State.lastBet = null;
         State.lastResult = null;
@@ -3031,7 +3170,10 @@ ${line()}
         const table = State.focusedTable;
         return {
             running: State.running,
-            waiting: State.waitingForResult,
+            waiting: State.pendingBets.size > 0 || State.waitingForResult,
+            pending: State.pendingBets.size,
+            pendingIds: [...State.pendingBets.keys()],
+            concurrent: Config.CONCURRENT !== false,
             mode: useParoli() ? 'paroli' : 'martingale',
             side: Config.SIDE,
             balance,
@@ -3205,7 +3347,7 @@ ${line()}
 <div class="wrap">
   <div class="bar" id="bar">
     <span class="dot" id="dot"></span>
-    <span class="title">Play HUD</span>
+    <span class="title">Play HUD · ext</span>
     <span class="phase" id="phase">stopped</span>
     <button class="icon" id="min" type="button" title="Minimize">–</button>
   </div>
@@ -3325,9 +3467,11 @@ ${line()}
         const paint = () => {
             const s = snapshot();
             const ready = !!(pp && pick);
-            const phase = !s.running ? 'stopped' : s.waiting ? 'waiting' : (s.afterTie ? 'wait T' : 'running');
+            const phase = !s.running
+                ? 'stopped'
+                : (s.pending > 0 ? `${s.pending} live` : (s.afterTie ? 'wait T' : 'running'));
             const dot = $('dot');
-            dot.className = `dot${s.running ? (s.waiting ? ' wait' : ' on') : ''}`;
+            dot.className = `dot${s.running ? (s.pending > 0 ? ' wait' : ' on') : ''}`;
             $('phase').textContent = phase;
             $('start').disabled = s.running;
             $('stop').disabled = !s.running;
@@ -3368,8 +3512,9 @@ ${line()}
                     const id = t.gameId || t.id;
                     const name = displayTableName(t.name || id || '?');
                     const chop = t.pingPong?.effective ?? 0;
-                    const open = t.canBet ? 'open' : 'wait';
-                    const active = id && id === s.tableId ? ' active' : '';
+                    const live = Array.isArray(s.pendingIds) && s.pendingIds.includes(id);
+                    const open = live ? 'live' : (t.canBet ? 'open' : 'wait');
+                    const active = id && (id === s.tableId || live) ? ' active' : '';
                     const last = (() => {
                         try { return pp?.lastN?.(id, 1)?.[0] || ''; } catch { return ''; }
                     })();
@@ -3377,7 +3522,7 @@ ${line()}
                     return `<div class="trow${active}" data-id="${esc(id)}">` +
                         `<span class="tname">${esc(name)}</span>` +
                         `<span class="chip">chop ${chop}${lastMark}</span>` +
-                        `<span class="${t.canBet ? 'ok' : 'no'}">${open}</span></div>`;
+                        `<span class="${live || t.canBet ? 'ok' : 'no'}">${open}</span></div>`;
                 }).join('')
                 : '<div class="trow"><span class="tname">No tables yet</span></div>';
 
@@ -3467,6 +3612,7 @@ ${line()}
     };
 
     const bootHud = () => {
+        void util.ensureDebugger();
         if (document.documentElement) ensureHud();
         else document.addEventListener('DOMContentLoaded', ensureHud, { once: true });
         const kick = () => { void tryResumeAfterReload(); };
@@ -3490,5 +3636,5 @@ ${line()}
     global.play = play;
     global.sb = { version: VERSION, util, pp, pick, play };
 
-    console.log(`[SB] v${VERSION} · pp + pick + play HUD · focus masked · sb.version`);
+    console.log(`[SB] v${VERSION} · extension · pp + pick + play HUD · trusted CDP clicks · sb.version`);
 })(typeof window !== 'undefined' ? window : this);

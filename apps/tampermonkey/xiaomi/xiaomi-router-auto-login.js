@@ -4,8 +4,7 @@
 // @version      2.0.2
 // @description  Auto-login to Xiaomi router LuCI web UI
 // @author       You
-// @match        http://192.168.31.1/cgi-bin/luci/web
-// @match        http://192.168.31.1/cgi-bin/luci/web*
+// @match        http://192.168.31.1/cgi-bin/luci/*
 // @grant        none
 // @run-at       document-idle
 // ==/UserScript==

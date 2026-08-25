@@ -1,50 +1,50 @@
 # Baccarat Betting System
 
-Automated Martingale betting for Pragmatic Play live baccarat on Stake.com.
+Automated Paroli / Martingale betting for Pragmatic Play live multibaccarat on Stake.com.
+
+**Live path is the Chrome extension** in `extension/` (v8.1.0). Tampermonkey `stake-baccarat.js` is the untrusted-click fallback — disable it when the extension is loaded.
 
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                 stake-baccarat.js  (one TM script)           │
-│                                                              │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
-│  │  socks      │ →  │  pick       │ →  │  play HUD   │      │
-│  │  (pp API)   │    │  (pick API) │    │  (play API) │      │
-│  └─────────────┘    └─────────────┘    └─────────────┘      │
-│   WebSocket          Table Scoring       Martingale          │
-│   Interceptor        & Selection         Execution           │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│  Chrome extension (extension/)                                  │
+│                                                                 │
+│  page.js MAIN world     content.js isolated     background.js   │
+│  WS + pick + play HUD   postMessage bridge      debugger CDP    │
+│  document_start         trustedClick relay      Input.mouse     │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ## Directory Structure
 
 ```
 stake/baccarat/
-├── stake-baccarat.js                       # unified socks + pick + play HUD
-├── stake-baccarat-pick-telegram-monitor.js # optional Telegram bridge
-├── archive/                                # timestamped .bak snapshots
-├── legacy/                   # old single-table scripts
+├── extension/              # LIVE — Load unpacked in chrome://extensions
+│   ├── manifest.json
+│   ├── background.js       # chrome.debugger Input.dispatchMouseEvent
+│   ├── content.js          # isolated bridge
+│   ├── page.js             # HUD + betting (MAIN world)
+│   ├── popup.html
+│   └── README.md
+├── stake-baccarat.js       # Tampermonkey fallback (untrusted clicks)
+├── stake-baccarat-pick-telegram-monitor.js
+├── archive/
+├── legacy/
 ├── static/
 ├── debug/
-│   ├── fetch                # HAR WebSocket captures
-│   ├── socks-v1             # old socks version
-│   └── socks-v2             # old socks version
 └── README.md
 ```
 
 ## Installation
 
-Install **one** script in Tampermonkey:
+1. Chrome → `chrome://extensions` → Developer mode → **Load unpacked**
+2. Select `C:\Users\jar71\blue\apps\tampermonkey\stake\baccarat\extension`
+3. Open Stake Multiplay. Inner frame must be `client.pragmaticplaylive.net/desktop/multibaccarat`
+4. Console: `[SB] v8.1.0 · extension · …` HUD title **Play HUD · ext**
+5. Disable Tampermonkey `stake-baccarat.js` (double WebSocket hook otherwise)
 
-1. `stake-baccarat.js` — `@run-at document-start` (socks + pick + play HUD)
-
-Optional: `stake-baccarat-pick-telegram-monitor.js` if you want Telegram wallet lines.
-
-Disable or delete the old three Tampermonkey entries (socks / pick / play) so they do not double-hook the WebSocket.
-
-Target: `*://client.pragmaticplaylive.net/desktop/multibaccarat/*`
+Chrome shows **“debugging this browser”** while the debugger is attached. That is required for `isTrusted` clicks. Hard-refresh after extension reload.
 
 Dump the **inner** multibaccarat frame (not Stake mini-play / shell iframes) into `elements.txt` when auditing DOM. Confirm with:
 
@@ -65,11 +65,11 @@ Stable selectors used by play + helpers:
 
 Hashed CSS classes (`.rM_r1`, `.lq_lv`, …) change between builds — do not use them.
 
-Unified `7.0.0` is one IIFE (`createPp` → `createPick` → `createPlay`) and mounts the on-page HUD. Telegram monitor `1.3.1` is optional and keeps older `wallet-mobile-*` selectors as fallbacks.
+Unified `8.1.0` (extension `page.js`) hunts after-T tables **concurrently** (does not wait for a result before the next place). Trusted CDP clicks. Telegram monitor `1.3.1` is optional.
 
 ## Quick Start
 
-The play HUD appears on the multibaccarat page after `stake-baccarat.js` loads. Use it instead of the console.
+The play HUD appears on the multibaccarat page after `page.js` loads. Use it instead of the console.
 
 ```javascript
 pp.status()       // all tables with P/B/T data
