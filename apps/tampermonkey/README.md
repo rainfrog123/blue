@@ -20,7 +20,7 @@ Disable old split Gemini / baccarat entries before import.
 | `ft/ft.js` | Ctrl+C copies the full FT article when it is on the page |
 | `wsj/wsj.js` | Ctrl+C copies the full WSJ article when it is on the page |
 | `caixin/caixin-reader-relogin-and-block-redirect.js` | Relogin + block global redirect |
-| `twitter/twitter-ui-cleanup-hide-pill-and-verified.js` | Hide pill + remove verified |
+| `twitter/twitter.js` | Ctrl+C copies tweet + comments; hide New posts pill + verified |
 | `xiaohongshu/xiaohongshu-ctrl-click-new-tab.js` | Ctrl+Click new tab |
 | `xiaomi/xiaomi-router-auto-login.js` | LuCI auto-login |
 | `stake/blackjack/stake-blackjack-dom-automation.js` | DOM automation |

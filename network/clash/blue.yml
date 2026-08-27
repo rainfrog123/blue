@@ -240,26 +240,26 @@ proxies:
   #   skip-cert-verify: true
   #   # no up/down / brutal-opts — BBR (2026-08-08)
 
-  # Aliyun Tokyo SWAS (ali-jp) — via 3x-ui SQLite (migrated 2026-08-06)
+  # Aliyun Tokyo SWAS (ali-jp) — OFFLINED 2026-08-27
   # Backend: container 3x-ui (SS :12033 / Hy2 :443/udp / Trojan WS :8080 ← cloudflared)
   # Panel: ssh -L 2053:127.0.0.1:2053 ali-jp → http://127.0.0.1:2053/ea01xgh4nmik/
-  - name: 🇯🇵ali-jp
-    type: ss
-    server: 47.79.91.138
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: wLQpqnCHuoHLuLMT
-    udp: true
+#   - name: 🇯🇵ali-jp
+#     type: ss
+#     server: 47.79.91.138
+#     port: 12033
+#     cipher: chacha20-ietf-poly1305
+#     password: wLQpqnCHuoHLuLMT
+#     udp: true
 
-  # Hysteria 2 (ali-jp / 3x-ui — self-signed hyjp.hyas.site until ACME)
+  # Hysteria 2 (ali-jp / 3x-ui — self-signed hyjp.hyas.site until ACME) — OFFLINED 2026-08-27
   # no up/down / brutal-opts — BBR (2026-08-08)
-  - name: 🇯🇵ali-jp_hy2
-    type: hysteria2
-    server: 47.79.91.138
-    port: 443
-    password: u1YpCYtVWp8QWdA0WCF6yujW
-    sni: hyjp.hyas.site
-    skip-cert-verify: true
+#   - name: 🇯🇵ali-jp_hy2
+#     type: hysteria2
+#     server: 47.79.91.138
+#     port: 443
+#     password: u1YpCYtVWp8QWdA0WCF6yujW
+#     sni: hyjp.hyas.site
+#     skip-cert-verify: true
 
   # Oracle Tokyo Always Free micro (oracle-tokyo / e2-micro-1) — via 3x-ui SQLite
   # Backend: container 3x-ui (SS :12033 / Hy2 :443/udp / Trojan WS :8080 ← cloudflared later)
@@ -593,120 +593,120 @@ proxies:
     sni: hyvu.hyas.site
     skip-cert-verify: true
 
-  # Trojan via Cloudflare (ali-jp / 3x-ui) — tunnel → http://3x-ui:8080
+  # Trojan via Cloudflare (ali-jp / 3x-ui) — OFFLINED 2026-08-27
   # Hostnames: ajp.hyas.space + ajp.hyas.site · WS path /x7f9k2m4p8
   # 8× Japan CF anycast IPs (same set as 🇯🇵azure_nrt_01..08). Not SG CF.
-  - name: 🇯🇵ali-jp_nrt_01
-    type: trojan
-    server: 162.159.38.58
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_02
-    type: trojan
-    server: 162.159.39.248
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_03
-    type: trojan
-    server: 172.64.53.144
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_04
-    type: trojan
-    server: 108.162.198.99
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_05
-    type: trojan
-    server: 162.159.44.202
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_06
-    type: trojan
-    server: 172.64.229.84
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_07
-    type: trojan
-    server: 162.159.45.212
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
-
-  - name: 🇯🇵ali-jp_nrt_08
-    type: trojan
-    server: 172.64.52.153
-    port: 443
-    password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
-    sni: ajp.hyas.space
-    skip-cert-verify: false
-    network: ws
-    ws-opts:
-      path: /x7f9k2m4p8
-      headers:
-        Host: ajp.hyas.space
-    udp: true
+#   - name: 🇯🇵ali-jp_nrt_01
+#     type: trojan
+#     server: 162.159.38.58
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_02
+#     type: trojan
+#     server: 162.159.39.248
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_03
+#     type: trojan
+#     server: 172.64.53.144
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_04
+#     type: trojan
+#     server: 108.162.198.99
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_05
+#     type: trojan
+#     server: 162.159.44.202
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_06
+#     type: trojan
+#     server: 172.64.229.84
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_07
+#     type: trojan
+#     server: 162.159.45.212
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
+#
+#   - name: 🇯🇵ali-jp_nrt_08
+#     type: trojan
+#     server: 172.64.52.153
+#     port: 443
+#     password: ba19c9d6-3fc0-4085-9f47-465c5d7cceef
+#     sni: ajp.hyas.space
+#     skip-cert-verify: false
+#     network: ws
+#     ws-opts:
+#       path: /x7f9k2m4p8
+#       headers:
+#         Host: ajp.hyas.space
+#     udp: true
 
   # Hysteria 2 (Azure SG / 3x-ui — hyaz.hyas.site)
   # no up/down / brutal-opts — BBR (2026-08-08)
@@ -1420,7 +1420,7 @@ proxy-groups:
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
       - 🔷 Azure Nodes
-      - 🔵 Aliyun Nodes
+      # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🔑 Manual Selection
@@ -1435,7 +1435,7 @@ proxy-groups:
   - name: 🌀 Hysteria Nodes
     type: select
     proxies:
-      - 🇯🇵ali-jp_hy2
+      # - 🇯🇵ali-jp_hy2  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oci_hy2
       - 🇯🇵oci_hy2_v6
       - 🇯🇵oracle-tokyo2_hy2
@@ -1486,15 +1486,15 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       - 🌀 Hysteria Nodes
-      - 🔵 Aliyun Nodes
+      # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
       - 🟣 Vultr Nodes
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - ☁️ Cloudflare CF Nodes
-      - 🇯🇵ali-jp
-      - 🇯🇵ali-jp_hy2
+      # - 🇯🇵ali-jp  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_hy2  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oci_ss
       - 🇯🇵oci_ss_v6
       - 🇯🇵oci_hy2
@@ -1515,7 +1515,7 @@ proxy-groups:
       - 🇯🇵vultr-osk_ss_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
       - 🇯🇵vultr-osk_hy2_v6
-      - 🇯🇵ali-jp_nrt_01
+      # - 🇯🇵ali-jp_nrt_01  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oracle-a1_nrt_01
       - 🎯 Direct
 
@@ -1541,19 +1541,20 @@ proxy-groups:
       - 🇯🇵azure_nrt_07
       - 🇯🇵azure_nrt_08
 
-  - name: 🔵 Aliyun Nodes
-    type: select
-    proxies:
-      - 🇯🇵ali-jp_nrt_01
-      - 🇯🇵ali-jp_nrt_02
-      - 🇯🇵ali-jp_nrt_03
-      - 🇯🇵ali-jp_nrt_04
-      - 🇯🇵ali-jp_nrt_05
-      - 🇯🇵ali-jp_nrt_06
-      - 🇯🇵ali-jp_nrt_07
-      - 🇯🇵ali-jp_nrt_08
-      - 🇯🇵ali-jp
-      - 🇯🇵ali-jp_hy2
+  # Aliyun Nodes group — OFFLINED 2026-08-27
+#   - name: 🔵 Aliyun Nodes
+#     type: select
+#     proxies:
+#       - 🇯🇵ali-jp_nrt_01
+#       - 🇯🇵ali-jp_nrt_02
+#       - 🇯🇵ali-jp_nrt_03
+#       - 🇯🇵ali-jp_nrt_04
+#       - 🇯🇵ali-jp_nrt_05
+#       - 🇯🇵ali-jp_nrt_06
+#       - 🇯🇵ali-jp_nrt_07
+#       - 🇯🇵ali-jp_nrt_08
+#       - 🇯🇵ali-jp
+#       - 🇯🇵ali-jp_hy2
 
   - name: 🟣 Vultr Nodes
     type: select
@@ -1602,7 +1603,7 @@ proxy-groups:
   - name: 🔑 Manual Selection
     type: select
     proxies:
-      - 🔵 Aliyun Nodes
+      # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
@@ -1612,11 +1613,11 @@ proxy-groups:
       - ☁️ Cloudflare CF Nodes
       - 🎯 Direct
 
-  # GFW hop for Decodo. Digi offlined 2026-07-28 — default Aliyun / Azure / Oracle / Vultr.
+  # GFW hop for Decodo. Digi offlined 2026-07-28 — default Azure / Oracle / Vultr.
   - name: 🔗 Decodo Dialer (GFW)
     type: select
     proxies:
-      - 🔵 Aliyun Nodes
+      # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
@@ -1664,8 +1665,8 @@ proxy-groups:
       # - 🇸🇬do_reality  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_warp  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_01  # OFFLINED Digi 2026-07-28
-      - 🇯🇵ali-jp
-      - 🇯🇵ali-jp_hy2
+      # - 🇯🇵ali-jp  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_hy2  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oci_ss
       - 🇯🇵oci_ss_v6
       - 🇯🇵oci_hy2
@@ -1693,8 +1694,8 @@ proxy-groups:
     proxies:
       - 🚀 Node Selection
       # - 🇸🇬do_01  # OFFLINED Digi 2026-07-28
-      - 🇯🇵ali-jp
-      - 🇯🇵ali-jp_hy2
+      # - 🇯🇵ali-jp  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_hy2  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oci_ss
       - 🇯🇵oci_ss_v6
       - 🇯🇵oci_hy2
@@ -1742,14 +1743,14 @@ proxy-groups:
       - 🇯🇵azure_nrt_06
       - 🇯🇵azure_nrt_07
       - 🇯🇵azure_nrt_08
-      - 🇯🇵ali-jp_nrt_01
-      - 🇯🇵ali-jp_nrt_02
-      - 🇯🇵ali-jp_nrt_03
-      - 🇯🇵ali-jp_nrt_04
-      - 🇯🇵ali-jp_nrt_05
-      - 🇯🇵ali-jp_nrt_06
-      - 🇯🇵ali-jp_nrt_07
-      - 🇯🇵ali-jp_nrt_08
+      # - 🇯🇵ali-jp_nrt_01  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_02  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_03  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_04  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_05  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_06  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_07  # OFFLINED Aliyun 2026-08-27
+      # - 🇯🇵ali-jp_nrt_08  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oracle-a1
       - 🇯🇵oracle-a1_v6
       - 🇯🇵oracle-a1_nrt_01
@@ -1803,7 +1804,7 @@ proxy-groups:
   - name: 🎮 Riot Games
     type: select
     proxies:
-      - 🔵 Aliyun Nodes
+      # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes

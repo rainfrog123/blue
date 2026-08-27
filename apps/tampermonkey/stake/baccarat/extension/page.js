@@ -2,6 +2,23 @@
  * Stake Baccarat — Chrome extension MAIN-world script (MV3).
  * Injected by manifest content_scripts at document_start (not Tampermonkey).
  *
+ * v8.1.17 — Smaller HUD; log is the main pane (monospace). Old 760×560 size resets once.
+ * v8.1.16 — Support popup: find OK by label, click through the HUD, retry if it stays.
+ * v8.1.15 — HUD lives in the Multiplay iframe again (Stake only relays wallet).
+ * v8.1.14 — HUD size: drag the right/bottom edges or the corner grip; saved with last-used settings.
+ * v8.1.13 — HUD – collapses to the title bar only (no leftover min-height).
+ * v8.1.12 — HUD on Stake (not the PP iframe); last-used Side/Mode/Hunt/RNG in chrome.storage; larger log.
+ * v8.1.11 — HUD P/B random: Math.random, crypto bit, von Neumann, mix hash, shuffle 4+4.
+ * v8.1.10 — $0.20 bets always arm the $0.20 chip first (never P/B while a $1 chip is still selected).
+ * v8.1.9 — CDP Emulation.setFocusEmulationEnabled (same as DevTools “Emulate a focused page”).
+ * v8.1.8 — stake ≥ $1: fill with $1 chips first, then $0.20 (never lead with $5 or $0.20).
+ * v8.1.7 — always click the chip we need (ring is in the DOM even when unselected).
+ * v8.1.6 — $1-min tables: raise stake to min and start with the $1 chip when stake ≥ $1.
+ * v8.1.5 — concurrent: recalc 1-unit size from bankroll after every settled hand.
+ * v8.1.4 — book the wire lpbet (not felt text); scoped focus mask; CDP re-attach on click miss.
+ * v8.1.3 — wider HUD, selectable log, hunt switch (concurrent / one-by-one). Concurrent default.
+ * v8.1.2 — top-up short chips immediately (do not wait 2s); watch leftover felt stake.
+ * v8.1.1 — serial hunt again: one place, wait for result, then the next table.
  * v8.1.0 — concurrent hunt: keep placing on other tables while results settle.
  * v8.0.1 — confirm felt/wire before “placement failed” (CDP clicks are slower than dispatchEvent).
  * v8.0.0 — trusted clicks via extension debugger Input.dispatchMouseEvent.
@@ -25,42 +42,52 @@
 (function (global) {
     'use strict';
 
-    const VERSION = '8.1.0';
+    const VERSION = '8.1.17';
 
-    /** Spoof visible/focused so Stake + PP do not pause when the tab is in the background. From archive/always-focused.js.bak. */
+    /**
+     * Keep PP/Stake from pausing when the tab is in the background.
+     * CDP clicks do not need the tab focused; the game still checks visibility.
+     * Scope patches to this document only — do not touch Document.prototype or mouseleave.
+     */
     const maskPageFocus = () => {
-        const visibleDesc = {
-            configurable: true,
-            get() { return 'visible'; },
+        const doc = document;
+        const define = (obj, key, get) => {
+            try {
+                Object.defineProperty(obj, key, { configurable: true, get });
+            } catch (_) {}
         };
-        const notHiddenDesc = {
-            configurable: true,
-            get() { return false; },
-        };
+        define(doc, 'visibilityState', () => 'visible');
+        define(doc, 'webkitVisibilityState', () => 'visible');
+        define(doc, 'hidden', () => false);
+        define(doc, 'webkitHidden', () => false);
         try {
-            Object.defineProperty(document, 'visibilityState', visibleDesc);
-            Object.defineProperty(document, 'webkitVisibilityState', visibleDesc);
-            Object.defineProperty(document, 'hidden', notHiddenDesc);
-            Object.defineProperty(document, 'webkitHidden', notHiddenDesc);
-        } catch (_) {}
-        try {
-            Document.prototype.hasFocus = function () { return true; };
-        } catch (_) {}
-        const block = (e) => { e.stopImmediatePropagation(); };
-        window.addEventListener('blur', block, true);
-        window.addEventListener('mouseleave', block, true);
-        window.addEventListener('visibilitychange', block, true);
-        window.addEventListener('webkitvisibilitychange', block, true);
+            Object.defineProperty(doc, 'hasFocus', {
+                configurable: true,
+                value: () => true,
+            });
+        } catch (_) {
+            try { doc.hasFocus = () => true; } catch (_) {}
+        }
+        const silent = (e) => { e.stopImmediatePropagation(); };
+        window.addEventListener('blur', silent, true);
+        doc.addEventListener('visibilitychange', silent, true);
+        doc.addEventListener('webkitvisibilitychange', silent, true);
+        window.addEventListener('pagehide', silent, true);
+        window.addEventListener('freeze', silent, true);
     };
 
     const isMultibaccarat = /pragmaticplaylive\.net\/desktop\/multibaccarat/i.test(String(location.href || ''));
+    const isStakeHost = /(?:^|\.)stake\.com$/i.test(String(location.hostname || ''));
+    const isTopWindow = window === window.top;
 
     maskPageFocus();
-    if (!isMultibaccarat) {
-        global.sb = { version: VERSION, focusOnly: true };
-        console.log(`[SB] v${VERSION} · extension · focus mask only (${location.host})`);
-        return;
-    }
+    try {
+        window.postMessage({
+            source: 'sb-page',
+            type: 'attachDebugger',
+            id: `sb-attach-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        }, '*');
+    } catch (_) {}
 
     const extCall = (type, extra = {}) => new Promise((resolve) => {
         const id = `sb-${type}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -68,25 +95,192 @@
             const d = e.data;
             if (!d || d.source !== 'sb-ext' || d.id !== id) return;
             window.removeEventListener('message', onMsg);
-            resolve(!!d.ok);
+            resolve({ ok: !!d.ok, data: d.data, error: d.error || null });
         };
         window.addEventListener('message', onMsg);
         window.postMessage({ source: 'sb-page', type, id, ...extra }, '*');
         setTimeout(() => {
             window.removeEventListener('message', onMsg);
-            resolve(false);
+            resolve({ ok: false, data: null, error: 'timeout' });
         }, type === 'attachDebugger' ? 4000 : 2500);
     });
+
+    const hudBusSend = (payload) => {
+        try {
+            window.postMessage({
+                source: 'sb-page',
+                type: 'hudBus',
+                id: `sb-bus-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+                payload,
+            }, '*');
+        } catch (_) {}
+    };
+
+    const HUD_STORE_KEY = 'sb-play-hud';
+    const HUD_WIDTH = 400;
+    const HUD_HEIGHT = 440;
+    const HUD_SIZE_GEN = 2;
+    const SIDE_ENGINES = ['math', 'crypto', 'fair', 'mix', 'shuffle'];
+    const WALLET_VALUE_SELS = [
+        '[data-testid="wallet-balance-value"] span',
+        '[data-testid="wallet-mobile-balance"] [data-testid="wallet-mobile-value"] span',
+        '[data-testid="wallet-mobile-balance-value"] span',
+    ];
+    const moneyFromText = (text) => {
+        const n = parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
+        return Number.isFinite(n) ? n : 0;
+    };
+    const readDomWallet = () => {
+        for (const sel of WALLET_VALUE_SELS) {
+            const el = document.querySelector(sel);
+            if (!el?.textContent) continue;
+            const n = moneyFromText(el.textContent);
+            if (n > 0) return n;
+        }
+        return 0;
+    };
+    const normalizeSideEngine = (raw) => {
+        const s = String(raw || 'math').toLowerCase();
+        return SIDE_ENGINES.includes(s) ? s : 'math';
+    };
+    const defaultHudStore = () => ({
+        side: 'random',
+        mode: 'paroli',
+        hunt: 'concurrent',
+        rng: 'math',
+        min: false,
+        left: '',
+        top: '12px',
+        width: 400,
+        height: 440,
+        sizeGen: 2,
+    });
+    const migrateLocalHud = (store) => {
+        const next = { ...store };
+        try {
+            const hunt = localStorage.getItem('sb-play-hud-hunt');
+            if (hunt === 'serial' || hunt === 'concurrent') next.hunt = hunt;
+            const rng = localStorage.getItem('sb-play-hud-rng');
+            if (rng) next.rng = normalizeSideEngine(rng);
+            if (localStorage.getItem('sb-play-hud-min') === '1') next.min = true;
+            const pos = JSON.parse(localStorage.getItem('sb-play-hud-pos') || 'null');
+            if (pos?.left) next.left = pos.left;
+            if (pos?.top) next.top = pos.top;
+            const side = localStorage.getItem('sb-play-hud-side');
+            if (side === 'P' || side === 'B' || side === 'random') next.side = side;
+            const mode = localStorage.getItem('sb-play-hud-mode');
+            if (mode === 'paroli' || mode === 'martingale') next.mode = mode;
+        } catch (_) {}
+        return next;
+    };
+    const readHudStore = async () => {
+        const res = await extCall('storageGet', { keys: [HUD_STORE_KEY] });
+        const raw = res.ok && res.data ? res.data[HUD_STORE_KEY] : null;
+        const base = defaultHudStore();
+        const merged = raw && typeof raw === 'object' ? { ...base, ...raw } : migrateLocalHud(base);
+        merged.rng = normalizeSideEngine(merged.rng);
+        if (merged.side !== 'P' && merged.side !== 'B') merged.side = 'random';
+        if (merged.mode !== 'martingale') merged.mode = 'paroli';
+        if (merged.hunt !== 'serial') merged.hunt = 'concurrent';
+        const w = parseInt(merged.width, 10);
+        const h = parseInt(merged.height, 10);
+        const gen = parseInt(merged.sizeGen, 10);
+        if (gen !== HUD_SIZE_GEN) {
+            merged.width = HUD_WIDTH;
+            merged.height = HUD_HEIGHT;
+            merged.sizeGen = HUD_SIZE_GEN;
+        } else {
+            merged.width = Number.isFinite(w) && w >= 280 ? Math.min(2400, w) : HUD_WIDTH;
+            merged.height = Number.isFinite(h) && h >= 200 ? Math.min(2000, h) : HUD_HEIGHT;
+        }
+        return merged;
+    };
+    const writeHudStore = async (patch) => {
+        const cur = await readHudStore();
+        const next = { ...cur, ...patch };
+        await extCall('storageSet', { data: { [HUD_STORE_KEY]: next } });
+        return next;
+    };
+    const bindHudResize = (host, wrap, opts) => {
+        const minW = 320;
+        const minH = 200;
+        ['e', 's', 'se'].forEach((edge) => {
+            const el = document.createElement('div');
+            el.className = 'rsz ' + edge;
+            el.title = 'Drag to resize';
+            wrap.appendChild(el);
+            el.addEventListener('mousedown', (e) => {
+                if (opts.isCollapsed()) return;
+                e.preventDefault();
+                e.stopPropagation();
+                const r = host.getBoundingClientRect();
+                const start = { x: e.clientX, y: e.clientY, w: r.width, h: r.height, left: r.left, top: r.top };
+                const move = (ev) => {
+                    let w = start.w;
+                    let h = start.h;
+                    if (edge.indexOf('e') !== -1) w = start.w + (ev.clientX - start.x);
+                    if (edge.indexOf('s') !== -1) h = start.h + (ev.clientY - start.y);
+                    const maxW = Math.max(minW, window.innerWidth - start.left - 8);
+                    const maxH = Math.max(minH, window.innerHeight - start.top - 8);
+                    w = Math.round(Math.min(maxW, Math.max(minW, w)));
+                    h = Math.round(Math.min(maxH, Math.max(minH, h)));
+                    host.style.width = w + 'px';
+                    host.style.height = h + 'px';
+                    host.style.maxHeight = 'none';
+                    wrap.style.minHeight = '0';
+                    wrap.style.height = '100%';
+                };
+                const up = () => {
+                    window.removeEventListener('mousemove', move);
+                    window.removeEventListener('mouseup', up);
+                    const box = host.getBoundingClientRect();
+                    opts.onSave({
+                        width: Math.round(box.width),
+                        height: Math.round(box.height),
+                    });
+                };
+                window.addEventListener('mousemove', move);
+                window.addEventListener('mouseup', up);
+            });
+        });
+    };
+
+    const storeToConfigPatch = (store) => ({
+        SIDE: store.side === 'P' || store.side === 'B' ? store.side : null,
+        PROGRESSION_MODE: store.mode === 'martingale' ? 'martingale' : 'paroli',
+        CONCURRENT: store.hunt !== 'serial',
+        RANDOM_SIDE_ENGINE: normalizeSideEngine(store.rng),
+    });
+
+    if (!isMultibaccarat) {
+        if (isStakeHost && isTopWindow) {
+            const kick = () => {
+                setInterval(() => {
+                    const bal = readDomWallet();
+                    if (bal > 0) hudBusSend({ kind: 'wallet', balance: bal });
+                }, 800);
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', kick, { once: true });
+            } else {
+                kick();
+            }
+            global.sb = { version: VERSION, focusOnly: true, walletRelay: true };
+            console.log(`[SB] v${VERSION} · extension · focus + wallet relay (${location.host})`);
+        } else {
+            global.sb = { version: VERSION, focusOnly: true };
+            console.log(`[SB] v${VERSION} · extension · focus mask + CDP focus emulation (${location.host})`);
+        }
+        return;
+    }
 
     const util = {
         displayName: (s) => String(s ?? '').replace(/_/g, ' '),
         sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
-        money: (text) => {
-            const n = parseFloat(String(text || '').replace(/[^0-9.]/g, ''));
-            return Number.isFinite(n) ? n : 0;
-        },
-        ensureDebugger: () => extCall('attachDebugger'),
-        trustedClick: (clientX, clientY, gapMs) => extCall('trustedClick', { x: clientX, y: clientY, gapMs }),
+        money: moneyFromText,
+        ensureDebugger: async () => !!(await extCall('attachDebugger')).ok,
+        trustedClick: async (clientX, clientY, gapMs) =>
+            !!(await extCall('trustedClick', { x: clientX, y: clientY, gapMs })).ok,
         click: async (el, opts = {}) => {
             if (!el) return false;
             const r = el.getBoundingClientRect();
@@ -101,6 +295,8 @@
             const gap = opts.eventGapMs != null
                 ? opts.eventGapMs
                 : (4 + Math.floor(Math.random() * 18));
+            if (await util.trustedClick(clientX, clientY, gap)) return true;
+            await util.ensureDebugger();
             if (await util.trustedClick(clientX, clientY, gap)) return true;
             if (!util._trustedFallbackWarned) {
                 util._trustedFallbackWarned = true;
@@ -1893,23 +2089,29 @@ ${line()}
         /** Only stake the hand whose previous road result is T. Scans **all** pp tables, not pick.eligible(). Off = every open eligible table. */
         BET_AFTER_TIE: true,
         /**
-         * Used only when SIDE is null. Default `'math'` = `Math.random()` (non-crypto).
-         * `'crypto'` = Web Crypto `getRandomValues` (CSPRNG, uniform bit → P/B).
+         * Used only when SIDE is null.
+         * `math` = Math.random (default).
+         * `crypto` = Web Crypto LSB.
+         * `fair` = von Neumann extractor on crypto bits (unbiased 50/50).
+         * `mix` = avalanche of crypto + time + bet index + table id, then LSB.
+         * `shuffle` = crypto-shuffled 4P+4B shoe (exactly even each 8 bets).
          */
         RANDOM_SIDE_ENGINE: 'math',
         CHIP_VALUE: 0.20,           // Unit rounding; tray may also have $1 / $5 / …
         /** Gap between burst P/B clicks (ms). Keep short — betting window is often 1–2s. */
         CLICK_GAP_MS: 70,
-        /** After each P/B click, wait this long for wire/spot to move */
-        CLICK_WIRE_WAIT_MS: 400,
-        /** After the planned taps, wait this long before calling the stake short (CDP + lpbet lag) */
-        PLACE_CONFIRM_MS: 2000,
+        /** After each top-up P/B click, wait this long for wire/spot to move */
+        CLICK_WIRE_WAIT_MS: 180,
+        /** After retries are done, wait this long for late wire/spot (window may already be closed) */
+        PLACE_CONFIRM_MS: 700,
+        /** Brief settle after the planned burst, before top-up clicks */
+        BURST_SETTLE_MS: 160,
         /** Extra clicks allowed if a click did not register on the wire */
-        CLICK_RETRY: 2,
+        CLICK_RETRY: 8,
         CHIP_BAR_SEL: '[data-testid="chip-stack-bar"]',
         CHIP_BTN_PREFIX: 'chip-stack-value-',
         BET_DELAY: 2000,            // Delay between bet attempts (ms) when CONCURRENT is false
-        /** Hunt other after-T tables without waiting for the previous hand to settle. Off = old serial wait. */
+        /** Hunt other after-T tables without waiting for the previous hand to settle. Off = one-by-one. */
         CONCURRENT: true,
         /** Scan delay after a place (or when nothing is open) while concurrent. */
         CONCURRENT_SCAN_MS: 450,
@@ -1935,11 +2137,7 @@ ${line()}
         BANKER_BTN: '[data-betcode="1"]',
         TILE_SEL: '[id^="TileHeight-"]',
         /** Current wallet first; keep mobile chip selectors as fallback. */
-        WALLET_VALUE_SELS: [
-            '[data-testid="wallet-balance-value"] span',
-            '[data-testid="wallet-mobile-balance"] [data-testid="wallet-mobile-value"] span',
-            '[data-testid="wallet-mobile-balance-value"] span',
-        ],
+        WALLET_VALUE_SELS,
         POPUP_ROOT_SELS: [
             '[data-testid="popup"]',
             '[data-testid="popup-content"]',
@@ -1947,7 +2145,7 @@ ${line()}
             '[data-testid="modal"]',
         ],
         POPUP_TITLE_SEL: '[data-testid="blocking-popup-title"]',
-        POPUP_BUTTON_SEL: 'button[data-testid="button"], button[data-testid="icon-button"]',
+        POPUP_BUTTON_SEL: 'button[data-testid="button"], button[data-testid="icon-button"], [data-testid="blocking-popup-buttons"] [data-testid="button"]',
         /** After Support OK reloads the iframe, wait this long for pp + wallet then Start */
         RESUME_AFTER_RELOAD: true,
         RESUME_WAIT_MS: 25000,
@@ -2053,19 +2251,24 @@ ${line()}
 
     const fmtUnitCount = (n, signed = false) => {
         const v = Number(n) || 0;
-        const word = Math.abs(v) === 1 ? 'unit' : 'units';
+        const shown = Math.abs(v - Math.round(v)) < 1e-9 ? String(Math.round(v)) : v.toFixed(2);
+        const word = Math.abs(Number(shown)) === 1 ? 'unit' : 'units';
         if (signed) {
             const sign = v > 0 ? '+' : '';
-            return `${sign}${v} ${word}`;
+            return `${sign}${shown} ${word}`;
         }
-        return `${v} ${word}`;
+        return `${shown} ${word}`;
     };
 
     // Get current unit size (recomputed when a Paroli/Martingale round returns to 1 unit)
     const getUnitSize = () => State.sessionUnitSize || Config.MIN_UNIT;
 
-    const refreshUnitAfterRound = () => {
-        const balance = getBalance();
+    const refreshUnitAfterRound = (opts = {}) => {
+        const ui = getBalance();
+        const estimated = (State.sessionStartBalance || 0) + (State.sessionProfitDollars || 0);
+        const balance = opts.balance != null
+            ? opts.balance
+            : (Config.CONCURRENT !== false && estimated > 0 ? Math.max(ui, estimated) : ui);
         const next = calcUnitSize(balance);
         const prev = State.sessionUnitSize;
         State.sessionUnitSize = next;
@@ -2130,20 +2333,21 @@ ${line()}
                 : 'color:#0f172a;font-weight:500;';
         console.log(`%c${cfg.label}%c ${msg}`, cfg.labelCss, bodyCss);
         uiEvents.unshift({ at: Date.now(), type, msg: String(msg) });
-        if (uiEvents.length > 48) uiEvents.length = 48;
+        if (uiEvents.length > 80) uiEvents.length = 80;
         if (typeof hudRefresh === 'function') hudRefresh();
+        try { hudBusSend({ kind: 'state', snapshot: snapshot() }); } catch (_) {}
     };
 
     // ═══════════════════════════════════════════════════════════════════════
     // BALANCE
     // ═══════════════════════════════════════════════════════════════════════
 
+    let remoteWallet = 0;
+
     const getBalance = () => {
-        for (const sel of Config.WALLET_VALUE_SELS) {
-            const el = document.querySelector(sel);
-            if (!el?.textContent) continue;
-            return util.money(el.textContent);
-        }
+        const local = readDomWallet();
+        if (local > 0) return local;
+        if (remoteWallet > 0) return remoteWallet;
         return 0;
     };
 
@@ -2201,23 +2405,96 @@ ${line()}
     // ═══════════════════════════════════════════════════════════════════════
 
     const u32 = new Uint32Array(1);
+    let sideShoe = [];
 
-    /** Uniform P/B: default `math`; optional `crypto` via `getRandomValues` (falls back to `math` if missing). */
-    const randomSideFair = () => {
-        const engine = (Config.RANDOM_SIDE_ENGINE || 'math').toLowerCase();
-        if (engine === 'crypto') {
-            if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-                crypto.getRandomValues(u32);
-                return (u32[0] & 1) === 0 ? 'P' : 'B';
-            }
+    const sideEngineLabel = (raw) => {
+        switch (normalizeSideEngine(raw)) {
+            case 'crypto': return 'crypto bit';
+            case 'fair': return 'von Neumann';
+            case 'mix': return 'mix hash';
+            case 'shuffle': return 'shuffle 4+4';
+            default: return 'Math.random';
         }
+    };
+
+    const randomU32 = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+            crypto.getRandomValues(u32);
+            return u32[0] >>> 0;
+        }
+        return (Math.random() * 0x100000000) >>> 0;
+    };
+
+    const randomIndex = (n) => {
+        const span = Math.max(1, n | 0);
+        const max = Math.floor(0x100000000 / span) * span;
+        for (;;) {
+            const x = randomU32();
+            if (x < max) return x % span;
+        }
+    };
+
+    const bitToSide = (bit) => ((bit & 1) === 0 ? 'P' : 'B');
+
+    const cryptoBit = () => randomU32() & 1;
+
+    /** Unbiased 50/50: keep 01→P and 10→B, drop 00/11. */
+    const vonNeumannBit = () => {
+        for (let i = 0; i < 32; i++) {
+            const a = cryptoBit();
+            const b = cryptoBit();
+            if (a !== b) return a;
+        }
+        return cryptoBit();
+    };
+
+    /** Independent 50/50; extra entropy so concurrent tables do not share a thin PRNG stream. */
+    const mixHashBit = (tableId) => {
+        let h = randomU32();
+        h ^= Math.imul((State.sessionBets + 1) | 0, 0x9e3779b1);
+        h ^= Math.floor((typeof performance !== 'undefined' ? performance.now() : Date.now()) * 1000) >>> 0;
+        const tid = String(tableId || State.focusedTable?.gameId || '');
+        for (let i = 0; i < tid.length; i++) {
+            h = Math.imul(h ^ tid.charCodeAt(i), 16777619);
+        }
+        h ^= h >>> 16;
+        h = Math.imul(h, 0x7feb352d);
+        h ^= h >>> 15;
+        h = Math.imul(h, 0x846ca68b);
+        h ^= h >>> 16;
+        return h & 1;
+    };
+
+    const refillSideShoe = () => {
+        const deck = ['P', 'P', 'P', 'P', 'B', 'B', 'B', 'B'];
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = randomIndex(i + 1);
+            const tmp = deck[i];
+            deck[i] = deck[j];
+            deck[j] = tmp;
+        }
+        sideShoe = deck;
+    };
+
+    const shuffleSide = () => {
+        if (!sideShoe.length) refillSideShoe();
+        return sideShoe.pop();
+    };
+
+    /** Uniform P/B. `math` default; other engines stay 50/50 (shuffle is exactly even per 8-bet shoe). */
+    const randomSideFair = (tableId) => {
+        const engine = normalizeSideEngine(Config.RANDOM_SIDE_ENGINE);
+        if (engine === 'crypto') return bitToSide(cryptoBit());
+        if (engine === 'fair') return bitToSide(vonNeumannBit());
+        if (engine === 'mix') return bitToSide(mixHashBit(tableId));
+        if (engine === 'shuffle') return shuffleSide();
         return Math.random() < 0.5 ? 'P' : 'B';
     };
 
-    const chooseSide = () => {
+    const chooseSide = (tableId) => {
         if (Config.SIDE === 'B') return 'B';
         if (Config.SIDE === 'P') return 'P';
-        return randomSideFair();
+        return randomSideFair(tableId);
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -2225,6 +2502,49 @@ ${line()}
     // ═══════════════════════════════════════════════════════════════════════
 
     const roundCents = (n) => Math.round(Number(n) * 100) / 100;
+
+    const tableMinBet = (table) => {
+        const n = Number(table?.minBet);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+    };
+
+    const plannedDollars = () => {
+        const chip = Config.CHIP_VALUE;
+        const betDollars = getCurrentBetUnits() * getUnitSize();
+        return Math.max(chip, Math.round(betDollars / chip) * chip);
+    };
+
+    const stakeForTable = (table) => {
+        const planned = plannedDollars();
+        const min = tableMinBet(table);
+        if (min > 0 && planned + 1e-9 < min) {
+            const chip = Config.CHIP_VALUE;
+            return roundCents(Math.ceil(min / chip - 1e-9) * chip);
+        }
+        return planned;
+    };
+
+    const chipDisabled = (el) => !!(
+        el.disabled
+        || el.getAttribute('aria-disabled') === 'true'
+        || el.hasAttribute('disabled')
+    );
+
+    const chipLooksSelected = (el) => {
+        if (!el) return false;
+        const pressed = String(el.getAttribute('aria-pressed') || '').toLowerCase();
+        const checked = String(el.getAttribute('aria-checked') || '').toLowerCase();
+        const current = String(el.getAttribute('aria-current') || '').toLowerCase();
+        if (pressed === 'true' || checked === 'true' || current === 'true') return true;
+        if (el.getAttribute('data-selected') === 'true') return true;
+        const cls = `${el.className || ''} ${el.parentElement?.className || ''}`;
+        return /\b(selected|is-selected|is-active|chip-selected)\b/i.test(cls);
+    };
+
+    const selectedChipValue = () => {
+        const row = listChipButtons().find((c) => chipLooksSelected(c.el));
+        return row ? row.value : 0;
+    };
 
     const listChipButtons = () => {
         const prefix = Config.CHIP_BTN_PREFIX || 'chip-stack-value-';
@@ -2239,7 +2559,7 @@ ${line()}
             out.push({
                 value,
                 el,
-                disabled: !!(el.disabled || el.hasAttribute('disabled')),
+                disabled: chipDisabled(el),
             });
         }
         out.sort((a, b) => b.value - a.value);
@@ -2247,9 +2567,22 @@ ${line()}
     };
 
     const chipPlan = (target, enabledDesc) => {
+        const has = (v) => enabledDesc.some((c) => Math.abs(c.value - v) < 1e-9);
         const plan = [];
         let left = roundCents(target);
-        for (const { value } of enabledDesc) {
+
+        // Stake ≥ $1: $1 chips first, then smaller (0.20…). Do not lead with $5.
+        if (left + 1e-9 >= 1 && has(1)) {
+            const n = Math.floor((left + 1e-9) / 1);
+            for (let i = 0; i < n; i++) plan.push(1);
+            left = roundCents(left - n);
+        }
+
+        const rest = enabledDesc
+            .filter((c) => Math.abs(c.value - 1) > 1e-9)
+            .slice()
+            .sort((a, b) => b.value - a.value);
+        for (const { value } of rest) {
             while (left + 1e-9 >= value) {
                 plan.push(value);
                 left = roundCents(left - value);
@@ -2268,14 +2601,39 @@ ${line()}
         return groups;
     };
 
+    const chipsForStake = (target, chips) => {
+        const tray = chips.filter((c) => !c.disabled);
+        if (target + 1e-9 >= 1) {
+            for (const c of chips) {
+                if (c.value + 1e-9 < 1) continue;
+                if (tray.some((t) => Math.abs(t.value - c.value) < 1e-9)) continue;
+                tray.push(c);
+            }
+            tray.sort((a, b) => b.value - a.value);
+        }
+        return tray;
+    };
+
     const selectChip = async (value) => {
-        const chips = listChipButtons();
-        const row = chips.find((c) => Math.abs(c.value - value) < 1e-9);
-        if (!row || row.disabled) return false;
-        if (row.el.querySelector('[data-testid$="-ring"]')) return true;
-        await simulateClick(row.el);
-        await humanSleep(40);
-        return true;
+        const match = (c) => Math.abs(c.value - value) < 1e-9;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const chips = listChipButtons();
+            const row = chips.find(match);
+            if (!row) return false;
+            const cur = chips.find((c) => chipLooksSelected(c.el));
+            if (cur && match(cur)) return true;
+            // Ring nodes stay in the DOM for every enabled chip. Always click.
+            await simulateClick(row.el);
+            await humanSleep(attempt === 0 ? 70 : 110);
+            const after = listChipButtons();
+            const now = after.find((c) => chipLooksSelected(c.el));
+            if (now && match(now)) return true;
+            if (now && !match(now)) continue;
+            // Tray does not expose selected state — we did click the chip we need.
+            if (!after.some((c) => chipLooksSelected(c.el))) return true;
+        }
+        const last = selectedChipValue();
+        return last > 0 ? Math.abs(last - value) < 1e-9 : true;
     };
 
     const formatChipPlan = (groups) => groups.map((g) => {
@@ -2286,10 +2644,12 @@ ${line()}
     const placeBet = async (tile, betDollars, side, tableId, since) => {
         const selector = side === 'B' ? Config.BANKER_BTN : Config.PLAYER_BTN;
         const unitChip = Config.CHIP_VALUE;
-        const target = Math.max(unitChip, Math.round(betDollars / unitChip) * unitChip);
+        let target = Math.max(unitChip, Math.round(betDollars / unitChip) * unitChip);
         const gap = Config.CLICK_GAP_MS || 70;
-        const waitMs = Config.CLICK_WIRE_WAIT_MS || 400;
-        const confirmMs = Config.PLACE_CONFIRM_MS || 2000;
+        const waitMs = Config.CLICK_WIRE_WAIT_MS || 180;
+        const settleMs = Config.BURST_SETTLE_MS || 160;
+        const confirmMs = Config.PLACE_CONFIRM_MS || 700;
+        const empty = { ok: false, amount: 0, target, clicks: 0 };
 
         const wired = () => {
             if (typeof pp?.lpbetStake === 'function') {
@@ -2322,13 +2682,23 @@ ${line()}
         };
 
         let btn = null;
-        const observed = () => Math.max(wired(), readSpotStake(btn));
-        const atTarget = () => observed() + 1e-9 >= target;
+        const felt = () => roundCents(Math.max(wired(), readSpotStake(btn)));
+        const atTarget = () => felt() + 1e-9 >= target;
+        const bookedAmount = () => {
+            const wireAmt = roundCents(wired());
+            const spotAmt = roundCents(readSpotStake(btn));
+            // Wire <lpbet> is the wager. Felt text is only a fallback while lpbet lags.
+            return wireAmt > 0 ? wireAmt : spotAmt;
+        };
+        const windowOpen = () => {
+            const t = pp?.get(tableId);
+            return !t || t.canBet !== false;
+        };
         const pollUntil = async (pred, ms) => {
             const deadline = Date.now() + ms;
             while (Date.now() < deadline) {
                 if (pred()) return true;
-                await humanSleep(20);
+                await sleep(20);
             }
             return pred();
         };
@@ -2338,68 +2708,124 @@ ${line()}
         };
 
         const chips = listChipButtons();
-        const enabled = chips.filter((c) => !c.disabled);
-        const { plan, leftover } = chipPlan(target, enabled);
-        const groups = groupChipPlan(plan);
-        const smallest = enabled[enabled.length - 1] || null;
-        const maxClicks = Math.max(plan.length, 1) + (Config.CLICK_RETRY || 6);
-
-        if (!enabled.length) {
-            log('No enabled chips in tray', 'error');
-            return false;
+        let tray = chipsForStake(target, chips);
+        if (!tray.length) {
+            log('No chips in tray', 'error');
+            return empty;
         }
+        let { plan, leftover } = chipPlan(target, tray);
         if (leftover > 1e-9) {
-            log(`Can't make $${target.toFixed(2)} from tray [${enabled.map((c) => c.value).join(', ')}] leftover $${leftover.toFixed(2)}`, 'error');
-            return false;
+            const made = roundCents(target - leftover);
+            if (made + 1e-9 >= Math.max(unitChip, target >= 1 ? 1 : 0)) {
+                log(`Tray leftover $${leftover.toFixed(2)} — staking $${made.toFixed(2)}`, 'info');
+                target = made;
+                leftover = 0;
+                plan = chipPlan(target, tray).plan;
+            }
+        }
+        const groups = groupChipPlan(plan);
+        const maxClicks = Math.max(plan.length, 1) + (Config.CLICK_RETRY || 8);
+
+        if (leftover > 1e-9) {
+            log(`Can't make $${target.toFixed(2)} from tray [${tray.map((c) => c.value).join(', ')}] leftover $${leftover.toFixed(2)}`, 'error');
+            return empty;
+        }
+        if (target + 1e-9 >= 1 && !plan.some((v) => v + 1e-9 >= 1)) {
+            log(`Stake $${target.toFixed(2)} needs a $1 chip — none in tray`, 'error');
+            return empty;
         }
 
-        log(`Chip plan ${formatChipPlan(groups)} → $${target.toFixed(2)}`, 'info');
+        const lead = groups[0]?.value;
+        const leadNote = target + 1e-9 < 1
+            ? ' · $0.20 first'
+            : (target + 1e-9 >= 1 ? ' · $1 first' : '');
+        log(`Chip plan ${formatChipPlan(groups)} → $${target.toFixed(2)}${leadNote}`, 'info');
 
         for (let i = 0; i < 20; i++) {
             btn = tile.querySelector(selector);
             if (btn) break;
-            await humanSleep(25);
+            await sleep(25);
         }
-        if (!btn) return false;
+        if (!btn) return empty;
 
         if (Config.HUMANIZE !== false && Math.random() < (Config.HUMAN_THINK_CHANCE ?? 0.2)) {
             await sleep(randMs(Config.HUMAN_THINK_MIN_MS ?? 30, Config.HUMAN_THINK_MAX_MS ?? 140));
         }
 
         let clicks = 0;
+        let armed = 0;
+        const arm = async (value) => {
+            const okSel = await selectChip(value);
+            if (okSel) armed = value;
+            return okSel;
+        };
+
+        // Always arm the chip we will click with. A leftover $1 chip would wager $1 on a $0.20 plan.
+        if (lead == null || !(await arm(lead))) {
+            log(`Could not select $${lead ?? unitChip} chip before P/B`, 'error');
+            return empty;
+        }
+
         for (const g of groups) {
             if (atTarget()) break;
-            const okSel = await selectChip(g.value);
-            if (!okSel) {
+            if (Math.abs(armed - g.value) > 1e-9 && !(await arm(g.value))) {
                 log(`Could not select $${g.value} chip`, 'error');
+                break;
+            }
+            const remain0 = roundCents(target - felt());
+            if (armed > remain0 + 1e-9) {
+                log(`Armed $${armed} > remain $${remain0.toFixed(2)} — will not click P/B`, 'error');
                 break;
             }
             for (let i = 0; i < g.count && clicks < maxClicks; i++) {
                 if (atTarget()) break;
+                const before = felt();
                 await tap();
                 clicks++;
+                await pollUntil(() => atTarget() || felt() > before + 1e-9, waitMs);
+                const got = felt();
+                if (got > target + 1e-9 && g.value + 1e-9 < 1 && got + 1e-9 >= 1) {
+                    log(`P/B used $1 chip (wanted $${g.value.toFixed(2)}) — booked $${got.toFixed(2)}`, 'error');
+                    break;
+                }
                 if (i < g.count - 1 && !atTarget()) await humanSleep(gap);
             }
         }
 
-        if (!atTarget()) await pollUntil(atTarget, confirmMs);
+        if (!atTarget()) await pollUntil(atTarget, settleMs);
 
-        while (clicks < maxClicks && !atTarget()) {
-            if (smallest) await selectChip(smallest.value);
-            const before = observed();
+        while (clicks < maxClicks && !atTarget() && windowOpen()) {
+            const remain = roundCents(target - felt());
+            const one = tray.find((c) => Math.abs(c.value - 1) < 1e-9);
+            const fit = tray.filter((c) => c.value <= remain + 1e-9);
+            const chip = (remain + 1e-9 >= 1 && one && one.value <= remain + 1e-9)
+                ? one
+                : (fit.length ? fit[fit.length - 1] : null);
+            // Do not tap with a leftover $1 while we still need $0.20.
+            if (!chip || chip.value > remain + 1e-9) break;
+            if (Math.abs(armed - chip.value) > 1e-9 && !(await arm(chip.value))) break;
+            const before = felt();
             await tap();
             clicks++;
-            await pollUntil(() => atTarget() || observed() > before + 1e-9, waitMs);
+            await pollUntil(() => atTarget() || felt() > before + 1e-9, waitMs);
+            const got = felt();
+            if (got > target + 1e-9 && chip.value + 1e-9 < 1 && got + 1e-9 >= 1) {
+                log(`P/B used $1 chip (wanted $${chip.value.toFixed(2)}) — booked $${got.toFixed(2)}`, 'error');
+                break;
+            }
         }
 
         if (!atTarget()) await pollUntil(atTarget, confirmMs);
+        if (atTarget() && wired() <= 0) await pollUntil(() => wired() > 0, confirmMs);
 
-        const ok = atTarget();
+        const amount = bookedAmount();
+        const over = amount > target + 1e-9;
+        const ok = amount + 1e-9 >= target && !over;
         log(
-            `${ok ? 'Placed' : 'Short stake after'} ${clicks} P/B · ${formatChipPlan(groups)} · wire $${wired().toFixed(2)} · spot $${readSpotStake(btn).toFixed(2)} / $${target.toFixed(2)}`,
+            `${ok ? 'Placed' : (over ? 'Overshot after' : 'Short stake after')} ${clicks} P/B · ${formatChipPlan(groups)} · booked $${amount.toFixed(2)} · wire $${wired().toFixed(2)} · spot $${readSpotStake(btn).toFixed(2)} / $${target.toFixed(2)}`,
             ok ? 'info' : 'error',
         );
-        return ok;
+        return { ok, amount, target, clicks };
     };
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -2534,10 +2960,6 @@ ${line()}
      * When BET_AFTER_TIE, last road result must be T (next hand is the after-T bet).
      */
     const findFirstOpenTableForBet = (ordered) => {
-        const betUnits = getCurrentBetUnits();
-        const betDollars = betUnits * getUnitSize();
-        const actualBet = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE)) * Config.CHIP_VALUE;
-
         for (const row of ordered) {
             const id = row.gameId || row.id;
             if (!id) continue;
@@ -2551,17 +2973,10 @@ ${line()}
             if (State.stakedRoadTotal.get(id) === (fresh.total || 0)) continue;
             if (State.pendingBets.has(id)) continue;
 
-            const tableMinBetRaw = Number(fresh.minBet);
-            const tableMinBet = Number.isFinite(tableMinBetRaw) && tableMinBetRaw > 0 ? tableMinBetRaw : null;
-            const minRequiredBet = tableMinBet != null
-                ? Math.ceil(tableMinBet / Config.CHIP_VALUE) * Config.CHIP_VALUE
-                : null;
-            if (minRequiredBet != null && actualBet + 1e-9 < minRequiredBet) {
-                markTableDone(id, 'below-table-min', false);
-                continue;
-            }
+            const stake = stakeForTable(fresh);
+            if (getBalance() + 1e-9 < stake) continue;
 
-            return { freshTable: fresh, pickRow: row };
+            return { freshTable: fresh, pickRow: row, stake };
         }
         return null;
     };
@@ -2604,7 +3019,7 @@ ${line()}
                 State.sessionWins++;
                 State.lastResult = 'W';
                 log(
-                    `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units`,
+                    `${prefix}WON +$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) (${betSide}) | Session: ${fmtUnitCount(State.sessionUnits, true)}`,
                     'win'
                 );
             } else {
@@ -2614,10 +3029,11 @@ ${line()}
                 State.sessionLosses++;
                 State.lastResult = 'L';
                 log(
-                    `${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units`,
+                    `${prefix}LOST -$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) | Session: ${fmtUnitCount(State.sessionUnits, true)}`,
                     'loss'
                 );
             }
+            refreshUnitAfterRound();
             return;
         }
 
@@ -2632,7 +3048,7 @@ ${line()}
                 const cap = Math.min(Config.PAROLI_MAX_WIN_STREAK, Config.STEPS.length);
                 if (State.currentStep >= cap) {
                     log(
-                        `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Paroli: ${cap} wins — reset → 1 unit next`,
+                        `${prefix}WON +$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) (${betSide}) | Session: ${fmtUnitCount(State.sessionUnits, true)} | Paroli: ${cap} wins — reset → 1 unit next`,
                         'win'
                     );
                     State.currentStep = 0;
@@ -2640,7 +3056,7 @@ ${line()}
                 } else {
                     const nextU = Config.STEPS[State.currentStep] ?? Config.STEPS[0];
                     log(
-                        `${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: ${nextU} unit (win ${State.currentStep}/${cap})`,
+                        `${prefix}WON +$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) (${betSide}) | Session: ${fmtUnitCount(State.sessionUnits, true)} | Next bet: ${nextU} unit (win ${State.currentStep}/${cap})`,
                         'win'
                     );
                 }
@@ -2652,7 +3068,7 @@ ${line()}
                 State.lastResult = 'L';
                 State.currentStep = 0;
                 log(
-                    `${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units | Paroli reset → next 1 unit`,
+                    `${prefix}LOST -$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) | Session: ${fmtUnitCount(State.sessionUnits, true)} | Paroli reset → next 1 unit`,
                     'loss'
                 );
                 refreshUnitAfterRound();
@@ -2667,7 +3083,7 @@ ${line()}
             State.lastResult = 'W';
             State.currentStep = 0;
             State.sequenceUnits = 0;
-            log(`${prefix}WON +${betUnits} units (${betSide}) | Session: ${State.sessionUnits > 0 ? '+' : ''}${State.sessionUnits} units | Next bet: 1 unit`, 'win');
+            log(`${prefix}WON +$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) (${betSide}) | Session: ${fmtUnitCount(State.sessionUnits, true)} | Next bet: 1 unit`, 'win');
             refreshUnitAfterRound();
         } else {
             credit(false);
@@ -2677,7 +3093,7 @@ ${line()}
             State.currentStep++;
             State.lastResult = 'L';
 
-            log(`${prefix}LOST -${betUnits} units | Session: ${State.sessionUnits} units`, 'loss');
+            log(`${prefix}LOST -$${stakeDollars.toFixed(2)} (${fmtUnitCount(betUnits)}) | Session: ${fmtUnitCount(State.sessionUnits, true)}`, 'loss');
 
             if (State.currentStep >= Config.STEPS.length) {
                 log(`Max step reached (lost 7 units) | Finding new table`, 'loss');
@@ -2838,77 +3254,77 @@ ${line()}
         }
 
         const countBefore = freshTable.total || 0;
-        const betSide = chooseSide();
+        const betSide = chooseSide(tableId);
         tile.scrollIntoView({
             block: Config.HUMANIZE === false || Math.random() < 0.45 ? 'center' : 'nearest',
             inline: 'nearest',
         });
+        for (let i = 0; i < 24; i++) {
+            if (tile.querySelector(Config.PLAYER_BTN) && tile.querySelector(Config.BANKER_BTN)) break;
+            await sleep(50);
+        }
         const betUnits = getCurrentBetUnits();
-        const betDollars = betUnits * getUnitSize();
-        const actualBet = Math.max(1, Math.round(betDollars / Config.CHIP_VALUE)) * Config.CHIP_VALUE;
+        const tableMin = tableMinBet(freshTable);
+        let actualBet = picked.stake != null ? picked.stake : stakeForTable(freshTable);
+        if (tableMin > 0 && actualBet + 1e-9 < tableMin) {
+            actualBet = stakeForTable(freshTable);
+        }
+        if (tableMin > 0 && plannedDollars() + 1e-9 < actualBet) {
+            log(
+                `${displayTableName(freshTable.name || tableId)} | table min $${tableMin.toFixed(2)} → stake $${actualBet.toFixed(2)} ($1 chip)`,
+                'info',
+            );
+        }
 
         const afterT = Config.BET_AFTER_TIE ? 'after T | ' : '';
         log(`${displayTableName(freshTable.name || tableId)} | ${afterT}Step ${State.currentStep + 1} | ${betSide} ${fmtUnitCount(betUnits)} ($${actualBet.toFixed(2)})`, 'bet');
 
         const wireSince = Date.now();
-        let placed = await placeBet(tile, actualBet, betSide, tableId, wireSince);
-        if (!placed && typeof pp?.waitLpbet === 'function') {
-            const late = await pp.waitLpbet(tableId, {
+        const placed = await placeBet(tile, actualBet, betSide, tableId, wireSince);
+        let landed = Number(placed?.amount) || 0;
+        const minChip = Config.CHIP_VALUE;
+        const readWire = () => (typeof pp?.lpbetStake === 'function'
+            ? Number(pp.lpbetStake(tableId, { side: betSide, since: wireSince })) || 0
+            : 0);
+
+        if (landed + 1e-9 < actualBet && typeof pp?.waitLpbet === 'function') {
+            await pp.waitLpbet(tableId, {
                 side: betSide,
                 since: wireSince,
                 minTotal: actualBet,
-                timeoutMs: Config.LPBET_CONFIRM_MS,
+                timeoutMs: 600,
             });
-            if (late) {
-                const amt = Number(pp.lpbetStake(tableId, { side: betSide, since: wireSince })) || 0;
-                log(`Late lpbet confirm · wire $${amt.toFixed(2)} / $${actualBet.toFixed(2)}`, 'info');
-                placed = true;
-            }
         }
-        if (!placed && typeof pp?.lastLpbet === 'function') {
-            const last = pp.lastLpbet();
-            if (last && last.time >= wireSince) {
-                const wantBc = betSide === 'B' ? '1' : '0';
-                let s = 0;
-                for (const b of last.bets || []) {
-                    if (String(b.bc) === wantBc) s += Number(b.amt) || 0;
-                }
-                if (s + 1e-9 >= actualBet) {
-                    log(`lpbet confirm (id unmatched) · wire $${s.toFixed(2)} / $${actualBet.toFixed(2)}`, 'info');
-                    placed = true;
-                }
+        const wireAmt = readWire();
+        if (wireAmt > 0) {
+            if (Math.abs(wireAmt - landed) > 1e-9) {
+                log(`Wire stake $${wireAmt.toFixed(2)} (felt booked $${landed.toFixed(2)})`, 'info');
             }
+            landed = wireAmt;
         }
-        if (!placed) {
+        landed = roundCents(landed);
+
+        if (landed + 1e-9 < minChip) {
             log('Bet placement failed', 'error');
             scheduleNext();
             return;
         }
+        if (landed > actualBet + 1e-9) {
+            log(`Overshot stake $${landed.toFixed(2)} / $${actualBet.toFixed(2)} — watching result`, 'error');
+        } else if (landed + 1e-9 < actualBet) {
+            log(`Keeping short stake $${landed.toFixed(2)} / $${actualBet.toFixed(2)} — watching result`, 'info');
+        }
         State.stakedRoadTotal.set(tableId, countBefore);
 
-        if (typeof pp?.waitLpbet === 'function') {
-            const already = Number(pp.lpbetStake(tableId, { side: betSide, since: wireSince })) || 0;
-            if (already + 1e-9 < actualBet) {
-                const wire = await pp.waitLpbet(tableId, {
-                    side: betSide,
-                    since: wireSince,
-                    minTotal: actualBet,
-                    timeoutMs: Config.LPBET_CONFIRM_MS,
-                });
-                if (!wire) {
-                    log('No matching lpbet on wire — continuing on felt stake', 'info');
-                }
-            }
-        }
-
+        const landedUnits = unitSize > 0 ? landed / unitSize : betUnits;
         State.sessionBets++;
         const betRec = {
             table: displayTableName(freshTable.name || tableId),
             tableId,
             side: betSide,
-            units: betUnits,
-            unitSize: getUnitSize(),
-            dollars: actualBet,
+            units: landedUnits,
+            unitSize,
+            dollars: landed,
             countBefore,
             step: State.currentStep + 1,
             time: Date.now(),
@@ -3009,58 +3425,80 @@ ${line()}
     // POPUP HANDLING
     // ═══════════════════════════════════════════════════════════════════════
 
+    const SUPPORT_RE = /please contact customer support|contact\s+customer\s+support/i;
+    const INSUFFICIENT_RE = /insufficient\s+funds/i;
+
+    const normPopupText = (el) => (el?.textContent || '').replace(/\s+/g, ' ').trim();
+
+    const isOkLabel = (el) => /^\s*ok\s*$/i.test((el.textContent || '').replace(/\s+/g, ' ').trim());
+
+    const ancestorWith = (el, re) => {
+        let n = el;
+        for (let i = 0; i < 10 && n && n !== document.body; i++) {
+            if (re.test(normPopupText(n))) return n;
+            n = n.parentElement;
+        }
+        return null;
+    };
+
+    const findPopupButton = (kind) => {
+        const re = kind === 'insufficient' ? INSUFFICIENT_RE : SUPPORT_RE;
+        for (const sel of Config.POPUP_ROOT_SELS) {
+            for (const el of document.querySelectorAll(sel)) {
+                if (!re.test(normPopupText(el))) continue;
+                const btn = el.querySelector(Config.POPUP_BUTTON_SEL)
+                    || [...el.querySelectorAll('button, [role="button"]')].find(isOkLabel);
+                if (btn) return btn;
+            }
+        }
+        for (const btn of document.querySelectorAll('button, [role="button"]')) {
+            if (!isOkLabel(btn)) continue;
+            if (ancestorWith(btn, re)) return btn;
+        }
+        return null;
+    };
+
+    const clickThroughHud = async (el) => {
+        const hud = document.getElementById('sb-play-hud');
+        const prev = hud ? hud.style.pointerEvents : '';
+        if (hud) hud.style.pointerEvents = 'none';
+        try {
+            return await simulateClick(el);
+        } finally {
+            if (hud) hud.style.pointerEvents = prev;
+        }
+    };
+
     const handlePopup = () => {
         if (State.popupBusy) return;
 
-        const popupText = () => {
-            const chunks = [];
-            for (const sel of Config.POPUP_ROOT_SELS) {
-                for (const el of document.querySelectorAll(sel)) {
-                    const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-                    if (t) chunks.push(t);
-                }
-            }
-            for (const el of document.querySelectorAll(Config.POPUP_TITLE_SEL)) {
-                const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-                if (t) chunks.push(t);
-            }
-            return chunks.join(' ');
-        };
-
-        const text = popupText();
-        if (!text) return;
-
-        const isInsufficient = /insufficient\s+funds/i.test(text);
-        const isSupport = /contact\s+customer\s+support/i.test(text) ||
-            /please contact customer support/i.test(text);
-        if (!isInsufficient && !isSupport) return;
-
-        let scope = null;
-        for (const sel of Config.POPUP_ROOT_SELS) {
-            const el = document.querySelector(sel);
-            if (el && (isInsufficient ? /insufficient/i.test(el.textContent || '') : /customer support/i.test(el.textContent || ''))) {
-                scope = el;
-                break;
-            }
-        }
-        if (!scope) scope = document.querySelector('[data-testid="popup"]') || document;
-
-        const btn = scope.querySelector(Config.POPUP_BUTTON_SEL);
+        const supportBtn = findPopupButton('support');
+        const insufficientBtn = supportBtn ? null : findPopupButton('insufficient');
+        const btn = supportBtn || insufficientBtn;
         if (!btn) return;
 
         State.popupBusy = true;
-        if (isSupport) {
+        if (supportBtn) {
             log('Support popup — OK, will resume after iframe reload', 'info');
             setResumeWanted(true);
-            void simulateClick(btn);
-            stop({ keepResume: true, silent: true });
+            void (async () => {
+                await clickThroughHud(btn);
+                stop({ keepResume: true, silent: true });
+                await util.sleep(1600);
+                if (findPopupButton('support')) {
+                    log('Support popup still up — will retry OK', 'info');
+                    State.popupBusy = false;
+                }
+            })();
             return;
         }
 
         log('Insufficient funds popup - stopping', 'exit');
-        void simulateClick(btn);
-        stop();
-        State.popupBusy = false;
+        void (async () => {
+            await clickThroughHud(btn);
+            stop();
+            State.popupBusy = false;
+        })();
     };
 
     const watchForPopup = () => {
@@ -3114,7 +3552,7 @@ ${line()}
         setResumeWanted(true);
         const sideMode =
             Config.SIDE === null
-                ? `RANDOM 50/50 (${(Config.RANDOM_SIDE_ENGINE || 'math').toLowerCase() === 'crypto' ? 'crypto.getRandomValues' : 'Math.random'})`
+                ? `RANDOM 50/50 (${sideEngineLabel(Config.RANDOM_SIDE_ENGINE)})`
                 : Config.SIDE;
         const paroliCap = Math.min(Config.PAROLI_MAX_WIN_STREAK, Config.STEPS.length);
         const modeLine = useParoli()
@@ -3158,6 +3596,7 @@ ${line()}
         State.tableBetCount = 0;
         State.lastBet = null;
         State.lastResult = null;
+        sideShoe = [];
         log('Session RESET', 'info');
     };
 
@@ -3168,6 +3607,40 @@ ${line()}
         const nextUnits = getCurrentBetUnits();
         const nextBetDollars = nextUnits * unitSize;
         const table = State.focusedTable;
+        let tableRows = [];
+        try {
+            let rows = [];
+            if (Config.BET_AFTER_TIE && typeof pick?.all === 'function') {
+                const all = pick.all() || [];
+                const withT = [];
+                const rest = [];
+                for (const t of all) {
+                    const id = t.gameId || t.id;
+                    if (id && getTableLastResult(id) === 'T') withT.push(t);
+                    else rest.push(t);
+                }
+                rows = withT.concat(rest).slice(0, 8);
+            } else {
+                rows = pick?.top?.(6) || [];
+            }
+            tableRows = rows.map((t) => {
+                const id = t.gameId || t.id;
+                const live = State.pendingBets.has(id);
+                const last = (() => {
+                    try { return pp?.lastN?.(id, 1)?.[0] || ''; } catch { return ''; }
+                })();
+                return {
+                    id,
+                    name: displayTableName(t.name || id || '?'),
+                    chip: `chop ${t.pingPong?.effective ?? 0}${last ? ` · ${last}` : ''}`,
+                    open: live ? 'live' : (t.canBet ? 'open' : 'wait'),
+                    ok: live || !!t.canBet,
+                };
+            });
+        } catch (_) {
+            tableRows = [];
+        }
+        const ppN = typeof pp?.count === 'function' ? pp.count() : 0;
         return {
             running: State.running,
             waiting: State.pendingBets.size > 0 || State.waitingForResult,
@@ -3176,6 +3649,7 @@ ${line()}
             concurrent: Config.CONCURRENT !== false,
             mode: useParoli() ? 'paroli' : 'martingale',
             side: Config.SIDE,
+            sideEngine: normalizeSideEngine(Config.RANDOM_SIDE_ENGINE),
             balance,
             startBalance: State.sessionStartBalance || balance,
             unitSize,
@@ -3194,7 +3668,10 @@ ${line()}
             lastResult: State.lastResult,
             afterTie: !!Config.BET_AFTER_TIE,
             usedTables: [...State.usedTables],
-            events: uiEvents.slice(0, 12),
+            events: uiEvents.slice(0, 60),
+            tableRows,
+            readyLine: `pp ${ppN} tables · ${Config.BET_AFTER_TIE ? 'after T' : 'pick'} · ${State.usedTables.size} skipped`,
+            iframe: true,
         };
     };
 
@@ -3246,6 +3723,8 @@ ${line()}
 
     const HUD_POS_KEY = 'sb-play-hud-pos';
     const HUD_MIN_KEY = 'sb-play-hud-min';
+    const HUD_HUNT_KEY = 'sb-play-hud-hunt';
+    const HUD_RNG_KEY = 'sb-play-hud-rng';
 
     const esc = util.esc;
     const fmtSigned = util.signed;
@@ -3264,8 +3743,9 @@ ${line()}
             top: saved?.top || '12px',
             left: saved?.left || '',
             right: saved?.left ? '' : '16px',
-            width: '328px',
-            maxHeight: 'calc(100dvh - 80px)',
+            width: `${HUD_WIDTH}px`,
+            height: `${HUD_HEIGHT}px`,
+            maxHeight: 'calc(100dvh - 16px)',
             fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
         });
         const shadow = host.attachShadow({ mode: 'open' });
@@ -3275,20 +3755,34 @@ ${line()}
   :host { display: block; max-height: inherit; }
   * { box-sizing: border-box; }
   .wrap {
-    background: linear-gradient(180deg, #132039 0%, #0b1527 100%);
+    background: linear-gradient(180deg, #15243f 0%, #0c1628 100%);
     color: #e8eef8;
     border: 1px solid #2a3a56;
-    border-radius: 12px;
-    box-shadow: 0 10px 28px rgba(0,0,0,.45);
+    border-radius: 14px;
+    box-shadow: 0 12px 36px rgba(0,0,0,.5);
     overflow: hidden;
     user-select: none;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 80px);
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
   }
+  .wrap.collapsed { min-height: 0; height: auto; max-height: none; }
+  .wrap.collapsed .bar { border-bottom: none; }
+  .rsz { position: absolute; z-index: 4; }
+  .rsz.e { top: 22px; right: 0; width: 10px; bottom: 18px; cursor: ew-resize; }
+  .rsz.s { left: 18px; bottom: 0; right: 18px; height: 10px; cursor: ns-resize; }
+  .rsz.se { right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; }
+  .rsz.se::after {
+    content: ''; position: absolute; right: 4px; bottom: 4px;
+    width: 9px; height: 9px; border-right: 2px solid #8aa0bd; border-bottom: 2px solid #8aa0bd;
+  }
+  .wrap.collapsed .rsz { display: none; }
   .bar {
     display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px; cursor: move;
+    padding: 6px 8px; cursor: move;
     background: #0f1a2d; border-bottom: 1px solid #22314d;
     flex: 0 0 auto;
   }
@@ -3296,37 +3790,38 @@ ${line()}
   .dot.on { background: #34d399; box-shadow: 0 0 8px #34d399; }
   .dot.wait { background: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
   .title { font-size: 12px; font-weight: 700; letter-spacing: .3px; flex: 1; }
-  .phase { font-size: 11px; color: #9aa9c2; }
+  .phase { font-size: 11px; color: #9aa9c2; white-space: nowrap; }
   .icon {
     background: #111a2c; color: #e8eef8; border: 1px solid #2a3a56;
-    border-radius: 6px; width: 24px; height: 22px; cursor: pointer; font-size: 12px;
+    border-radius: 5px; width: 22px; height: 20px; cursor: pointer; font-size: 12px;
   }
-  .body { padding: 10px; overflow-y: auto; min-height: 0; flex: 1 1 auto; }
-  .row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .body { padding: 8px; overflow: hidden; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
+  .row { display: flex; gap: 6px; margin-bottom: 6px; flex: 0 0 auto; }
   button.act {
-    flex: 1; border: 1px solid #2a3a56; border-radius: 8px;
-    padding: 7px 8px; font-size: 12px; font-weight: 700; cursor: pointer; color: #e8eef8;
+    flex: 1; border: 1px solid #2a3a56; border-radius: 6px;
+    padding: 5px 8px; font-size: 12px; font-weight: 700; cursor: pointer; color: #e8eef8;
     background: #111a2c;
   }
   button.start { background: #0d3d2b; border-color: #1f7b57; color: #8fffd0; }
   button.stop { background: #3a1225; border-color: #7e2d4f; color: #ffc0db; }
   button:disabled { opacity: .45; cursor: default; }
-  label.fld { flex: 1; font-size: 10px; color: #9aa9c2; display: flex; flex-direction: column; gap: 3px; }
+  label.fld { flex: 1; min-width: 0; font-size: 10px; color: #9aa9c2; display: flex; flex-direction: column; gap: 2px; }
   select {
     background: #111a2c; color: #e8eef8; border: 1px solid #2a3a56;
-    border-radius: 7px; padding: 5px 6px; font-size: 12px;
+    border-radius: 6px; padding: 4px 4px; font-size: 11px;
   }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-  .box { background: #0b1527; border: 1px solid #22314d; border-radius: 8px; padding: 6px 8px; }
+  select:disabled { opacity: .45; cursor: default; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 6px; flex: 0 0 auto; }
+  .box { background: #0b1527; border: 1px solid #22314d; border-radius: 6px; padding: 4px 6px; }
   .k { font-size: 10px; color: #9aa9c2; }
   .v { font-size: 13px; font-weight: 700; }
   .v.up { color: #8fffd0; }
   .v.down { color: #ffc0db; }
-  .table { font-size: 12px; color: #d5e2f7; margin: 0 0 8px; min-height: 16px; }
-  .tables { max-height: min(96px, 18vh); overflow: auto; margin-bottom: 8px; }
+  .table { font-size: 11px; color: #d5e2f7; margin: 0 0 4px; min-height: 14px; flex: 0 0 auto; }
+  .tables { max-height: 72px; overflow: auto; margin-bottom: 6px; flex: 0 0 auto; }
   .trow {
     display: flex; align-items: center; gap: 6px;
-    font-size: 11px; padding: 4px 6px; border-radius: 6px; cursor: pointer;
+    font-size: 11px; padding: 2px 6px; border-radius: 4px; cursor: pointer;
   }
   .trow:hover, .trow.active { background: #17365f; }
   .tname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3334,20 +3829,24 @@ ${line()}
   .ok { color: #8fffd0; }
   .no { color: #9aa9c2; }
   .log {
-    background: #081223; border: 1px solid #1d2d45; border-radius: 8px;
-    padding: 6px 8px; max-height: min(88px, 16vh); overflow: auto; font-size: 10px; line-height: 1.45;
+    background: #050b16; border: 1px solid #1d2d45; border-radius: 6px;
+    padding: 8px 10px; min-height: 0; flex: 1 1 auto; overflow: auto;
+    font-family: ui-monospace, Consolas, "Cascadia Mono", monospace;
+    font-size: 12px; line-height: 1.45; cursor: text;
+    user-select: text; -webkit-user-select: text;
+    overflow-wrap: anywhere; word-break: break-word;
   }
-  .log div { color: #d5e2f7; }
+  .log div { color: #e8eef8; user-select: text; -webkit-user-select: text; margin: 0 0 2px; }
   .log .win { color: #8fffd0; }
   .log .loss { color: #ffc3d1; }
   .log .bet { color: #9cd0ff; }
   .log .error, .log .exit { color: #ffd6a1; }
-  .ready { font-size: 10px; color: #9aa9c2; margin-top: 6px; }
+  .ready { font-size: 10px; color: #9aa9c2; margin-top: 4px; flex: 0 0 auto; }
 </style>
 <div class="wrap">
   <div class="bar" id="bar">
     <span class="dot" id="dot"></span>
-    <span class="title">Play HUD · ext</span>
+    <span class="title" id="hudTitle">Play HUD</span>
     <span class="phase" id="phase">stopped</span>
     <button class="icon" id="min" type="button" title="Minimize">–</button>
   </div>
@@ -3371,6 +3870,21 @@ ${line()}
           <option value="B">Banker</option>
         </select>
       </label>
+      <label class="fld">Hunt
+        <select id="hunt">
+          <option value="concurrent">Concurrent</option>
+          <option value="serial">One by one</option>
+        </select>
+      </label>
+      <label class="fld">P/B random
+        <select id="rng" title="Only used when Side is Random. All methods are 50/50.">
+          <option value="math">Math.random</option>
+          <option value="crypto">Crypto bit</option>
+          <option value="fair">Von Neumann</option>
+          <option value="mix">Mix hash</option>
+          <option value="shuffle">Shuffle 4+4</option>
+        </select>
+      </label>
     </div>
     <div class="grid">
       <div class="box"><div class="k">Balance</div><div class="v" id="bal">$0.00</div></div>
@@ -3390,8 +3904,36 @@ ${line()}
         const $ = (id) => shadow.getElementById(id);
         const body = $('body');
         const minBtn = $('min');
-        let minimized = localStorage.getItem(HUD_MIN_KEY) === '1';
-        const FOOTER_PAD = 72;
+        $('hudTitle').textContent = 'Play HUD';
+
+        const applyStore = (store) => {
+            Config.SIDE = store.side === 'P' || store.side === 'B' ? store.side : null;
+            Config.PROGRESSION_MODE = store.mode === 'martingale' ? 'martingale' : 'paroli';
+            Config.CONCURRENT = store.hunt !== 'serial';
+            Config.RANDOM_SIDE_ENGINE = normalizeSideEngine(store.rng);
+            $('mode').value = Config.PROGRESSION_MODE === 'martingale' ? 'martingale' : 'paroli';
+            $('side').value = Config.SIDE || 'random';
+            $('hunt').value = Config.CONCURRENT === false ? 'serial' : 'concurrent';
+            $('rng').value = normalizeSideEngine(Config.RANDOM_SIDE_ENGINE);
+        };
+
+        let minimized = false;
+        let hudSize = { width: HUD_WIDTH, height: HUD_HEIGHT };
+        const persistHud = (patch) => { void writeHudStore(patch); };
+        void readHudStore().then((store) => {
+            applyStore(store);
+            minimized = !!store.min;
+            hudSize = { width: store.width || HUD_WIDTH, height: store.height || HUD_HEIGHT };
+            if (store.left) {
+                host.style.left = store.left;
+                host.style.right = '';
+            }
+            if (store.top) host.style.top = store.top;
+            applyMin();
+            persistHud({ width: hudSize.width, height: hudSize.height, sizeGen: HUD_SIZE_GEN });
+        });
+
+        const FOOTER_PAD = 16;
         const clampHud = () => {
             const r = host.getBoundingClientRect();
             const maxLeft = Math.max(8, window.innerWidth - r.width - 8);
@@ -3405,20 +3947,50 @@ ${line()}
             host.style.left = `${Math.round(left)}px`;
             host.style.top = `${Math.round(top)}px`;
             host.style.right = '';
-            host.style.maxHeight = `${Math.max(200, window.innerHeight - top - FOOTER_PAD)}px`;
+            host.style.maxHeight = minimized
+                ? 'none'
+                : `${Math.max(200, window.innerHeight - top - FOOTER_PAD)}px`;
         };
 
+        const wrap = shadow.querySelector('.wrap');
         const applyMin = () => {
             body.style.display = minimized ? 'none' : '';
+            wrap.classList.toggle('collapsed', minimized);
             minBtn.textContent = minimized ? '+' : '–';
-            host.style.width = minimized ? '220px' : '328px';
+            minBtn.title = minimized ? 'Expand' : 'Collapse';
+            if (minimized) {
+                host.style.width = 'auto';
+                host.style.height = 'auto';
+                host.style.minWidth = '220px';
+                host.style.minHeight = '0';
+                host.style.maxHeight = 'none';
+            } else {
+                host.style.width = hudSize.width + 'px';
+                host.style.height = hudSize.height + 'px';
+                host.style.minWidth = '';
+                host.style.minHeight = '';
+                host.style.maxHeight = '';
+            }
             requestAnimationFrame(clampHud);
         };
+        bindHudResize(host, wrap, {
+            isCollapsed: () => minimized,
+            onSave: (box) => {
+                hudSize = box;
+                persistHud({ width: box.width, height: box.height, sizeGen: HUD_SIZE_GEN });
+            },
+        });
         applyMin();
         minBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             minimized = !minimized;
-            localStorage.setItem(HUD_MIN_KEY, minimized ? '1' : '0');
+            persistHud({ min: minimized });
+            applyMin();
+        });
+        $('bar').addEventListener('dblclick', (e) => {
+            if (e.target.closest('button')) return;
+            minimized = !minimized;
+            persistHud({ min: minimized });
             applyMin();
         });
 
@@ -3427,11 +3999,24 @@ ${line()}
         $('reset').addEventListener('click', () => reset());
         $('mode').addEventListener('change', (e) => {
             Config.PROGRESSION_MODE = e.target.value === 'martingale' ? 'martingale' : 'paroli';
+            persistHud({ mode: Config.PROGRESSION_MODE });
             log(`Mode → ${Config.PROGRESSION_MODE}`, 'info');
         });
         $('side').addEventListener('change', (e) => {
             Config.SIDE = e.target.value === 'random' ? null : e.target.value;
+            persistHud({ side: e.target.value });
             log(`Side → ${Config.SIDE || 'random'}`, 'info');
+        });
+        $('hunt').addEventListener('change', (e) => {
+            const concurrent = e.target.value !== 'serial';
+            Config.CONCURRENT = concurrent;
+            persistHud({ hunt: concurrent ? 'concurrent' : 'serial' });
+            log(`Hunt → ${concurrent ? 'concurrent' : 'one by one'}`, 'info');
+        });
+        $('rng').addEventListener('change', (e) => {
+            Config.RANDOM_SIDE_ENGINE = normalizeSideEngine(e.target.value);
+            persistHud({ rng: Config.RANDOM_SIDE_ENGINE });
+            log(`P/B random → ${sideEngineLabel(Config.RANDOM_SIDE_ENGINE)}`, 'info');
         });
 
         const bar = $('bar');
@@ -3454,10 +4039,10 @@ ${line()}
             if (!drag) return;
             drag = null;
             clampHud();
-            localStorage.setItem(HUD_POS_KEY, JSON.stringify({
+            persistHud({
                 left: host.style.left,
                 top: host.style.top,
-            }));
+            });
         };
         window.addEventListener('mousemove', onMove);
         window.addEventListener('mouseup', onUp);
@@ -3469,14 +4054,17 @@ ${line()}
             const ready = !!(pp && pick);
             const phase = !s.running
                 ? 'stopped'
-                : (s.pending > 0 ? `${s.pending} live` : (s.afterTie ? 'wait T' : 'running'));
+                : (s.pending > 0 ? `${s.pending} live` : (s.waiting ? 'waiting' : (s.afterTie ? 'wait T' : 'running')));
             const dot = $('dot');
-            dot.className = `dot${s.running ? (s.pending > 0 ? ' wait' : ' on') : ''}`;
+            dot.className = `dot${s.running ? (s.waiting ? ' wait' : ' on') : ''}`;
             $('phase').textContent = phase;
             $('start').disabled = s.running;
             $('stop').disabled = !s.running;
-            $('mode').value = s.mode;
-            $('side').value = s.side || 'random';
+            const focused = shadow.activeElement;
+            if (focused !== $('mode')) $('mode').value = s.mode;
+            if (focused !== $('side')) $('side').value = s.side || 'random';
+            if (focused !== $('hunt')) $('hunt').value = s.concurrent ? 'concurrent' : 'serial';
+            if (focused !== $('rng')) $('rng').value = s.sideEngine || 'math';
             $('bal').textContent = `$${s.balance.toFixed(2)}`;
             $('unit').textContent = `$${s.unitSize.toFixed(2)}`;
             const unitsEl = $('units');
@@ -3502,9 +4090,9 @@ ${line()}
                         if (id && getTableLastResult(id) === 'T') withT.push(t);
                         else rest.push(t);
                     }
-                    rows = withT.concat(rest).slice(0, 8);
+                    rows = withT.concat(rest).slice(0, 4);
                 } else {
-                    rows = pick?.top?.(6) || [];
+                    rows = pick?.top?.(4) || [];
                 }
             } catch { rows = []; }
             $('tables').innerHTML = rows.length
@@ -3526,9 +4114,19 @@ ${line()}
                 }).join('')
                 : '<div class="trow"><span class="tname">No tables yet</span></div>';
 
-            $('log').innerHTML = (s.events || []).map((ev) =>
+            const logEl = $('log');
+            const logHtml = (s.events || []).map((ev) =>
                 `<div class="${esc(ev.type)}">${esc(ev.msg)}</div>`
             ).join('') || '<div>Ready — press Start</div>';
+            const logKey = (s.events || []).map((ev) => `${ev.at}|${ev.msg}`).join('\n');
+            const sel = (typeof shadow.getSelection === 'function' && shadow.getSelection())
+                || document.getSelection();
+            const selectingLog = !!(sel && !sel.isCollapsed && sel.rangeCount
+                && logEl.contains(sel.anchorNode));
+            if (!selectingLog && logEl.dataset.key !== logKey) {
+                logEl.innerHTML = logHtml;
+                logEl.dataset.key = logKey;
+            }
 
             const ppN = typeof pp?.count === 'function' ? pp.count() : 0;
             $('ready').textContent = ready
@@ -3591,6 +4189,38 @@ ${line()}
 
     watchForPopup();
 
+    const applyIncomingConfig = (cfg) => {
+        if (!cfg || typeof cfg !== 'object') return;
+        if ('SIDE' in cfg) Config.SIDE = cfg.SIDE === 'P' || cfg.SIDE === 'B' ? cfg.SIDE : null;
+        if (cfg.PROGRESSION_MODE === 'paroli' || cfg.PROGRESSION_MODE === 'martingale') {
+            Config.PROGRESSION_MODE = cfg.PROGRESSION_MODE;
+        }
+        if ('CONCURRENT' in cfg) Config.CONCURRENT = cfg.CONCURRENT !== false;
+        if (cfg.RANDOM_SIDE_ENGINE) Config.RANDOM_SIDE_ENGINE = normalizeSideEngine(cfg.RANDOM_SIDE_ENGINE);
+    };
+
+    const pushHudState = () => {
+        try { hudBusSend({ kind: 'state', snapshot: snapshot() }); } catch (_) {}
+    };
+
+    window.addEventListener('message', (e) => {
+        if (e.source !== window) return;
+        const d = e.data;
+        if (!d || d.source !== 'sb-ext-hud' || !d.payload) return;
+        const p = d.payload;
+        if (p.kind === 'wallet') {
+            remoteWallet = Number(p.balance) || 0;
+            return;
+        }
+        if (p.kind !== 'cmd') return;
+        if (p.cmd === 'config') applyIncomingConfig(p.config);
+        if (p.cmd === 'start') start();
+        if (p.cmd === 'stop') stop();
+        if (p.cmd === 'reset') reset();
+        if (p.cmd === 'setTable' && p.id) setTable(p.id);
+        if (p.cmd === 'ping') pushHudState();
+    });
+
     const tryResumeAfterReload = async () => {
         if (Config.RESUME_AFTER_RELOAD === false) return;
         if (!resumeWanted()) return;
@@ -3613,8 +4243,14 @@ ${line()}
 
     const bootHud = () => {
         void util.ensureDebugger();
+        void readHudStore().then((store) => {
+            Object.assign(Config, storeToConfigPatch(store));
+            pushHudState();
+        });
         if (document.documentElement) ensureHud();
         else document.addEventListener('DOMContentLoaded', ensureHud, { once: true });
+        hudBusSend({ kind: 'hello', snapshot: snapshot() });
+        setInterval(pushHudState, 400);
         const kick = () => { void tryResumeAfterReload(); };
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', kick, { once: true });

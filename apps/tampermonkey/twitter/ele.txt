@@ -1,0 +1,35 @@
+Selectors from SingleFile dump of
+https://x.com/Forbes/status/2092363895503786486
+saved 2026-08-26.
+
+article[data-testid=tweet]
+  [data-testid=User-Name]
+  time[datetime]
+  [data-testid=tweetText]     body; <a href=t.co> visible URL may be truncated
+  img alt=📸                  photo credit follows as ": Getty…"
+  [data-testid=tweetPhoto]    skip embed (ugly pbs query URLs)
+  [data-testid=tweet-text-show-more-link]
+  [data-testid=tweetTextarea_0] composer — skip
+
+On /status/: every later article[data-testid=tweet] is a comment.
+
+UI hide (merged into twitter.js v1.2.0)
+  svg[data-testid=icon-verified][aria-label="Verified account"]   Forbes dump
+  [role=status][data-keep-composer-open=true]                     pill slot (status dump)
+  button[aria-label*="New posts are available"]                   timeline (archive/ele.htm)
+
+Expected paste:
+
+# OnlyFans Billionaire Owner Received 700 Million Dividend Months Before Death
+
+Forbes @Forbes · 2026-08-25 · [Post](https://x.com/Forbes/status/2092363895503786486)
+
+> Leonid Radvinsky, the late billionaire owner of adult content platform OnlyFans, received a $709 million payout from the company months before his death in March, filings made by the company in the U.K. on Tuesday showed.
+
+Read more: [forbes.com](https://forbes.com/sites/siladityaray/2026/08/25/onlyfans-billionaire-owner-received-700-million-dividend-months-before-death/)
+
+_Photo: Omar Marques/SOPA Images/LightRocket via Getty Images_
+
+## Comments
+
+- **sophia s.** (@sophia_lux_7) · 2026-08-26 — the real flex is dying before the 700m gets taxed

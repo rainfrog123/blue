@@ -1,9 +1,9 @@
 {
   "id": "smart-copy",
   "name": "Smart Copy",
-  "version": "1.2.0",
+  "version": "1.2.6",
   "minAppVersion": "1.4.0",
-  "description": "Editor-scoped Ctrl+C/V (does not steal paste from jefr-cdp). Settings tab included.",
+  "description": "Editor-scoped Ctrl/Alt+C/V, Alt+Up/Down block jump. Does not steal paste from jefr-cdp.",
   "author": "local",
   "isDesktopOnly": false
 }

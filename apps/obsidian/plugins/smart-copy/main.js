@@ -57,13 +57,36 @@ module.exports = class SmartCopyPlugin extends Plugin {
       },
     });
 
+    this.addCommand({
+      id: "move-block-up",
+      name: "Move caret to previous block",
+      checkCallback: (checking) => {
+        if (!this.isMarkdownEditorFocused()) return false;
+        if (!checking) this.moveBlock(-1);
+        return true;
+      },
+    });
+
+    this.addCommand({
+      id: "move-block-down",
+      name: "Move caret to next block",
+      checkCallback: (checking) => {
+        if (!this.isMarkdownEditorFocused()) return false;
+        if (!checking) this.moveBlock(1);
+        return true;
+      },
+    });
+
     this.registerEditorScopedKeys();
+    this.registerBlockJumpKeys();
+    this.registerEditorPaste();
     this.addSettingTab(new SmartCopySettingTab(this.app, this));
   }
 
   /**
-   * Editor-scoped Ctrl/Cmd shortcuts. Early-return without preventDefault
-   * when focus is outside the markdown editor (jefr-cdp, settings, etc.).
+   * Editor-scoped Ctrl/Cmd/Alt shortcuts. Early-return without preventDefault
+   * when focus is outside the markdown editor (jefr-cdp, settings, etc.),
+   * except Alt+C / Alt+V which do native copy/paste in those fields.
    */
   registerEditorScopedKeys() {
     this.registerDomEvent(
@@ -71,36 +94,92 @@ module.exports = class SmartCopyPlugin extends Plugin {
       "keydown",
       (evt) => {
         if (evt.defaultPrevented) return;
-        if (!(evt.ctrlKey || evt.metaKey) || evt.altKey) return;
+        if (evt.repeat) return;
+        const ctrl = evt.ctrlKey || evt.metaKey;
+        const alt = evt.altKey;
+        if (ctrl && alt) return;
+        if (!ctrl && !alt) return;
 
-        const key = (evt.key || "").toLowerCase();
+        const key =
+          evt.code === "KeyC"
+            ? "c"
+            : evt.code === "KeyV"
+              ? "v"
+              : (evt.key || "").toLowerCase();
         if (key !== "c" && key !== "v") return;
 
-        // Never steal keys from foreign editables / panels
-        if (!this.isMarkdownEditorFocused()) return;
+        if (this.isMarkdownEditorFocused()) {
+          const ctx = this.getFocusedEditorContext();
+          if (!ctx) return;
 
-        const ctx = this.getFocusedEditorContext();
-        if (!ctx) return;
+          if (key === "v" && !evt.shiftKey) {
+            evt.preventDefault();
+            evt.stopImmediatePropagation();
+            void this.pasteKeepView(ctx.editor, ctx.view);
+            return;
+          }
 
-        if (key === "v" && !evt.shiftKey) {
-          evt.preventDefault();
-          evt.stopPropagation();
-          void this.pasteKeepView(ctx.editor, ctx.view);
+          if (key === "c" && evt.shiftKey && ctrl) {
+            evt.preventDefault();
+            evt.stopImmediatePropagation();
+            this.copyParagraph();
+            return;
+          }
+
+          if (key === "c" && !evt.shiftKey) {
+            evt.preventDefault();
+            evt.stopImmediatePropagation();
+            this.smartCopy();
+          }
           return;
         }
 
-        if (key === "c" && evt.shiftKey) {
-          evt.preventDefault();
-          evt.stopPropagation();
-          this.copyParagraph();
-          return;
-        }
-
+        if (!alt || ctrl) return;
         if (key === "c" && !evt.shiftKey) {
           evt.preventDefault();
-          evt.stopPropagation();
-          this.smartCopy();
+          evt.stopImmediatePropagation();
+          this.nativeCopy();
+          return;
         }
+        if (key === "v" && !evt.shiftKey) {
+          evt.preventDefault();
+          evt.stopImmediatePropagation();
+          void this.nativePaste();
+        }
+      },
+      true
+    );
+  }
+
+  registerBlockJumpKeys() {
+    this.registerDomEvent(
+      document,
+      "keydown",
+      (evt) => {
+        if (evt.defaultPrevented) return;
+        if (!evt.altKey || evt.ctrlKey || evt.metaKey || evt.shiftKey) return;
+        const up = evt.key === "ArrowUp" || evt.code === "ArrowUp";
+        const down = evt.key === "ArrowDown" || evt.code === "ArrowDown";
+        if (!up && !down) return;
+        if (!this.isMarkdownEditorFocused()) return;
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        this.moveBlock(down ? 1 : -1);
+      },
+      true
+    );
+  }
+
+  registerEditorPaste() {
+    this.registerDomEvent(
+      document,
+      "paste",
+      (evt) => {
+        if (!this.isMarkdownEditorFocused()) return;
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        const ctx = this.getFocusedEditorContext();
+        if (ctx) void this.pasteKeepView(ctx.editor, ctx.view, evt);
       },
       true
     );
@@ -163,31 +242,68 @@ module.exports = class SmartCopyPlugin extends Plugin {
     if (this.settings.showNotices) new Notice(msg);
   }
 
+  restoreCaretAndView(editor, view, from, to, scrollTop) {
+    try {
+      editor.setSelection(from, to);
+    } catch (_) {}
+    try {
+      editor.focus();
+    } catch (_) {}
+    const scroller = this.getScroller(view);
+    if (scroller && scrollTop != null) scroller.scrollTop = scrollTop;
+  }
+
+  keepViewAround(editor, view, work) {
+    const scroller = this.getScroller(view);
+    const scrollTop = scroller ? scroller.scrollTop : null;
+    const from = editor.getCursor("from");
+    const to = editor.getCursor("to");
+    const restore = () =>
+      this.restoreCaretAndView(editor, view, from, to, scrollTop);
+    const done = work();
+    restore();
+    requestAnimationFrame(() => {
+      restore();
+      requestAnimationFrame(restore);
+    });
+    if (done && typeof done.then === "function") {
+      done.finally(() => {
+        restore();
+        requestAnimationFrame(restore);
+      });
+    }
+  }
+
   smartCopy() {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
     const editor = view?.editor;
 
-    if (editor) {
-      const selected = editor.getSelection();
-      if (selected && selected.length > 0) {
-        this.writeClipboard(selected);
+    const run = () => {
+      if (editor) {
+        const selected = editor.getSelection();
+        if (selected && selected.length > 0) {
+          return this.writeClipboard(selected);
+        }
+      }
+
+      const file = this.app.workspace.getActiveFile();
+      if (!file) {
+        this.notice("Nothing to copy");
         return;
       }
-    }
 
-    const file = this.app.workspace.getActiveFile();
-    if (!file) {
-      this.notice("Nothing to copy");
-      return;
-    }
+      const text = this.resolveEmptyCopy(file);
+      const p = this.writeClipboard(text);
+      this.notice(
+        this.settings.emptyCopyMode === "full-path"
+          ? "Copied path"
+          : `Copied: ${text}`
+      );
+      return p;
+    };
 
-    const text = this.resolveEmptyCopy(file);
-    this.writeClipboard(text);
-    this.notice(
-      this.settings.emptyCopyMode === "full-path"
-        ? "Copied path"
-        : `Copied: ${text}`
-    );
+    if (editor && view) this.keepViewAround(editor, view, run);
+    else run();
   }
 
   resolveEmptyCopy(file) {
@@ -220,44 +336,47 @@ module.exports = class SmartCopyPlugin extends Plugin {
       return;
     }
 
-    this.writeClipboard(text);
-    this.notice("Copied paragraph");
+    this.keepViewAround(editor, view, () => {
+      const p = this.writeClipboard(text);
+      this.notice("Copied paragraph");
+      return p;
+    });
   }
 
-  async pasteKeepView(editor, view) {
+  async pasteKeepView(editor, view, evt) {
+    if (this._pasting) return;
+    this._pasting = true;
     let text = "";
     try {
-      text = await navigator.clipboard.readText();
-    } catch (e) {
-      this.notice("Clipboard read failed — use default paste");
-      return;
-    }
-    if (text == null || text === "") {
-      // Let the browser handle image / file paste in the editor
-      document.execCommand("paste");
-      return;
-    }
+      if (evt && evt.clipboardData) {
+        text = evt.clipboardData.getData("text/plain") || "";
+      }
+      if (!text) {
+        try {
+          text = await navigator.clipboard.readText();
+        } catch (e) {
+          this.notice("Clipboard read failed — use default paste");
+          return;
+        }
+      }
+      if (text == null || text === "") return;
 
-    const keepScroll = this.settings.pasteKeepScroll;
-    const cursorAt = this.settings.pasteCursorAt;
+      const scroller = this.getScroller(view);
+      const scrollTop = scroller ? scroller.scrollTop : null;
+      const from = editor.getCursor("from");
 
-    const scroller = keepScroll ? this.getScroller(view) : null;
-    const scrollTop = scroller ? scroller.scrollTop : null;
-    const from = editor.getCursor("from");
-
-    editor.replaceSelection(text);
-
-    if (cursorAt === "start") {
-      editor.setCursor(from);
-    }
-
-    if (scroller && scrollTop != null) {
+      editor.replaceSelection(text);
+      this.restoreCaretAndView(editor, view, from, from, scrollTop);
       requestAnimationFrame(() => {
-        scroller.scrollTop = scrollTop;
+        this.restoreCaretAndView(editor, view, from, from, scrollTop);
         requestAnimationFrame(() => {
-          scroller.scrollTop = scrollTop;
+          this.restoreCaretAndView(editor, view, from, from, scrollTop);
         });
       });
+    } finally {
+      window.setTimeout(() => {
+        this._pasting = false;
+      }, 80);
     }
   }
 
@@ -267,6 +386,69 @@ module.exports = class SmartCopyPlugin extends Plugin {
       view?.containerEl?.querySelector?.(".cm-scroller") ||
       null
     );
+  }
+
+  moveBlock(dir) {
+    const ctx = this.getFocusedEditorContext();
+    if (!ctx) return;
+    const editor = ctx.editor;
+    const last = editor.lastLine();
+    const blank = (n) =>
+      n < 0 || n > last || editor.getLine(n).trim() === "";
+    const cur = editor.getCursor().line;
+    let dest;
+
+    if (dir > 0) {
+      let n = cur;
+      if (!blank(n)) while (n <= last && !blank(n)) n++;
+      while (n <= last && blank(n)) n++;
+      dest = n > last ? last : n;
+    } else if (!blank(cur) && cur > 0 && !blank(cur - 1)) {
+      let n = cur;
+      while (n > 0 && !blank(n - 1)) n--;
+      dest = n;
+    } else {
+      let n = cur;
+      if (!blank(n)) n--;
+      while (n >= 0 && blank(n)) n--;
+      while (n > 0 && !blank(n - 1)) n--;
+      dest = n < 0 ? 0 : n;
+    }
+
+    const pos = { line: dest, ch: 0 };
+    editor.setCursor(pos);
+    this.scrollLineForReading(ctx.view, editor, pos);
+  }
+
+  /**
+   * Pin the caret line near the top of the pane (a little previous context)
+   * so reading Alt+↑/↓ does not leave the cursor below the text you look at.
+   */
+  scrollLineForReading(view, editor, pos) {
+    const scroller = this.getScroller(view);
+    const cm = editor.cm;
+    const pin = () => {
+      try {
+        const coords =
+          cm && typeof cm.coordsAtPos === "function"
+            ? cm.coordsAtPos(editor.posToOffset(pos))
+            : null;
+        if (coords && scroller) {
+          const box = scroller.getBoundingClientRect();
+          const lineH = Math.max(
+            16,
+            (coords.bottom || 0) - (coords.top || 0) || 22
+          );
+          const pad = lineH * 4.5;
+          scroller.scrollTop += coords.top - box.top - pad;
+          return;
+        }
+      } catch (_) {}
+      try {
+        editor.scrollIntoView({ from: pos, to: pos }, false);
+      } catch (_) {}
+    };
+    requestAnimationFrame(pin);
   }
 
   getParagraphRange(editor) {
@@ -316,16 +498,62 @@ module.exports = class SmartCopyPlugin extends Plugin {
   }
 
   async writeClipboard(text) {
+    const ae = document.activeElement;
     try {
       await navigator.clipboard.writeText(text);
     } catch (_) {
       const ta = document.createElement("textarea");
       ta.value = text;
-      ta.style.cssText = "position:fixed;left:-9999px";
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;left:-9999px;top:0";
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
       ta.remove();
+    } finally {
+      if (ae && ae.isConnected && typeof ae.focus === "function") {
+        try {
+          ae.focus({ preventScroll: true });
+        } catch (_) {
+          ae.focus();
+        }
+      }
+    }
+  }
+
+  nativeCopy() {
+    try {
+      document.execCommand("copy");
+    } catch (_) {}
+  }
+
+  async nativePaste() {
+    const el = document.activeElement;
+    let text = "";
+    try {
+      text = await navigator.clipboard.readText();
+    } catch (_) {
+      try {
+        document.execCommand("paste");
+      } catch (__) {}
+      return;
+    }
+    if (
+      el &&
+      (el.tagName === "TEXTAREA" || el.tagName === "INPUT") &&
+      typeof el.selectionStart === "number"
+    ) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const val = el.value || "";
+      el.value = val.slice(0, start) + text + val.slice(end);
+      const pos = start + text.length;
+      el.selectionStart = el.selectionEnd = pos;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      return;
+    }
+    if (el && el.isContentEditable) {
+      document.execCommand("insertText", false, text);
     }
   }
 };
@@ -342,7 +570,7 @@ class SmartCopySettingTab extends PluginSettingTab {
 
     containerEl.createEl("h2", { text: "Smart Copy" });
     containerEl.createEl("p", {
-      text: "Ctrl+C / Ctrl+Shift+C / Ctrl+V run only while the note editor is focused. They are not Obsidian global hotkeys, so jefr-cdp and other panels keep native paste/copy.",
+      text: "Ctrl or Alt + C / V run while the note editor is focused. They are not Obsidian global hotkeys, so jefr-cdp and other panels keep native paste/copy. Alt+C / Alt+V also copy/paste in those fields.",
     });
 
     containerEl.createEl("h3", { text: "Ctrl+C — empty selection" });
@@ -388,11 +616,11 @@ class SmartCopySettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Caret after paste")
-      .setDesc("Where to leave the cursor after inserting clipboard text.")
+      .setDesc("Paste leaves the caret at the insert point. End-of-block jumps the view.")
       .addDropdown((dd) =>
         dd
-          .addOption("start", "Start of pasted block")
-          .addOption("end", "End of pasted block (stock behavior)")
+          .addOption("start", "Stay (insert point)")
+          .addOption("end", "End of pasted block (stock)")
           .setValue(this.plugin.settings.pasteCursorAt)
           .onChange(async (v) => {
             this.plugin.settings.pasteCursorAt = v;

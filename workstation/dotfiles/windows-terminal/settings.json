@@ -1,0 +1,425 @@
+{
+    "$help": "https://aka.ms/terminal-documentation",
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+    "actions": 
+    [
+        {
+            "command": 
+            {
+                "action": "copy",
+                "singleLine": false
+            },
+            "id": "User.copy.644BA8F2"
+        },
+        {
+            "command": "paste",
+            "id": "User.paste"
+        },
+        {
+            "command": "find",
+            "id": "User.find"
+        },
+        {
+            "command": 
+            {
+                "action": "splitPane",
+                "split": "auto",
+                "splitMode": "duplicate"
+            },
+            "id": "User.splitPane.A6751878"
+        },
+        {
+            "command": 
+            {
+                "action": "nextTab"
+            },
+            "id": "User.nextTab"
+        },
+        {
+            "command": 
+            {
+                "action": "prevTab"
+            },
+            "id": "User.prevTab"
+        },
+        {
+            "command": 
+            {
+                "action": "newTab"
+            },
+            "id": "User.newTab"
+        },
+        {
+            "command": "restoreLastClosed",
+            "id": "User.restoreLastClosed"
+        },
+        {
+            "command": 
+            {
+                "action": "splitPane",
+                "split": "right",
+                "splitMode": "duplicate"
+            },
+            "id": "User.splitVertical"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 0
+            },
+            "id": "User.switchToTab0"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 1
+            },
+            "id": "User.switchToTab1"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 2
+            },
+            "id": "User.switchToTab2"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 3
+            },
+            "id": "User.switchToTab3"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 4
+            },
+            "id": "User.switchToTab4"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 5
+            },
+            "id": "User.switchToTab5"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 6
+            },
+            "id": "User.switchToTab6"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 7
+            },
+            "id": "User.switchToTab7"
+        },
+        {
+            "command": "closeTab",
+            "id": "User.closeTab"
+        },
+        {
+            "command": "closeWindow",
+            "id": "User.closeWindow"
+        },
+        {
+            "command": 
+            {
+                "action": "openSettings",
+                "target": "settingsUI"
+            },
+            "id": "User.openSettings"
+        },
+        {
+            "command": 
+            {
+                "action": "adjustFontSize",
+                "delta": 1
+            },
+            "id": "User.fontBigger"
+        },
+        {
+            "command": 
+            {
+                "action": "adjustFontSize",
+                "delta": -1
+            },
+            "id": "User.fontSmaller"
+        },
+        {
+            "command": "resetFontSize",
+            "id": "User.fontReset"
+        },
+        {
+            "command": 
+            {
+                "action": "switchToTab",
+                "index": 8
+            },
+            "id": "User.switchToTab8"
+        }
+    ],
+    "alwaysShowTabs": true,
+    "copyFormatting": "none",
+    "copyOnSelect": false,
+    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+    "keybindings": 
+    [
+        {
+            "id": "User.copy.644BA8F2",
+            "keys": "ctrl+c"
+        },
+        {
+            "id": "User.paste",
+            "keys": "ctrl+v"
+        },
+        {
+            "id": "User.find",
+            "keys": "ctrl+shift+f"
+        },
+        {
+            "id": "User.splitPane.A6751878",
+            "keys": "alt+shift+d"
+        },
+        {
+            "id": "User.prevTab",
+            "keys": "ctrl+pgup"
+        },
+        {
+            "id": "User.nextTab",
+            "keys": "ctrl+pgdn"
+        },
+        {
+            "id": "User.prevTab",
+            "keys": "alt+pgup"
+        },
+        {
+            "id": "User.nextTab",
+            "keys": "alt+pgdn"
+        },
+        {
+            "id": "User.newTab",
+            "keys": "alt+t"
+        },
+        {
+            "id": "User.newTab",
+            "keys": "ctrl+n"
+        },
+        {
+            "id": "User.splitPane.A6751878",
+            "keys": "ctrl+shift+n"
+        },
+        {
+            "id": "User.closeWindow",
+            "keys": "ctrl+shift+w"
+        },
+        {
+            "id": "User.openSettings",
+            "keys": "ctrl+,"
+        },
+        {
+            "id": "User.find",
+            "keys": "ctrl+f"
+        },
+        {
+            "id": "User.fontBigger",
+            "keys": "ctrl+plus"
+        },
+        {
+            "id": "User.fontBigger",
+            "keys": "ctrl+equals"
+        },
+        {
+            "id": "User.fontSmaller",
+            "keys": "ctrl+minus"
+        },
+        {
+            "id": "User.fontReset",
+            "keys": "ctrl+0"
+        },
+        {
+            "id": "User.restoreLastClosed",
+            "keys": "ctrl+shift+t"
+        },
+        {
+            "id": "User.splitVertical",
+            "keys": "ctrl+shift+r"
+        },
+        {
+            "id": "User.switchToTab0",
+            "keys": "ctrl+1"
+        },
+        {
+            "id": "User.switchToTab1",
+            "keys": "ctrl+2"
+        },
+        {
+            "id": "User.switchToTab2",
+            "keys": "ctrl+3"
+        },
+        {
+            "id": "User.switchToTab3",
+            "keys": "ctrl+4"
+        },
+        {
+            "id": "User.switchToTab4",
+            "keys": "ctrl+5"
+        },
+        {
+            "id": "User.switchToTab5",
+            "keys": "ctrl+6"
+        },
+        {
+            "id": "User.switchToTab6",
+            "keys": "ctrl+7"
+        },
+        {
+            "id": "User.switchToTab7",
+            "keys": "ctrl+8"
+        },
+        {
+            "id": "User.switchToTab8",
+            "keys": "ctrl+9"
+        },
+        {
+            "id": "User.closeTab",
+            "keys": "ctrl+w"
+        }
+    ],
+    "newTabMenu": 
+    [
+        {
+            "type": "remainingProfiles"
+        }
+    ],
+    "profiles": 
+    {
+        "defaults": 
+        {
+            "adjustIndistinguishableColors": "indexed",
+            "antialiasingMode": "cleartype",
+            "backgroundImage": "ms-appdata:///Local/linen.png",
+            "backgroundImageOpacity": 0.42,
+            "backgroundImageStretchMode": "uniformToFill",
+            "bellStyle": "none",
+            "colorScheme": "Linen",
+            "cursorShape": "bar",
+            "font": 
+            {
+                "cellHeight": "1.22",
+                "face": "Cascadia Code",
+                "features": 
+                {
+                    "calt": 1,
+                    "liga": 1
+                },
+                "size": 13,
+                "weight": "semi-light"
+            },
+            "intenseTextStyle": "bold",
+            "opacity": 100,
+            "padding": "20, 24, 16, 24",
+            "scrollbarState": "hidden",
+            "suppressApplicationTitle": true,
+            "useAcrylic": false
+        },
+        "list": 
+        [
+            {
+                "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoLogo",
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "hidden": false,
+                "name": "Windows PowerShell",
+                "suppressApplicationTitle": true,
+                "tabTitle": "PS"
+            },
+            {
+                "commandline": "%ProgramFiles%\\Git\\bin\\bash.exe -l -i",
+                "guid": "{2ece5bfe-50ed-4f3d-9fdc-2bd4b56f48ea}",
+                "hidden": false,
+                "icon": "%ProgramFiles%\\Git\\mingw64\\share\\git\\git-for-windows.ico",
+                "name": "Git Bash",
+                "startingDirectory": "%USERPROFILE%",
+                "suppressApplicationTitle": true,
+                "tabTitle": "Git"
+            },
+            {
+                "commandline": "%SystemRoot%\\System32\\cmd.exe",
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "hidden": false,
+                "name": "Command Prompt",
+                "suppressApplicationTitle": true,
+                "tabTitle": "cmd"
+            },
+            {
+                "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+                "hidden": false,
+                "name": "Azure Cloud Shell",
+                "source": "Windows.Terminal.Azure"
+            }
+        ]
+    },
+    "schemes": 
+    [
+        {
+            "background": "#F4EFE6",
+            "black": "#3F3A36",
+            "blue": "#4F6F8C",
+            "brightBlack": "#8B847A",
+            "brightBlue": "#6588A6",
+            "brightCyan": "#659A92",
+            "brightGreen": "#71966A",
+            "brightPurple": "#947490",
+            "brightRed": "#C8786A",
+            "brightWhite": "#2F2B28",
+            "brightYellow": "#C09A52",
+            "cursorColor": "#C17B5A",
+            "cyan": "#4F7874",
+            "foreground": "#3F3A36",
+            "green": "#5F7D58",
+            "name": "Linen",
+            "purple": "#7A5F7C",
+            "red": "#B85E4E",
+            "selectionBackground": "#DDD2C2",
+            "white": "#E8E1D6",
+            "yellow": "#A98442"
+        }
+    ],
+    "showTabsInTitlebar": true,
+    "tabWidthMode": "titleLength",
+    "theme": "Linen",
+    "themes": 
+    [
+        {
+            "name": "Linen",
+            "tab": 
+            {
+                "background": "terminalBackground",
+                "showCloseButton": "hover",
+                "unfocusedBackground": "#00000000"
+            },
+            "tabRow": 
+            {
+                "background": "#E8E0D4",
+                "unfocusedBackground": "#E0D8CC"
+            },
+            "window": 
+            {
+                "applicationTheme": "light",
+                "useMica": false
+            }
+        }
+    ]
+}

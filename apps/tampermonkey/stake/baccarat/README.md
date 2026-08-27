@@ -2,7 +2,7 @@
 
 Automated Paroli / Martingale betting for Pragmatic Play live multibaccarat on Stake.com.
 
-**Live path is the Chrome extension** in `extension/` (v8.1.0). Tampermonkey `stake-baccarat.js` is the untrusted-click fallback — disable it when the extension is loaded.
+**Live path is the Chrome extension** in `extension/` (v8.1.1). Tampermonkey `stake-baccarat.js` is the untrusted-click fallback — disable it when the extension is loaded.
 
 ## Architecture
 

@@ -13,7 +13,9 @@ other windows, or on another virtual desktop.
 
 Requirement
 -----------
-Cursor must be launched with a remote-debugging port, e.g.:
+Cursor must be launched with a remote-debugging port. Windows (quit if running, otherwise just start):
+
+    $c = Get-Process -Name Cursor -ErrorAction SilentlyContinue; if ($c) { $c | Stop-Process -Force; Start-Sleep -Seconds 2 }; Start-Process "$env:LOCALAPPDATA\Programs\cursor\Cursor.exe" -ArgumentList '--remote-debugging-port=9222','--remote-allow-origins=*'
 
     cursor --remote-debugging-port=9222
 

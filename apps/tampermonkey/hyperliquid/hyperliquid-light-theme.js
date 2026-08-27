@@ -1,16 +1,19 @@
 // ==UserScript==
 // @name         Hyperliquid Light Theme
 // @namespace    http://tampermonkey.net/
-// @version      1.8.0
-// @description  Light chrome + TV invert. Restores leverage slider / primary buttons.
+// @version      1.10.0
+// @description  Light chrome + TV invert. No dark first-paint; hover ink; slider/primary.
 // @author       You
 // @match        https://app.hyperliquid.xyz/*
 // @match        https://app.hyperliquid.com/*
-// @grant        GM_addStyle
+// @grant        none
 // @run-at       document-start
 // ==/UserScript==
 
 /*
+ * v1.10.0 — cloak until first light paint so the app never flashes dark then white.
+ * v1.9.0 — dump 2026-08-26: :hover still #F6FEFD; new dark greys; body #303030;
+ *          observer skipped style on lit nodes. Hover paint + CSS backups.
  * v1.8.0 — leverage slider track/fill/thumb and primary buttons were
  *          painted white (dark teal failed isBrightAccent). Restore mint.
  * v1.7.0 — invert of white TV chrome/gaps painted thick black edges.
@@ -41,6 +44,10 @@
   const MUTED = "#5c6865";
   const BORDER = "#d7dedb";
   const ACCENT_BG = "#d4ebe6";
+  const MINT = "#50d2c1";
+  const MINT_OFF = "#c5ebe3";
+  const TRACK = "#e4eae8";
+  const INK = "#04120f";
 
   const LIGHT_INK = new Set([
     "#f6fefd",
@@ -49,8 +56,13 @@
     "#fff",
     "white",
     "rgb(246, 254, 253)",
+    "rgb(246,254,253)",
     "rgb(210, 218, 215)",
+    "rgb(210,218,215)",
     "rgb(255, 255, 255)",
+    "rgb(255,255,255)",
+    "rgba(246, 254, 253, 0.6)",
+    "rgba(246,254,253,0.6)",
   ]);
 
   const SKIP_TAG = new Set([
@@ -64,28 +76,52 @@
     "IMG",
   ]);
 
+  const DARK_RGB = [
+    [15, 26, 31],
+    [15, 26, 30],
+    [4, 37, 31],
+    [27, 36, 41],
+    [25, 27, 24],
+    [34, 36, 40],
+    [39, 48, 53],
+    [48, 48, 48],
+  ];
+
   function injectCss() {
     const css = `
       html {
         color-scheme: light !important;
-        --hl-surface: ${PANEL};
-        --hl-surface-inset: #eef2f1;
-        --hl-border: ${BORDER};
-        --hl-divider: #1a242114;
-        --hl-title: ${TEXT_STRONG};
-        --hl-text: ${TEXT};
-        --hl-text-muted: ${MUTED};
-        --hl-text-faint: #5c686599;
-        --hl-accent: #0d8a78;
-        --hl-accent-soft: #50d2c1;
-        --hl-accent-text: #04120f;
-        --hl-input-focus: ${MUTED};
-        --hl-error: #ed7088;
+        background: ${PAGE} !important;
+        background-color: ${PAGE} !important;
+        --hl-surface: ${PANEL} !important;
+        --hl-surface-inset: #eef2f1 !important;
+        --hl-border: ${BORDER} !important;
+        --hl-divider: #1a242114 !important;
+        --hl-title: ${TEXT_STRONG} !important;
+        --hl-text: ${TEXT} !important;
+        --hl-text-muted: ${MUTED} !important;
+        --hl-text-faint: #5c686599 !important;
+        --hl-accent: #0d8a78 !important;
+        --hl-accent-soft: ${MINT} !important;
+        --hl-accent-text: ${INK} !important;
+        --hl-input-focus: ${MUTED} !important;
+        --hl-error: #ed7088 !important;
+        --hl-radius: 12px !important;
+        --hl-radius-sm: 8px !important;
+        --hl-radius-modal: 16px !important;
       }
       html, body, #root {
         background: ${PAGE} !important;
         background-color: ${PAGE} !important;
         color: ${TEXT} !important;
+      }
+      html:not(.hl-ready) body,
+      html:not(.hl-ready) #root {
+        opacity: 0 !important;
+      }
+      html.hl-ready body,
+      html.hl-ready #root {
+        opacity: 1 !important;
       }
       #tv_chart_container,
       #tv_chart_container iframe {
@@ -120,7 +156,53 @@
         stroke: ${TEXT_STRONG} !important;
       }
 
-      /* Tab scroller chevron: dark linear-gradient fade on the edge. */
+      html body button[color="primary"],
+      html body button[color=primary] {
+        background-color: ${MINT} !important;
+        color: ${INK} !important;
+      }
+      html body button[color="primary"].disabled,
+      html body button[color="primary"]:disabled,
+      html body button[color=primary].disabled,
+      html body button[color=primary]:disabled {
+        background-color: ${MINT_OFF} !important;
+        color: ${MUTED} !important;
+      }
+
+      html body .pull-to-refresh-ignore:not(#tv_chart_container) > [value] {
+        background-color: ${MINT} !important;
+      }
+      html body .pull-to-refresh-ignore:not(#tv_chart_container) .highlighted {
+        background-color: ${MINT} !important;
+      }
+      html body .pull-to-refresh-ignore:not(#tv_chart_container) > div:first-child:not([value]) {
+        background-color: ${TRACK} !important;
+      }
+
+      /* Styled-components still hardcode dark-theme hover ink / panels. */
+      @media (hover: hover) {
+        html body :is(a, button, [role="button"], label):not([color="primary"]):hover,
+        html body :is(a, button, [role="button"], label):not([color="primary"]):focus-visible {
+          color: ${TEXT_STRONG} !important;
+        }
+        html body :is(a, button, [role="button"]):not([color="primary"]):hover svg,
+        html body :is(a, button, [role="button"]):not([color="primary"]):hover path,
+        html body :is(a, button, [role="button"]):not([color="primary"]):focus-visible svg,
+        html body :is(a, button, [role="button"]):not([color="primary"]):focus-visible path {
+          fill: ${TEXT_STRONG} !important;
+          stroke: ${TEXT_STRONG} !important;
+        }
+        html body button:not([color="primary"]):not(.variant_green):not(.variant_red):hover,
+        html body [role="button"]:hover {
+          background-color: #eef2f1 !important;
+        }
+        html body button[color="primary"]:hover,
+        html body button[color=primary]:hover {
+          background-color: ${MINT} !important;
+          color: ${INK} !important;
+        }
+      }
+
       #accountTable button,
       #favoriteCoins button,
       #marketData button,
@@ -143,39 +225,44 @@
         opacity: 0 !important;
       }
     `;
-    if (typeof GM_addStyle === "function") GM_addStyle(css);
-    else {
-      const el = document.createElement("style");
+    let el = document.getElementById(STYLE_ID);
+    if (!el) {
+      el = document.createElement("style");
       el.id = STYLE_ID;
-      el.textContent = css;
-      (document.head || document.documentElement).appendChild(el);
+      const host = document.documentElement;
+      host.insertBefore(el, host.firstChild);
     }
+    el.textContent = css;
+    const html = document.documentElement;
+    html.style.setProperty("background", PAGE, "important");
+    html.style.setProperty("background-color", PAGE, "important");
+    html.style.setProperty("color-scheme", "light", "important");
   }
 
   function parseRgba(str) {
     if (!str || str === "transparent" || str === "none") return null;
     const hex = String(str).trim();
-    const hm = hex.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    const hm = hex.match(/^#([0-9a-f]{3,8})$/i);
     if (hm) {
       let h = hm[1];
-      if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+      if (h.length === 3 || h.length === 4) h = [...h].map((c) => c + c).join("");
+      const a = h.length >= 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1;
       return {
         r: parseInt(h.slice(0, 2), 16),
         g: parseInt(h.slice(2, 4), 16),
         b: parseInt(h.slice(4, 6), 16),
-        a: 1,
+        a,
       };
     }
-    const m = str.match(
-      /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/i
+    const m = String(str).match(
+      /rgba?\(\s*(\d+)\s*[,/\s]\s*(\d+)\s*[,/\s]\s*(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/i
     );
     if (!m) return null;
-    return {
-      r: +m[1],
-      g: +m[2],
-      b: +m[3],
-      a: m[4] === undefined ? 1 : +m[4],
-    };
+    let a = 1;
+    if (m[4] !== undefined) {
+      a = m[4].endsWith("%") ? parseFloat(m[4]) / 100 : +m[4];
+    }
+    return { r: +m[1], g: +m[2], b: +m[3], a };
   }
 
   function lum(c) {
@@ -223,20 +310,24 @@
   }
 
   function paintSlider(el) {
-    if (el.matches?.("button[color='primary']")) {
+    if (el.matches?.("button[color='primary'], button[color=primary]")) {
       const off = el.classList.contains("disabled") || el.disabled;
-      el.style.setProperty("background-color", off ? "#c5ebe3" : "#50d2c1", "important");
-      el.style.setProperty("color", off ? MUTED : "#04120f", "important");
+      el.style.setProperty("background-color", off ? MINT_OFF : MINT, "important");
+      el.style.setProperty("color", off ? MUTED : INK, "important");
       return true;
     }
     const wrap = sliderWrap(el);
     if (!wrap) return false;
     if (el.classList.contains("highlighted") || /^\d/.test(el.getAttribute("value") || "")) {
-      el.style.setProperty("background-color", "#50d2c1", "important");
+      el.style.setProperty("background-color", MINT, "important");
       return true;
     }
-    if (el.parentElement === wrap && !el.hasAttribute("value") && !el.querySelector(":scope > .highlighted, :scope > [value]")) {
-      el.style.setProperty("background-color", "#e4eae8", "important");
+    if (
+      el.parentElement === wrap &&
+      !el.hasAttribute("value") &&
+      !el.querySelector(":scope > .highlighted, :scope > [value]")
+    ) {
+      el.style.setProperty("background-color", TRACK, "important");
       return true;
     }
     return true;
@@ -244,7 +335,11 @@
 
   function isLightInk(value) {
     if (!value) return false;
-    return LIGHT_INK.has(String(value).trim().toLowerCase());
+    const s = String(value).trim().toLowerCase().replace(/\s+/g, "");
+    if (LIGHT_INK.has(String(value).trim().toLowerCase()) || LIGHT_INK.has(s)) return true;
+    const c = parseRgba(value);
+    if (!c || c.a < 0.35 || isBrightAccent(c)) return false;
+    return lum(c) >= 220 && sat(c) < 45;
   }
 
   function forceInk(el, attr) {
@@ -284,6 +379,31 @@
     el.style.setProperty(cssProp, TEXT_STRONG, "important");
   }
 
+  function remapDarkImage(img) {
+    let next = img
+      .replace(/#0f1a1f/gi, "#ffffff")
+      .replace(/#04251f/gi, "#f3f5f4")
+      .replace(/#273035/gi, "#ffffff")
+      .replace(/#303030/gi, PAGE)
+      .replace(/#17453f/gi, MINT_OFF);
+    for (const [r, g, b] of DARK_RGB) {
+      const to =
+        (r === 4 && g === 37) || (r === 15 && g === 26 && b === 30)
+          ? "rgb(243, 245, 244)"
+          : "rgb(255, 255, 255)";
+      const comma = new RegExp(
+        `rgba?\\(\\s*${r}\\s*,\\s*${g}\\s*,\\s*${b}(?:\\s*,\\s*[\\d.]+%?)?\\s*\\)`,
+        "gi"
+      );
+      const space = new RegExp(
+        `rgba?\\(\\s*${r}\\s+${g}\\s+${b}(?:\\s*\\/\\s*[\\d.]+%?)?\\s*\\)`,
+        "gi"
+      );
+      next = next.replace(comma, to).replace(space, to);
+    }
+    return next;
+  }
+
   function paintEl(el, inheritedBg) {
     if (skip(el)) return inheritedBg;
 
@@ -291,30 +411,27 @@
     const bg = parseRgba(cs.backgroundColor);
     let effective = inheritedBg;
 
-    if (paintSlider(el)) {
+    if (isChrome(el)) {
+      el.style.setProperty("background-color", PAGE, "important");
+      el.style.setProperty("background", PAGE, "important");
+      el.style.setProperty("color", TEXT, "important");
+      effective = parseRgba("rgb(243, 245, 244)");
+    } else if (paintSlider(el)) {
       effective = inheritedBg;
     } else if (bg && bg.a >= 0.35 && !isBrightAccent(bg) && lum(bg) < 95) {
-      const next = isChrome(el) || el.id === "tv_chart_container" ? (isChrome(el) ? PAGE : PANEL) : PANEL;
+      const next = PANEL;
       el.style.setProperty("background-color", next, "important");
       if (el.id === "tv_chart_container") {
         el.style.setProperty("background", next, "important");
       }
-      effective = parseRgba(
-        next === PAGE ? "rgb(243, 245, 244)" : "rgb(255, 255, 255)"
-      );
+      effective = parseRgba("rgb(255, 255, 255)");
     } else if (bg && bg.a >= 0.35) {
       effective = bg;
     }
 
     const img = cs.backgroundImage;
     if (img && img !== "none" && /gradient/i.test(img)) {
-      const nextImg = img
-        .replace(/rgb\(\s*15\s*,\s*26\s*,\s*31\s*\)/gi, "rgb(255, 255, 255)")
-        .replace(/rgb\(\s*4\s*,\s*37\s*,\s*31\s*\)/gi, "rgb(243, 245, 244)")
-        .replace(/rgb\(\s*27\s*,\s*36\s*,\s*41\s*\)/gi, "rgb(255, 255, 255)")
-        .replace(/#0f1a1f/gi, "#ffffff")
-        .replace(/#04251f/gi, "#f3f5f4")
-        .replace(/#273035/gi, "#ffffff");
+      const nextImg = remapDarkImage(img);
       if (nextImg !== img) {
         el.style.setProperty("background-image", nextImg, "important");
       }
@@ -322,10 +439,10 @@
 
     const fg = parseRgba(cs.color);
     if (fg && !isBrightAccent(fg) && effective && lum(effective) >= 140) {
-      if (lum(fg) >= 150) {
+      if (isLightInk(cs.color) || lum(fg) >= 150) {
         el.style.setProperty(
           "color",
-          lum(fg) >= 220 ? TEXT_STRONG : TEXT,
+          lum(fg) >= 220 || fg.a < 0.85 ? TEXT_STRONG : TEXT,
           "important"
         );
       } else if (fg.r > 130 && sat(fg) < 20) {
@@ -354,32 +471,64 @@
     return effective;
   }
 
+  let painting = false;
+
   function paintTree(root) {
     if (!root || root.nodeType !== 1) return;
     if (isChart(root)) return;
 
     const startBg = parseRgba("rgb(243, 245, 244)");
     const stack = [[root, startBg]];
-
-    while (stack.length) {
-      const [el, inherited] = stack.pop();
-      if (skip(el) && el !== root) continue;
-      const nextBg = skip(el) ? inherited : paintEl(el, inherited);
-      const kids = el.children;
-      for (let i = kids.length - 1; i >= 0; i--) {
-        const kid = kids[i];
-        if (isChart(kid)) continue;
-        stack.push([kid, nextBg]);
+    painting = true;
+    try {
+      while (stack.length) {
+        const [el, inherited] = stack.pop();
+        if (skip(el) && el !== root) continue;
+        const nextBg = skip(el) ? inherited : paintEl(el, inherited);
+        const kids = el.children;
+        for (let i = kids.length - 1; i >= 0; i--) {
+          const kid = kids[i];
+          if (isChart(kid)) continue;
+          stack.push([kid, nextBg]);
+        }
       }
+      fixIcons(root);
+    } finally {
+      painting = false;
     }
-    fixIcons(root);
   }
 
   let ticking = false;
   let pendingRoot = null;
+  let unveiled = false;
+
+  function unveil() {
+    if (unveiled) return;
+    unveiled = true;
+    document.documentElement.classList.add("hl-ready");
+  }
+
+  function maybeUnveil() {
+    if (unveiled) return;
+    const root = document.getElementById("root");
+    if (root && root.childElementCount > 0) unveil();
+  }
 
   function schedule(root) {
-    pendingRoot = root || document.documentElement;
+    const next = root && root.nodeType === 1 ? root : document.documentElement;
+    if (!unveiled) {
+      paintTree(document.documentElement);
+      themeTradingView();
+      maybeUnveil();
+      return;
+    }
+    if (!pendingRoot) pendingRoot = next;
+    else if (pendingRoot !== next) {
+      if (pendingRoot.contains(next)) {
+        /* keep ancestor */
+      } else if (next.contains?.(pendingRoot)) pendingRoot = next;
+      else pendingRoot = document.documentElement;
+    }
     if (ticking) return;
     ticking = true;
     requestAnimationFrame(() => {
@@ -389,6 +538,25 @@
       paintTree(target);
       themeTradingView();
     });
+  }
+
+  function inheritedBgOf(el) {
+    let p = el.parentElement;
+    while (p) {
+      if (!skip(p)) {
+        const c = parseRgba(getComputedStyle(p).backgroundColor);
+        if (c && c.a >= 0.35 && lum(c) >= 140) return c;
+      }
+      p = p.parentElement;
+    }
+    return parseRgba("rgb(243, 245, 244)");
+  }
+
+  function paintLive(el) {
+    if (!(el instanceof Element) || skip(el)) return;
+    paintEl(el, inheritedBgOf(el));
+    if (el instanceof SVGElement) fixIcons(el);
+    else if (el.querySelector?.("svg, [fill], [stroke]")) fixIcons(el);
   }
 
   const TV_FILTER = "invert(1) hue-rotate(180deg) brightness(1.03)";
@@ -493,39 +661,31 @@
 
   injectCss();
   lightColorScheme();
-  watchTradingView();
 
-  const boot = () => {
-    lightColorScheme();
-    schedule(document.documentElement);
-  };
-  if (document.documentElement) boot();
-  document.addEventListener("DOMContentLoaded", boot, { once: true });
-  window.addEventListener("load", boot, { once: true });
+  document.addEventListener("pointerover", (e) => paintLive(e.target), true);
+  document.addEventListener("focusin", (e) => paintLive(e.target), true);
 
   const mo = new MutationObserver((records) => {
-    let dirty = false;
+    if (painting) return;
+    let dirty = null;
     for (const rec of records) {
       if (rec.type === "attributes") {
         if (rec.attributeName === "fill" || rec.attributeName === "stroke") {
           forceInk(rec.target, rec.attributeName);
           continue;
         }
-        if (rec.target?.getAttribute?.(DONE) === "1" && rec.attributeName === "style") {
-          continue;
-        }
-        dirty = true;
+        dirty = rec.target;
         break;
       }
       for (const node of rec.addedNodes) {
         if (node.nodeType === 1) {
-          dirty = true;
+          dirty = node;
           break;
         }
       }
       if (dirty) break;
     }
-    if (dirty) schedule(document.documentElement);
+    if (dirty) schedule(dirty);
   });
 
   mo.observe(document.documentElement, {
@@ -535,5 +695,19 @@
     attributeFilter: ["style", "class", "fill", "stroke"],
   });
 
-  console.log(LOG, "1.8.0 — restore leverage slider");
+  const boot = () => {
+    injectCss();
+    lightColorScheme();
+    schedule(document.documentElement);
+  };
+  boot();
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+  window.addEventListener("load", () => {
+    boot();
+    unveil();
+  }, { once: true });
+  setTimeout(unveil, 1500);
+  watchTradingView();
+
+  console.log(LOG, "1.10.0 — no dark first paint");
 })();

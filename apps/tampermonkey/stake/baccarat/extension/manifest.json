@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Stake Baccarat",
-  "version": "8.1.0",
-  "description": "PP multibaccarat HUD + trusted clicks via Chrome debugger Input.dispatchMouseEvent.",
-  "permissions": ["debugger"],
+  "version": "8.1.17",
+  "description": "PP multibaccarat HUD in the Multiplay iframe + trusted clicks via Chrome debugger.",
+  "permissions": ["debugger", "storage"],
   "host_permissions": [
     "*://client.pragmaticplaylive.net/*",
     "*://*.stake.com/*",
@@ -13,7 +13,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Stake Baccarat 8.1.0",
+    "default_title": "Stake Baccarat 8.1.17",
     "default_popup": "popup.html"
   },
   "content_scripts": [

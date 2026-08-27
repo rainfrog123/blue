@@ -1,6 +1,6 @@
 'use strict';
 
-/** debuggee key -> { targetId } */
+/** debuggee key -> debuggee */
 const attached = new Map();
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -18,6 +18,19 @@ const urlsMatch = (a, b) => {
 const debuggeeKey = (debuggee) =>
     debuggee.targetId ? `id:${debuggee.targetId}` : `tab:${debuggee.tabId}`;
 
+const uniqueDebuggees = (list) => {
+    const seen = new Set();
+    const out = [];
+    for (const d of list) {
+        if (!d || (d.targetId == null && d.tabId == null)) continue;
+        const k = debuggeeKey(d);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(d);
+    }
+    return out;
+};
+
 async function findDebuggee(sender) {
     const tabId = sender?.tab?.id;
     const url = sender?.url || '';
@@ -34,17 +47,70 @@ async function findDebuggee(sender) {
     throw new Error('no matching debugger target (iframe)');
 }
 
+/** Stake page + every PP / Multiplay iframe in the same tab (DevTools “emulate focused page”). */
+async function findFocusDebuggees(sender) {
+    const tabId = sender?.tab?.id;
+    const targets = await chrome.debugger.getTargets();
+    const inTab = tabId != null ? targets.filter((t) => t.tabId === tabId) : [];
+    const out = [];
+    for (const t of inTab) {
+        if (!t.id) continue;
+        const url = t.url || '';
+        const isPage = t.type === 'page';
+        const isGame =
+            t.type === 'iframe' &&
+            /pragmaticplaylive\.net|stake\.com|multibaccarat/i.test(url);
+        if (isPage || isGame) out.push({ targetId: t.id });
+    }
+    try {
+        out.push(await findDebuggee(sender));
+    } catch (_) {}
+    if (!out.length && tabId != null) out.push({ tabId });
+    return uniqueDebuggees(out);
+}
+
+async function emulateFocusedPage(debuggee) {
+    try {
+        await chrome.debugger.sendCommand(debuggee, 'Emulation.setFocusEmulationEnabled', {
+            enabled: true,
+        });
+    } catch (_) {}
+    try {
+        await chrome.debugger.sendCommand(debuggee, 'Page.setWebLifecycleState', {
+            state: 'active',
+        });
+    } catch (_) {}
+}
+
 async function ensureAttached(debuggee) {
     const key = debuggeeKey(debuggee);
-    if (attached.has(key)) return debuggee;
-    try {
-        await chrome.debugger.attach(debuggee, '1.3');
-    } catch (err) {
-        const msg = String(err?.message || err);
-        if (!/already attached/i.test(msg)) throw err;
+    if (!attached.has(key)) {
+        try {
+            await chrome.debugger.attach(debuggee, '1.3');
+        } catch (err) {
+            const msg = String(err?.message || err);
+            if (!/already attached/i.test(msg)) throw err;
+        }
+        attached.set(key, debuggee);
     }
-    attached.set(key, debuggee);
+    await emulateFocusedPage(debuggee);
     return debuggee;
+}
+
+async function attachFocusForSender(sender) {
+    const list = await findFocusDebuggees(sender);
+    for (const d of list) {
+        try {
+            await ensureAttached(d);
+        } catch (_) {}
+    }
+    return list;
+}
+
+async function reassertFocus() {
+    for (const debuggee of attached.values()) {
+        await emulateFocusedPage(debuggee);
+    }
 }
 
 async function dispatchClick(debuggee, x, y, gapMs) {
@@ -95,16 +161,33 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
     }
 });
 
+chrome.tabs.onActivated.addListener(() => {
+    void reassertFocus();
+});
+
+chrome.windows.onFocusChanged.addListener(() => {
+    void reassertFocus();
+});
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg && msg.type === 'hudBus' && sender.tab?.id != null) {
+        chrome.tabs.sendMessage(sender.tab.id, {
+            type: 'hudBus',
+            payload: msg.payload,
+        }, () => { void chrome.runtime.lastError; });
+        sendResponse({ ok: true });
+        return true;
+    }
     if (!msg || (msg.type !== 'trustedClick' && msg.type !== 'attachDebugger')) {
         return false;
     }
     (async () => {
-        const debuggee = await ensureAttached(await findDebuggee(sender));
+        await attachFocusForSender(sender);
         if (msg.type === 'attachDebugger') {
             sendResponse({ ok: true });
             return;
         }
+        const debuggee = await ensureAttached(await findDebuggee(sender));
         await dispatchClick(debuggee, msg.x, msg.y, msg.gapMs);
         sendResponse({ ok: true });
     })().catch((err) => {

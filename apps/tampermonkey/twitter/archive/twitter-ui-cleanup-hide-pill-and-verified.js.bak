@@ -11,6 +11,8 @@
 // ==/UserScript==
 
 /*
+ * SUPERSEDED 2026-08-26 — merged into ../twitter.js v1.2.0.
+ *
  * Merged from (see archive/*.bak):
  *   - archive/hide-new-posts-pill.js.bak
  *       Hide New Posts Pill — CSS hides "New posts are available" status pill.
