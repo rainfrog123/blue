@@ -21,9 +21,9 @@ Then enable it in Community plugins. For jefr, prefer re-creating the junction t
 | `smart-copy` | 1.2.0 | Local |
 | `keep-word-select` | 1.0.1 | Local |
 | `double-hr` | 1.1.18 | Local |
-| `jefr-chat` | 1.0.3 | jefr · live `Music/Tools/jefr-cursor/obsidian-plugin/` |
-| `jefr-cdp` | 0.1.20 | jefr · live `Music/Tools/jefr-cdp/plugin/` |
-| `jefr-gemini` | 2.0.10 | jefr · live `Music/Tools/jefr-gemini/plugin/` |
+| `jefr-chat` | 1.0.3 | jefr · live `Music/Apps/jefr-cursor/obsidian-plugin/` |
+| `jefr-cdp` | 0.1.20 | jefr · live `Music/Apps/jefr-cdp/plugin/` |
+| `jefr-gemini` | 2.0.10 | jefr · live `Music/Apps/jefr-gemini/plugin/` |
 | `in-file-nav-history` | 1.1.0 | Community + local patches |
 | `obsidian-git` | 2.38.5 | Community |
 | `various-complements` | 11.3.0 | Community |

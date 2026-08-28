@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Twitter
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Ctrl+C copies tweet + comments. Hide New posts pill and verified badges.
 // @author       You
 // @match        https://x.com/*
@@ -12,6 +12,9 @@
 // ==/UserScript==
 
 /*
+ * v1.3.2 — Ctrl+C: X auto-focuses the reply box, so isInEditable skipped
+ *          the copy. Nested tweetTextarea_0 also dropped the main tweet.
+ *          Copy when nothing is selected; only preventDefault if we have text.
  * v1.3.1 — PageUp/Down intercept commented out (likely F7 caret browsing).
  * v1.3.0 — PageUp/PageDown scroll the timeline 80% (X virtualizer snaps
  *          a full page back). overflow-anchor off; pin after layout.
@@ -29,7 +32,7 @@
 (function (global) {
   "use strict";
 
-  const VERSION = "1.3.1";
+  const VERSION = "1.3.2";
   const PAGE_SCROLL_PCT = 0.8;
   const UI_CSS_ID = "jefr-twitter-ui-css";
   const UI_CSS = `
@@ -273,7 +276,14 @@
       const col =
         document.querySelector('[data-testid="primaryColumn"]') || document;
       return [...col.querySelectorAll('article[data-testid="tweet"]')].filter(
-        (el) => !el.querySelector('[data-testid="tweetTextarea_0"]')
+        (el) => {
+          if (!el.querySelector('[data-testid="tweetTextarea_0"]')) return true;
+          return !!(
+            el.querySelector('[data-testid="User-Name"]') ||
+            el.querySelector("time") ||
+            el.querySelector('[data-testid="tweetText"]')
+          );
+        }
       );
     },
 
@@ -432,8 +442,16 @@
       return sel.toString().length > 0;
     },
 
+    isTweetComposer(el) {
+      if (!el || !el.closest) return false;
+      return !!el.closest(
+        '[data-testid="tweetTextarea_0"], [data-testid^="tweetTextarea_"]'
+      );
+    },
+
     isInEditable(el) {
       if (!el) return false;
+      if (util.isTweetComposer(el)) return false;
       if (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable) {
         return true;
       }
@@ -618,41 +636,44 @@
   // );
 
   let busy = false;
-  document.addEventListener(
-    "keydown",
-    (e) => {
-      if (!(e.key === "c" || e.key === "C")) return;
-      if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
-      if (util.hasTextSelection()) return;
-      if (util.isInEditable(document.activeElement)) return;
-      const article = util.pickTweet();
-      if (!article) {
-        util.log("Ctrl+C skipped — no tweet");
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-      if (busy) return;
-      busy = true;
-      const text = util.extractMarkdown();
-      util
-        .writeClipboard(text)
-        .then((ok) => {
-          util.log(
-            ok ? "copied" : "FAILED",
-            `${text.length} chars`,
-            typeof GM_setClipboard === "function" ? "GM_ok" : "GM_missing"
-          );
-          if (ok) showToast();
-        })
-        .finally(() => {
-          setTimeout(() => {
-            busy = false;
-          }, 300);
-        });
-    },
-    true
-  );
+  const onCopyKey = (e) => {
+    if (!(e.key === "c" || e.key === "C") && e.code !== "KeyC") return;
+    if (!e.ctrlKey || e.altKey || e.metaKey || e.shiftKey) return;
+    if (util.hasTextSelection()) return;
+    if (util.isInEditable(document.activeElement)) return;
+    const article = util.pickTweet();
+    if (!article) {
+      util.log("Ctrl+C skipped — no tweet");
+      return;
+    }
+    const text = util.extractMarkdown();
+    if (!text) {
+      util.log("Ctrl+C skipped — empty extract");
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    if (busy) return;
+    busy = true;
+    util
+      .writeClipboard(text)
+      .then((ok) => {
+        util.log(
+          ok ? "copied" : "FAILED",
+          `${text.length} chars`,
+          typeof GM_setClipboard === "function" ? "GM_ok" : "GM_missing"
+        );
+        if (ok) showToast();
+      })
+      .finally(() => {
+        setTimeout(() => {
+          busy = false;
+        }, 300);
+      });
+  };
+  window.addEventListener("keydown", onCopyKey, true);
+  document.addEventListener("keydown", onCopyKey, true);
 
   global.twitterTm = { version: VERSION, util };
   util.log(`v${VERSION} · Ctrl+C copies tweet · hide pill + verified`);

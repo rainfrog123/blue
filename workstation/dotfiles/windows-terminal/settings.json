@@ -310,11 +310,8 @@
         {
             "adjustIndistinguishableColors": "indexed",
             "antialiasingMode": "cleartype",
-            "backgroundImage": "ms-appdata:///Local/linen.png",
-            "backgroundImageOpacity": 0.42,
-            "backgroundImageStretchMode": "uniformToFill",
             "bellStyle": "none",
-            "colorScheme": "Linen",
+            "colorScheme": "Obsidian",
             "cursorShape": "bar",
             "font": 
             {
@@ -374,36 +371,36 @@
     "schemes": 
     [
         {
-            "background": "#F4EFE6",
-            "black": "#3F3A36",
-            "blue": "#4F6F8C",
-            "brightBlack": "#8B847A",
-            "brightBlue": "#6588A6",
-            "brightCyan": "#659A92",
-            "brightGreen": "#71966A",
-            "brightPurple": "#947490",
-            "brightRed": "#C8786A",
-            "brightWhite": "#2F2B28",
-            "brightYellow": "#C09A52",
-            "cursorColor": "#C17B5A",
-            "cyan": "#4F7874",
-            "foreground": "#3F3A36",
-            "green": "#5F7D58",
-            "name": "Linen",
-            "purple": "#7A5F7C",
-            "red": "#B85E4E",
-            "selectionBackground": "#DDD2C2",
-            "white": "#E8E1D6",
-            "yellow": "#A98442"
+            "background": "#FFFFFF",
+            "black": "#222222",
+            "blue": "#3D6A9A",
+            "brightBlack": "#8A8A8A",
+            "brightBlue": "#4F7AAD",
+            "brightCyan": "#4A8A84",
+            "brightGreen": "#5A9A66",
+            "brightPurple": "#8B7CF0",
+            "brightRed": "#D4655C",
+            "brightWhite": "#111111",
+            "brightYellow": "#B8943A",
+            "cursorColor": "#222222",
+            "cyan": "#3D7A76",
+            "foreground": "#222222",
+            "green": "#4F8A5B",
+            "name": "Obsidian",
+            "purple": "#7C6AE6",
+            "red": "#C4554D",
+            "selectionBackground": "#D8D2F0",
+            "white": "#F0F0F0",
+            "yellow": "#9A7B2F"
         }
     ],
     "showTabsInTitlebar": true,
     "tabWidthMode": "titleLength",
-    "theme": "Linen",
+    "theme": "Obsidian",
     "themes": 
     [
         {
-            "name": "Linen",
+            "name": "Obsidian",
             "tab": 
             {
                 "background": "terminalBackground",
@@ -412,8 +409,8 @@
             },
             "tabRow": 
             {
-                "background": "#E8E0D4",
-                "unfocusedBackground": "#E0D8CC"
+                "background": "#F2F3F5",
+                "unfocusedBackground": "#E8E8E8"
             },
             "window": 
             {

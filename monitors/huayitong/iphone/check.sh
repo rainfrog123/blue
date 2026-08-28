@@ -28,6 +28,96 @@ live_slugs() {
   done
 }
 
+print_hits() {
+  local hit="$1"
+  local py="${JBROOT}/python3"
+  if [[ ! -x "$py" ]]; then
+    tail -40 "$hit"
+    return
+  fi
+  "$py" - "$hit" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+text = Path(sys.argv[1]).read_text(encoding="utf-8")
+parts = re.split(r"(?=^\[\d{4}-\d{2}-\d{2} )", text, flags=re.M)
+recs = [p.strip() for p in parts if p.strip()][-5:]
+packed = re.compile(
+    r"^\s*(?P<doctor>.+?)"
+    r"  (?P<date>\d{4}-\d{2}-\d{2}) (?P<period>\S+)"
+    r"  (?P<dept>.+?)"
+    r"  status=(?P<status>\S+) avail=(?P<avail>\S+) remain=(?P<remain>\S+) "
+    r"¥(?P<fee>\S+)"
+    r"  (?P<changes>.+?)"
+    r"  id=(?P<id>\S+)"
+    r"  (?P<place>.*)$"
+)
+status_re = re.compile(
+    r"status=(?P<status>\S+)\s+avail=(?P<avail>\S+)\s+remain=(?P<remain>\S+)\s+¥(?P<fee>\S+)"
+)
+
+
+def short_changes(raw):
+    s = raw or ""
+    s = (
+        s.replace("availableCount:", "avail")
+        .replace("remainingNum:", "remain")
+        .replace("status:", "st")
+        .replace(" → ", "→")
+        .replace(",", "")
+    )
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def short_name(raw):
+    s = (raw or "").strip()
+    if "(" in s:
+        s = s[: s.index("(")].strip()
+    return s or "?"
+
+
+def compact(rec):
+    lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
+    if not lines:
+        return rec
+    stamp_m = re.match(r"^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", lines[0])
+    stamp = stamp_m.group(1) if stamp_m else lines[0]
+    doctor = when = status = avail = remain = fee = changes = ""
+    rest = lines[1:]
+    if rest and packed.match(rest[0]):
+        g = packed.match(rest[0]).groupdict()
+        doctor, when = g["doctor"], f"{g['date']} {g['period']}"
+        status, avail, remain, fee, changes = (
+            g["status"], g["avail"], g["remain"], g["fee"], g["changes"],
+        )
+    else:
+        if rest:
+            doctor = rest[0]
+        if len(rest) > 1:
+            when = rest[1]
+        for ln in rest:
+            sm = status_re.search(ln)
+            if sm:
+                status, avail, remain, fee = sm.group("status", "avail", "remain", "fee")
+            elif "→" in ln and not ln.startswith("id="):
+                changes = ln
+    head = f"[{stamp}] {short_name(doctor)}  {when}".rstrip()
+    ch = short_changes(changes)
+    if ch:
+        stats = f"{ch}  ¥{fee}"
+    else:
+        stats = f"status={status} avail={avail} remain={remain}  ¥{fee}"
+    return f"{head}\n  {stats}"
+
+
+chunks = [compact(r) for r in recs]
+print("\n\n".join(chunks))
+if chunks:
+    print()
+PY
+}
+
 dump_one() {
   local slug="$1"
   local session="huayitong-${slug}"
@@ -37,10 +127,11 @@ dump_one() {
   else
     echo "(no session ${session})"
   fi
+  echo
   local hit="${SCRIPT_DIR}/hits-${slug}.log"
   echo "----- hits-${slug} -----"
   if [[ -f "$hit" ]]; then
-    tail -20 "$hit"
+    print_hits "$hit"
   else
     echo "(no hits-${slug}.log)"
   fi
@@ -70,6 +161,7 @@ if [[ -z "${slugs//[$'\n' ]/}" ]]; then
 fi
 
 "$TMUX_BIN" ls
+echo
 echo "$slugs" | while read -r slug; do
   [[ -n "$slug" ]] || continue
   dump_one "$slug"

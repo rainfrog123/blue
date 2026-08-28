@@ -11,7 +11,7 @@ from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
 from config import DOCTORS, settings
 from .api_client import HuayitongAPIClient
-from .logging_util import log_hit
+from .logging_util import cst_stamp, hits_in_window, log_hit, window_label
 from .models import AppointmentEntry, DoctorConfig
 from .notifiers import MultiNotifier, WeComNotifier, build_notifiers
 from .state import SlotStateTracker
@@ -40,7 +40,6 @@ class AppointmentMonitor:
         self.state = SlotStateTracker(path=settings.state_path(self.slug))
         self._tail: Deque[str] = deque(maxlen=int(settings.TAIL_LINES))
         self._hook_by_name = {d.name: d.wecom_hook for d in self.doctors}
-        self._hit_log_mtime = self._hits_log_mtime()
         self._last_ok = True
 
     @staticmethod
@@ -192,26 +191,38 @@ class AppointmentMonitor:
             else:
                 WeComNotifier(webhook_url=url, cooldown=0).send(cjc)
 
-    def _hits_log_mtime(self) -> float:
-        try:
-            return self.hit_log.stat().st_mtime
-        except OSError:
-            return 0.0
-
     def _heartbeat_text(self) -> str:
-        stamp = datetime.now(settings.CST_TZ).strftime("%H:%M")
-        names = " ".join((d.name.split()[0] if d.name else "?") for d in self.doctors)
-        log_name = self.hit_log.name
-        mtime = self._hits_log_mtime()
-        if mtime > self._hit_log_mtime:
-            hits = f"{log_name} updated"
-        elif mtime == 0:
-            hits = f"{log_name} none"
-        else:
-            hits = f"{log_name} unchanged"
-        self._hit_log_mtime = mtime
+        """Hourly CJC digest: hit-log records inside the last WECOM_TAIL_SEC."""
+        window = settings.WECOM_TAIL_SEC
+        hits = hits_in_window(self.hit_log, window)
+        names = "、".join(d.name.split()[0] if d.name else "?" for d in self.doctors)
         status = "ok" if self._last_ok else "err"
-        return f"华医通 {stamp} {status} {names} · {hits}"
+        lines = [
+            "华医通 心跳",
+            "────────────",
+            f"时间：[{cst_stamp()}]",
+            f"窗口：{window_label(window)}",
+            f"状态：{status}",
+            f"医生：{names}",
+            f"条数：{len(hits)}",
+        ]
+        if not hits:
+            lines.append("────────────")
+            return "\n".join(lines) + "\n"
+
+        lines.append("────────────")
+        body = list(hits)
+        hidden = 0
+        while True:
+            text = "\n".join(lines) + "\n\n" + "\n\n".join(body) + "\n"
+            if hidden:
+                text += f"其余：另有 {hidden} 条未列出\n"
+            if len(text.encode("utf-8")) <= 2000 or not body:
+                if len(text.encode("utf-8")) <= 2048:
+                    return text
+                return text.encode("utf-8")[:2000].decode("utf-8", errors="ignore")
+            body.pop()
+            hidden += 1
 
     def _send_heartbeat(self) -> None:
         text = self._heartbeat_text()

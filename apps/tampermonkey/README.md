@@ -18,14 +18,16 @@ Disable old split Gemini / baccarat entries before import.
 | --- | --- |
 | `gemini/gemini.js` | Unified 3.0.19 — copy + toast + sidenav/mode/upsell + input |
 | `ft/ft.js` | Ctrl+C copies the full FT article when it is on the page |
+| `ft/ft-clipper.json` | Obsidian Web Clipper template — same Markdown as `ft.js` |
 | `wsj/wsj.js` | Ctrl+C copies the full WSJ article when it is on the page |
 | `caixin/caixin-reader-relogin-and-block-redirect.js` | Relogin + block global redirect |
 | `twitter/twitter.js` | Ctrl+C copies tweet + comments; hide New posts pill + verified |
 | `xiaohongshu/xiaohongshu-ctrl-click-new-tab.js` | Ctrl+Click new tab |
 | `xiaomi/xiaomi-router-auto-login.js` | LuCI auto-login |
 | `stake/blackjack/stake-blackjack-dom-automation.js` | DOM automation |
-| `stake/baccarat/stake-baccarat.js` | Unified 7.0.0 — pp + pick + play HUD |
-| `stake/baccarat/stake-baccarat-pick-telegram-monitor.js` | Optional Telegram |
+| `stake/baccarat/script/stake-baccarat.js` | TM fallback 7.2.1 — disable when the Chrome extension is loaded |
+| `stake/baccarat/script/stake-baccarat-pick-telegram-monitor.js` | Optional Telegram |
+| `stake/baccarat/extension/` | LIVE Chrome MV3 (v8.2.2) — load unpacked |
 | `hyperliquid/hyperliquid-light-theme.js` | Light chrome for app.hyperliquid.xyz |
 
 `gemini/zoom-per-tab-ext/` is a Chrome extension, not TM. `gemini/gemini-bridge.js` is deprecated (use jefr-gemini).

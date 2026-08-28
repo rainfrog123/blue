@@ -5,13 +5,21 @@ MV3 unpacked extension. HUD lives in the **Multiplay iframe**. Clicks use `chrom
 ## Load
 
 1. Chrome → `chrome://extensions` → Developer mode → **Load unpacked**
-2. Pick this folder: `C:\Users\jar71\blue\apps\tampermonkey\stake\baccarat\extension`
+2. Pick this folder: `C:\Users\jar71\Music\blue\apps\tampermonkey\stake\baccarat\extension`
 3. Open Stake Multiplay (inner frame `client.pragmaticplaylive.net/desktop/multibaccarat`)
-4. Iframe console: `[SB] v8.1.17 · extension · pp + pick + play HUD`
-5. Stake tab (optional): `[SB] v8.1.17 · extension · focus + wallet relay`
-6. **Disable** Tampermonkey `stake-baccarat.js` so the WebSocket is not hooked twice
+4. Iframe console: `[SB] v8.2.2 · extension · pp + pick + play HUD`
+5. Stake tab (optional): `[SB] v8.2.2 · extension · focus + wallet relay`
+6. **Disable** Tampermonkey `../script/stake-baccarat.js` so the WebSocket is not hooked twice
 
 Reload the extension, then hard-refresh Stake. Last-used **Side / Mode / Hunt / P/B random** and HUD size come from `chrome.storage`. **–** collapses to the title bar; drag edges to resize.
+
+**8.2.2:** `createPlay` needed `WALLET_VALUE_SELS` after the split (console: `ReferenceError` at play.js:90). CSP warnings on Stake are report-only and not the HUD.
+
+**8.2.1:** HUD mount used `HUD_WIDTH` after the `src/` split without aliasing it — panel never attached. Aliased + boot no longer swallows `window.play` if HUD throws.
+
+**8.2.0:** MAIN world split into `src/` (`ns` → `focus` → `bridge` → `util` → `pp` → `pick` → `play` → `boot`). Same HUD / hunt / skip-min as 8.1.18.
+
+**8.1.18:** Planned stake below table min is **skipped** (a $0.20 unit never becomes a $1 bet on a $1-min table).
 
 **8.1.17:** HUD default **400×440**. Controls are compact; the log is a monospace pane that fills the rest. Saved 760×560 resets once. Drag edges if you want it taller.
 
@@ -36,11 +44,18 @@ Chrome shows an infobar: “Stake Baccarat started debugging this browser.” Th
 ## Files
 
 | File | World | Job |
-|---|---|---|
+| --- | --- | --- |
 | `manifest.json` | — | MV3, `debugger` + `storage` |
-| `page.js` | MAIN | WS hook, betting, HUD in the iframe; wallet relay on Stake |
+| `src/ns.js` | MAIN | `window.__SB` + version |
+| `src/focus.js` | MAIN | Visibility / focus mask |
+| `src/bridge.js` | MAIN | `postMessage` storage + HUD bus + wallet |
+| `src/util.js` | MAIN | CDP click + helpers |
+| `src/pp.js` | MAIN | WebSocket table map |
+| `src/pick.js` | MAIN | Scoring / firewall |
+| `src/play.js` | MAIN | HUD, hunt, chips, progression |
+| `src/boot.js` | MAIN | Host gate; wires `pp` / `pick` / `play` |
 | `content.js` | ISOLATED | `postMessage` ↔ `chrome.runtime` |
 | `background.js` | SW | CDP clicks + HUD bus |
 | `popup.html` | — | Short reminder |
 
-Keep `stake-baccarat.js` in the parent folder as a Tampermonkey fallback only (untrusted clicks).
+Tampermonkey fallback lives in [`../script/stake-baccarat.js`](../script/stake-baccarat.js) (untrusted clicks). Do not run it with this extension.

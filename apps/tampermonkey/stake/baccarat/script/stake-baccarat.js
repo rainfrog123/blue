@@ -13,7 +13,7 @@
 // ==/UserScript==
 
 /*
- * LIVE: Chrome extension ./extension/ (v8.1.0). Disable this userscript when the
+ * LIVE: Chrome extension ../extension/ (v8.1.17). Disable this userscript when the
  * extension is loaded so WebSocket is not double-hooked. This file stays as a
  * Tampermonkey fallback (clicks are untrusted dispatchEvent).
  *

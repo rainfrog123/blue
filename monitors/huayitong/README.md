@@ -13,9 +13,11 @@ python main.py --once
 python main.py --doctor zhaoyu
 ./start.sh                    # tmux: one session per active doctor in doctors.json
 
-# iPhone (live 24h) — deploy this folder to /var/mobile/huayitong/
-# secrets stay in iphone/phone_config.json (not git)
-ssh iphone 'cd /var/mobile/huayitong/iphone && ./start.sh'
+# iPhone (live 24h) — edit this folder, then upload (leaves secrets/hits/state on the phone)
+./iphone/upload.sh              # USB: iproxy 2222 22 first
+./iphone/upload.sh --restart    # then start.sh on the phone
+HOST=iphone ./iphone/upload.sh  # Wi-Fi
+ssh -o ClearAllForwardings=yes iphone-usb /var/mobile/huayitong/iphone/check.sh
 ```
 
 Windows: `.\start.ps1`
@@ -29,6 +31,8 @@ src/                 http · api · state · monitor · notifiers
 iphone/cf_post.py    CFNetwork POST (iOS only)
 iphone/phone_config.json  device secrets (gitignored)
 iphone/start.sh      tmux one session per active doctor
+iphone/check.sh      panes + hits
+iphone/upload.sh     PC → phone (skip secrets / hits / state)
 ```
 
 ## CLI

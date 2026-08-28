@@ -1,0 +1,13 @@
+{
+	"schemaVersion": "0.1.0",
+	"name": "FT",
+	"behavior": "create",
+	"noteNameFormat": "Clip {{title}}",
+	"path": "_Vault/Clippings",
+	"noteContentFormat": "# {{title}}\n\n{{date|date:\"YYYY-MM-DD hh:mm A\"}}\n{{url}}\n\n{{content}}",
+	"properties": [],
+	"triggers": [
+		"https://www.ft.com/content/"
+	],
+	"types": {}
+}

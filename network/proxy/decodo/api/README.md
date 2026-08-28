@@ -5,7 +5,7 @@ Isolated from the gateway client in `../decodo/`.
 ## Run
 
 ```bash
-cd C:\Users\jar71\blue\Network\Proxy\decodo\api
+cd C:\Users\jar71\Music\blue\Network\Proxy\decodo\api
 python test_api.py
 python test_api.py --endpoint traffic
 ```

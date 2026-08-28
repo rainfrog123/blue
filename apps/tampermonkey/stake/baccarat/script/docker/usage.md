@@ -2,7 +2,7 @@
 
 This guide shows how to run and inspect the websocket collector stack under:
 
-- `baccarat/docker/docker-compose.yml`
+- `baccarat/script/docker/docker-compose.yml`
 
 Stack components:
 
@@ -17,19 +17,19 @@ Stack components:
 From anywhere:
 
 ```bash
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" up -d --build
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" up -d --build
 ```
 
 Stop:
 
 ```bash
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" down
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" down
 ```
 
 Stop and delete volumes (DANGEROUS: wipes Redis + DB data):
 
 ```bash
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" down -v
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" down -v
 ```
 
 ---
@@ -38,7 +38,7 @@ docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-co
 
 Edit:
 
-- `baccarat/docker/streaming/config/ws-config.json`
+- `baccarat/script/docker/streaming/config/ws-config.json`
 
 Important fields:
 
@@ -58,7 +58,7 @@ docker restart baccarat-ws-collector
 ## 3) Check service health
 
 ```bash
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" ps
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" ps
 ```
 
 Expected:
@@ -235,8 +235,8 @@ Expected: rows for both `pragmatic-game` and `pragmatic-lobby`.
 If schema is broken or you want a clean reset:
 
 ```bash
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" down -v
-docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/docker/docker-compose.yml" up -d --build
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" down -v
+docker-compose -f "/allah/blue/apps/tampermonkey/stake/baccarat/script/docker/docker-compose.yml" up -d --build
 ```
 
 If schema changed and you need to re-apply SQL without full reset:

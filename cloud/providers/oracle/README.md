@@ -45,7 +45,7 @@ Or: `pip install oci` if your environment allows long paths.
 ## Quick commands
 
 ```bash
-cd C:\Users\jar71\blue
+cd C:\Users\jar71\Music\blue
 
 python cloud/providers/oracle/cli.py status
 python cloud/providers/oracle/cli.py cost          # MTD + BASIC forecast → month end

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Stake Baccarat",
-  "version": "8.1.17",
+  "version": "8.2.2",
   "description": "PP multibaccarat HUD in the Multiplay iframe + trusted clicks via Chrome debugger.",
   "permissions": ["debugger", "storage"],
   "host_permissions": [
@@ -13,7 +13,7 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Stake Baccarat 8.1.17",
+    "default_title": "Stake Baccarat 8.2.2",
     "default_popup": "popup.html"
   },
   "content_scripts": [
@@ -34,7 +34,16 @@
         "*://*.stake.com/*",
         "*://stake.com/*"
       ],
-      "js": ["page.js"],
+      "js": [
+        "src/ns.js",
+        "src/focus.js",
+        "src/bridge.js",
+        "src/util.js",
+        "src/pp.js",
+        "src/pick.js",
+        "src/play.js",
+        "src/boot.js"
+      ],
       "run_at": "document_start",
       "all_frames": true,
       "world": "MAIN"

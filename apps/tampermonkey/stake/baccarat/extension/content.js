@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Isolated-world bridge. page.js (MAIN world) has no chrome.* APIs.
+ * Isolated-world bridge. MAIN-world scripts (src/*.js) have no chrome.* APIs.
  * postMessage <-> chrome.runtime.sendMessage for debugger, storage, HUD bus.
  */
 window.addEventListener('message', (event) => {
