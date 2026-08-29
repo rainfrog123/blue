@@ -170,6 +170,10 @@ chrome.windows.onFocusChanged.addListener(() => {
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg && msg.type === 'popupStatus') {
+        sendResponse({ ok: true, attached: attached.size });
+        return false;
+    }
     if (msg && msg.type === 'hudBus' && sender.tab?.id != null) {
         chrome.tabs.sendMessage(sender.tab.id, {
             type: 'hudBus',

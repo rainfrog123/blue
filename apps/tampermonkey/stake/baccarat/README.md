@@ -10,7 +10,7 @@ stake/baccarat/
 
 | Package | Path | Use |
 | --- | --- | --- |
-| **Extension** | [`extension/`](extension/) | Load unpacked. v8.2.2. HUD in the Multiplay iframe. |
+| **Extension** | [`extension/`](extension/) | Load unpacked. v8.2.3. HUD in the Multiplay iframe. Toolbar chip icon + popup. |
 | **Script** | [`script/`](script/) | Tampermonkey `stake-baccarat.js` v7.2.1. Disable when the extension is loaded. |
 
 Load unpacked (unchanged):

@@ -564,14 +564,14 @@ proxies:
   #   password: vXB87JKsOdcGHLpV
   #   udp: true
 
-  # Vultr Osaka SS — IPv6 (same inbound; docker publishes [::]:12033)
-  - name: 🇯🇵vultr-osk_ss_v6
-    type: ss
-    server: "2401:c080:3800:3a73:5400:6ff:fe80:1ef1"
-    port: 12033
-    cipher: chacha20-ietf-poly1305
-    password: vXB87JKsOdcGHLpV
-    udp: true
+  # Vultr Osaka SS — IPv6 — DESTROYED 2026-08-30 (box gone)
+  # - name: 🇯🇵vultr-osk_ss_v6
+  #   type: ss
+  #   server: "2401:c080:3800:3a73:5400:6ff:fe80:1ef1"
+  #   port: 12033
+  #   cipher: chacha20-ietf-poly1305
+  #   password: vXB87JKsOdcGHLpV
+  #   udp: true
 
   # Hysteria 2 (vultr-osk / 3x-ui — self-signed hyvu.hyas.site)
   # no up/down / brutal-opts — BBR (2026-08-08)
@@ -584,14 +584,14 @@ proxies:
   #   sni: hyvu.hyas.site
   #   skip-cert-verify: true
 
-  # Hysteria 2 (vultr-osk — IPv6; docker [::]:443/udp)
-  - name: 🇯🇵vultr-osk_hy2_v6
-    type: hysteria2
-    server: "2401:c080:3800:3a73:5400:6ff:fe80:1ef1"
-    port: 443
-    password: fGXvQdTnDu6dY7hYXcxqVYl2
-    sni: hyvu.hyas.site
-    skip-cert-verify: true
+  # Hysteria 2 (vultr-osk — IPv6) — DESTROYED 2026-08-30
+  # - name: 🇯🇵vultr-osk_hy2_v6
+  #   type: hysteria2
+  #   server: "2401:c080:3800:3a73:5400:6ff:fe80:1ef1"
+  #   port: 443
+  #   password: fGXvQdTnDu6dY7hYXcxqVYl2
+  #   sni: hyvu.hyas.site
+  #   skip-cert-verify: true
 
   # Trojan via Cloudflare (ali-jp / 3x-ui) — OFFLINED 2026-08-27
   # Hostnames: ajp.hyas.space + ajp.hyas.site · WS path /x7f9k2m4p8
@@ -1421,7 +1421,7 @@ proxy-groups:
       - 🟠 Oracle Nodes
       - 🔷 Azure Nodes
       # - 🔵 Aliyun Nodes  # OFFLINED Aliyun 2026-08-27
-      - 🟣 Vultr Nodes
+      # - 🟣 Vultr Nodes  # DESTROYED vultr-osk 2026-08-30
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🔑 Manual Selection
       - 🇹🇷 Decodo TR
@@ -1443,7 +1443,7 @@ proxy-groups:
       - 🇯🇵oracle-a1_hy2
       - 🇯🇵oracle-a1_hy2_v6
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_hy2_v6
+      # - 🇯🇵vultr-osk_hy2_v6  # DESTROYED vultr-osk 2026-08-30
       # - 🇸🇬do_hy2  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_hy2_v6  # OFFLINED Digi 2026-07-28
       - 🇸🇬az_hy2
@@ -1490,7 +1490,7 @@ proxy-groups:
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🟣 Vultr Nodes
+      # - 🟣 Vultr Nodes  # DESTROYED vultr-osk 2026-08-30
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - ☁️ Cloudflare CF Nodes
       # - 🇯🇵ali-jp  # OFFLINED Aliyun 2026-08-27
@@ -1512,9 +1512,9 @@ proxy-groups:
       - 🇯🇵oracle-a1
       - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_ss_v6
+      # - 🇯🇵vultr-osk_ss_v6  # DESTROYED vultr-osk 2026-08-30
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_hy2_v6
+      # - 🇯🇵vultr-osk_hy2_v6  # DESTROYED vultr-osk 2026-08-30
       # - 🇯🇵ali-jp_nrt_01  # OFFLINED Aliyun 2026-08-27
       - 🇯🇵oracle-a1_nrt_01
       - 🎯 Direct
@@ -1556,13 +1556,14 @@ proxy-groups:
 #       - 🇯🇵ali-jp
 #       - 🇯🇵ali-jp_hy2
 
-  - name: 🟣 Vultr Nodes
-    type: select
-    proxies:
-      # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_ss_v6
-      # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_hy2_v6
+  # Vultr Nodes — DESTROYED vultr-osk 2026-08-30
+#   - name: 🟣 Vultr Nodes
+#     type: select
+#     proxies:
+#       - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
+#       - 🇯🇵vultr-osk_ss_v6
+#       - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
+#       - 🇯🇵vultr-osk_hy2_v6
 
   # DigitalOcean Nodes group — OFFLINED 2026-07-28 (Digi nodes commented)
 #   - name: 🐬 DigitalOcean Nodes
@@ -1607,7 +1608,7 @@ proxy-groups:
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🟣 Vultr Nodes
+      # - 🟣 Vultr Nodes  # DESTROYED vultr-osk 2026-08-30
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🌀 Hysteria Nodes
       - ☁️ Cloudflare CF Nodes
@@ -1621,7 +1622,7 @@ proxy-groups:
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🟣 Vultr Nodes
+      # - 🟣 Vultr Nodes  # DESTROYED vultr-osk 2026-08-30
       - 🌀 Hysteria Nodes
       # - 🇸🇬do_ss_v6  # OFFLINED Digi 2026-07-28
       # - 🇸🇬do_ss  # OFFLINED Digi 2026-07-28
@@ -1684,9 +1685,9 @@ proxy-groups:
       - 🇯🇵oracle-a1
       - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_ss_v6
+      # - 🇯🇵vultr-osk_ss_v6  # DESTROYED vultr-osk 2026-08-30
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_hy2_v6
+      # - 🇯🇵vultr-osk_hy2_v6  # DESTROYED vultr-osk 2026-08-30
       - 🎯 Direct
 
   - name: 🧠 Claude Nodes
@@ -1713,9 +1714,9 @@ proxy-groups:
       - 🇯🇵oracle-a1
       - 🇯🇵oracle-a1_v6
       # - 🇯🇵vultr-osk_ss  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_ss_v6
+      # - 🇯🇵vultr-osk_ss_v6  # DESTROYED vultr-osk 2026-08-30
       # - 🇯🇵vultr-osk_hy2  # GFW banned IPv4 2026-08-14
-      - 🇯🇵vultr-osk_hy2_v6
+      # - 🇯🇵vultr-osk_hy2_v6  # DESTROYED vultr-osk 2026-08-30
       - 🎯 Direct
 
   - name: 🖥️ Cursor Website Nodes
@@ -1808,7 +1809,7 @@ proxy-groups:
       - 🔷 Azure Nodes
       - 🟠 A1 Nodes
       - 🟠 Oracle Nodes
-      - 🟣 Vultr Nodes
+      # - 🟣 Vultr Nodes  # DESTROYED vultr-osk 2026-08-30
       # - 🐬 DigitalOcean Nodes  # OFFLINED Digi 2026-07-28
       - 🚀 Node Selection
       - ☁️ Cloudflare CF Nodes

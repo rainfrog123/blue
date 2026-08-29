@@ -1,21 +1,50 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <style>
-    body { font: 13px/1.4 system-ui, sans-serif; margin: 12px 14px; width: 280px; color: #1a1a1a; }
-    h1 { font-size: 14px; margin: 0 0 6px; }
-    p { margin: 0 0 8px; color: #333; }
-    code { font-size: 11px; }
-    .warn { color: #7a4b00; }
-  </style>
-</head>
-<body>
-  <h1>Stake Baccarat 8.2.2</h1>
-  <p>The HUD lives in the <strong>Multiplay iframe</strong>. Clicks go through Chrome debugger <code>Input.dispatchMouseEvent</code>.</p>
-  <p>Side, Mode, Hunt, and P/B random are stored as last-used in extension storage. Drag edges to resize; <code>–</code> collapses to the title bar.</p>
-  <p>Background tabs use CDP <code>Emulation.setFocusEmulationEnabled</code> (same as DevTools “Emulate a focused page”) on Stake and the Multiplay iframe.</p>
-  <p class="warn">Chrome will show “debugging this browser” while attached. That bar is expected.</p>
-  <p>Disable the Tampermonkey Stake Baccarat script so WebSocket is not double-hooked.</p>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="brand">
+      <div class="mark">
+        <img src="icons/icon32.png" alt="" width="22" height="22" />
+      </div>
+      <div class="brand-copy">
+        <h1>Stake Baccarat</h1>
+        <p>8.2.3 · Multiplay HUD</p>
+      </div>
+    </header>
+
+    <section class="status" id="status" data-tone="off">
+      <span class="dot" aria-hidden="true"></span>
+      <div class="status-copy">
+        <strong id="status-title">Checking…</strong>
+        <span id="status-detail"></span>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button type="button" class="btn primary" id="open">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M6 3H4.2A1.2 1.2 0 0 0 3 4.2v7.6A1.2 1.2 0 0 0 4.2 13h7.6A1.2 1.2 0 0 0 13 11.8V10M8 8l5-5m0 0H10m3 0v3"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        Open Stake
+      </button>
+      <button type="button" class="btn ghost" id="reload">
+        Reload HUD
+      </button>
+    </div>
+
+    <p class="hint">
+      HUD lives in the Multiplay iframe. Chrome’s debugger bar is expected.
+      Keep the Tampermonkey script off.
+    </p>
+    <script src="popup.js"></script>
+  </body>
 </html>

@@ -13,6 +13,10 @@ MV3 unpacked extension. HUD lives in the **Multiplay iframe**. Clicks use `chrom
 
 Reload the extension, then hard-refresh Stake. Last-used **Side / Mode / Hunt / P/B random** and HUD size come from `chrome.storage`. **–** collapses to the title bar; drag edges to resize.
 
+Toolbar: gold chip icon + popup (Open Stake / Reload HUD).
+
+**8.2.3:** Extension icons + toolbar popup.
+
 **8.2.2:** `createPlay` needed `WALLET_VALUE_SELS` after the split (console: `ReferenceError` at play.js:90). CSP warnings on Stake are report-only and not the HUD.
 
 **8.2.1:** HUD mount used `HUD_WIDTH` after the `src/` split without aliasing it — panel never attached. Aliased + boot no longer swallows `window.play` if HUD throws.
@@ -56,6 +60,7 @@ Chrome shows an infobar: “Stake Baccarat started debugging this browser.” Th
 | `src/boot.js` | MAIN | Host gate; wires `pp` / `pick` / `play` |
 | `content.js` | ISOLATED | `postMessage` ↔ `chrome.runtime` |
 | `background.js` | SW | CDP clicks + HUD bus |
-| `popup.html` | — | Short reminder |
+| `popup.html` / `popup.css` / `popup.js` | — | Toolbar menu |
+| `icons/` | — | Chip icon 16–128 |
 
 Tampermonkey fallback lives in [`../script/stake-baccarat.js`](../script/stake-baccarat.js) (untrusted clicks). Do not run it with this extension.
